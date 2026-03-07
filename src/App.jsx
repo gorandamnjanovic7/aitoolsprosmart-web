@@ -114,9 +114,9 @@ function TutorialCard({ vid }) {
   };
 
   return (
-    <div className="p-[1px] bg-gradient-to-br from-white/10 to-transparent hover:from-red-500/50 rounded-[2rem] flex flex-col h-full transition-all duration-500 hover:-translate-y-1">
-      <div className="bg-[#0a0a0a] rounded-[1.9rem] p-4 flex flex-col h-full relative border border-white/5 shadow-2xl">
-        <div className="aspect-video relative overflow-hidden rounded-2xl mb-4 bg-zinc-900 border border-white/5 cursor-pointer group" onClick={handleTutorialClick}>
+    <div className="p-[1px] bg-gradient-to-br from-orange-500 to-blue-500 shadow-xl rounded-[2rem] flex flex-col h-full transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(59,130,246,0.3)] group">
+      <div className="bg-[#0a0a0a] rounded-[1.9rem] p-4 flex flex-col h-full relative">
+        <div className="aspect-video relative overflow-hidden rounded-2xl mb-4 bg-zinc-900 border-2 border-blue-500/60 group-hover:border-blue-400 cursor-pointer transition-all duration-500" onClick={handleTutorialClick}>
               <img src={imgSrc} onError={() => setImgSrc(videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : data.bannerUrl)} className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-all" alt="" />
               {videoId && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-transparent transition-all">
