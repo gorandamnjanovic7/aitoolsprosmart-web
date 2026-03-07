@@ -18,7 +18,6 @@ import * as data from './data';
 import mojBaner from './moj-baner.png'; 
 
 // --- KONFIGURACIJA LINKOVA (SADA NA INTERNETU) ---
-// PAŽNJA: Proveri da li je ovo tačan link sa tvog Railway ekrana!
 const BASE_BACKEND_URL = "https://aitoolsprosmart-becend-production.up.railway.app"; 
 
 const API_URL = `${BASE_BACKEND_URL}/api/products`;
@@ -133,6 +132,7 @@ function TutorialCard({ vid }) {
   );
 }
 
+// --- ASSET CARD SA TRAKOM KOJU TI KONTROLIŠEŠ ---
 function AssetCard({ app }) {
   const mediaItem = app?.media?.[0];
   const isVideo = mediaItem?.type === 'video' || mediaItem?.url?.match(/\.(mp4|webm|ogg|mov)$/i);
@@ -149,8 +149,23 @@ function AssetCard({ app }) {
     }
   };
 
+  const ribbonText = (app.type && app.type !== "AI ASSET") ? app.type : "LATEST ⚡";
+  let ribbonColor = "from-blue-700 via-blue-500 to-blue-700 shadow-[0_5px_15px_rgba(59,130,246,0.6)] border-blue-400/50";
+  const upperText = ribbonText.toUpperCase();
+  
+  if (upperText.includes("HOT")) {
+    ribbonColor = "from-red-700 via-red-500 to-red-700 shadow-[0_5px_15px_rgba(220,38,38,0.6)] border-red-400/50";
+  } else if (upperText.includes("POPULAR") || upperText.includes("BEST")) {
+    ribbonColor = "from-yellow-600 via-yellow-400 to-yellow-600 shadow-[0_5px_15px_rgba(234,179,8,0.6)] border-yellow-400/50";
+  } else if (upperText.includes("NEW") || upperText.includes("UPDATE")) {
+    ribbonColor = "from-green-600 via-green-400 to-green-600 shadow-[0_5px_15px_rgba(34,197,94,0.6)] border-green-400/50";
+  }
+
   return (
-    <div className="p-[1px] bg-gradient-to-br from-orange-500 to-blue-500 shadow-2xl rounded-[2.5rem] transition-all duration-500 hover:scale-[1.02] flex flex-col group h-full text-white">
+    <div className="relative overflow-hidden p-[1px] bg-gradient-to-br from-orange-500 to-blue-500 shadow-2xl rounded-[2.5rem] transition-all duration-500 hover:scale-[1.02] flex flex-col group h-full text-white">
+      <div className={`absolute top-7 -right-10 z-50 w-40 bg-gradient-to-r ${ribbonColor} text-white text-center py-1.5 font-black text-[9px] uppercase tracking-[0.2em] border-y transform rotate-45 pointer-events-none`}>
+        {ribbonText}
+      </div>
       <div className="bg-[#0a0a0a] rounded-[2.4rem] flex flex-col h-full p-8 relative">
         <div 
           className="aspect-video relative overflow-hidden rounded-[1.5rem] mb-6 border-2 border-blue-500/60 group-hover:border-blue-400 group-hover:shadow-[0_0_25px_rgba(59,130,246,0.3)] transition-all duration-500 bg-zinc-900 cursor-pointer" 
@@ -263,15 +278,26 @@ function SingleProductPage({ apps = [] }) {
             </div>
             
             <div className="flex gap-4 overflow-x-auto pb-6 mb-12 custom-scrollbar text-left">
-              {app.media?.map((m, idx) => (
-                <button key={idx} onClick={() => setActiveMedia(idx)} className={`relative w-28 h-16 flex-shrink-0 rounded-xl overflow-hidden border-2 transition-all ${activeMedia === idx ? 'border-orange-500 scale-105 shadow-lg' : 'border-white/5 opacity-40 hover:opacity-100'}`}>
-                  {m.type === 'video' || m.url?.match(/\.(mp4|webm|ogg|mov)$/i) ? <video src={`${m.url}#t=0.001`} className="w-full h-full object-cover" /> : <img src={m.url} className="w-full h-full object-cover" onContextMenu={(e) => e.preventDefault()} draggable="false" />}
+              {app.media?.map((m, idx) => {
+                const isThumbVideo = m.type === 'video' || m.url?.match(/\.(mp4|webm|ogg|mov)$/i);
+                return (
+                <button key={idx} onClick={() => setActiveMedia(idx)} className={`relative w-28 h-16 flex-shrink-0 rounded-xl overflow-hidden border-2 transition-all group ${activeMedia === idx ? 'border-orange-500 scale-105 shadow-lg' : 'border-white/5 opacity-50 hover:opacity-100'}`}>
+                  {isThumbVideo ? (
+                    <>
+                      <video src={`${m.url}#t=0.001`} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/20 transition-all">
+                        <PlayCircle className="w-6 h-6 text-white drop-shadow-md" />
+                      </div>
+                    </>
+                  ) : (
+                    <img src={m.url} className="w-full h-full object-cover" onContextMenu={(e) => e.preventDefault()} draggable="false" />
+                  )}
                 </button>
-              ))}
+              )})}
             </div>
             
             <h1 className="text-xl md:text-2xl font-black uppercase tracking-tighter mb-4 leading-none text-left">{app.name}</h1>
-            <div className="flex text-left"><div className="px-4 py-1.5 rounded-full bg-blue-600 text-white text-[8px] font-black uppercase mb-10 tracking-[0.2em] shadow-xl shadow-blue-600/10">{app.type || 'AI ASSET'}</div></div>
+            <div className="flex text-left"><div className="px-4 py-1.5 rounded-full bg-blue-600 text-white text-[8px] font-black uppercase mb-10 tracking-[0.2em] shadow-xl shadow-blue-600/10">{(app.type && app.type !== "AI ASSET") ? app.type : 'AI ASSET'}</div></div>
             {app.headline && <p className="text-sm md:text-md text-white font-black mb-10 leading-tight border-l-4 border-orange-500 pl-5 italic text-left">{app.headline}</p>}
             <div className="border-t border-white/5 pt-8 mb-12 text-left">{renderDescription(app.description)}</div>
             
@@ -338,10 +364,16 @@ function HomePage({ apps = [] }) {
   const [liveVideos, setLiveVideos] = useState([]);
   const location = useLocation();
 
-  const sortedApps = [...apps].sort((a,b) => b.id - a.id);
+  // STRIKTNO OBRTANJE: Najnoviji proizvod će OBAVEZNO biti na prvom mestu!
+  const sortedApps = [...apps].reverse();
 
   useEffect(() => {
-    fetch(VIDEOS_API_URL).then(res => res.json()).then(db => { if (Array.isArray(db)) setLiveVideos(db); });
+    fetch(VIDEOS_API_URL).then(res => res.json()).then(db => { 
+      if (Array.isArray(db)) {
+        // VRAĆENO NA STARO! API OČIGLEDNO SAM ŠALJE NAJNOVIJI PRVI
+        setLiveVideos(db); 
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -560,7 +592,8 @@ function AdminPage({ apps = [], refreshData }) {
   const initialForm = { name: '', headline: '', type: 'AI ASSET', price: '', priceLifetime: '', description: defaultDescriptionTemplate, media: [], whopLink: '', reactSourceCode: '', faq: Array.from({ length: 7 }, () => ({ q: '', a: '' })) }; 
   const [formData, setFormData] = useState(initialForm); 
 
-  const sortedApps = [...apps].sort((a, b) => b.id - a.id);
+  // STRIKTNO OBRTANJE I U ADMIN PANELU DA NAJNOVIJI BUDE PRVI
+  const sortedApps = [...apps].reverse();
 
   const handleLogin = async (e) => { 
     e.preventDefault(); 
@@ -658,7 +691,7 @@ function AdminPage({ apps = [], refreshData }) {
              <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1.5"><label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest ml-1">Asset Name</label><input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="bg-black border border-white/10 p-3 rounded-xl text-white text-[11px] outline-none" required /></div>
-                  <div className="flex flex-col gap-1.5"><label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest ml-1">Type</label><input type="text" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} className="bg-black border border-white/10 p-3 rounded-xl text-white text-[11px] outline-none" /></div>
+                  <div className="flex flex-col gap-1.5"><label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest ml-1">Ribbon Text (Type)</label><input type="text" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} placeholder="Npr. HOT 🔥 ili 50% OFF" className="bg-black border border-white/10 p-3 rounded-xl text-white text-[11px] outline-none" /></div>
                 </div>
                 <div className="flex flex-col gap-1.5"><label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest ml-1">Headline Protocol</label><input type="text" value={formData.headline} onChange={e => setFormData({...formData, headline: e.target.value})} className="bg-black border border-white/10 p-3 rounded-xl text-white text-[11px] outline-none" /></div>
                 <div className="flex flex-col gap-1.5"><label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest ml-1">Technical Specs</label><textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="bg-black border border-white/10 p-4 rounded-xl text-white text-[11px] h-64 resize-none outline-none" /></div>
@@ -741,7 +774,8 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-100 flex flex-col font-sans text-left">
-      <nav className="fixed top-0 left-0 w-full px-10 py-3 z-[100] bg-[#050505]/80 backdrop-blur-xl border-b border-orange-500/20">
+      {/* UPDATE: NAVBAR SA CUSTOM BORDER-BOTTOM 0.1px */}
+      <nav className="fixed top-0 left-0 w-full px-10 py-3 z-[100] bg-[#050505]/80 backdrop-blur-xl" style={{ borderBottom: '0.1px solid #f97316' }}>
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <Link to="/" className="flex items-center gap-6 group">
             <img src={data.logoUrl} className="h-10 md:h-12 object-contain transition-transform group-hover:scale-105 animate-pulse" alt="logo" />
