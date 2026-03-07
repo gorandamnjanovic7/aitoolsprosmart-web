@@ -490,25 +490,25 @@ function IntelligenceDashboard() {
     fetchStats();
   }, []);
 
-  if (loading) return <div className="py-20 text-center animate-pulse text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600">Decrypting Matrix Telemetry...</div>;
+  if (loading) return <div className="py-20 text-center animate-pulse text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600">Učitavanje statistike...</div>;
 
   return (
     <div className="space-y-6 animate-fade-in text-left">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-left">
         <div className="bg-[#0a0a0a] border border-white/5 p-6 rounded-[2rem] hover:border-blue-500/30 transition-all group text-left">
-          <div className="flex items-center gap-3 mb-3 text-left"><Eye className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform" /><span className="text-[9px] font-black uppercase text-zinc-500 tracking-widest">Total Page Views</span></div>
+          <div className="flex items-center gap-3 mb-3 text-left"><Eye className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform" /><span className="text-[9px] font-black uppercase text-zinc-500 tracking-widest">Ukupno pregleda sajta</span></div>
           <div className="text-2xl md:text-3xl font-black text-white text-left">{stats.totalViews}</div>
         </div>
         <div className="bg-[#0a0a0a] border border-white/5 p-6 rounded-[2rem] hover:border-green-500/30 transition-all group text-left">
-          <div className="flex items-center gap-3 mb-3 text-left"><Users className="w-4 h-4 text-green-500 group-hover:scale-110 transition-transform" /><span className="text-[9px] font-black uppercase text-zinc-500 tracking-widest">Unique Terminals</span></div>
+          <div className="flex items-center gap-3 mb-3 text-left"><Users className="w-4 h-4 text-green-500 group-hover:scale-110 transition-transform" /><span className="text-[9px] font-black uppercase text-zinc-500 tracking-widest">Jedinstvenih Posetilaca</span></div>
           <div className="text-2xl md:text-3xl font-black text-white text-left">{stats.uniqueVisitors}</div>
         </div>
         <div className="bg-[#0a0a0a] border border-white/5 p-6 rounded-[2rem] hover:border-purple-500/30 transition-all group text-left">
-          <div className="flex items-center gap-3 mb-3 text-left"><Clock className="w-4 h-4 text-purple-500 group-hover:scale-110 transition-transform" /><span className="text-[9px] font-black uppercase text-zinc-500 tracking-widest">Avg Session Time</span></div>
+          <div className="flex items-center gap-3 mb-3 text-left"><Clock className="w-4 h-4 text-purple-500 group-hover:scale-110 transition-transform" /><span className="text-[9px] font-black uppercase text-zinc-500 tracking-widest">Prosečno Zadržavanje</span></div>
           <div className="text-2xl md:text-3xl font-black text-white text-left">{stats.avgSessionTime}</div>
         </div>
         <div className="bg-[#0a0a0a] border border-white/5 p-6 rounded-[2rem] hover:border-orange-500/30 transition-all group shadow-[0_0_20px_rgba(249,115,22,0.02)] text-left">
-          <div className="flex items-center gap-3 mb-3 text-left"><MousePointerClick className="w-4 h-4 text-orange-500 group-hover:scale-110 transition-transform" /><span className="text-[9px] font-black uppercase text-zinc-500 tracking-widest">Whop Conversions</span></div>
+          <div className="flex items-center gap-3 mb-3 text-left"><MousePointerClick className="w-4 h-4 text-orange-500 group-hover:scale-110 transition-transform" /><span className="text-[9px] font-black uppercase text-zinc-500 tracking-widest">Klikovi na Kupovinu</span></div>
           <div className="text-2xl md:text-3xl font-black text-orange-500 text-left">{stats.whopClicks}</div>
         </div>
       </div>
@@ -516,16 +516,16 @@ function IntelligenceDashboard() {
       <div className="bg-[#0a0a0a] border border-white/5 rounded-[2.5rem] p-6 shadow-[0_0_30px_rgba(249,115,22,0.03)] text-left">
         <div className="flex items-center gap-3 mb-6 border-b border-white/5 pb-4 text-left">
           <ShoppingCart className="w-4 h-4 text-orange-500" />
-          <h3 className="text-[10px] font-black uppercase tracking-widest">Whop Conversion Matrix</h3>
+          <h3 className="text-[10px] font-black uppercase tracking-widest">Statistika Klikova po Proizvodima</h3>
         </div>
         <div className="overflow-x-auto custom-scrollbar text-left">
           <table className="w-full text-left">
             <thead className="text-[8px] font-black text-zinc-600 uppercase tracking-widest border-b border-white/5">
               <tr>
-                <th className="pb-3 pl-4 text-left">Asset Protocol</th>
-                <th className="pb-3 text-center">Main Asset Clicks</th>
-                <th className="pb-3 text-center">Source Code Clicks</th>
-                <th className="pb-3 text-right pr-4">Total Interactions</th>
+                <th className="pb-3 pl-4 text-left">Naziv Proizvoda</th>
+                <th className="pb-3 text-center">Klik na Glavni Alat</th>
+                <th className="pb-3 text-center">Klik na Source Code</th>
+                <th className="pb-3 text-right pr-4">Ukupno Klikova</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 text-left">
