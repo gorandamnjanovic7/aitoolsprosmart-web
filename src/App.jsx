@@ -22,9 +22,8 @@ import mojBaner from './moj-baner.png';
 const BASE_BACKEND_URL = "https://aitoolsprosmart-becend-production.up.railway.app"; 
 
 const API_URL = `${BASE_BACKEND_URL}/api/products`;
-const VIDEOS_API_URL = `${BASE_BACKEND_URL}/api/videos`; 
+const VIDEOS_API_URL = `${BASE_BACKEND_URL}/api/youtube`; 
 const HIDDEN_VIDEOS_API_URL = `${BASE_BACKEND_URL}/api/hidden-videos`;
-
 const DEFAULT_FAQ = [
   { question: "V8 Architecture", answer: "Triple-injection protocol for high-fidelity output." },
   { question: "Value Multiplier", answer: "Algorithmic expansion for 880,000+ combinations." },
