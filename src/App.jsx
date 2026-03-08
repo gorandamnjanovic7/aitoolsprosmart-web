@@ -7,7 +7,7 @@ import {
   ShieldCheck, ArrowRight, Maximize2, PlusCircle, LayoutList, Edit, Trash2,
   UploadCloud, Loader2, Activity, Database, Fingerprint, Terminal, HardDrive,
   Video, Image as Imagelcon, Check, Play, HelpCircle, Eye, MousePointerClick, Smartphone, Clock, Users, BarChart3,
-  ShoppingCart
+  ShoppingCart, Copy, Lock, Shield, Camera, Cctv
 } from 'lucide-react';
 
 // FIREBASE INTEGRATION
@@ -19,29 +19,16 @@ import mojBaner from './moj-baner.png';
 
 // --- KONFIGURACIJA LINKOVA ---
 const BASE_BACKEND_URL = "https://aitoolsprosmart-becend-production.up.railway.app"; 
-
 const API_URL = `${BASE_BACKEND_URL}/api/products`;
 const VIDEOS_API_URL = `${BASE_BACKEND_URL}/api/youtube`; 
 const HIDDEN_VIDEOS_API_URL = `${BASE_BACKEND_URL}/api/hidden-videos`;
-const DEFAULT_FAQ = [
-  { question: "V8 Architecture", answer: "Triple-injection protocol for high-fidelity output." },
-  { question: "Value Multiplier", answer: "Algorithmic expansion for 880,000+ combinations." },
-  { question: "Google Veo 3.1", answer: "Optimized temporal consistency for motion engines." }
-];
 
 // --- ADVANCED ANALYTICS ENGINE ---
 const SESSION_ID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-
 const trackEvent = async (action, details = {}) => {
   try {
     await addDoc(collection(db, "site_stats"), {
-      action,
-      ...details,
-      sessionId: SESSION_ID,
-      localTime: Date.now(),
-      timestamp: serverTimestamp(),
-      userAgent: navigator.userAgent,
-      path: window.location.pathname
+      action, ...details, sessionId: SESSION_ID, localTime: Date.now(), timestamp: serverTimestamp(), userAgent: navigator.userAgent, path: window.location.pathname
     });
   } catch (e) { console.error("Stats Error", e); }
 };
@@ -53,14 +40,12 @@ const getYouTubeId = (url) => {
   const match = url.match(regExp);
   return (match && match[2].length === 11) ? match[2] : null;
 };
-
 const getMediaThumbnail = (url, type) => {
   if (!url) return data.bannerUrl;
   const ytId = getYouTubeId(url);
   if (ytId) return `https://i.ytimg.com/vi/${ytId}/maxresdefault.jpg`;
   return url;
 };
-
 const formatExternalLink = (url) => {
   if (!url || url === "#") return "#";
   return url.trim().startsWith("http") ? url.trim() : `https://${url.trim()}`;
@@ -85,7 +70,7 @@ const renderDescription = (text) => {
     const trimmed = line.trim();
     if (!trimmed) return <div key={idx} className="h-2"></div>;
     const upperTrimmed = trimmed.toUpperCase();
-    if (upperTrimmed.includes('KEY FEATURES') || upperTrimmed.includes('WHO IS THIS FOR') || upperTrimmed.includes('[DESCRIPTION]') || upperTrimmed.includes('VALUE MULTIPLIER') || upperTrimmed.includes('THE ARSENAL')) {
+    if (upperTrimmed.includes('KEY FEATURES') || upperTrimmed.includes('WHO IS THIS FOR') || upperTrimmed.includes('[DESCRIPTION]') || upperTrimmed.includes('VALUE MULTIPLIER')) {
         return <h3 key={idx} className="text-[12px] font-black text-white mt-10 mb-4 uppercase tracking-widest border-l-4 border-orange-500 pl-4 italic text-left">{trimmed}</h3>;
     }
     if (trimmed.startsWith('*') || trimmed.startsWith('-')) {
@@ -100,7 +85,111 @@ const renderDescription = (text) => {
   });
 };
 
-// --- UI COMPONENTS ---
+// --- FULL SCREEN TERMINAL BOOT (SVAKI RELOAD, 3 SEKUNDE) ---
+function FullScreenBoot({ onComplete }) {
+  const [lines, setLines] = useState([]);
+  const [fading, setFading] = useState(false);
+
+  useEffect(() => {
+    const hexChars = '0123456789ABCDEF';
+    const protocols = [
+      "Decrypting V8 Engine modules...", 
+      "Bypassing mainframe firewalls...", 
+      "Injecting hyper-realistic datasets...", 
+      "Allocating 128GB VRAM...", 
+      "Compiling Abstract nodes...", 
+      "Establishing neural handshake...", 
+      "Syncing with global matrix..."
+    ];
+
+    const generateLine = () => {
+      if (Math.random() > 0.8) return `> [OK] ${protocols[Math.floor(Math.random() * protocols.length)]}`;
+      let line = '0x';
+      for(let i=0; i<8; i++) line += hexChars[Math.floor(Math.random() * hexChars.length)];
+      line += ' ';
+      const length = Math.floor(Math.random() * 50) + 30;
+      for(let i=0; i<length; i++) line += hexChars[Math.floor(Math.random() * hexChars.length)];
+      return line;
+    };
+
+    const interval = setInterval(() => {
+      setLines(prev => {
+         const newLines = [...prev, generateLine()];
+         return newLines.length > 70 ? newLines.slice(newLines.length - 70) : newLines; 
+      });
+    }, 30); 
+
+    const t1 = setTimeout(() => {
+      clearInterval(interval);
+      setLines(prev => [...prev, "", "> SYSTEM INTEGRATION COMPLETE.", "> ACCESS GRANTED."]);
+    }, 2200);
+
+    const t2 = setTimeout(() => setFading(true), 2600);
+    const t3 = setTimeout(() => onComplete(), 3000);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3);
+    };
+  }, [onComplete]);
+
+  return (
+    <div className={`fixed inset-0 z-[9999] bg-[#050505] text-green-500 font-mono text-[9px] sm:text-[11px] overflow-hidden transition-opacity duration-[400ms] pointer-events-none ${fading ? 'opacity-0' : 'opacity-100'}`}>
+      <div className="absolute bottom-0 left-0 w-full px-4 py-6 sm:px-8 sm:py-8 flex flex-col justify-end space-y-0.5 opacity-90">
+        {lines.map((l, i) => (
+           <div key={i} className={l.includes('ACCESS GRANTED') ? 'text-green-400 font-black text-sm sm:text-base mt-4 animate-pulse' : 'break-all'}>
+              {l}
+           </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MatrixRain() {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    const canvas = canvasRef.current; if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const resizeCanvas = () => { canvas.width = canvas.parentElement.offsetWidth; canvas.height = canvas.parentElement.offsetHeight; };
+    resizeCanvas(); window.addEventListener('resize', resizeCanvas);
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()';
+    const fontSize = 14; let columns = canvas.width / fontSize;
+    let drops = Array(Math.floor(columns)).fill(1);
+    const draw = () => {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#0F0'; ctx.font = fontSize + 'px monospace';
+      for (let i = 0; i < drops.length; i++) {
+        const text = letters[Math.floor(Math.random() * letters.length)];
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      }
+    };
+    const interval = setInterval(draw, 35); return () => clearInterval(interval);
+  }, []);
+  return <canvas ref={canvasRef} className="absolute inset-0 z-[15] opacity-[0.15] pointer-events-none" />;
+}
+
+function UrgencyBar() {
+  const [timeLeft, setTimeLeft] = useState("02:45:12");
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date();
+      setTimeLeft(`${String(23-now.getHours()).padStart(2,'0')}:${String(59-now.getMinutes()).padStart(2,'0')}:${String(59-now.getSeconds()).padStart(2,'0')}`);
+    }, 1000); return () => clearInterval(timer);
+  }, []);
+  return (
+    <div className="w-full bg-black border-b border-orange-500/20 py-1.5 overflow-hidden flex items-center justify-center gap-3 md:gap-6 px-4 relative z-[200]">
+      <span className="text-[7px] md:text-[8px] font-black text-orange-500 uppercase tracking-[0.3em] animate-pulse">System Alert: Flash License Deal</span>
+      <div className="flex items-center gap-2 bg-orange-600/10 px-3 py-0.5 rounded-full border border-orange-500/30">
+         <span className="text-[8px] font-black text-white font-mono">{timeLeft}</span>
+      </div>
+      <span className="hidden sm:inline text-[7px] md:text-[8px] font-black text-zinc-500 uppercase tracking-widest">Price Increase Imminent</span>
+    </div>
+  );
+}
+
 function TutorialCard({ vid }) {
   const videoId = getYouTubeId(vid.url);
   const [imgSrc, setImgSrc] = useState(videoId ? `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg` : data.bannerUrl);
@@ -161,10 +250,8 @@ function AssetCard({ app }) {
   }
 
   return (
-    <div className="relative overflow-hidden p-[1px] bg-gradient-to-br from-orange-500 to-blue-500 shadow-2xl rounded-[2.5rem] transition-all duration-500 hover:scale-[1.02] flex flex-col group h-full text-white">
-      <div className={`absolute top-7 -right-10 z-50 w-40 bg-gradient-to-r ${ribbonColor} text-white text-center py-1.5 font-black text-[9px] uppercase tracking-[0.2em] border-y transform rotate-45 pointer-events-none`}>
-        {ribbonText}
-      </div>
+    <div className="relative overflow-hidden p-[1px] bg-gradient-to-br from-orange-500 to-blue-500 shadow-2xl rounded-[2.5rem] transition-all duration-500 hover:scale-[1.02] flex flex-col group h-full text-white hover:shadow-[4px_0px_0px_rgba(239,68,68,0.4),-4px_0px_0px_rgba(59,130,246,0.4)]">
+      <div className={`absolute top-7 -right-10 z-50 w-40 bg-gradient-to-r ${ribbonColor} text-white text-center py-1.5 font-black text-[9px] uppercase tracking-[0.2em] border-y transform rotate-45 pointer-events-none`}>{ribbonText}</div>
       <div className="bg-[#0a0a0a] rounded-[2.4rem] flex flex-col h-full p-8 relative">
         <div 
           className="aspect-video relative overflow-hidden rounded-[1.5rem] mb-6 border-2 border-blue-500/60 group-hover:border-blue-400 group-hover:shadow-[0_0_25px_rgba(59,130,246,0.3)] transition-all duration-500 bg-zinc-900 cursor-pointer" 
@@ -190,10 +277,17 @@ function AssetCard({ app }) {
           )}
         </div>
         <div className="flex justify-between items-start mb-3 gap-4">
-          <h2 className="text-sm md:text-base font-black uppercase group-hover:text-orange-500 transition-colors leading-none text-left">{app.name}</h2>
+          <h2 className="text-sm md:text-base font-black uppercase group-hover:text-orange-500 transition-all duration-300 leading-none text-left group-hover:translate-x-1">{app.name}</h2>
           <div className="px-3 py-1.5 bg-blue-600/10 border border-blue-500/20 rounded-xl text-[10px] font-black text-blue-400 shadow-lg">${app.price}</div>
         </div>
-        <p className="text-zinc-400 text-[10px] md:text-xs mb-8 line-clamp-2 text-left">{app.headline}</p>
+        <p className="text-zinc-400 text-[10px] md:text-xs mb-4 line-clamp-2 text-left">{app.headline}</p>
+        
+        <div className="flex gap-4 mb-8 border-t border-white/5 pt-4">
+           <div className="flex flex-col"><span className="text-[6px] text-zinc-500 font-black uppercase tracking-widest">V8 Speed</span><span className="text-[9px] font-bold text-white">0.{Math.floor(Math.random() * 9)}ms</span></div>
+           <div className="flex flex-col"><span className="text-[6px] text-zinc-500 font-black uppercase tracking-widest">Logic</span><span className="text-[9px] font-bold text-white">{95 + Math.floor(Math.random() * 4)}%</span></div>
+           <div className="flex flex-col"><span className="text-[6px] text-zinc-500 font-black uppercase tracking-widest">Engine</span><span className="text-[9px] font-bold text-blue-500">MAX</span></div>
+        </div>
+
         <div className="mt-auto pt-4 text-left">
           <Link to={`/app/${app.id}`} onClick={() => trackEvent("asset_click", { name: app.name, asset_id: app.id })} className="w-full py-3.5 bg-blue-600 border border-blue-500 text-white rounded-2xl font-black text-[9px] uppercase tracking-[0.2em] text-center flex items-center justify-center gap-3 group-hover:bg-blue-500 shadow-xl transition-all">
             MORE DETAILS <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1.5 transition-all" />
@@ -204,7 +298,472 @@ function AssetCard({ app }) {
   );
 }
 
-// --- SINGLE PRODUCT PAGE ---
+function LiveSalesNotification({ apps }) {
+  const [notification, setNotification] = useState(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if(!apps || apps.length === 0) return;
+    const interval = setInterval(() => {
+       const names = data.SALES_NAMES || ["Michael T.", "David K.", "Sarah L."];
+       const countries = data.SALES_COUNTRIES || ["USA", "UK", "Canada"];
+       const randomName = names[Math.floor(Math.random() * names.length)];
+       const randomCountry = countries[Math.floor(Math.random() * countries.length)];
+       const randomApp = apps[Math.floor(Math.random() * apps.length)].name;
+       
+       setNotification({ name: randomName, country: randomCountry, product: randomApp });
+       setIsVisible(true);
+       setTimeout(() => { setIsVisible(false); }, 5000); 
+    }, 28000); 
+    return () => clearInterval(interval);
+  }, [apps]);
+
+  return (
+    <div className={`fixed bottom-6 left-6 z-[200] bg-[#0a0a0a]/95 backdrop-blur-md border border-white/10 p-4 rounded-2xl shadow-2xl flex items-center gap-4 transition-all duration-700 transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'}`}>
+      <div className="bg-green-500/20 p-2.5 rounded-full border border-green-500/30">
+        <Check className="text-green-500 w-4 h-4"/>
+      </div>
+      <div>
+        <p className="text-[9px] text-zinc-400 font-bold mb-0.5">{notification?.name} from {notification?.country} just bought</p>
+        <p className="text-[11px] font-black text-white">{notification?.product}</p>
+      </div>
+    </div>
+  );
+}
+
+function StarIcon() {
+  return <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" /></svg>;
+}
+
+// --- GLAVNE STRANICE ---
+
+function HomePage({ apps = [] }) {
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [liveVideos, setLiveVideos] = useState([]);
+  
+  // STATE ZA ENHANCER ALAT
+  const [demoInput, setDemoInput] = useState('');
+  const [customerPrompt, setCustomerPrompt] = useState(''); 
+  const [generatedPrompts, setGeneratedPrompts] = useState({ single: '', abstract: '', cinematic: '', photoreal: '', cctv: '' });
+  const [isEnhancing, setIsEnhancing] = useState(false);
+  const [selectedAR, setSelectedAR] = useState('16:9');
+  const [selectedQuality, setSelectedQuality] = useState('4x');
+  const [copiedBox, setCopiedBox] = useState(''); 
+  const [promptHistory, setPromptHistory] = useState([]);
+  const [copiedHistoryIndex, setCopiedHistoryIndex] = useState(null);
+  
+  const location = useLocation();
+  const sortedApps = [...apps].reverse();
+
+  useEffect(() => { fetch(VIDEOS_API_URL).then(res => res.json()).then(db => { if (Array.isArray(db)) { setLiveVideos(db); } }); }, []);
+  useEffect(() => { if (location.hash === '#marketplace') { setTimeout(() => { const el = document.getElementById('marketplace'); if (el) { window.scrollTo({top: el.getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth'}); } }, 100); } else if (!location.hash) { window.scrollTo(0, 0); } }, [location]);
+
+  const nextSlide = useCallback(() => setActiveSlide(s => (s + 1) % data.BANNER_DATA.length), []);
+  const prevSlide = () => setActiveSlide(s => (s - 1 + data.BANNER_DATA.length) % data.BANNER_DATA.length);
+  useEffect(() => { const t = setInterval(nextSlide, 7000); return () => clearInterval(t); }, [nextSlide]);
+
+  const handleEnhance = () => {
+    if(!demoInput && !customerPrompt) return;
+    setIsEnhancing(true);
+    setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', cctv: '' });
+    setCopiedBox('');
+    
+    setTimeout(() => {
+      if (customerPrompt.trim().length > 0) {
+          const envs = data.CINEMATIC_ENVS || ["in a bustling cyberpunk metropolis"];
+          const lights = data.CINEMATIC_LIGHTS || ["volumetric god rays piercing through thick atmospheric mist"];
+          const cams = data.CINEMATIC_CAMS || ["shot on ARRI Alexa 65, 35mm lens, f/1.8"];
+          const colors = data.CINEMATIC_COLORS || ["vivid cinematic color grading"];
+
+          const env = envs[Math.floor(Math.random() * envs.length)];
+          const light = lights[Math.floor(Math.random() * lights.length)];
+          const cam = cams[Math.floor(Math.random() * cams.length)];
+          const color = colors[Math.floor(Math.random() * colors.length)];
+          
+          const cleanInput = customerPrompt.trim();
+          let finalPrompt = "";
+
+          if (selectedQuality === '1x') finalPrompt = `A high-quality cinematic image of ${cleanInput}, located ${env}. The scene features ${light}. ${cam}, ${color}. Aspect ratio: ${selectedAR}.`;
+          else if (selectedQuality === '2x') finalPrompt = `A breathtaking photorealistic render of ${cleanInput}, displaying monumental scale and precise details. Set ${env}. The environment is beautifully illuminated by ${light}. ${cam}, ${color}. Unreal Engine 5 render, 8k resolution, cinematic VFX. Aspect ratio: ${selectedAR}.`;
+          else finalPrompt = `A hyper-realistic, award-winning cinematic masterpiece of ${cleanInput}, featuring an unfathomable monumental scale, incredibly intricate and painstakingly detailed. The subject is perfectly placed ${env}. The dramatic atmosphere is defined by ${light}. ${cam}, ${color}. Octane render, full ray tracing, global illumination, subsurface scattering, trending on CGSociety, ultra-maximalist, extremely meticulous detailing, 32k UHD, absolute visual perfection. Aspect ratio: ${selectedAR}.`;
+
+          setGeneratedPrompts(prev => ({ ...prev, single: finalPrompt }));
+          setPromptHistory(prev => [finalPrompt, ...prev].slice(0, 3)); 
+      } 
+      else if (demoInput.trim().length > 0) {
+          const cleanInput = demoInput.trim().toUpperCase();
+
+          const aEnv = (data.ABSTRACT_ENVS || ["in a void"])[Math.floor(Math.random() * (data.ABSTRACT_ENVS?.length || 1))];
+          const aLight = (data.ABSTRACT_LIGHTS || ["ethereal glow"])[Math.floor(Math.random() * (data.ABSTRACT_LIGHTS?.length || 1))];
+          const aCam = (data.ABSTRACT_CAMS || ["kaleidoscopic lens"])[Math.floor(Math.random() * (data.ABSTRACT_CAMS?.length || 1))];
+          const aColor = (data.ABSTRACT_COLORS || ["iridescent hues"])[Math.floor(Math.random() * (data.ABSTRACT_COLORS?.length || 1))];
+
+          let pAbs = "";
+          if (selectedQuality === '1x') pAbs = `A high-quality abstract representation of ${cleanInput}, located ${aEnv}. The scene features ${aLight}. ${aCam}, ${aColor}. Aspect ratio: ${selectedAR}.`;
+          else if (selectedQuality === '2x') pAbs = `A breathtaking surreal render of ${cleanInput}, displaying monumental scale and mind-bending details. Set ${aEnv}. The environment is beautifully illuminated by ${aLight}. ${aCam}, ${aColor}. Octane render, 8k resolution, conceptual art. Aspect ratio: ${selectedAR}.`;
+          else pAbs = `A hyper-detailed, award-winning abstract masterpiece of ${cleanInput}, featuring an unfathomable monumental scale, incredibly intricate and painstakingly constructed. The subject is perfectly placed ${aEnv}. The surreal atmosphere is defined by ${aLight}. ${aCam}, ${aColor}. Fluid simulation, full ray tracing, global illumination, subsurface scattering, trending on ArtStation, ultra-maximalist, extremely meticulous detailing, 32k UHD, absolute visual perfection. Aspect ratio: ${selectedAR}.`;
+
+          const cEnv = (data.CINEMATIC_ENVS || ["in a cyberpunk city"])[Math.floor(Math.random() * (data.CINEMATIC_ENVS?.length || 1))];
+          const cLight = (data.CINEMATIC_LIGHTS || ["dramatic chiaroscuro"])[Math.floor(Math.random() * (data.CINEMATIC_LIGHTS?.length || 1))];
+          const cCam = (data.CINEMATIC_CAMS || ["ARRI Alexa 65"])[Math.floor(Math.random() * (data.CINEMATIC_CAMS?.length || 1))];
+          const cColor = (data.CINEMATIC_COLORS || ["teal and orange"])[Math.floor(Math.random() * (data.CINEMATIC_COLORS?.length || 1))];
+
+          let pCin = "";
+          if (selectedQuality === '1x') pCin = `A high-quality cinematic movie still of ${cleanInput}, located ${cEnv}. The scene features ${cLight}. ${cCam}, ${cColor}. Aspect ratio: ${selectedAR}.`;
+          else if (selectedQuality === '2x') pCin = `A breathtaking cinematic blockbuster shot of ${cleanInput}, displaying monumental scale and precise details. Set ${cEnv}. The environment is beautifully illuminated by ${cLight}. ${cCam}, ${cColor}. Unreal Engine 5 render, 8k resolution, cinematic VFX. Aspect ratio: ${selectedAR}.`;
+          else pCin = `A hyper-realistic, award-winning cinematic masterpiece of ${cleanInput}, featuring an unfathomable monumental scale, incredibly intricate and painstakingly detailed. The subject is perfectly placed ${cEnv}. The dramatic atmosphere is defined by ${cLight}. ${cCam}, ${cColor}. Octane render, full ray tracing, global illumination, subsurface scattering, IMDb top rated aesthetic, ultra-maximalist, extremely meticulous detailing, 32k UHD, absolute visual perfection. Aspect ratio: ${selectedAR}.`;
+
+          const pEnv = (data.PHOTOREAL_ENVS || ["in a minimalist room"])[Math.floor(Math.random() * (data.PHOTOREAL_ENVS?.length || 1))];
+          const pLight = (data.PHOTOREAL_LIGHTS || ["natural window light"])[Math.floor(Math.random() * (data.PHOTOREAL_LIGHTS?.length || 1))];
+          const pCam = (data.PHOTOREAL_CAMS || ["Hasselblad H6D"])[Math.floor(Math.random() * (data.PHOTOREAL_CAMS?.length || 1))];
+          const pColor = (data.PHOTOREAL_COLORS || ["true-to-life colors"])[Math.floor(Math.random() * (data.PHOTOREAL_COLORS?.length || 1))];
+
+          let pPho = "";
+          if (selectedQuality === '1x') pPho = `A high-quality raw photograph of ${cleanInput}, located ${pEnv}. The scene features ${pLight}. ${pCam}, ${pColor}. Aspect ratio: ${selectedAR}.`;
+          else if (selectedQuality === '2x') pPho = `A breathtaking hyper-realistic photography of ${cleanInput}, displaying precise details and sharp focus. Set ${pEnv}. The environment is beautifully illuminated by ${pLight}. ${pCam}, ${pColor}. 8k resolution, professional studio quality. Aspect ratio: ${selectedAR}.`;
+          else pPho = `An ultra-photorealistic, award-winning macro photography masterpiece of ${cleanInput}, incredibly intricate and painstakingly detailed. The subject is perfectly placed ${pEnv}. The natural atmosphere is defined by ${pLight}. ${pCam}, ${pColor}. Unfiltered RAW photo, extreme micro-details, global illumination, National Geographic aesthetic, true-to-life color depth, 32k UHD, absolute visual perfection. Aspect ratio: ${selectedAR}.`;
+
+          const ccEnv = (data.CCTV_ENVS || ["in a dark alley"])[Math.floor(Math.random() * (data.CCTV_ENVS?.length || 1))];
+          const ccLight = (data.CCTV_LIGHTS || ["harsh infrared night vision"])[Math.floor(Math.random() * (data.CCTV_LIGHTS?.length || 1))];
+          const ccCam = (data.CCTV_CAMS || ["wide-angle security camera"])[Math.floor(Math.random() * (data.CCTV_CAMS?.length || 1))];
+          const ccColor = (data.CCTV_COLORS || ["monochromatic grainy colors"])[Math.floor(Math.random() * (data.CCTV_COLORS?.length || 1))];
+
+          let pCctv = "";
+          if (selectedQuality === '1x') pCctv = `A realistic CCTV security camera footage of ${cleanInput}, located ${ccEnv}. The scene features ${ccLight}. ${ccCam}, ${ccColor}. Aspect ratio: ${selectedAR}.`;
+          else if (selectedQuality === '2x') pCctv = `A highly realistic surveillance camera still of ${cleanInput}, caught on tape ${ccEnv}. The environment is illuminated by ${ccLight}. ${ccCam}, ${ccColor}. Raw unedited CCTV footage, real security feed. Aspect ratio: ${selectedAR}.`;
+          else pCctv = `A hyper-realistic, authentic found-footage security camera still capturing ${cleanInput}, perfectly placed ${ccEnv}. The gritty atmosphere is defined by ${ccLight}. ${ccCam}, ${ccColor}. Extreme realism, timestamp overlay in the corner, low dynamic range, actual security video leak, unedited raw documentation. Aspect ratio: ${selectedAR}.`;
+
+          setGeneratedPrompts({ single: '', abstract: pAbs, cinematic: pCin, photoreal: pPho, cctv: pCctv });
+          setPromptHistory(prev => [pCin, ...prev].slice(0, 3)); 
+      }
+
+      setIsEnhancing(false);
+    }, 800);
+  };
+
+  const handleCopy = (text, boxName) => {
+    if(!text) return;
+    navigator.clipboard.writeText(text);
+    setCopiedBox(boxName);
+    setTimeout(() => setCopiedBox(''), 2500);
+  };
+
+  const handleCopyHistory = (text, index) => {
+    navigator.clipboard.writeText(text);
+    setCopiedHistoryIndex(index);
+    setTimeout(() => setCopiedHistoryIndex(null), 2000);
+  };
+
+  const reviews = data.REVIEWS || ["Bro, these prompts are next level! - Alex M."];
+
+  return (
+    <>
+      <Helmet>
+        <title>AI TOOLS PRO SMART | PROMPT GENERATOR</title>
+        <meta name="description" content="Command center for data control and generating complex AI architectures." />
+      </Helmet>
+
+      <div className="relative w-full h-[85vh] flex items-end overflow-hidden bg-black pt-24 text-white text-left">
+        <MatrixRain />
+        {data.BANNER_DATA.map((item, idx) => (
+          <div key={idx} className={`absolute inset-0 transition-opacity duration-1000 ${idx === activeSlide ? 'opacity-100' : 'opacity-0'}`}>
+            <img src={item.url} className="w-full h-full object-cover mt-12" alt="" onContextMenu={(e) => e.preventDefault()} draggable="false" />
+            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#050505] via-transparent z-10" />
+            <div className="absolute bottom-0 left-0 w-full z-20" style={{ borderTop: '0.1px solid #f97316' }}></div>
+          </div>
+        ))}
+        <button onClick={prevSlide} className="absolute left-6 top-1/2 -translate-y-1/2 z-40 text-white hover:text-orange-500 transition-all duration-300">
+          <ChevronLeft className="w-6 h-6" strokeWidth={3} />
+        </button>
+        <button onClick={nextSlide} className="absolute right-6 top-1/2 -translate-y-1/2 z-40 text-white hover:text-orange-500 transition-all duration-300">
+          <ChevronRight className="w-6 h-6" strokeWidth={3} />
+        </button>
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-1.5 z-30">
+          {data.BANNER_DATA.map((_, i) => (
+            <button key={i} onClick={() => setActiveSlide(i)} className={`h-[1px] transition-all duration-500 rounded-full ${i === activeSlide ? 'w-6 bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)]' : 'w-1.5 bg-white/20 hover:bg-white/40'}`} />
+          ))}
+        </div>
+        <div className="relative z-20 max-w-7xl mx-auto px-6 pb-20 w-full text-left font-sans">
+          <div className="inline-block px-3 py-1 rounded-full bg-orange-600/90 text-[6px] font-black uppercase mb-4 tracking-widest">{data.BANNER_DATA[activeSlide]?.badge || "Featured"}</div>
+          <h1 className="text-xl md:text-3xl font-black uppercase mb-1.5 tracking-tighter drop-shadow-lg hover:tracking-widest transition-all duration-500">{data.BANNER_DATA[activeSlide]?.title}</h1>
+          <p className="text-zinc-300 text-[10px] md:text-xs max-w-lg font-medium opacity-90">{data.BANNER_DATA[activeSlide]?.subtitle}</p>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 mt-12 mb-4 text-left">
+        <div className="bg-[#0a0a0a] border border-orange-500/10 rounded-[2rem] py-2 px-10 flex justify-between items-center shadow-2xl relative overflow-hidden group hover:border-orange-500/20 transition-all">
+           <div className="flex items-center gap-3 relative z-10"><div className="bg-blue-500/10 p-2 rounded-xl border border-blue-500/20 shadow-inner"><Database className="w-3.5 h-3.5 text-blue-400" /></div><span className="text-[9px] font-black uppercase tracking-[0.4em] text-white">Architect</span></div>
+           <div className="flex items-center gap-3 relative z-10"><div className="bg-orange-500/10 p-2 rounded-xl border border-orange-500/20 shadow-inner"><Sparkles className="text-orange-400 w-3.5 h-3.5" /></div><span className="text-[9px] font-black uppercase tracking-[0.4em] text-white">Augment</span></div>
+           <div className="flex items-center gap-3 relative z-10"><div className="bg-blue-500/10 p-2 rounded-xl border border-blue-500/20 shadow-inner"><Terminal className="w-3.5 h-3.5 text-blue-400" /></div><span className="text-[9px] font-black uppercase tracking-[0.4em] text-white">Optimize</span></div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 py-12 text-left">
+        <div id="protocols" className="flex items-center gap-4 mb-10 overflow-hidden text-left"><div className="flex items-center gap-2.5 shrink-0 text-left"><Youtube className="text-red-600 w-4 h-4" /><h3 className="text-white font-black uppercase text-[10px] tracking-widest italic text-left">Latest Intel Protocols</h3></div><div className="h-[1px] w-32 bg-gradient-to-r from-red-600/80 to-transparent"></div></div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24 text-left">
+          {liveVideos.map((vid, i) => (<TutorialCard key={i} vid={vid} />))}
+        </div>
+
+        {/* 10x PROMPT ENHANCER (LEAD MAGNET) */}
+        <div className="mb-24">
+          <div className="bg-[#0a0a0a] border border-orange-500/20 rounded-[2.5rem] p-8 md:p-10 shadow-[0_0_30px_rgba(249,115,22,0.05)] relative overflow-hidden flex flex-col group hover:border-orange-500/40 transition-all">
+             
+             <div className="mb-8 text-left w-full">
+               <div className="flex flex-wrap gap-3 mb-4">
+                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 shadow-[0_0_15px_rgba(249,115,22,0.2)]">
+                     <Zap className="w-3 h-3 text-orange-500 animate-pulse" /> 
+                     <span className="text-[8px] font-black uppercase text-orange-500 tracking-widest">Free Demo • $100/Month Value</span>
+                   </div>
+                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+                     <Sparkles className="w-3 h-3 text-blue-500 animate-pulse" /> 
+                     <span className="text-[8px] font-black uppercase text-blue-500 tracking-widest">Optimized for all AI Image Generators</span>
+                   </div>
+               </div>
+               <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-white mb-2">10x Prompt Enhancer</h2>
+               <div className="text-[10px] md:text-[11px] font-black text-green-500 uppercase tracking-[0.2em] mb-4">
+                 Premium tool worth $100/month. Currently free to use.
+               </div>
+               <p className="text-zinc-400 text-[10px] md:text-xs max-w-2xl leading-relaxed">
+                 Test the matrix architecture. Enter a simple concept, adjust the parameters, and let the engine inject cinematic fidelity instantly. <br/>
+                 <span className="text-orange-500 font-black mt-2 inline-block">SYSTEM NOTE:</span> Due to the neural variance of AI engines, the exact same prompt will generate completely unique, high-end variations every time.
+               </p>
+             </div>
+
+             <div className="flex flex-col lg:flex-row gap-8 w-full items-stretch">
+               
+               {/* KOLONA 1: UNOS I OPCIJE */}
+               <div className="flex-1 w-full lg:max-w-md flex flex-col justify-start space-y-6">
+                 
+                 <div className="w-full">
+                   {/* KORAK 1: CONCEPT */}
+                   <label className="text-[8px] font-black uppercase text-zinc-500 tracking-widest block mb-2.5 ml-2">1. Target Concept / Subject</label>
+                   <div className="relative mb-4">
+                     <input 
+                        type="text" 
+                        value={demoInput} 
+                        onChange={e => setDemoInput(e.target.value)} 
+                        onKeyDown={(e) => e.key === 'Enter' && handleEnhance()} 
+                        placeholder="e.g. 'a red sports car' or 'a medieval warrior'" 
+                        disabled={customerPrompt.length > 0}
+                        className={`w-full bg-black border rounded-xl pl-4 pr-12 py-4 text-white text-[11px] outline-none transition-all shadow-inner ${customerPrompt.length > 0 ? 'border-white/5 opacity-30 cursor-not-allowed' : 'border-white/10 focus:border-blue-500/50'}`} 
+                     />
+                     {demoInput && (
+                       <button 
+                         onClick={() => { setDemoInput(''); setGeneratedPrompts({single:'', abstract:'', cinematic:'', photoreal:'', cctv:''}); setCopiedBox(''); }} 
+                         className="absolute right-3 top-1/2 -translate-y-1/2 bg-red-600/10 p-1.5 rounded-lg group hover:bg-red-600 transition-all"
+                         title="Clear input"
+                       >
+                         <X className="w-4 h-4 text-red-500 group-hover:text-white transition-all" />
+                       </button>
+                     )}
+                   </div>
+
+                   {/* NOVO POLJE: CUSTOMER PROMPT */}
+                   <label className="text-[8px] font-black uppercase text-zinc-500 tracking-widest block mb-2.5 ml-2">Or Paste Your Customer Prompt</label>
+                   <div className="relative mb-4">
+                     <textarea 
+                        value={customerPrompt} 
+                        onChange={e => setCustomerPrompt(e.target.value)} 
+                        placeholder="Paste your existing detailed prompt here..." 
+                        disabled={demoInput.length > 0}
+                        className={`w-full bg-black border rounded-xl p-4 pr-12 text-white text-[11px] outline-none transition-all shadow-inner resize-none min-h-[100px] ${demoInput.length > 0 ? 'border-white/5 opacity-30 cursor-not-allowed' : 'border-white/10 focus:border-blue-500/50'}`} 
+                     />
+                     {customerPrompt && (
+                       <button 
+                         onClick={() => { setCustomerPrompt(''); setGeneratedPrompts({single:'', abstract:'', cinematic:'', photoreal:'', cctv:''}); setCopiedBox(''); }} 
+                         className="absolute right-3 top-3 bg-red-600/10 p-1.5 rounded-lg group hover:bg-red-600 transition-all"
+                         title="Clear input"
+                       >
+                         <X className="w-4 h-4 text-red-500 group-hover:text-white transition-all" />
+                       </button>
+                     )}
+                   </div>
+
+                   {/* ENHANCE DUGME */}
+                   <button onClick={handleEnhance} disabled={isEnhancing || (!demoInput && !customerPrompt)} className="w-full bg-blue-600 hover:bg-blue-500 text-white px-6 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center shadow-[0_0_15px_rgba(37,99,235,0.3)]">
+                     {isEnhancing ? <Loader2 className="w-4 h-4 animate-spin" /> : "Enhance"}
+                   </button>
+                 </div>
+                 
+                 {/* KORACI 2 I 3 */}
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-black/30 p-4 rounded-2xl border border-white/5 mt-auto">
+                    <div>
+                        <label className="text-[8px] font-black uppercase text-zinc-500 tracking-widest block mb-2.5 ml-1">2. Aspect Ratio</label>
+                        <div className="flex flex-wrap gap-2">
+                            {['1:1', '9:16', '16:9', '21:9'].map(ar => (
+                                <button 
+                                  key={ar} 
+                                  onClick={() => setSelectedAR(ar)} 
+                                  className={`px-3.5 py-2 rounded-lg text-[9px] font-black transition-all ${selectedAR === ar ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white'}`}
+                                >
+                                  {ar}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div>
+                        <label className="text-[8px] font-black uppercase text-zinc-500 tracking-widest block mb-2.5 ml-1">3. Render Quality</label>
+                        <div className="flex flex-wrap gap-2">
+                            {['1x', '2x', '4x'].map(q => (
+                                <button 
+                                  key={q} 
+                                  onClick={() => setSelectedQuality(q)} 
+                                  className={`px-4 py-2 rounded-lg text-[9px] font-black transition-all ${selectedQuality === q ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20' : 'bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white'}`}
+                                >
+                                  {q}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                 </div>
+               </div>
+               
+               {/* KOLONA 2: OUTPUT (DINAMIČKI 1 VELIKI ILI 4 MANJA BOKSA) */}
+               <div className="flex-1 w-full flex flex-col h-full relative">
+                 <label className="text-[8px] font-black uppercase text-blue-500 tracking-widest block mb-2.5 ml-2">4. V8 Engine Output</label>
+                 
+                 {/* SCENARIO 1: CUSTOMER PROMPT (JEDAN VELIKI BOX) */}
+                 {customerPrompt.length > 0 || (!demoInput && !customerPrompt) ? (
+                     <div className="w-full bg-black border border-white/5 rounded-2xl p-6 pb-16 relative flex flex-col items-start shadow-inner h-full min-h-[250px]">
+                       {generatedPrompts.single && (
+                           <div className="text-green-500 font-black text-[10px] sm:text-[11px] uppercase tracking-[0.2em] mb-4 border-b border-green-500/20 pb-3 w-full text-left flex items-center gap-2">
+                               <Sparkles className="w-4 h-4 animate-pulse" /> Premium Matrix Output
+                           </div>
+                       )}
+                       <p className={`w-full transition-all duration-500 font-mono text-[10px] md:text-[11px] leading-relaxed text-left ${generatedPrompts.single ? 'text-zinc-200 opacity-100' : 'text-zinc-600 opacity-50 flex-1 flex items-center justify-center italic tracking-widest'}`}>
+                         {generatedPrompts.single || "AWAITING CORE INPUT..."}
+                       </p>
+                       
+                       {generatedPrompts.single && (
+                         <button 
+                            onClick={() => handleCopy(generatedPrompts.single, 'single')} 
+                            className={`absolute bottom-4 right-4 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center gap-2 transition-all ${copiedBox === 'single' ? 'bg-green-600 text-white shadow-[0_0_10px_rgba(22,163,74,0.4)]' : 'bg-white/10 text-white hover:bg-white/20 hover:scale-105'}`}
+                         >
+                           {copiedBox === 'single' ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                           {copiedBox === 'single' ? "Copied! ✓" : "Copy Prompt"}
+                         </button>
+                       )}
+                     </div>
+                 ) : (
+                     /* SCENARIO 2: CONCEPT INPUT (4 MANJA BOXA U 2x2 GRID-u) */
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full h-full">
+                        
+                        {/* BOX 1: ABSTRACT */}
+                        <div className="w-full bg-black border border-white/5 rounded-2xl p-5 pb-14 relative shadow-inner flex flex-col min-h-[160px]">
+                           <label className="text-[9px] font-black uppercase text-purple-500 tracking-widest mb-3 flex items-center gap-2 border-b border-white/5 pb-2">
+                             <Sparkles className="w-3.5 h-3.5" /> Abstract Form
+                           </label>
+                           <p className={`w-full font-mono text-[9px] leading-relaxed text-left flex-1 ${generatedPrompts.abstract ? 'text-zinc-200' : 'text-zinc-600 italic flex items-center justify-center'}`}>
+                             {generatedPrompts.abstract || "AWAITING..."}
+                           </p>
+                           {generatedPrompts.abstract && (
+                             <button onClick={() => handleCopy(generatedPrompts.abstract, 'abstract')} className={`absolute bottom-3 right-3 px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all ${copiedBox === 'abstract' ? 'bg-purple-600 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}>
+                               {copiedBox === 'abstract' ? <CheckCircle2 className="w-3 h-3" /> : <Copy className="w-3 h-3" />} {copiedBox === 'abstract' ? "Copied" : "Copy"}
+                             </button>
+                           )}
+                        </div>
+
+                        {/* BOX 2: CINEMATIC */}
+                        <div className="w-full bg-black border border-white/5 rounded-2xl p-5 pb-14 relative shadow-inner flex flex-col min-h-[160px]">
+                           <label className="text-[9px] font-black uppercase text-orange-500 tracking-widest mb-3 flex items-center gap-2 border-b border-white/5 pb-2">
+                             <Video className="w-3.5 h-3.5" /> Cinematic Form
+                           </label>
+                           <p className={`w-full font-mono text-[9px] leading-relaxed text-left flex-1 ${generatedPrompts.cinematic ? 'text-zinc-200' : 'text-zinc-600 italic flex items-center justify-center'}`}>
+                             {generatedPrompts.cinematic || "AWAITING..."}
+                           </p>
+                           {generatedPrompts.cinematic && (
+                             <button onClick={() => handleCopy(generatedPrompts.cinematic, 'cinematic')} className={`absolute bottom-3 right-3 px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all ${copiedBox === 'cinematic' ? 'bg-orange-600 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}>
+                               {copiedBox === 'cinematic' ? <CheckCircle2 className="w-3 h-3" /> : <Copy className="w-3 h-3" />} {copiedBox === 'cinematic' ? "Copied" : "Copy"}
+                             </button>
+                           )}
+                        </div>
+
+                        {/* BOX 3: PHOTOREALISTIC */}
+                        <div className="w-full bg-black border border-white/5 rounded-2xl p-5 pb-14 relative shadow-inner flex flex-col min-h-[160px]">
+                           <label className="text-[9px] font-black uppercase text-blue-500 tracking-widest mb-3 flex items-center gap-2 border-b border-white/5 pb-2">
+                             <Camera className="w-3.5 h-3.5" /> Photoreal Form
+                           </label>
+                           <p className={`w-full font-mono text-[9px] leading-relaxed text-left flex-1 ${generatedPrompts.photoreal ? 'text-zinc-200' : 'text-zinc-600 italic flex items-center justify-center'}`}>
+                             {generatedPrompts.photoreal || "AWAITING..."}
+                           </p>
+                           {generatedPrompts.photoreal && (
+                             <button onClick={() => handleCopy(generatedPrompts.photoreal, 'photoreal')} className={`absolute bottom-3 right-3 px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all ${copiedBox === 'photoreal' ? 'bg-blue-600 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}>
+                               {copiedBox === 'photoreal' ? <CheckCircle2 className="w-3 h-3" /> : <Copy className="w-3 h-3" />} {copiedBox === 'photoreal' ? "Copied" : "Copy"}
+                             </button>
+                           )}
+                        </div>
+
+                        {/* BOX 4: CCTV CAM */}
+                        <div className="w-full bg-black border border-white/5 rounded-2xl p-5 pb-14 relative shadow-inner flex flex-col min-h-[160px]">
+                           <label className="text-[9px] font-black uppercase text-red-500 tracking-widest mb-3 flex items-center gap-2 border-b border-white/5 pb-2">
+                             <Cctv className="w-3.5 h-3.5" /> CCTV Cam Form
+                           </label>
+                           <p className={`w-full font-mono text-[9px] leading-relaxed text-left flex-1 ${generatedPrompts.cctv ? 'text-zinc-200' : 'text-zinc-600 italic flex items-center justify-center'}`}>
+                             {generatedPrompts.cctv || "AWAITING..."}
+                           </p>
+                           {generatedPrompts.cctv && (
+                             <button onClick={() => handleCopy(generatedPrompts.cctv, 'cctv')} className={`absolute bottom-3 right-3 px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all ${copiedBox === 'cctv' ? 'bg-red-600 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}>
+                               {copiedBox === 'cctv' ? <CheckCircle2 className="w-3 h-3" /> : <Copy className="w-3 h-3" />} {copiedBox === 'cctv' ? "Copied" : "Copy"}
+                             </button>
+                           )}
+                        </div>
+
+                     </div>
+                 )}
+               </div>
+
+             </div>
+
+             {/* SESIJA ISTORIJE */}
+             {promptHistory.length > 0 && (
+                <div className="mt-10 border-t border-white/10 pt-8 animate-fade-in">
+                  <h4 className="text-[9px] font-black uppercase text-zinc-500 mb-4 tracking-widest flex items-center gap-2 ml-2">
+                     <Clock className="w-3.5 h-3.5" /> Session History (Last 3)
+                  </h4>
+                  <div className="space-y-3">
+                    {promptHistory.map((historyItem, idx) => (
+                      <div key={idx} className="bg-black/50 border border-white/5 p-4 rounded-xl flex justify-between items-center group transition-all hover:border-white/10">
+                        <p className="text-[9px] text-zinc-400 font-mono truncate max-w-[85%]">{historyItem}</p>
+                        <button 
+                          onClick={() => handleCopyHistory(historyItem, idx)} 
+                          className={`p-2 rounded-lg transition-all ${copiedHistoryIndex === idx ? 'bg-green-600/20 text-green-500' : 'bg-white/5 text-zinc-400 opacity-0 group-hover:opacity-100 hover:text-white hover:bg-white/10'}`}
+                        >
+                          {copiedHistoryIndex === idx ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+             )}
+          </div>
+        </div>
+
+        <div id="marketplace" className="flex items-center gap-4 mb-10 overflow-hidden text-left"><div className="flex items-center gap-2.5 shrink-0 text-left"><Sparkles className="text-blue-500 w-4 h-4" /><h3 className="text-white font-black uppercase text-[10px] tracking-widest italic text-left">Premium AI Asset Store</h3></div><div className="h-[1px] w-32 bg-gradient-to-r from-blue-500/80 to-transparent"></div></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-32 text-left">
+          {sortedApps.map(app => (<AssetCard key={app.id} app={app} />))}
+        </div>
+      </div>
+
+      <div className="overflow-hidden bg-[#050505] border-y border-white/5 py-5 mb-10 whitespace-nowrap relative flex">
+         <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-[#050505] to-transparent z-10"></div>
+         <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-[#050505] to-transparent z-10"></div>
+         
+         <div className="flex animate-scroll gap-16 w-max px-6">
+            {[...(data.REVIEWS || []), ...(data.REVIEWS || [])].map((r, i) => (
+               <div key={i} className="flex items-center gap-3 text-zinc-500 font-black uppercase text-[9px] tracking-widest">
+                  <span className="text-orange-500 flex gap-0.5">
+                    <StarIcon /><StarIcon /><StarIcon /><StarIcon /><StarIcon />
+                  </span> 
+                  "{r}"
+               </div>
+            ))}
+         </div>
+      </div>
+    </>
+  );
+}
+
 function SingleProductPage({ apps = [] }) {
   const { id } = useParams();
   const app = apps.find(a => a.id === id);
@@ -226,7 +785,7 @@ function SingleProductPage({ apps = [] }) {
   const parts = dbWhopField.includes("[SPLIT]") ? dbWhopField.split("[SPLIT]") : [dbWhopField, ""];
   const mainWhopLink = formatExternalLink(parts[0]);
   const sourceCodeWhopLink = formatExternalLink(parts[1]);
-  const faqList = app.faq && app.faq.length > 0 ? app.faq : DEFAULT_FAQ;
+  const faqList = app.faq && app.faq.length > 0 ? app.faq : (data.DEFAULT_FAQ || DEFAULT_FAQ);
 
   const handleNextMedia = (e) => { e.stopPropagation(); setActiveMedia((prev) => (prev + 1) % (app.media.length)); };
   const handlePrevMedia = (e) => { e.stopPropagation(); setActiveMedia((prev) => (prev - 1 + app.media.length) % app.media.length); };
@@ -237,7 +796,7 @@ function SingleProductPage({ apps = [] }) {
   };
 
   return (
-    <div className="bg-[#050505] pt-32 pb-32 px-6 font-sans text-white text-left relative">
+    <div className="bg-[#050505] pt-10 pb-32 px-6 font-sans text-white text-left relative">
       <Helmet>
         <title>{app.name} | AI TOOLS PRO SMART</title>
         <meta name="description" content={app.headline} />
@@ -322,11 +881,21 @@ function SingleProductPage({ apps = [] }) {
             </div>
           </div>
           
-          <div className="w-full lg:w-[30%] lg:sticky lg:top-32 font-sans animate-fade-in text-left">
+          <div className="w-full lg:w-[30%] lg:sticky lg:top-40 font-sans animate-fade-in text-left">
             <div className="bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl text-left relative">
               <img src={mojBaner} className="w-full h-24 object-cover border-b border-white/5 opacity-90" alt="Banner" onContextMenu={(e) => e.preventDefault()} draggable="false" />
               <div className="p-6 text-center text-left">
-                <div className="flex items-center justify-center gap-2 mb-4 text-left"><Zap className="w-3 h-3 fill-orange-500 text-orange-500" /><span className="text-[9px] font-black uppercase text-orange-500 tracking-[0.3em]">Live Delivery</span></div>
+                
+                <div className="mb-6 bg-red-500/10 border border-red-500/20 p-3 rounded-xl">
+                   <div className="flex justify-between items-center mb-2">
+                     <span className="text-[9px] font-black text-red-500 uppercase tracking-widest flex items-center gap-1.5"><Zap className="w-3 h-3 animate-pulse" /> High Demand</span>
+                     <span className="text-[9px] font-black text-red-400 uppercase">Only 3 left</span>
+                   </div>
+                   <div className="w-full bg-black rounded-full h-1.5">
+                     <div className="bg-gradient-to-r from-red-600 to-orange-500 h-1.5 rounded-full" style={{ width: '85%' }}></div>
+                   </div>
+                </div>
+
                 <div className="space-y-2.5 mb-6 text-left font-black text-left">
                   <div className="group p-3 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between text-left">
                     <div className="text-[9px] text-zinc-500 uppercase tracking-widest text-left">Monthly</div>
@@ -346,7 +915,19 @@ function SingleProductPage({ apps = [] }) {
                     </a>
                   </div>
                   
-                  <div className="mt-6 pt-6 border-t border-white/5 flex flex-col gap-4 text-center text-left">
+                  <div className="mt-4 flex flex-col items-center gap-2 border-t border-white/5 pt-5 pb-2">
+                     <div className="flex items-center gap-1.5 text-zinc-500">
+                       <Lock className="w-3 h-3" />
+                       <span className="text-[8px] font-black uppercase tracking-widest">256-bit Secure Checkout</span>
+                     </div>
+                     <div className="flex gap-2 opacity-50 grayscale mt-1">
+                       <span className="bg-white/10 px-2 py-1 rounded text-[7px] font-black uppercase">Stripe</span>
+                       <span className="bg-white/10 px-2 py-1 rounded text-[7px] font-black uppercase">PayPal</span>
+                       <span className="bg-white/10 px-2 py-1 rounded text-[7px] font-black uppercase">Crypto</span>
+                     </div>
+                  </div>
+
+                  <div className="mt-2 pt-4 border-t border-white/5 flex flex-col gap-4 text-center text-left">
                     <div className="flex flex-col items-center gap-3 text-left">
                       <div className="flex items-center gap-2 text-left"><Award className="w-3.5 h-3.5 text-orange-500" /><span className="text-white font-black text-[8px] md:text-[9px] uppercase tracking-[0.4em]">Developer Pack</span></div>
                       <a href={sourceCodeWhopLink} target="_blank" rel="noreferrer" onClick={(e) => handleLinkClick(e, sourceCodeWhopLink, "SOURCE")} className="w-full py-3.5 rounded-xl flex items-center justify-center border-2 border-blue-500/30 bg-blue-500/5 text-blue-400 font-black text-[8px] uppercase tracking-[0.2em] hover:bg-blue-500 hover:text-white transition-all group shadow-xl">
@@ -374,267 +955,6 @@ function SingleProductPage({ apps = [] }) {
   );
 }
 
-// --- HOME PAGE SA MINI-ALATOM ---
-function HomePage({ apps = [] }) {
-  const [activeSlide, setActiveSlide] = useState(0);
-  const [liveVideos, setLiveVideos] = useState([]);
-  
-  // STATE ZA ENHANCER ALAT
-  const [demoInput, setDemoInput] = useState('');
-  const [demoOutput, setDemoOutput] = useState('');
-  const [isEnhancing, setIsEnhancing] = useState(false);
-  const [selectedAR, setSelectedAR] = useState('16:9');
-  const [selectedQuality, setSelectedQuality] = useState('4x');
-  
-  const location = useLocation();
-
-  const sortedApps = [...apps].reverse();
-
-  useEffect(() => {
-    fetch(VIDEOS_API_URL).then(res => res.json()).then(db => { 
-      if (Array.isArray(db)) { setLiveVideos(db); }
-    });
-  }, []);
-
-  useEffect(() => {
-    if (location.hash === '#marketplace') {
-      setTimeout(() => {
-        const el = document.getElementById('marketplace');
-        if (el) { window.scrollTo({top: el.getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth'}); }
-      }, 100);
-    } else if (!location.hash) { window.scrollTo(0, 0); }
-  }, [location]);
-
-  const nextSlide = useCallback(() => setActiveSlide(s => (s + 1) % data.BANNER_DATA.length), []);
-  const prevSlide = () => setActiveSlide(s => (s - 1 + data.BANNER_DATA.length) % data.BANNER_DATA.length);
-  useEffect(() => { const t = setInterval(nextSlide, 7000); return () => clearInterval(t); }, [nextSlide]);
-
-  const envs = [
-    "in a bustling cyberpunk metropolis with rain-slicked streets and neon reflections", 
-    "standing on an uncharted alien planet with twin moons illuminating a jagged rocky terrain", 
-    "inside a hyper-futuristic minimalist laboratory featuring stark white walls and sterile surfaces", 
-    "surrounded by ancient, overgrown temple ruins deep within a dense, fog-filled mystical jungle", 
-    "in a surreal floating city suspended high above the clouds during a vibrant, explosive sunset", 
-    "parked on a vast, endless salt flat with a perfect mirror reflection of the starry night sky", 
-    "deep underwater inside a glowing, bioluminescent coral reef cavern", 
-    "in the center of a massive futuristic gladiator arena under heavy torrential rain"
-  ];
-  
-  const lights = [
-    "volumetric god rays piercing through thick atmospheric mist", 
-    "cinematic chiaroscuro with deep, rich, consuming shadows", 
-    "harsh cinematic rim lighting perfectly emphasizing the silhouette", 
-    "a soft, ethereal, and magical bioluminescent glow", 
-    "dramatic dual lighting featuring vivid neon pink and electric cyan", 
-    "golden hour sunlight casting long, warm, dramatic shadows", 
-    "clinical and moody overhead fluorescent lighting", 
-    "a mysterious floating orb casting a soft, pulsing blue light"
-  ];
-  
-  const cams = [
-    "shot on ARRI Alexa 65, 35mm lens, f/1.8", 
-    "captured with IMAX 70mm, sweeping panoramic view", 
-    "photographed on Hasselblad medium format, 85mm portrait lens", 
-    "drone aerial shot, wide angle lens, deep depth of field", 
-    "macro photography, 100mm lens, extreme bokeh", 
-    "shot on RED Monstro 8K VV, featuring subtle anamorphic lens flares"
-  ];
-  
-  const colors = [
-    "vivid cinematic color grading", 
-    "classic Hollywood teal and orange color palette", 
-    "muted melancholic tones with high contrast", 
-    "hyper-saturated vibrant colors", 
-    "monochromatic noir aesthetic with a single striking pop of color", 
-    "vintage film stock aesthetic with fine cinematic film grain"
-  ];
-
-  const handleEnhance = () => {
-    if(!demoInput) return;
-    setIsEnhancing(true);
-    setDemoOutput('');
-    
-    setTimeout(() => {
-      const env = envs[Math.floor(Math.random() * envs.length)];
-      const light = lights[Math.floor(Math.random() * lights.length)];
-      const cam = cams[Math.floor(Math.random() * cams.length)];
-      const color = colors[Math.floor(Math.random() * colors.length)];
-      
-      const cleanInput = demoInput.trim();
-      let finalPrompt = "";
-
-      if (selectedQuality === '1x') {
-          finalPrompt = `A high-quality cinematic image of ${cleanInput}, located ${env}. The scene features ${light}. ${cam}, ${color}. --ar ${selectedAR}`;
-      } else if (selectedQuality === '2x') {
-          finalPrompt = `A breathtaking photorealistic render of ${cleanInput}, displaying monumental scale and precise details. Set ${env}. The environment is beautifully illuminated by ${light}. ${cam}, ${color}. Unreal Engine 5 render, 8k resolution, cinematic VFX. --ar ${selectedAR}`;
-      } else {
-          finalPrompt = `A hyper-realistic, award-winning cinematic masterpiece of ${cleanInput}, featuring an unfathomable monumental scale, incredibly intricate and painstakingly detailed. The subject is perfectly placed ${env}. The dramatic atmosphere is defined by ${light}. ${cam}, ${color}. Octane render, full ray tracing, global illumination, subsurface scattering, trending on CGSociety, ultra-maximalist, extremely meticulous detailing, 32k UHD, absolute visual perfection. --ar ${selectedAR}`;
-      }
-
-      setDemoOutput(finalPrompt);
-      setIsEnhancing(false);
-    }, 800);
-  };
-
-  return (
-    <>
-      <Helmet>
-        <title>AI TOOLS PRO SMART | PROMPT GENERATOR</title>
-        <meta name="description" content="Command center for data control and generating complex AI architectures." />
-      </Helmet>
-
-      <div className="relative w-full h-[85vh] flex items-end overflow-hidden bg-black pt-24 text-white text-left">
-        {data.BANNER_DATA.map((item, idx) => (
-          <div key={idx} className={`absolute inset-0 transition-opacity duration-1000 ${idx === activeSlide ? 'opacity-100' : 'opacity-0'}`}>
-            <img src={item.url} className="w-full h-full object-cover mt-12" alt="" onContextMenu={(e) => e.preventDefault()} draggable="false" />
-            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#050505] via-transparent z-10" />
-            <div className="absolute bottom-0 left-0 w-full z-20" style={{ borderTop: '0.1px solid #f97316' }}></div>
-          </div>
-        ))}
-        <button onClick={prevSlide} className="absolute left-6 top-1/2 -translate-y-1/2 z-40 text-white hover:text-orange-500 transition-all duration-300">
-          <ChevronLeft className="w-6 h-6" strokeWidth={3} />
-        </button>
-        <button onClick={nextSlide} className="absolute right-6 top-1/2 -translate-y-1/2 z-40 text-white hover:text-orange-500 transition-all duration-300">
-          <ChevronRight className="w-6 h-6" strokeWidth={3} />
-        </button>
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-1.5 z-30">
-          {data.BANNER_DATA.map((_, i) => (
-            <button key={i} onClick={() => setActiveSlide(i)} className={`h-[1px] transition-all duration-500 rounded-full ${i === activeSlide ? 'w-6 bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)]' : 'w-1.5 bg-white/20 hover:bg-white/40'}`} />
-          ))}
-        </div>
-        <div className="relative z-20 max-w-7xl mx-auto px-6 pb-20 w-full text-left font-sans">
-          <div className="inline-block px-3 py-1 rounded-full bg-orange-600/90 text-[6px] font-black uppercase mb-4 tracking-widest">{data.BANNER_DATA[activeSlide]?.badge || "Featured"}</div>
-          <h1 className="text-xl md:text-3xl font-black uppercase mb-1.5 tracking-tighter drop-shadow-lg">{data.BANNER_DATA[activeSlide]?.title}</h1>
-          <p className="text-zinc-300 text-[10px] md:text-xs max-w-lg font-medium opacity-90">{data.BANNER_DATA[activeSlide]?.subtitle}</p>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6 mt-12 mb-4 text-left">
-        <div className="bg-[#0a0a0a] border border-orange-500/10 rounded-[2rem] py-2 px-10 flex justify-between items-center shadow-2xl relative overflow-hidden group hover:border-orange-500/20 transition-all">
-           <div className="flex items-center gap-3 relative z-10"><div className="bg-blue-500/10 p-2 rounded-xl border border-blue-500/20 shadow-inner"><Database className="w-3.5 h-3.5 text-blue-400" /></div><span className="text-[9px] font-black uppercase tracking-[0.4em] text-white">Architect</span></div>
-           <div className="flex items-center gap-3 relative z-10"><div className="bg-orange-500/10 p-2 rounded-xl border border-orange-500/20 shadow-inner"><Sparkles className="text-orange-400 w-3.5 h-3.5" /></div><span className="text-[9px] font-black uppercase tracking-[0.4em] text-white">Augment</span></div>
-           <div className="flex items-center gap-3 relative z-10"><div className="bg-blue-500/10 p-2 rounded-xl border border-blue-500/20 shadow-inner"><Terminal className="w-3.5 h-3.5 text-blue-400" /></div><span className="text-[9px] font-black uppercase tracking-[0.4em] text-white">Optimize</span></div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6 py-12 text-left">
-        <div id="protocols" className="flex items-center gap-4 mb-10 overflow-hidden text-left"><div className="flex items-center gap-2.5 shrink-0 text-left"><Youtube className="text-red-600 w-4 h-4" /><h3 className="text-white font-black uppercase text-[10px] tracking-widest italic text-left">Latest Intel Protocols</h3></div><div className="h-[1px] w-32 bg-gradient-to-r from-red-600/80 to-transparent"></div></div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24 text-left">
-          {liveVideos.map((vid, i) => (<TutorialCard key={i} vid={vid} />))}
-        </div>
-
-        {/* 10x PROMPT ENHANCER (LEAD MAGNET) */}
-        <div className="mb-24">
-          <div className="bg-[#0a0a0a] border border-orange-500/20 rounded-[2.5rem] p-8 md:p-10 shadow-[0_0_30px_rgba(249,115,22,0.05)] relative overflow-hidden flex flex-col group hover:border-orange-500/40 transition-all">
-             
-             {/* SEKCIJA SA NASLOVOM I MARKETINŠKOM PORUKOM */}
-             <div className="mb-8 text-left w-full">
-               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 mb-4 shadow-[0_0_15px_rgba(249,115,22,0.2)]">
-                 <Zap className="w-3 h-3 text-orange-500 animate-pulse" /> 
-                 <span className="text-[8px] font-black uppercase text-orange-500 tracking-widest">Free Demo • $50/Month Value</span>
-               </div>
-               <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-white mb-2">10x Prompt Enhancer</h2>
-               <div className="text-[10px] md:text-[11px] font-black text-green-500 uppercase tracking-[0.2em] mb-4">
-                 Premium tool worth $50/month. Currently free to use.
-               </div>
-               <p className="text-zinc-400 text-[10px] md:text-xs max-w-2xl">Test the matrix architecture. Enter a simple concept, adjust the parameters, and let the engine inject cinematic fidelity instantly.</p>
-             </div>
-
-             {/* SEKCIJA SA PORAVNATIM INPUTOM I BOX-OM ZA REZULTAT */}
-             <div className="flex flex-col md:flex-row gap-8 w-full items-stretch">
-               
-               {/* Levo: Input polje i Dugmići */}
-               <div className="flex-1 w-full flex flex-col justify-between space-y-6">
-                 {/* Input Row */}
-                 <div className="flex flex-col sm:flex-row gap-3 relative">
-                   <div className="relative flex-1">
-                     <input 
-                        type="text" 
-                        value={demoInput} 
-                        onChange={e => setDemoInput(e.target.value)} 
-                        onKeyDown={(e) => e.key === 'Enter' && handleEnhance()} 
-                        placeholder="e.g. 'a red sports car' or 'a medieval warrior'" 
-                        className="w-full bg-black border border-white/10 rounded-xl pl-4 pr-12 py-4 text-white text-[11px] outline-none focus:border-blue-500/50 transition-all" 
-                     />
-                     {/* CRVENI X KRSTIĆ ZA BRISANJE */}
-                     {demoInput && (
-                       <button 
-                         onClick={() => { setDemoInput(''); setDemoOutput(''); }} 
-                         className="absolute right-3 top-1/2 -translate-y-1/2 bg-red-600/10 p-1.5 rounded-lg group hover:bg-red-600 transition-all"
-                         title="Clear input"
-                       >
-                         <X className="w-4 h-4 text-red-500 group-hover:text-white transition-all" />
-                       </button>
-                     )}
-                   </div>
-                   <button onClick={handleEnhance} disabled={isEnhancing || !demoInput} className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center min-w-[120px] shadow-[0_0_15px_rgba(37,99,235,0.3)]">
-                     {isEnhancing ? <Loader2 className="w-4 h-4 animate-spin" /> : "Enhance"}
-                   </button>
-                 </div>
-                 
-                 {/* Options Rows */}
-                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-black/30 p-4 rounded-2xl border border-white/5">
-                    {/* AR Selector */}
-                    <div>
-                        <label className="text-[8px] font-black uppercase text-zinc-500 tracking-widest block mb-2.5">Aspect Ratio</label>
-                        <div className="flex flex-wrap gap-2">
-                            {['1:1', '9:16', '16:9', '21:9'].map(ar => (
-                                <button 
-                                  key={ar} 
-                                  onClick={() => setSelectedAR(ar)} 
-                                  className={`px-3.5 py-2 rounded-lg text-[9px] font-black transition-all ${selectedAR === ar ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white'}`}
-                                >
-                                  {ar}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                    {/* Quality Selector */}
-                    <div>
-                        <label className="text-[8px] font-black uppercase text-zinc-500 tracking-widest block mb-2.5">Render Quality</label>
-                        <div className="flex flex-wrap gap-2">
-                            {['1x', '2x', '4x'].map(q => (
-                                <button 
-                                  key={q} 
-                                  onClick={() => setSelectedQuality(q)} 
-                                  className={`px-4 py-2 rounded-lg text-[9px] font-black transition-all ${selectedQuality === q ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20' : 'bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white'}`}
-                                >
-                                  {q}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                 </div>
-               </div>
-               
-               {/* Desno: Box sa Generisanim Promptom */}
-               <div className="flex-1 w-full flex flex-col h-full">
-                 <div className="w-full bg-black border border-white/5 rounded-2xl p-6 relative flex flex-col items-start shadow-inner h-full min-h-[180px]">
-                   {demoOutput && (
-                       <div className="text-green-500 font-black text-[10px] sm:text-[11px] uppercase tracking-[0.2em] mb-4 border-b border-green-500/20 pb-3 w-full text-left flex items-center gap-2">
-                           <Sparkles className="w-4 h-4 animate-pulse" /> Premium Matrix Output Generated
-                       </div>
-                   )}
-                   <p className={`w-full transition-all duration-500 font-mono text-[10px] md:text-[11px] leading-relaxed text-left ${demoOutput ? 'text-zinc-200 opacity-100' : 'text-zinc-600 opacity-50 flex-1 flex items-center justify-center italic tracking-widest'}`}>
-                     {demoOutput || "AWAITING CORE INPUT..."}
-                   </p>
-                 </div>
-               </div>
-
-             </div>
-          </div>
-        </div>
-
-        <div id="marketplace" className="flex items-center gap-4 mb-10 overflow-hidden text-left"><div className="flex items-center gap-2.5 shrink-0 text-left"><Sparkles className="text-blue-500 w-4 h-4" /><h3 className="text-white font-black uppercase text-[10px] tracking-widest italic text-left">Premium AI Asset Store</h3></div><div className="h-[1px] w-32 bg-gradient-to-r from-blue-500/80 to-transparent"></div></div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-32 text-left">
-          {sortedApps.map(app => (<AssetCard key={app.id} app={app} />))}
-        </div>
-      </div>
-    </>
-  );
-}
-
-// --- ADVANCED INTELLIGENCE DASHBOARD ---
 function IntelligenceDashboard() {
   const [stats, setStats] = useState({ 
     totalViews: 0, uniqueVisitors: 0, whopClicks: 0, videoInteractions: 0, 
@@ -767,7 +1087,6 @@ function IntelligenceDashboard() {
   );
 }
 
-// --- ADMIN PAGE ---
 function AdminPage({ apps = [], refreshData }) {
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -786,26 +1105,15 @@ function AdminPage({ apps = [], refreshData }) {
 
   const handleLogin = async (e) => { 
     e.preventDefault(); 
-    try {
-        const res = await fetch(`${BASE_BACKEND_URL}/api/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ password: password })
-        });
-        if (res.ok) {
-            const data = await res.json();
-            localStorage.setItem('admin_token', data.access_token);
-            setIsAuthenticated(true); 
-            trackEvent("admin_login_success"); 
-        } else {
-            alert("ACCESS DENIED"); 
-            trackEvent("admin_login_failed"); 
-        }
-    } catch (err) { alert("Network Error"); }
+    if(password === "Goran123") {
+        setIsAuthenticated(true); 
+    } else {
+        alert("ACCESS DENIED"); 
+    }
   }; 
 
   const handleEditClick = (app) => { 
-    let loadedFaq = (app.faq || []).map(item => ({ q: item.question || '', a: item.answer || '' })); 
+    let loadedFaq = (app.faq || []).map(item => ({ q: item.question || item.q || '', a: item.answer || item.a || '' })); 
     if (loadedFaq.length < 7) loadedFaq = [...loadedFaq, ...Array.from({ length: 7 - loadedFaq.length }, () => ({ q: '', a: '' }))]; 
     const dbWhopField = app.whopLink || ""; 
     const parts = dbWhopField.includes("[SPLIT]") ? dbWhopField.split("[SPLIT]") : [dbWhopField, ""];
@@ -820,11 +1128,11 @@ function AdminPage({ apps = [], refreshData }) {
     try { 
       const res = await fetch(editingId ? `${API_URL}/${editingId}` : API_URL, { 
         method: editingId ? 'PUT' : 'POST', 
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('admin_token')}` }, 
+        headers: { 'Content-Type': 'application/json' }, 
         body: JSON.stringify(payload) 
       }); 
       if (res.ok) { setFormData(initialForm); setEditingId(null); refreshData(); alert('PROTOCOL SAVED.'); } 
-      else { alert("Neuspelo! Možda ti je istekao login token."); }
+      else { alert("Neuspelo! Proveri vezu."); }
     } catch (err) { alert("Network Error"); } 
   }; 
 
@@ -860,7 +1168,7 @@ function AdminPage({ apps = [], refreshData }) {
   );
 
   return (
-    <div className="pt-32 pb-24 px-6 max-w-7xl mx-auto font-sans text-left text-white">
+    <div className="pt-10 pb-24 px-6 max-w-7xl mx-auto font-sans text-left text-white">
       <div className="flex gap-4 mb-10 overflow-hidden">
         <button onClick={() => setTab('intelligence')} className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase transition-all ${tab === 'intelligence' ? 'bg-orange-600 text-white shadow-xl' : 'bg-white/5 text-zinc-500'}`}>Intelligence</button>
         <button onClick={() => setTab('system')} className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase transition-all ${tab === 'system' ? 'bg-blue-600 text-white shadow-xl' : 'bg-white/5 text-zinc-500'}`}>System Registry</button>
@@ -870,7 +1178,7 @@ function AdminPage({ apps = [], refreshData }) {
         <div className="animate-fade-in space-y-8">
            <div className="bg-[#0a0a0a] border border-orange-500/20 p-6 rounded-[2.5rem] mb-8 flex items-center gap-6 shadow-xl">
              <Youtube className="w-5 h-5 text-orange-500 shrink-0" />
-             <form onSubmit={async (e) => { e.preventDefault(); await fetch(`${HIDDEN_VIDEOS_API_URL}/${videoToHide}`, {method:'POST', headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_token')}` }}); setVideoToHide(''); alert('Hidden'); }} className="flex-1 flex gap-3">
+             <form onSubmit={async (e) => { e.preventDefault(); await fetch(`${HIDDEN_VIDEOS_API_URL}/${videoToHide}`, {method:'POST'}); setVideoToHide(''); alert('Hidden'); }} className="flex-1 flex gap-3">
                <input type="text" value={videoToHide} onChange={e => setVideoToHide(e.target.value)} placeholder="GHOST VIDEO ID..." className="bg-black border border-white/10 p-3.5 rounded-xl text-white text-[10px] flex-1 outline-none font-mono" />
                <button className="bg-orange-600 px-6 py-3.5 rounded-xl text-white font-black text-[9px] uppercase shadow-lg">Kill Feed</button>
              </form>
@@ -938,7 +1246,7 @@ function AdminPage({ apps = [], refreshData }) {
                       </div>
                       <div className="flex gap-2">
                         <button onClick={() => handleEditClick(app)} className="p-2 bg-white/5 rounded-lg hover:bg-blue-600"><Edit className="w-3.5 h-3.5" /></button>
-                        <button onClick={async () => { if(window.confirm('Delete?')) { await fetch(`${API_URL}/${app.id}`, {method: 'DELETE', headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_token')}` }}); refreshData(); } }} className="p-2 bg-white/5 rounded-lg hover:bg-red-600"><Trash2 className="w-3.5 h-3.5" /></button>
+                        <button onClick={async () => { if(window.confirm('Delete?')) { await fetch(`${API_URL}/${app.id}`, {method: 'DELETE'}); refreshData(); } }} className="p-2 bg-white/5 rounded-lg hover:bg-red-600"><Trash2 className="w-3.5 h-3.5" /></button>
                       </div>
                     </div>
                   ))}
@@ -951,71 +1259,168 @@ function AdminPage({ apps = [], refreshData }) {
   );
 }
 
-// --- KOMPONENTA ZA LIVE NOTIFIKACIJE O KUPOVINI ---
-const SALES_NAMES = ["Michael T.", "David K.", "Sarah L.", "James W.", "Elena R.", "Alex M.", "Chris P.", "Tom H."];
-const SALES_COUNTRIES = ["USA", "UK", "Canada", "Germany", "Australia", "France", "Sweden", "Brazil"];
-
-function LiveSalesNotification({ apps }) {
-  const [notification, setNotification] = useState(null);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    if(!apps || apps.length === 0) return;
-    const interval = setInterval(() => {
-       const randomName = SALES_NAMES[Math.floor(Math.random() * SALES_NAMES.length)];
-       const randomCountry = SALES_COUNTRIES[Math.floor(Math.random() * SALES_COUNTRIES.length)];
-       const randomApp = apps[Math.floor(Math.random() * apps.length)].name;
-       
-       setNotification({ name: randomName, country: randomCountry, product: randomApp });
-       setIsVisible(true);
-       
-       setTimeout(() => {
-          setIsVisible(false);
-       }, 5000); 
-    }, 28000); 
-    
-    return () => clearInterval(interval);
-  }, [apps]);
-
-  return (
-    <div className={`fixed bottom-6 left-6 z-[200] bg-[#0a0a0a]/95 backdrop-blur-md border border-white/10 p-4 rounded-2xl shadow-2xl flex items-center gap-4 transition-all duration-700 transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'}`}>
-      <div className="bg-green-500/20 p-2.5 rounded-full border border-green-500/30">
-        <Check className="text-green-500 w-4 h-4"/>
-      </div>
-      <div>
-        <p className="text-[9px] text-zinc-400 font-bold mb-0.5">{notification?.name} from {notification?.country} just bought</p>
-        <p className="text-[11px] font-black text-white">{notification?.product}</p>
-      </div>
-    </div>
-  );
-}
-
-// --- MAIN CONTENT WRAPPER ---
-function AppContent() {
-  const [appsData, setAppsData] = useState([]);
+// --- MAIN WRAPPER COMPONENT ---
+function AppContent({ appsData, refreshData }) {
+  const [isBooting, setIsBooting] = useState(true);
+  const [secretFound, setSecretFound] = useState(false);
+  const [showExitIntent, setShowExitIntent] = useState(false);
+  const [isShaking, setIsShaking] = useState(false);
+  const [visitors, setVisitors] = useState(42);
   const location = useLocation();
 
-  const refreshData = useCallback(() => { fetch(API_URL).then(res => res.json()).then(db => setAppsData(db)).catch(() => setAppsData([])); }, []);
+  const handleBootComplete = useCallback(() => {
+    setIsBooting(false);
+  }, []);
 
-  useEffect(() => { refreshData(); }, [refreshData]);
   useEffect(() => { trackEvent("page_view", { path: location.pathname + location.hash }); }, [location]);
 
+  useEffect(() => {
+    let keystrokes = '';
+    const handleKeyDown = (e) => {
+      if(e.key.length === 1) { 
+          keystrokes += e.key.toUpperCase();
+          if (keystrokes.length > 10) keystrokes = keystrokes.slice(-10);
+          if (keystrokes.includes('MATRIX') || keystrokes.includes('NEO')) {
+            setIsShaking(true);
+            setTimeout(() => {
+                setSecretFound(true);
+                setIsShaking(false);
+            }, 800);
+            keystrokes = '';
+          }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    const handleMouseLeave = (e) => {
+      if (e.clientY <= 10 && !sessionStorage.getItem('exitIntentShown')) {
+        setShowExitIntent(true);
+        sessionStorage.setItem('exitIntentShown', 'true');
+      }
+    };
+    document.addEventListener('mouseleave', handleMouseLeave);
+    return () => document.removeEventListener('mouseleave', handleMouseLeave);
+  }, []);
+
+  const [statusIdx, setStatusIdx] = useState(0);
+
+  useEffect(() => {
+    const STATUSES = data.STATUSES || ["MATRIX: ONLINE", "V8 ENGINE: OPTIMAL", "SECURE CONNECTION"];
+    const t1 = setInterval(() => setStatusIdx(prev => (prev + 1) % STATUSES.length), 3500);
+    const t2 = setInterval(() => {
+      setVisitors(prev => {
+        let newVal = prev + (Math.floor(Math.random() * 5) - 2);
+        if (newVal < 35) newVal = 35;
+        if (newVal > 85) newVal = 85;
+        return newVal;
+      });
+    }, 4500);
+    return () => { clearInterval(t1); clearInterval(t2); };
+  }, []);
+
   return (
-    <div className="min-h-screen bg-[#050505] text-zinc-100 flex flex-col font-sans text-left relative pb-20 lg:pb-0">
-      <nav className="fixed top-0 left-0 w-full px-10 py-3 z-[100] bg-[#050505]/80 backdrop-blur-xl" style={{ borderBottom: '0.1px solid #f97316' }}>
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <Link to="/" className="flex items-center gap-6 group">
-            <img src={data.logoUrl} className="h-10 md:h-12 object-contain transition-transform group-hover:scale-105 animate-pulse" alt="logo" />
-            <span className="text-[9px] font-black uppercase tracking-[0.4em] hidden sm:block"><span className="text-blue-500">AI TOOLS</span> <span className="text-orange-500">PRO SMART</span></span>
-          </Link>
-          <div className="flex items-center gap-10 font-black uppercase text-[10px] tracking-widest">
-            <Link to="/#marketplace" className="bg-blue-600 px-6 py-2 rounded-full text-white shadow-xl hover:bg-blue-500 transition-all">Marketplace</Link>
-            <Link to="/admin" className="bg-orange-600 px-6 py-2 rounded-full text-white shadow-xl hover:bg-orange-500 transition-all">Admin</Link>
-          </div>
-        </div>
-      </nav>
+    <div className={`min-h-screen bg-[#050505] text-zinc-100 flex flex-col font-sans text-left relative pb-20 lg:pb-0 ${isShaking ? 'animate-shake' : ''}`}>
       
-      <div className="flex-1">
+      <style>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+          20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .animate-shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes scroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-scroll { animation: scroll 35s linear infinite; }
+      `}</style>
+
+      {isBooting && <FullScreenBoot onComplete={handleBootComplete} />}
+
+      {/* FIKSNI HEADER */}
+      <div className="fixed top-0 left-0 w-full z-[1000]">
+        <UrgencyBar />
+        <nav className="w-full px-6 md:px-10 py-3 bg-[#050505]/80 backdrop-blur-xl border-b border-orange-500/20 shadow-lg">
+          <div className="max-w-7xl mx-auto flex justify-between items-center">
+            <div className="flex items-center gap-6">
+              <Link to="/" className="flex items-center gap-4 md:gap-6 group">
+                <img src={data.logoUrl} className="h-9 md:h-12 object-contain transition-transform group-hover:scale-105 animate-pulse" alt="logo" />
+                <span className="text-[9px] font-black uppercase tracking-[0.4em] hidden sm:block"><span className="text-blue-500">AI TOOLS</span> <span className="text-orange-500">PRO SMART</span></span>
+              </Link>
+              
+              <div className="hidden lg:flex items-center gap-4 border border-white/5 bg-white/[0.02] px-4 py-1.5 rounded-full ml-4">
+                <div className="flex items-center gap-2 border-r border-white/10 pr-4">
+                   <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.8)]"></div>
+                   <span className="text-[7px] text-green-500 font-black uppercase tracking-widest w-24 text-left">{data.STATUSES?.[statusIdx] || "ONLINE"}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                   <Users className="w-3 h-3 text-blue-500" />
+                   <span className="text-[8px] text-blue-400 font-black uppercase tracking-widest">{visitors} Agents Active</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 md:gap-10 font-black uppercase text-[9px] md:text-[10px] tracking-widest">
+              <Link to="/#marketplace" className="bg-blue-600 px-4 md:px-6 py-2 rounded-full text-white shadow-xl hover:bg-blue-500 transition-all">Marketplace</Link>
+              <Link to="/admin" className="bg-orange-600 px-4 md:px-6 py-2 rounded-full text-white shadow-xl hover:bg-orange-500 transition-all">Admin</Link>
+            </div>
+          </div>
+        </nav>
+      </div>
+
+      {secretFound && (
+          <div className="fixed inset-0 z-[6000] bg-black/95 flex items-center justify-center p-4 animate-fade-in">
+             <div className="bg-[#050505] border border-green-500 p-8 rounded-3xl shadow-[0_0_50px_rgba(34,197,94,0.2)] max-w-md w-full text-center relative overflow-hidden">
+                <button onClick={() => setSecretFound(false)} className="absolute top-4 right-4 text-green-500 hover:text-white z-10"><X className="w-5 h-5"/></button>
+                <Sparkles className="w-12 h-12 text-green-500 mx-auto mb-4 animate-pulse relative z-10" />
+                <h2 className="text-2xl font-black text-green-500 uppercase tracking-tighter mb-2 relative z-10">Anomaly Detected</h2>
+                <p className="text-[11px] text-zinc-300 mb-6 leading-relaxed relative z-10">You have found the hidden protocol. The Architect rewards your curiosity.</p>
+                
+                <div className="bg-green-500/10 border border-green-500/30 p-4 rounded-xl mb-6 relative z-10">
+                   <span className="block text-[8px] text-green-400 uppercase tracking-widest mb-1">Your Secret Discount Code:</span>
+                   <span className="text-xl font-black text-white tracking-[0.2em] font-mono select-all">GLITCH20</span>
+                </div>
+
+                <button onClick={() => setSecretFound(false)} className="relative z-10 w-full bg-green-600 hover:bg-green-500 text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl">Acknowledge</button>
+             </div>
+          </div>
+      )}
+
+      {showExitIntent && (
+          <div className="fixed inset-0 z-[6000] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+             <div className="bg-[#0a0a0a] border border-red-500/50 p-8 rounded-3xl shadow-[0_0_50px_rgba(239,68,68,0.2)] max-w-md w-full text-center relative">
+                <button onClick={() => setShowExitIntent(false)} className="absolute top-4 right-4 text-zinc-500 hover:text-white"><X className="w-5 h-5"/></button>
+                <div className="mx-auto w-16 h-16 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center mb-6">
+                   <span className="text-red-500 font-black text-2xl animate-pulse">!</span>
+                </div>
+                <h2 className="text-2xl font-black text-white uppercase tracking-tighter mb-2">Wait. Don't Disconnect.</h2>
+                <p className="text-[11px] text-zinc-400 mb-8 leading-relaxed">The Matrix is vast. If you leave now, you might never find this node again. Secure your Developer Pack before the anomaly closes.</p>
+                <div className="space-y-3">
+                   <button onClick={() => setShowExitIntent(false)} className="w-full bg-red-600 hover:bg-red-500 text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl">Stay in the Matrix</button>
+                   <button onClick={() => setShowExitIntent(false)} className="w-full bg-transparent text-zinc-600 hover:text-white py-3 font-black text-[8px] uppercase tracking-widest transition-all">Disconnect</button>
+                </div>
+             </div>
+          </div>
+      )}
+
+      {/* MATRIX SECURITY BADGE */}
+      <div className="fixed bottom-6 right-6 z-[200] group">
+         <div className="bg-blue-600/20 backdrop-blur-md p-3 rounded-full border border-blue-500/30 shadow-[0_0_20px_rgba(59,130,246,0.3)] animate-pulse cursor-help">
+            <Shield className="text-blue-500 w-5 h-5" />
+         </div>
+         <div className="absolute bottom-full right-0 mb-4 opacity-0 group-hover:opacity-100 transition-all pointer-events-none w-48">
+            <div className="bg-[#0a0a0a] border border-blue-500/30 p-3 rounded-xl shadow-2xl">
+               <p className="text-[8px] font-black text-white uppercase tracking-widest mb-1">Matrix Secure Hub</p>
+               <p className="text-[7px] text-zinc-400 leading-tight uppercase">Encrypted Data Transfer Active. Secure Stripe Gateway Connection.</p>
+            </div>
+         </div>
+      </div>
+      
+      {/* PADDING TOP ZBOG FIKSNOG HEADERA */}
+      <div className="flex-1 pt-28">
         <Routes>
           <Route path="/" element={<HomePage apps={appsData} />} />
           <Route path="/app/:id" element={<SingleProductPage apps={appsData} />} />
@@ -1023,7 +1428,52 @@ function AppContent() {
         </Routes>
       </div>
 
-      <footer className="w-full py-4 border-t border-white/5 bg-[#050505] text-center text-zinc-600 font-bold italic uppercase text-[9px] tracking-[0.5em]">© 2026 AI TOOLS PRO SMART - ALL RIGHTS RESERVED</footer>
+      {/* NOVI OPTIMIZOVANI FOOTER SA DRUSTVENIM MREZAMA */}
+      <div className="w-full bg-[#050505] border-t border-white/5 pt-10 pb-6 flex flex-col items-center justify-center relative z-20">
+        
+        <div className="flex items-center gap-6 mb-6">
+          {/* X (Twitter) Logo */}
+          <a href="#" className="text-white hover:scale-110 hover:opacity-80 transition-all">
+            <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 22.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+          </a>
+          
+          {/* YouTube Logo */}
+          <a href="#" className="text-[#FF0000] hover:scale-110 hover:opacity-80 transition-all">
+            <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+            </svg>
+          </a>
+          
+          {/* Instagram Logo */}
+          <a href="#" className="hover:scale-110 hover:opacity-80 transition-all">
+            <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+              <defs>
+                <linearGradient id="ig-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#f09433" />
+                  <stop offset="25%" stopColor="#e6683c" />
+                  <stop offset="50%" stopColor="#dc2743" />
+                  <stop offset="75%" stopColor="#cc2366" />
+                  <stop offset="100%" stopColor="#bc1888" />
+                </linearGradient>
+              </defs>
+              <path fill="url(#ig-grad)" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+          </svg>
+        </a>
+        
+        {/* TikTok Logo */}
+        <a href="#" className="text-white hover:scale-110 hover:opacity-80 transition-all" style={{ filter: "drop-shadow(1.5px 1.5px 0px #fe0979) drop-shadow(-1.5px -1.5px 0px #00f2fe)" }}>
+          <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+            <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93v7.2c0 1.95-.53 3.92-1.59 5.51-1.48 2.22-3.8 3.56-6.42 3.65-2.6.09-5.18-.9-6.99-2.75-1.68-1.71-2.58-4.08-2.45-6.48.11-2.14 1.05-4.18 2.62-5.63 1.54-1.43 3.63-2.17 5.74-2.15v4.01c-1.39-.01-2.8.46-3.84 1.39-1.07.95-1.63 2.4-1.53 3.86.11 1.46.9 2.8 2.09 3.64 1.34 1.01 3.19 1.25 4.8.72 1.5-.49 2.63-1.68 3.12-3.15.19-.57.26-1.17.26-1.77V.02h4.11z"/>
+          </svg>
+        </a>
+      </div>
+
+      <footer className="text-center text-zinc-600 font-bold italic uppercase text-[9px] tracking-[0.5em]">
+        © 2026 <span className="text-blue-500">AI TOOLS</span> <span className="text-orange-500">PRO SMART</span> - ALL RIGHTS RESERVED
+      </footer>
+    </div>
 
       <LiveSalesNotification apps={appsData} />
     </div>
@@ -1031,7 +1481,15 @@ function AppContent() {
 }
 
 export default function App() { 
+  const [appsData, setAppsData] = useState([]);
+  
+  const refreshData = useCallback(() => { 
+      fetch(API_URL).then(res => res.json()).then(db => setAppsData(db)).catch(() => setAppsData([])); 
+  }, []);
+
+  useEffect(() => { refreshData(); }, [refreshData]);
+
   return ( 
-    <HelmetProvider><Router><AppContent /></Router></HelmetProvider>
+    <HelmetProvider><Router><AppContent appsData={appsData} refreshData={refreshData} /></Router></HelmetProvider>
   ); 
 }
