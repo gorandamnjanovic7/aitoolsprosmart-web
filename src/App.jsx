@@ -17,7 +17,7 @@ import { collection, addDoc, serverTimestamp, getDocs, query, orderBy, limit } f
 import * as data from './data';
 import mojBaner from './moj-baner.png'; 
 
-// --- KONFIGURACIJA LINKOVA (SADA NA INTERNETU) ---
+// --- KONFIGURACIJA LINKOVA ---
 const BASE_BACKEND_URL = "https://aitoolsprosmart-becend-production.up.railway.app"; 
 
 const API_URL = `${BASE_BACKEND_URL}/api/products`;
@@ -132,7 +132,6 @@ function TutorialCard({ vid }) {
   );
 }
 
-// --- ASSET CARD SA TRAKOM KOJU TI KONTROLIŠEŠ ---
 function AssetCard({ app }) {
   const mediaItem = app?.media?.[0];
   const isVideo = mediaItem?.type === 'video' || mediaItem?.url?.match(/\.(mp4|webm|ogg|mov)$/i);
@@ -238,7 +237,7 @@ function SingleProductPage({ apps = [] }) {
   };
 
   return (
-    <div className="bg-[#050505] pt-32 pb-24 px-6 font-sans text-white text-left">
+    <div className="bg-[#050505] pt-32 pb-32 px-6 font-sans text-white text-left relative">
       <Helmet>
         <title>{app.name} | AI TOOLS PRO SMART</title>
         <meta name="description" content={app.headline} />
@@ -250,6 +249,7 @@ function SingleProductPage({ apps = [] }) {
           <img src={fullScreenImage} className="max-w-full max-h-full object-contain shadow-2xl" alt="" onContextMenu={(e) => e.preventDefault()} draggable="false" />
         </div>
       )}
+      
       <div className="max-w-7xl mx-auto relative text-left">
         <button onClick={() => navigate('/')} className="text-zinc-400 hover:text-white flex items-center gap-2 mb-10 uppercase text-[10px] font-black tracking-widest transition-all">
           <ChevronLeft className="w-4 h-4" strokeWidth={3} /> <span>System Registry</span>
@@ -323,7 +323,7 @@ function SingleProductPage({ apps = [] }) {
           </div>
           
           <div className="w-full lg:w-[30%] lg:sticky lg:top-32 font-sans animate-fade-in text-left">
-            <div className="bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl text-left">
+            <div className="bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl text-left relative">
               <img src={mojBaner} className="w-full h-24 object-cover border-b border-white/5 opacity-90" alt="Banner" onContextMenu={(e) => e.preventDefault()} draggable="false" />
               <div className="p-6 text-center text-left">
                 <div className="flex items-center justify-center gap-2 mb-4 text-left"><Zap className="w-3 h-3 fill-orange-500 text-orange-500" /><span className="text-[9px] font-black uppercase text-orange-500 tracking-[0.3em]">Live Delivery</span></div>
@@ -339,7 +339,13 @@ function SingleProductPage({ apps = [] }) {
                   </div>
                 </div>
                 <div className="space-y-4 text-left">
-                  <a href={mainWhopLink} target="_blank" rel="noreferrer" onClick={(e) => handleLinkClick(e, mainWhopLink, "MAIN")} className="w-full py-3.5 rounded-xl flex items-center justify-center bg-blue-600 text-white font-black text-[9px] uppercase tracking-[0.3em] hover:bg-blue-500 shadow-xl transition-all">Unlock Access Now</a>
+                  <div className="relative">
+                    <div className="absolute -inset-1 bg-blue-500 rounded-xl blur opacity-30 animate-pulse pointer-events-none"></div>
+                    <a href={mainWhopLink} target="_blank" rel="noreferrer" onClick={(e) => handleLinkClick(e, mainWhopLink, "MAIN")} className="relative w-full py-3.5 rounded-xl flex items-center justify-center bg-blue-600 text-white font-black text-[9px] uppercase tracking-[0.3em] hover:bg-blue-500 shadow-xl transition-all hover:scale-[1.02]">
+                      Unlock Access Now
+                    </a>
+                  </div>
+                  
                   <div className="mt-6 pt-6 border-t border-white/5 flex flex-col gap-4 text-center text-left">
                     <div className="flex flex-col items-center gap-3 text-left">
                       <div className="flex items-center gap-2 text-left"><Award className="w-3.5 h-3.5 text-orange-500" /><span className="text-white font-black text-[8px] md:text-[9px] uppercase tracking-[0.4em]">Developer Pack</span></div>
@@ -354,25 +360,39 @@ function SingleProductPage({ apps = [] }) {
           </div>
         </div>
       </div>
+
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-[#050505]/95 backdrop-blur-xl border-t border-white/10 z-[150] lg:hidden flex justify-between items-center shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
+        <div className="flex flex-col">
+          <span className="text-[8px] text-zinc-500 uppercase tracking-widest font-black">Total Access</span>
+          <span className="text-xl font-black text-white">${app.price}</span>
+        </div>
+        <a href={mainWhopLink} target="_blank" rel="noreferrer" onClick={(e) => handleLinkClick(e, mainWhopLink, "MAIN")} className="px-8 py-3.5 bg-blue-600 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-[0_0_15px_rgba(37,99,235,0.4)] animate-[pulse_2s_infinite]">
+          Unlock Now
+        </a>
+      </div>
     </div>
   );
 }
 
-// --- HOME PAGE ---
+// --- HOME PAGE SA MINI-ALATOM ---
 function HomePage({ apps = [] }) {
   const [activeSlide, setActiveSlide] = useState(0);
   const [liveVideos, setLiveVideos] = useState([]);
+  
+  // STATE ZA ENHANCER ALAT
+  const [demoInput, setDemoInput] = useState('');
+  const [demoOutput, setDemoOutput] = useState('');
+  const [isEnhancing, setIsEnhancing] = useState(false);
+  const [selectedAR, setSelectedAR] = useState('16:9');
+  const [selectedQuality, setSelectedQuality] = useState('4x');
+  
   const location = useLocation();
 
-  // STRIKTNO OBRTANJE: Najnoviji proizvod će OBAVEZNO biti na prvom mestu!
   const sortedApps = [...apps].reverse();
 
   useEffect(() => {
     fetch(VIDEOS_API_URL).then(res => res.json()).then(db => { 
-      if (Array.isArray(db)) {
-        // VRAĆENO NA STARO! API OČIGLEDNO SAM ŠALJE NAJNOVIJI PRVI
-        setLiveVideos(db); 
-      }
+      if (Array.isArray(db)) { setLiveVideos(db); }
     });
   }, []);
 
@@ -388,6 +408,73 @@ function HomePage({ apps = [] }) {
   const nextSlide = useCallback(() => setActiveSlide(s => (s + 1) % data.BANNER_DATA.length), []);
   const prevSlide = () => setActiveSlide(s => (s - 1 + data.BANNER_DATA.length) % data.BANNER_DATA.length);
   useEffect(() => { const t = setInterval(nextSlide, 7000); return () => clearInterval(t); }, [nextSlide]);
+
+  const envs = [
+    "in a bustling cyberpunk metropolis with rain-slicked streets and neon reflections", 
+    "standing on an uncharted alien planet with twin moons illuminating a jagged rocky terrain", 
+    "inside a hyper-futuristic minimalist laboratory featuring stark white walls and sterile surfaces", 
+    "surrounded by ancient, overgrown temple ruins deep within a dense, fog-filled mystical jungle", 
+    "in a surreal floating city suspended high above the clouds during a vibrant, explosive sunset", 
+    "parked on a vast, endless salt flat with a perfect mirror reflection of the starry night sky", 
+    "deep underwater inside a glowing, bioluminescent coral reef cavern", 
+    "in the center of a massive futuristic gladiator arena under heavy torrential rain"
+  ];
+  
+  const lights = [
+    "volumetric god rays piercing through thick atmospheric mist", 
+    "cinematic chiaroscuro with deep, rich, consuming shadows", 
+    "harsh cinematic rim lighting perfectly emphasizing the silhouette", 
+    "a soft, ethereal, and magical bioluminescent glow", 
+    "dramatic dual lighting featuring vivid neon pink and electric cyan", 
+    "golden hour sunlight casting long, warm, dramatic shadows", 
+    "clinical and moody overhead fluorescent lighting", 
+    "a mysterious floating orb casting a soft, pulsing blue light"
+  ];
+  
+  const cams = [
+    "shot on ARRI Alexa 65, 35mm lens, f/1.8", 
+    "captured with IMAX 70mm, sweeping panoramic view", 
+    "photographed on Hasselblad medium format, 85mm portrait lens", 
+    "drone aerial shot, wide angle lens, deep depth of field", 
+    "macro photography, 100mm lens, extreme bokeh", 
+    "shot on RED Monstro 8K VV, featuring subtle anamorphic lens flares"
+  ];
+  
+  const colors = [
+    "vivid cinematic color grading", 
+    "classic Hollywood teal and orange color palette", 
+    "muted melancholic tones with high contrast", 
+    "hyper-saturated vibrant colors", 
+    "monochromatic noir aesthetic with a single striking pop of color", 
+    "vintage film stock aesthetic with fine cinematic film grain"
+  ];
+
+  const handleEnhance = () => {
+    if(!demoInput) return;
+    setIsEnhancing(true);
+    setDemoOutput('');
+    
+    setTimeout(() => {
+      const env = envs[Math.floor(Math.random() * envs.length)];
+      const light = lights[Math.floor(Math.random() * lights.length)];
+      const cam = cams[Math.floor(Math.random() * cams.length)];
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      
+      const cleanInput = demoInput.trim();
+      let finalPrompt = "";
+
+      if (selectedQuality === '1x') {
+          finalPrompt = `A high-quality cinematic image of ${cleanInput}, located ${env}. The scene features ${light}. ${cam}, ${color}. --ar ${selectedAR}`;
+      } else if (selectedQuality === '2x') {
+          finalPrompt = `A breathtaking photorealistic render of ${cleanInput}, displaying monumental scale and precise details. Set ${env}. The environment is beautifully illuminated by ${light}. ${cam}, ${color}. Unreal Engine 5 render, 8k resolution, cinematic VFX. --ar ${selectedAR}`;
+      } else {
+          finalPrompt = `A hyper-realistic, award-winning cinematic masterpiece of ${cleanInput}, featuring an unfathomable monumental scale, incredibly intricate and painstakingly detailed. The subject is perfectly placed ${env}. The dramatic atmosphere is defined by ${light}. ${cam}, ${color}. Octane render, full ray tracing, global illumination, subsurface scattering, trending on CGSociety, ultra-maximalist, extremely meticulous detailing, 32k UHD, absolute visual perfection. --ar ${selectedAR}`;
+      }
+
+      setDemoOutput(finalPrompt);
+      setIsEnhancing(false);
+    }, 800);
+  };
 
   return (
     <>
@@ -435,6 +522,109 @@ function HomePage({ apps = [] }) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24 text-left">
           {liveVideos.map((vid, i) => (<TutorialCard key={i} vid={vid} />))}
         </div>
+
+        {/* 10x PROMPT ENHANCER (LEAD MAGNET) */}
+        <div className="mb-24">
+          <div className="bg-[#0a0a0a] border border-orange-500/20 rounded-[2.5rem] p-8 md:p-10 shadow-[0_0_30px_rgba(249,115,22,0.05)] relative overflow-hidden flex flex-col group hover:border-orange-500/40 transition-all">
+             
+             {/* SEKCIJA SA NASLOVOM I MARKETINŠKOM PORUKOM */}
+             <div className="mb-8 text-left w-full">
+               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 mb-4 shadow-[0_0_15px_rgba(249,115,22,0.2)]">
+                 <Zap className="w-3 h-3 text-orange-500 animate-pulse" /> 
+                 <span className="text-[8px] font-black uppercase text-orange-500 tracking-widest">Free Demo • $50/Month Value</span>
+               </div>
+               <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-white mb-2">10x Prompt Enhancer</h2>
+               <div className="text-[10px] md:text-[11px] font-black text-green-500 uppercase tracking-[0.2em] mb-4">
+                 Premium tool worth $50/month. Currently free to use.
+               </div>
+               <p className="text-zinc-400 text-[10px] md:text-xs max-w-2xl">Test the matrix architecture. Enter a simple concept, adjust the parameters, and let the engine inject cinematic fidelity instantly.</p>
+             </div>
+
+             {/* SEKCIJA SA PORAVNATIM INPUTOM I BOX-OM ZA REZULTAT */}
+             <div className="flex flex-col md:flex-row gap-8 w-full items-stretch">
+               
+               {/* Levo: Input polje i Dugmići */}
+               <div className="flex-1 w-full flex flex-col justify-between space-y-6">
+                 {/* Input Row */}
+                 <div className="flex flex-col sm:flex-row gap-3 relative">
+                   <div className="relative flex-1">
+                     <input 
+                        type="text" 
+                        value={demoInput} 
+                        onChange={e => setDemoInput(e.target.value)} 
+                        onKeyDown={(e) => e.key === 'Enter' && handleEnhance()} 
+                        placeholder="e.g. 'a red sports car' or 'a medieval warrior'" 
+                        className="w-full bg-black border border-white/10 rounded-xl pl-4 pr-12 py-4 text-white text-[11px] outline-none focus:border-blue-500/50 transition-all" 
+                     />
+                     {/* CRVENI X KRSTIĆ ZA BRISANJE */}
+                     {demoInput && (
+                       <button 
+                         onClick={() => { setDemoInput(''); setDemoOutput(''); }} 
+                         className="absolute right-3 top-1/2 -translate-y-1/2 bg-red-600/10 p-1.5 rounded-lg group hover:bg-red-600 transition-all"
+                         title="Clear input"
+                       >
+                         <X className="w-4 h-4 text-red-500 group-hover:text-white transition-all" />
+                       </button>
+                     )}
+                   </div>
+                   <button onClick={handleEnhance} disabled={isEnhancing || !demoInput} className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center min-w-[120px] shadow-[0_0_15px_rgba(37,99,235,0.3)]">
+                     {isEnhancing ? <Loader2 className="w-4 h-4 animate-spin" /> : "Enhance"}
+                   </button>
+                 </div>
+                 
+                 {/* Options Rows */}
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-black/30 p-4 rounded-2xl border border-white/5">
+                    {/* AR Selector */}
+                    <div>
+                        <label className="text-[8px] font-black uppercase text-zinc-500 tracking-widest block mb-2.5">Aspect Ratio</label>
+                        <div className="flex flex-wrap gap-2">
+                            {['1:1', '9:16', '16:9', '21:9'].map(ar => (
+                                <button 
+                                  key={ar} 
+                                  onClick={() => setSelectedAR(ar)} 
+                                  className={`px-3.5 py-2 rounded-lg text-[9px] font-black transition-all ${selectedAR === ar ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white'}`}
+                                >
+                                  {ar}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    {/* Quality Selector */}
+                    <div>
+                        <label className="text-[8px] font-black uppercase text-zinc-500 tracking-widest block mb-2.5">Render Quality</label>
+                        <div className="flex flex-wrap gap-2">
+                            {['1x', '2x', '4x'].map(q => (
+                                <button 
+                                  key={q} 
+                                  onClick={() => setSelectedQuality(q)} 
+                                  className={`px-4 py-2 rounded-lg text-[9px] font-black transition-all ${selectedQuality === q ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20' : 'bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white'}`}
+                                >
+                                  {q}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                 </div>
+               </div>
+               
+               {/* Desno: Box sa Generisanim Promptom */}
+               <div className="flex-1 w-full flex flex-col h-full">
+                 <div className="w-full bg-black border border-white/5 rounded-2xl p-6 relative flex flex-col items-start shadow-inner h-full min-h-[180px]">
+                   {demoOutput && (
+                       <div className="text-green-500 font-black text-[10px] sm:text-[11px] uppercase tracking-[0.2em] mb-4 border-b border-green-500/20 pb-3 w-full text-left flex items-center gap-2">
+                           <Sparkles className="w-4 h-4 animate-pulse" /> Premium Matrix Output Generated
+                       </div>
+                   )}
+                   <p className={`w-full transition-all duration-500 font-mono text-[10px] md:text-[11px] leading-relaxed text-left ${demoOutput ? 'text-zinc-200 opacity-100' : 'text-zinc-600 opacity-50 flex-1 flex items-center justify-center italic tracking-widest'}`}>
+                     {demoOutput || "AWAITING CORE INPUT..."}
+                   </p>
+                 </div>
+               </div>
+
+             </div>
+          </div>
+        </div>
+
         <div id="marketplace" className="flex items-center gap-4 mb-10 overflow-hidden text-left"><div className="flex items-center gap-2.5 shrink-0 text-left"><Sparkles className="text-blue-500 w-4 h-4" /><h3 className="text-white font-black uppercase text-[10px] tracking-widest italic text-left">Premium AI Asset Store</h3></div><div className="h-[1px] w-32 bg-gradient-to-r from-blue-500/80 to-transparent"></div></div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-32 text-left">
           {sortedApps.map(app => (<AssetCard key={app.id} app={app} />))}
@@ -592,7 +782,6 @@ function AdminPage({ apps = [], refreshData }) {
   const initialForm = { name: '', headline: '', type: 'AI ASSET', price: '', priceLifetime: '', description: defaultDescriptionTemplate, media: [], whopLink: '', reactSourceCode: '', faq: Array.from({ length: 7 }, () => ({ q: '', a: '' })) }; 
   const [formData, setFormData] = useState(initialForm); 
 
-  // STRIKTNO OBRTANJE I U ADMIN PANELU DA NAJNOVIJI BUDE PRVI
   const sortedApps = [...apps].reverse();
 
   const handleLogin = async (e) => { 
@@ -762,6 +951,45 @@ function AdminPage({ apps = [], refreshData }) {
   );
 }
 
+// --- KOMPONENTA ZA LIVE NOTIFIKACIJE O KUPOVINI ---
+const SALES_NAMES = ["Michael T.", "David K.", "Sarah L.", "James W.", "Elena R.", "Alex M.", "Chris P.", "Tom H."];
+const SALES_COUNTRIES = ["USA", "UK", "Canada", "Germany", "Australia", "France", "Sweden", "Brazil"];
+
+function LiveSalesNotification({ apps }) {
+  const [notification, setNotification] = useState(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if(!apps || apps.length === 0) return;
+    const interval = setInterval(() => {
+       const randomName = SALES_NAMES[Math.floor(Math.random() * SALES_NAMES.length)];
+       const randomCountry = SALES_COUNTRIES[Math.floor(Math.random() * SALES_COUNTRIES.length)];
+       const randomApp = apps[Math.floor(Math.random() * apps.length)].name;
+       
+       setNotification({ name: randomName, country: randomCountry, product: randomApp });
+       setIsVisible(true);
+       
+       setTimeout(() => {
+          setIsVisible(false);
+       }, 5000); 
+    }, 28000); 
+    
+    return () => clearInterval(interval);
+  }, [apps]);
+
+  return (
+    <div className={`fixed bottom-6 left-6 z-[200] bg-[#0a0a0a]/95 backdrop-blur-md border border-white/10 p-4 rounded-2xl shadow-2xl flex items-center gap-4 transition-all duration-700 transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'}`}>
+      <div className="bg-green-500/20 p-2.5 rounded-full border border-green-500/30">
+        <Check className="text-green-500 w-4 h-4"/>
+      </div>
+      <div>
+        <p className="text-[9px] text-zinc-400 font-bold mb-0.5">{notification?.name} from {notification?.country} just bought</p>
+        <p className="text-[11px] font-black text-white">{notification?.product}</p>
+      </div>
+    </div>
+  );
+}
+
 // --- MAIN CONTENT WRAPPER ---
 function AppContent() {
   const [appsData, setAppsData] = useState([]);
@@ -773,8 +1001,7 @@ function AppContent() {
   useEffect(() => { trackEvent("page_view", { path: location.pathname + location.hash }); }, [location]);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-zinc-100 flex flex-col font-sans text-left">
-      {/* UPDATE: NAVBAR SA CUSTOM BORDER-BOTTOM 0.1px */}
+    <div className="min-h-screen bg-[#050505] text-zinc-100 flex flex-col font-sans text-left relative pb-20 lg:pb-0">
       <nav className="fixed top-0 left-0 w-full px-10 py-3 z-[100] bg-[#050505]/80 backdrop-blur-xl" style={{ borderBottom: '0.1px solid #f97316' }}>
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <Link to="/" className="flex items-center gap-6 group">
@@ -787,6 +1014,7 @@ function AppContent() {
           </div>
         </div>
       </nav>
+      
       <div className="flex-1">
         <Routes>
           <Route path="/" element={<HomePage apps={appsData} />} />
@@ -794,7 +1022,10 @@ function AppContent() {
           <Route path="/admin" element={<AdminPage apps={appsData} refreshData={refreshData} />} />
         </Routes>
       </div>
+
       <footer className="w-full py-4 border-t border-white/5 bg-[#050505] text-center text-zinc-600 font-bold italic uppercase text-[9px] tracking-[0.5em]">© 2026 AI TOOLS PRO SMART - ALL RIGHTS RESERVED</footer>
+
+      <LiveSalesNotification apps={appsData} />
     </div>
   );
 }
