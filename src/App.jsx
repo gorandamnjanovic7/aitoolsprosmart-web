@@ -7,7 +7,7 @@ import {
   ShieldCheck, ArrowRight, Maximize2, PlusCircle, LayoutList, Edit, Trash2,
   UploadCloud, Loader2, Activity, Database, Fingerprint, Terminal, HardDrive,
   Video, Image as Imagelcon, Check, Play, HelpCircle, Eye, MousePointerClick, Smartphone, Clock, Users, BarChart3,
-  ShoppingCart, Copy, Lock, Shield, Camera, Cctv
+  ShoppingCart, Copy, Lock, Shield, Camera, Cctv, Dices
 } from 'lucide-react';
 
 // FIREBASE INTEGRATION
@@ -33,26 +33,31 @@ const trackEvent = async (action, details = {}) => {
   } catch (e) { console.error("Stats Error", e); }
 };
 
-// --- HELPER FUNCTIONS ---
-const getYouTubeId = (url) => {
-  if (!url || url === "#") return null;
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|\/shorts\/)([^#&?]*).*/;
-  const match = url.match(regExp);
-  return (match && match[2].length === 11) ? match[2] : null;
-};
-const getMediaThumbnail = (url, type) => {
-  if (!url) return data.bannerUrl;
-  const ytId = getYouTubeId(url);
-  if (ytId) return `https://i.ytimg.com/vi/${ytId}/maxresdefault.jpg`;
-  return url;
-};
-const formatExternalLink = (url) => {
-  if (!url || url === "#") return "#";
-  return url.trim().startsWith("http") ? url.trim() : `https://${url.trim()}`;
-};
+// --- TYPEWRITER COMPONENT ---
+function TypewriterText({ text, speed = 15 }) {
+  const [displayedText, setDisplayedText] = useState('');
+
+  useEffect(() => {
+    setDisplayedText('');
+    if (!text) return;
+
+    let i = 0;
+    const intervalId = setInterval(() => {
+      setDisplayedText(text.slice(0, i + 1));
+      i++;
+      if (i >= text.length) {
+        clearInterval(intervalId);
+      }
+    }, speed);
+
+    return () => clearInterval(intervalId);
+  }, [text, speed]);
+
+  return <>{displayedText}</>;
+}
 
 function UniversalVideoPlayer({ url, autoPlay = true, loop = false, muted = false, hideControls = false, onEnded, videoRef }) {
-  const ytId = getYouTubeId(url);
+  const ytId = data.getYouTubeId(url);
   const baseClasses = hideControls ? "w-full h-full object-cover pointer-events-none" : "w-full h-full object-cover";
   const iframeClasses = hideControls ? "w-full h-full pointer-events-none" : "w-full h-full";
   if (ytId) {
@@ -65,8 +70,9 @@ function UniversalVideoPlayer({ url, autoPlay = true, loop = false, muted = fals
 }
 
 const renderDescription = (text) => {
-  if (!text) return <p className="text-zinc-500 italic text-[10px]">Data ready.</p>;
-  return text.split('\n').map((line, idx) => {
+  const { d: cleanDesc } = data.extractSys(text);
+  if (!cleanDesc) return <p className="text-zinc-500 italic text-[10px]">Data ready.</p>;
+  return cleanDesc.split('\n').map((line, idx) => {
     const trimmed = line.trim();
     if (!trimmed) return <div key={idx} className="h-2"></div>;
     const upperTrimmed = trimmed.toUpperCase();
@@ -85,7 +91,7 @@ const renderDescription = (text) => {
   });
 };
 
-// --- FULL SCREEN TERMINAL BOOT (SVAKI RELOAD, 3 SEKUNDE) ---
+// --- FULL SCREEN TERMINAL BOOT ---
 function FullScreenBoot({ onComplete }) {
   const [lines, setLines] = useState([]);
   const [fading, setFading] = useState(false);
@@ -191,7 +197,7 @@ function UrgencyBar() {
 }
 
 function TutorialCard({ vid }) {
-  const videoId = getYouTubeId(vid.url);
+  const videoId = data.getYouTubeId(vid.url);
   const [imgSrc, setImgSrc] = useState(videoId ? `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg` : data.bannerUrl);
 
   const handleTutorialClick = () => {
@@ -224,9 +230,11 @@ function TutorialCard({ vid }) {
 function AssetCard({ app }) {
   const mediaItem = app?.media?.[0];
   const isVideo = mediaItem?.type === 'video' || mediaItem?.url?.match(/\.(mp4|webm|ogg|mov)$/i);
-  const displayUrl = isVideo ? `${mediaItem.url}#t=0.001` : getMediaThumbnail(mediaItem?.url, mediaItem?.type);
+  const displayUrl = isVideo ? `${mediaItem.url}#t=0.001` : data.getMediaThumbnail(mediaItem?.url, mediaItem?.type);
   const [isPlaying, setIsPlaying] = useState(false);
   const videoRef = useRef(null);
+  
+  const { s: sysData } = data.extractSys(app.description);
 
   const handlePlayClick = (e) => {
     e.preventDefault(); e.stopPropagation();
@@ -237,7 +245,7 @@ function AssetCard({ app }) {
     }
   };
 
-  const ribbonText = (app.type && app.type !== "AI ASSET") ? app.type : "LATEST ⚡";
+  const ribbonText = sysData.t && sysData.t !== "LATEST ⚡" ? sysData.t : ((app.type && app.type !== "AI ASSET") ? app.type : "LATEST ⚡");
   let ribbonColor = "from-blue-700 via-blue-500 to-blue-700 shadow-[0_5px_15px_rgba(59,130,246,0.6)] border-blue-400/50";
   const upperText = ribbonText.toUpperCase();
   
@@ -362,6 +370,21 @@ function HomePage({ apps = [] }) {
   const prevSlide = () => setActiveSlide(s => (s - 1 + data.BANNER_DATA.length) % data.BANNER_DATA.length);
   useEffect(() => { const t = setInterval(nextSlide, 7000); return () => clearInterval(t); }, [nextSlide]);
 
+  const handleRollDice = () => {
+    const randomIdeas = [
+      "a neon cyberpunk samurai in the rain",
+      "a giant bioluminescent mushroom forest",
+      "a futuristic sports car drifting in Tokyo",
+      "an ancient dragon guarding a mountain of gold",
+      "a hyper-realistic cybernetic wolf howling",
+      "a monumental floating island with a magical castle",
+      "a lone astronaut exploring a ruined alien city"
+    ];
+    const random = randomIdeas[Math.floor(Math.random() * randomIdeas.length)];
+    setDemoInput(random);
+    setCustomerPrompt(''); 
+  };
+
   const handleEnhance = () => {
     if(!demoInput && !customerPrompt) return;
     setIsEnhancing(true);
@@ -454,8 +477,6 @@ function HomePage({ apps = [] }) {
     setTimeout(() => setCopiedHistoryIndex(null), 2000);
   };
 
-  const reviews = data.REVIEWS || ["Bro, these prompts are next level! - Alex M."];
-
   return (
     <>
       <Helmet>
@@ -506,7 +527,7 @@ function HomePage({ apps = [] }) {
         </div>
 
         {/* 10x PROMPT ENHANCER (LEAD MAGNET) */}
-        <div className="mb-24">
+        <div id="enhancer" className="mb-24 scroll-mt-32">
           <div className="bg-[#0a0a0a] border border-orange-500/20 rounded-[2.5rem] p-8 md:p-10 shadow-[0_0_30px_rgba(249,115,22,0.05)] relative overflow-hidden flex flex-col group hover:border-orange-500/40 transition-all">
              
              <div className="mb-8 text-left w-full">
@@ -548,6 +569,19 @@ function HomePage({ apps = [] }) {
                         disabled={customerPrompt.length > 0}
                         className={`w-full bg-black border rounded-xl pl-4 pr-12 py-4 text-white text-[11px] outline-none transition-all shadow-inner ${customerPrompt.length > 0 ? 'border-white/5 opacity-30 cursor-not-allowed' : 'border-white/10 focus:border-blue-500/50'}`} 
                      />
+                     
+                     {/* KOCKICE SE VIDE DOK JE POLJE PRAZNO */}
+                     {!demoInput && customerPrompt.length === 0 && (
+                        <button 
+                          onClick={handleRollDice} 
+                          className="absolute right-3 top-1/2 -translate-y-1/2 bg-blue-600/10 p-1.5 rounded-lg group hover:bg-blue-600 transition-all"
+                          title="Roll for a random idea"
+                        >
+                          <Dices className="w-4 h-4 text-blue-500 group-hover:text-white transition-all" />
+                        </button>
+                     )}
+
+                     {/* X SE POJAVLJUJE KAD SE NESTO UKUCA */}
                      {demoInput && (
                        <button 
                          onClick={() => { setDemoInput(''); setGeneratedPrompts({single:'', abstract:'', cinematic:'', photoreal:'', cctv:''}); setCopiedBox(''); }} 
@@ -632,7 +666,7 @@ function HomePage({ apps = [] }) {
                            </div>
                        )}
                        <p className={`w-full transition-all duration-500 font-mono text-[10px] md:text-[11px] leading-relaxed text-left ${generatedPrompts.single ? 'text-zinc-200 opacity-100' : 'text-zinc-600 opacity-50 flex-1 flex items-center justify-center italic tracking-widest'}`}>
-                         {generatedPrompts.single || "AWAITING CORE INPUT..."}
+                         {generatedPrompts.single ? <TypewriterText text={generatedPrompts.single} speed={10} /> : "AWAITING CORE INPUT..."}
                        </p>
                        
                        {generatedPrompts.single && (
@@ -655,7 +689,7 @@ function HomePage({ apps = [] }) {
                              <Sparkles className="w-3.5 h-3.5" /> Abstract Form
                            </label>
                            <p className={`w-full font-mono text-[9px] leading-relaxed text-left flex-1 ${generatedPrompts.abstract ? 'text-zinc-200' : 'text-zinc-600 italic flex items-center justify-center'}`}>
-                             {generatedPrompts.abstract || "AWAITING..."}
+                             {generatedPrompts.abstract ? <TypewriterText text={generatedPrompts.abstract} speed={10} /> : "AWAITING..."}
                            </p>
                            {generatedPrompts.abstract && (
                              <button onClick={() => handleCopy(generatedPrompts.abstract, 'abstract')} className={`absolute bottom-3 right-3 px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all ${copiedBox === 'abstract' ? 'bg-purple-600 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}>
@@ -670,7 +704,7 @@ function HomePage({ apps = [] }) {
                              <Video className="w-3.5 h-3.5" /> Cinematic Form
                            </label>
                            <p className={`w-full font-mono text-[9px] leading-relaxed text-left flex-1 ${generatedPrompts.cinematic ? 'text-zinc-200' : 'text-zinc-600 italic flex items-center justify-center'}`}>
-                             {generatedPrompts.cinematic || "AWAITING..."}
+                             {generatedPrompts.cinematic ? <TypewriterText text={generatedPrompts.cinematic} speed={10} /> : "AWAITING..."}
                            </p>
                            {generatedPrompts.cinematic && (
                              <button onClick={() => handleCopy(generatedPrompts.cinematic, 'cinematic')} className={`absolute bottom-3 right-3 px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all ${copiedBox === 'cinematic' ? 'bg-orange-600 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}>
@@ -685,7 +719,7 @@ function HomePage({ apps = [] }) {
                              <Camera className="w-3.5 h-3.5" /> Photoreal Form
                            </label>
                            <p className={`w-full font-mono text-[9px] leading-relaxed text-left flex-1 ${generatedPrompts.photoreal ? 'text-zinc-200' : 'text-zinc-600 italic flex items-center justify-center'}`}>
-                             {generatedPrompts.photoreal || "AWAITING..."}
+                             {generatedPrompts.photoreal ? <TypewriterText text={generatedPrompts.photoreal} speed={10} /> : "AWAITING..."}
                            </p>
                            {generatedPrompts.photoreal && (
                              <button onClick={() => handleCopy(generatedPrompts.photoreal, 'photoreal')} className={`absolute bottom-3 right-3 px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all ${copiedBox === 'photoreal' ? 'bg-blue-600 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}>
@@ -700,7 +734,7 @@ function HomePage({ apps = [] }) {
                              <Cctv className="w-3.5 h-3.5" /> CCTV Cam Form
                            </label>
                            <p className={`w-full font-mono text-[9px] leading-relaxed text-left flex-1 ${generatedPrompts.cctv ? 'text-zinc-200' : 'text-zinc-600 italic flex items-center justify-center'}`}>
-                             {generatedPrompts.cctv || "AWAITING..."}
+                             {generatedPrompts.cctv ? <TypewriterText text={generatedPrompts.cctv} speed={10} /> : "AWAITING..."}
                            </p>
                            {generatedPrompts.cctv && (
                              <button onClick={() => handleCopy(generatedPrompts.cctv, 'cctv')} className={`absolute bottom-3 right-3 px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all ${copiedBox === 'cctv' ? 'bg-red-600 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}>
@@ -781,10 +815,12 @@ function SingleProductPage({ apps = [] }) {
   const currentMedia = (app.media && app.media[activeMedia]) ? app.media[activeMedia] : (app.media && app.media[0]) ? app.media[0] : { url: data.bannerUrl, type: 'image' };
   const isVideo = currentMedia?.type === 'video' || currentMedia?.url?.match(/\.(mp4|webm|ogg|mov)$/i);
 
+  const { s: sysData } = data.extractSys(app.description);
+  
   const dbWhopField = app.whopLink || "";
   const parts = dbWhopField.includes("[SPLIT]") ? dbWhopField.split("[SPLIT]") : [dbWhopField, ""];
-  const mainWhopLink = formatExternalLink(parts[0]);
-  const sourceCodeWhopLink = formatExternalLink(parts[1]);
+  const mainWhopLink = data.formatExternalLink(sysData.w || parts[0]);
+  const sourceCodeWhopLink = data.formatExternalLink(sysData.g || parts[1]);
   const faqList = app.faq && app.faq.length > 0 ? app.faq : (data.DEFAULT_FAQ || DEFAULT_FAQ);
 
   const handleNextMedia = (e) => { e.stopPropagation(); setActiveMedia((prev) => (prev + 1) % (app.media.length)); };
@@ -856,7 +892,7 @@ function SingleProductPage({ apps = [] }) {
             </div>
             
             <h1 className="text-xl md:text-2xl font-black uppercase tracking-tighter mb-4 leading-none text-left">{app.name}</h1>
-            <div className="flex text-left"><div className="px-4 py-1.5 rounded-full bg-blue-600 text-white text-[8px] font-black uppercase mb-10 tracking-[0.2em] shadow-xl shadow-blue-600/10">{(app.type && app.type !== "AI ASSET") ? app.type : 'AI ASSET'}</div></div>
+            <div className="flex text-left"><div className="px-4 py-1.5 rounded-full bg-blue-600 text-white text-[8px] font-black uppercase mb-10 tracking-[0.2em] shadow-xl shadow-blue-600/10">{sysData.b && sysData.b !== "AI ASSET" ? sysData.b : ((app.type && app.type !== "AI ASSET") ? app.type : 'AI ASSET')}</div></div>
             {app.headline && <p className="text-sm md:text-md text-white font-black mb-10 leading-tight border-l-4 border-orange-500 pl-5 italic text-left">{app.headline}</p>}
             <div className="border-t border-white/5 pt-8 mb-12 text-left">{renderDescription(app.description)}</div>
             
@@ -1240,7 +1276,7 @@ function AdminPage({ apps = [], refreshData }) {
                     <div key={app.id} className={`flex items-center justify-between p-3 border rounded-xl ${editingId === app.id ? 'bg-orange-600/10 border-orange-500/30' : 'bg-black border-white/5'}`}>
                       <div className="flex items-center gap-3 truncate">
                         <div className="w-10 h-10 rounded-lg overflow-hidden border border-white/10 shrink-0">
-                          {app.media?.[0]?.type === 'video' ? <video src={`${app.media[0].url}#t=0.001`} className="w-full h-full object-cover" /> : <img src={getMediaThumbnail(app.media?.[0]?.url)} className="w-full h-full object-cover" alt="" />}
+                          {app.media?.[0]?.type === 'video' ? <video src={`${app.media[0].url}#t=0.001`} className="w-full h-full object-cover" /> : <img src={data.getMediaThumbnail(app.media?.[0]?.url)} className="w-full h-full object-cover" alt="" />}
                         </div>
                         <h4 className="text-white font-black uppercase text-[9px] truncate">{app.name}</h4>
                       </div>
@@ -1364,6 +1400,7 @@ function AppContent({ appsData, refreshData }) {
             </div>
 
             <div className="flex items-center gap-4 md:gap-10 font-black uppercase text-[9px] md:text-[10px] tracking-widest">
+              <a href="#enhancer" className="text-zinc-400 hover:text-white transition-all hidden sm:block">10x Enhancer</a>
               <Link to="/#marketplace" className="bg-blue-600 px-4 md:px-6 py-2 rounded-full text-white shadow-xl hover:bg-blue-500 transition-all">Marketplace</Link>
               <Link to="/admin" className="bg-orange-600 px-4 md:px-6 py-2 rounded-full text-white shadow-xl hover:bg-orange-500 transition-all">Admin</Link>
             </div>
@@ -1432,50 +1469,25 @@ function AppContent({ appsData, refreshData }) {
       <div className="w-full bg-[#050505] border-t border-white/5 pt-10 pb-6 flex flex-col items-center justify-center relative z-20">
         
         <div className="flex items-center gap-6 mb-6">
-          {/* X (Twitter) Logo */}
           <a href="#" className="text-white hover:scale-110 hover:opacity-80 transition-all">
-            <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 22.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-            </svg>
+            <data.TwitterIcon />
           </a>
-          
-          {/* YouTube Logo */}
           <a href="#" className="text-[#FF0000] hover:scale-110 hover:opacity-80 transition-all">
-            <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-            </svg>
+            <data.YouTubeIcon />
           </a>
-          
-          {/* Instagram Logo */}
           <a href="#" className="hover:scale-110 hover:opacity-80 transition-all">
-            <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-              <defs>
-                <linearGradient id="ig-grad" x1="0%" y1="100%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#f09433" />
-                  <stop offset="25%" stopColor="#e6683c" />
-                  <stop offset="50%" stopColor="#dc2743" />
-                  <stop offset="75%" stopColor="#cc2366" />
-                  <stop offset="100%" stopColor="#bc1888" />
-                </linearGradient>
-              </defs>
-              <path fill="url(#ig-grad)" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-          </svg>
-        </a>
-        
-        {/* TikTok Logo */}
-        <a href="#" className="text-white hover:scale-110 hover:opacity-80 transition-all" style={{ filter: "drop-shadow(1.5px 1.5px 0px #fe0979) drop-shadow(-1.5px -1.5px 0px #00f2fe)" }}>
-          <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-            <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93v7.2c0 1.95-.53 3.92-1.59 5.51-1.48 2.22-3.8 3.56-6.42 3.65-2.6.09-5.18-.9-6.99-2.75-1.68-1.71-2.58-4.08-2.45-6.48.11-2.14 1.05-4.18 2.62-5.63 1.54-1.43 3.63-2.17 5.74-2.15v4.01c-1.39-.01-2.8.46-3.84 1.39-1.07.95-1.63 2.4-1.53 3.86.11 1.46.9 2.8 2.09 3.64 1.34 1.01 3.19 1.25 4.8.72 1.5-.49 2.63-1.68 3.12-3.15.19-.57.26-1.17.26-1.77V.02h4.11z"/>
-          </svg>
-        </a>
+            <data.InstagramIcon />
+          </a>
+          <a href="#" className="text-white hover:scale-110 hover:opacity-80 transition-all" style={{ filter: "drop-shadow(1.5px 1.5px 0px #fe0979) drop-shadow(-1.5px -1.5px 0px #00f2fe)" }}>
+            <data.TikTokIcon />
+          </a>
+        </div>
+
       </div>
 
       <footer className="text-center text-zinc-600 font-bold italic uppercase text-[9px] tracking-[0.5em]">
         © 2026 <span className="text-blue-500">AI TOOLS</span> <span className="text-orange-500">PRO SMART</span> - ALL RIGHTS RESERVED
       </footer>
-    </div>
-
-      <LiveSalesNotification apps={appsData} />
     </div>
   );
 }
@@ -1490,6 +1502,6 @@ export default function App() {
   useEffect(() => { refreshData(); }, [refreshData]);
 
   return ( 
-    <HelmetProvider><Router><AppContent appsData={appsData} refreshData={refreshData} /></Router></HelmetProvider>
+    <HelmetProvider><Router><AppContent appsData={appsData} refreshData={refreshData} /><LiveSalesNotification apps={appsData} /></Router></HelmetProvider>
   ); 
 }
