@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { CheckCircle2, PlayCircle, ArrowRight, Check } from 'lucide-react';
-
-// --- FIREBASE INTEGRACIJA ---
+import { CheckCircle2, PlayCircle, ArrowRight, Check, Award, HelpCircle, PlusCircle, Database, Eye, Users, Clock, MousePointerClick, ShoppingCart, Shield, ChevronLeft, ChevronDown, Lock } from 'lucide-react';
 import { db } from './firebase';
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
-// --- IMAGE IMPORTS (POPRAVLJENO) ---
+// --- IMAGE IMPORTS ---
 import zmajImg from './zmaj.jpg';
 import novaSlikaImg from './nova-slika.png';
 import slikaHubImg from './slika-hub.jpeg';
@@ -15,7 +13,6 @@ import hollywoodImg from './hollywood.png';
 import slikaVideoImg from './slika-video.jpeg';
 import mojLogo from './logo.png';
 
-// --- KONFIGURACIJA ---
 export const CLOUDINARY_CLOUD_NAME = "drllxycnh"; 
 export const CLOUDINARY_UPLOAD_PRESET = "uploads1"; 
 export const logoUrl = mojLogo; 
@@ -23,124 +20,125 @@ export const bannerUrl = "https://images.unsplash.com/photo-1618005182384-a83a8b
 export const ADMIN_DEFAULT_DESC = `[DESCRIPTION]\nEnter your main description here...\n\nKEY FEATURES\n* Feature 1\n* Feature 2\n* Feature 3\n\nVALUE MULTIPLIER\n* Benefit 1\n* Benefit 2`;
 export const PAYMENT_METHODS = ["Stripe", "PayPal", "Crypto"];
 
-// --- NIZOVI ZA ROLL DICE (KOMBINACIJE) ---
-const DICE_SUBJECTS = ["a futuristic cybernetic lion", "a chrome-plated vintage Shelby Cobra", "an ancient Aztec high priest", "a massive obsidian dragon", "a lone astronaut on a red planet", "a cyberpunk ronin with a glowing katana", "a Victorian clockwork owl", "a bioluminescent deep-sea jellyfish", "a marble statue of a digital goddess", "a high-tech tactical battle droid", "a mystical druid in emerald robes", "a sleek stealth interceptor jet", "a giant robotic praying mantis", "a nomadic desert warrior", "a ghostly pirate captain", "a microscopic crystalline castle", "a colossal floating island fortress", "a zen monk meditating in zero gravity", "a vaporwave style retro mainframe", "a steampunk airship explorer", "a hyper-realistic cybernetic wolf", "a majestic phoenix made of plasma", "a neo-gothic vampire lord", "a futuristic F1 race car", "a samurai in high-tech carbon fiber armor", "a mysterious oracle in a temple", "a genetically modified tiger with neon stripes", "a robotic geisha with transparent skin", "a world-ending meteor impact", "a portal to another dimension", "a dense biomechanical forest", "a gold-plated humanoid android", "a futuristic city street with flying cars", "an overgrown post-apocalyptic New York", "a massive black hole event horizon", "a divine celestial entity", "a hyper-detailed luxury wristwatch gear", "a majestic eagle with metallic wings", "a futuristic holographic dancer", "a dark knight in heavy plate armor"];
-const DICE_ENVIRONMENTS = ["in a neon-drenched cyberpunk alley", "on a frozen lake under the aurora borealis", "inside a derelict space station corridor", "surrounded by a lush prehistoric jungle", "within a golden temple of light", "in a dark dystopian megacity rain", "at the bottom of a bioluminescent ocean", "on top of a crystalline mountain peak", "inside a smoky 1920s speakeasy", "floating in a nebula of purple gas", "in an ancient desert ruin with sandstorms", "within a high-tech minimalist white lab", "on a futuristic Mars colony", "in a deep cavern filled with glowing crystals", "overlooking a sprawling volcanic landscape", "in a Victorian library with floating books", "within a massive clockwork engine room", "on a quiet street in futuristic Tokyo", "inside an infinite mirror dimension", "in a dreamscape of floating geometric shapes"];
-const DICE_CAMERAS = ["shot on ARRI Alexa 35, Master Prime 35mm", "captured with RED V-Raptor, anamorphic 50mm", "shot on Hasselblad H6D-100c, macro 120mm", "Leica M11, Noctilux-M 50mm f/0.95", "Sony Venice 2, 70mm IMAX format", "vintage 35mm Panavision C-Series", "Nikon Z9, 85mm f/1.2 S-line", "Phase One XF, 80mm medium format", "Canon EOS R3, ultra-wide 14mm", "shot on Kodak Portra 400 film aesthetic", "captured with a probe lens for extreme macro", "shot on 70mm IMAX film stock", "Fujifilm GFX 100S, 45-100mm lens", "shot on 16mm grainy vintage film", "captured with a cinematic drone, 8k aerial view"];
-const DICE_LIGHTS = ["dramatic rim lighting with volumetric fog", "soft golden hour natural sunlight", "harsh magenta and cyan neon underglow", "cinematic chiaroscuro with deep shadows", "clinical high-key laboratory lighting", "ethereal moonlight filtering through clouds", "flickering firelight from a nearby forge", "underwater caustics and light refraction", "split lighting with warm and cool tones", "high-fashion strobe lighting setup", "moody noir lighting with long shadows", "bioluminescent glow from the subject", "intense overhead sun with sharp shadows", "soft-box studio lighting, professional", "volumetric god rays piercing the scene"];
+// --- META TOKENS (UNIVERZALNI) ---
+const CAMERA_TOKENS = ["ARRI_ALEXA_35", "RED_RAPTOR_V", "SONY_VENICE", "IMAX_FILM_CAMERA", "PANAVISION_DXL2", "ARRIFLEX_16SR", "BLACKMAGIC_6K_PRO", "PHASE_ONE_IQ4", "HASSELBLAD_X2D", "CANON_EOS_R5", "NIKON_Z9", "SONY_A1", "FUJIFILM_GFX100", "LEICA_M11", "DJI_MAVIC_3_PRO"];
+const LENS_TOKENS = ["Zeiss_Ultra_Prime", "Leica_Summilux_35mm", "Canon_RF_50mm_f1.2", "Sigma_Art_85mm", "Panavision_C_Series", "Cooke_Anamorphic", "Zeiss_Master_Prime", "ARRI_Signature_Prime", "Laowa_24mm_Probe", "Nikkor_105mm_Macro", "UltraWide_14mm", "Classic_35mm", "Portrait_85mm", "Telephoto_200mm"];
+const LIGHTING_TOKENS = ["Golden_Hour_Lighting", "Blue_Hour_Ambience", "Volumetric_Rays", "God_Rays", "Studio_Softbox_Lighting", "High_Key_Lighting", "Low_Key_Lighting", "Rim_Lighting", "Backlight_Silhouette", "Candlelight_Glow", "Moonlight_Illumination", "Dramatic_Contrast_Lighting", "Sunset_Warm_Light", "HDR_Light_Fusion"];
+const ENV_TOKENS = ["Epic_Mountain_Landscape", "Dense_Tropical_Jungle", "Futuristic_Megacity", "Ancient_Temple_Ruins", "Underwater_Ocean_World", "Abandoned_Industrial_Zone", "Luxury_Penthouse_View", "Desert_Dunes_At_Sunset", "Frozen_Arctic_Landscape", "Deep_Space_Backdrop", "Volcanic_Lava_Field", "Mystical_Forest"];
+const STYLE_TOKENS = ["Christopher_Nolan_Cinematic", "Ridley_Scott_Epic_Frame", "Denis_Villeneuve_Scale", "Alejandro_Inarritu_Realism", "Roger_Deakins_Lighting", "Zack_Snyder_Dramatic_Contrast", "James_Cameron_SciFi_Scope", "Quentin_Tarantino_Frame", "Stanley_Kubrick_Symmetry"];
+const REALISM_TOKENS = ["UltraPhotorealistic", "HyperRealism", "ExtremeDetail", "NanoDetail_8K", "MicroTexture_Rendering", "UltraDepth_Field", "Global_Illumination", "RayTraced_Reflections", "Ambient_Occlusion", "Sensor_Noise_Realism", "Film_Grain_Texture", "Natural_Skin_Pores", "Subsurface_Scattering", "Optical_Lens_Distortion"];
+const COLOR_TOKENS = ["ACES_Color_Science", "Kodak_Ektar_100", "Kodak_Portra_400", "Fuji_Velvia_Color", "ARRI_LogC_Profile", "Sony_SLog3_Profile", "TrueColor_Calibration", "HDR_Color_Fusion"];
+const MOTION_TOKENS = ["Drone_Aerial_Tracking", "Slow_Cinematic_Dolly", "Handheld_Documentary_Shake", "Crane_Shot_Movement", "Smooth_Gimbal_Motion", "Orbiting_Camera_Move", "Push_In_Camera_Move", "Pull_Back_Reveal"];
+const DETAIL_TOKENS = ["Skin_Micro_Pores", "Hair_Strand_Detail", "Fabric_Fiber_Texture", "Dust_Particles_In_Air", "Surface_Micro_Scratches", "Brushed_Metal_Texture", "Wet_Surface_Reflections", "Glass_Refraction", "Water_Ripple_Physics"];
+const VISUAL_KEYWORDS = ["Epic_Scale", "Grand_Perspective", "Ultra_Luxury_Aesthetic", "Museum_Grade_Image", "Editorial_Fashion_Style", "National_Geographic_Look", "Street_Photography_Realism", "Architectural_Precision", "Luxury_Product_Photography", "Cinematic_Masterpiece"];
 
-export const getRandomDicePrompt = () => {
-  const sub = DICE_SUBJECTS[Math.floor(Math.random() * DICE_SUBJECTS.length)];
-  const env = DICE_ENVIRONMENTS[Math.floor(Math.random() * DICE_ENVIRONMENTS.length)];
-  const cam = DICE_CAMERAS[Math.floor(Math.random() * DICE_CAMERAS.length)];
-  const light = DICE_LIGHTS[Math.floor(Math.random() * DICE_LIGHTS.length)];
-  return `${sub}, ${env}. ${cam}, ${light}.`;
-};
+const DICE_SUBJECTS = ["a chrome plated vintage Shelby Cobra", "a majestic obsidian dragon", "a lone astronaut on a space station", "a futuristic cybernetic lion", "an ancient high priest", "a Ronin warrior with a carbon fiber katana", "a bioluminescent deep-sea creature", "a marble statue of a goddess", "a tactical droid in camo", "a stealth interceptor jet on a rainy runway", "a colossal floating fortress", "a nomadic warrior in a sandstorm", "a Victorian clockwork entity", "a phoenix made of liquid plasma", "a neo-gothic palace", "a futuristic F1 race car", "a genetically modified tiger", "a robotic geisha", "a black hole event horizon", "a luxury wristwatch with gears"];
 
-// --- UNIQUE PHOTOREAL PARAMETERS (DOP, Lenses, Lights) ---
-const UNIQUE_DOP_STYLES = ["cinematography by Roger Deakins", "visual poetry by Emmanuel Lubezki", "dramatic high-contrast lighting by Robert Richardson", "atmospheric depth by Hoyte van Hoytema", "textural mastery by Greig Fraser", "naturalistic lighting by Vittorio Storaro", "hyper-detailed framing by Janusz Kaminski"];
-const UNIQUE_LENSES = ["Panavision C-Series Anamorphic glass", "vintage Zeiss Super Speed T1.5 prime lenses", "Cooke S7/i Full Frame optics", "Arri Master Prime 35mm", "Leica Summilux-C primes", "Angénieux Optimo cinematic zoom", "vintage Canon K35 primes"];
-const UNIQUE_LIGHTING = ["complex 3-point Rembrandt lighting", "natural golden hour light bounced off silks", "cinematic chiaroscuro with deep micro-contrast", "volumetric atmospheric scattering", "production grade overhead softboxes", "organic candlelight with accurate falloff"];
-const UNIQUE_TEXTURES = ["unfiltered 100MP RAW clarity with micro-pores", "organic film grain and subtle chromatic aberration", "perfect shallow depth of field with circular bokeh", "hyper-accurate global illumination", "absolute visual authenticity with zero digital artifacts"];
+const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+const sanitize = (text) => text.trim().replace(/cyberpunk/gi, '').replace(/cyberpank/gi, '').replace(/neon/gi, '').replace(/\s\s+/g, ' ');
 
-// --- OSTALI PODACI ---
-export const BANNER_DATA = [{ url: slikaHubImg, badge: "CORE AI HUB", title: "Welcome to Our Hub", subtitle: "Command center for data control and generating complex AI architectures." }, { url: zmajImg, badge: "DRAGON PROTOCOL", title: "ANCIENT EMPIRES REBORN", subtitle: "Generate epic, hyper-realistic scenes with dragons and mythical creatures in 8K resolution." }, { url: novaSlikaImg, badge: "TIME TRAVELER", title: "UNIQUE PHOTO REALISTIC IMAGES", subtitle: "Merging incompatible historical eras using advanced AI Prompt engines." }, { url: slikaCopyImg, badge: "CYBER STEALTH", title: "GHOST IN THE MACHINE", subtitle: "Professional prompts for digital art and high-detail cyberpunk visuals." }, { url: slikaVideoImg, badge: "WARP SPEED", title: "TEMPORAL MOTION ENGINE", subtitle: "Optimized for ultra-fast generation of AI video content with fluid motion." }, { url: hollywoodImg, badge: "WINTER PROTOCOL", title: "HOLLYWOOD VFX GRADE", subtitle: "Epic cinematic battles and CGI-level detail for your video and photo projects." }];
-export const MY_VIDEOS = [{ id: "dQw4w9WgXcQ", title: "PROTOCOL: How to install React Source Code", fallbackDesc: "Guide for setting up the development environment and deployment to Netlify." }];
-export const DEFAULT_FAQ = [{ question: "V8 Architecture", answer: "Triple-injection protocol for high-fidelity output." }, { question: "Value Multiplier", answer: "Algorithmic expansion for 880,000+ combinations." }, { question: "Google Veo 3.1", answer: "Optimized temporal consistency for motion engines." }];
-export const STATUSES = ["MATRIX: ONLINE", "V8 ENGINE: OPTIMAL", "SECURE CONNECTION"];
-export const SALES_NAMES = ["Michael T.", "David K.", "Sarah L.", "James W.", "Elena R.", "Alex M.", "Chris P.", "Tom H."];
-export const SALES_COUNTRIES = ["USA", "UK", "Canada", "Germany", "Australia", "France", "Sweden", "Brazil"];
-export const REVIEWS = ["Bro, these prompts are next level! - Alex M.", "The React source code saved me 3 weeks of dev. - Chris P.", "Absolutely insane detail in the Matrix generator. - Sarah L.", "Best AI asset investment I've made this year. - David K.", "10/10 quality. My clients are mind-blown. - Tom H.", "Finally, cinematic renders that actually look real. - Elena R."];
+const getMetaCombo = () => `${pick(CAMERA_TOKENS)} • ${pick(LENS_TOKENS)} • ${pick(LIGHTING_TOKENS)} • ${pick(REALISM_TOKENS)} • ${pick(STYLE_TOKENS)} • ${pick(COLOR_TOKENS)} • ${pick(VISUAL_KEYWORDS)} • ${pick(DETAIL_TOKENS)}`;
 
-// --- V8 ENGINE DATA ---
-export const CINEMATIC_ENVS = ["in a sprawling metropolis with realistic reflections", "on the edge of a crumbling ruin swallowed by jungle", "inside a dimly lit, smoky 1920s speakeasy", "surrounded by vast dunes under twin moons"];
-export const CINEMATIC_LIGHTS = ["volumetric god rays", "dramatic chiaroscuro", "harsh cinematic rim lighting", "cinematic backlighting silhouette"];
-export const CINEMATIC_CAMS = ["shot on ARRI Alexa 65", "Panavision 70mm IMAX", "RED Monstro 8K", "Sony Venice 2 Anamorphic"];
-export const CINEMATIC_COLORS = ["teal and orange color grade", "gritty desaturated palette", "rich melancholic sepia"];
-export const PHOTOREAL_ENVS = ["in a minimalist living room with raw concrete", "on a busy Tokyo intersection", "in a sterile white medical facility", "in a lush botanical greenhouse"];
-export const PHOTOREAL_LIGHTS = ["balanced natural window light", "Rembrandt studio setup", "harsh direct midday sun", "overhead fluorescent lighting"];
-export const PHOTOREAL_CAMS = ["Hasselblad H6D-100c medium format", "Canon EOS R5 85mm L lens", "Sony A7R IV 90mm macro", "Leica M11 35mm Summilux"];
-export const PHOTOREAL_COLORS = ["accurate color reproduction", "Kodak Portra 400 simulation", "Fujifilm Superia 400 aesthetic", "neutral white balance"];
-export const ABSTRACT_ENVS = ["void of non-Euclidean geometry", "surreal melting dreamscape", "quantum realm", "infinite fractal structure"];
-export const ABSTRACT_LIGHTS = ["bioluminescent aura", "psychedelic strobe", "iridescent light refraction", "chromatic aberration"];
-export const ABSTRACT_CAMS = ["kaleidoscopic fractal lens", "tilt-shift macro", "electron microscope scan", "long exposure light painting"];
-export const ABSTRACT_COLORS = ["iridescent hues", "vibrant vaporwave palette", "absolute white and Vantablack", "chaotic optical illusion colors"];
+export const getRandomDicePrompt = () => sanitize(`${pick(DICE_SUBJECTS)}, set in ${pick(ENV_TOKENS).replace(/_/g, ' ')}. ${getMetaCombo()}`);
 
-// --- HELPER FUNKCIJE ---
-export const getYouTubeId = (url) => { if (!url || url === "#") return null; const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|\/shorts\/)([^#&?]*).*/; const match = url.match(regExp); return (match && match[2].length === 11) ? match[2] : null; };
-export const getMediaThumbnail = (url, type) => { if (!url) return bannerUrl; const ytId = getYouTubeId(url); if (ytId) return `https://i.ytimg.com/vi/${ytId}/maxresdefault.jpg`; return url; };
-export const formatExternalLink = (url) => { if (!url || url === "#") return "#"; return url.trim().startsWith("http") ? url.trim() : `https://${url.trim()}`; };
-export const extractSys = (desc) => { let d = desc || ""; let s = { w: '', g: '', b: 'AI ASSET', t: 'LATEST ⚡' }; if (d.includes("|||SYS|||")) { const parts = d.split("|||SYS|||"); d = parts[0].trim(); try { s = { ...s, ...JSON.parse(parts[1]) }; } catch(e) {} } return { d: d, s }; };
-export const SESSION_ID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-export const trackEvent = async (action, details = {}) => { try { await addDoc(collection(db, "site_stats"), { action, ...details, sessionId: SESSION_ID, localTime: Date.now(), timestamp: serverTimestamp(), userAgent: navigator.userAgent, path: window.location.pathname }); } catch (e) {} };
-
-// --- V8 ENGINE LOGIKA (POPRAVLJENO SA CENZUROM) ---
 export const generatePrompts = (customerPrompt, demoInput, selectedQuality, selectedAR) => {
     let result = { single: '', abstract: '', cinematic: '', photoreal: '', cctv: '' };
+    const tokens = getMetaCombo();
     if (customerPrompt.trim().length > 0) {
-        const env = CINEMATIC_ENVS[Math.floor(Math.random() * CINEMATIC_ENVS.length)];
-        const light = CINEMATIC_LIGHTS[Math.floor(Math.random() * CINEMATIC_LIGHTS.length)];
-        const cam = CINEMATIC_CAMS[Math.floor(Math.random() * CINEMATIC_CAMS.length)];
-        const color = CINEMATIC_COLORS[Math.floor(Math.random() * CINEMATIC_COLORS.length)];
-        const cleanInput = customerPrompt.trim();
-        let finalPrompt = "";
-        if (selectedQuality === '1x') finalPrompt = `A high-quality cinematic image of ${cleanInput}, located ${env}. The scene features ${light}. ${cam}, ${color}. Aspect ratio: ${selectedAR}.`;
-        else if (selectedQuality === '2x') finalPrompt = `A breathtaking photorealistic render of ${cleanInput}, displaying monumental scale and precise details. Set ${env}. The environment is illuminated by ${light}. ${cam}, ${color}. Aspect ratio: ${selectedAR}.`;
-        else finalPrompt = `A hyper-realistic cinematic masterpiece of ${cleanInput}, incredible intricate detailing. Subject placed ${env}. Atmosphere defined by ${light}. ${cam}, ${color}. 32k UHD, absolute visual perfection. Aspect ratio: ${selectedAR}.`;
-        result.single = finalPrompt;
-    } 
-    else if (demoInput.trim().length > 0) {
-        const cleanInput = demoInput.trim().toUpperCase();
-        
-        const aEnv = ABSTRACT_ENVS[Math.floor(Math.random() * ABSTRACT_ENVS.length)];
-        const aLight = ABSTRACT_LIGHTS[Math.floor(Math.random() * ABSTRACT_LIGHTS.length)];
-        const aCam = ABSTRACT_CAMS[Math.floor(Math.random() * ABSTRACT_CAMS.length)];
-        const aColor = ABSTRACT_COLORS[Math.floor(Math.random() * ABSTRACT_COLORS.length)];
-        result.abstract = `A hyper-detailed abstract masterpiece of ${cleanInput}, in a ${aEnv}. Features ${aLight}. ${aCam}, ${aColor}. 32k UHD resolution. Aspect ratio: ${selectedAR}.`;
-
-        const cEnv = CINEMATIC_ENVS[Math.floor(Math.random() * CINEMATIC_ENVS.length)];
-        const cLight = CINEMATIC_LIGHTS[Math.floor(Math.random() * CINEMATIC_LIGHTS.length)];
-        const cCam = CINEMATIC_CAMS[Math.floor(Math.random() * CINEMATIC_CAMS.length)];
-        const cColor = CINEMATIC_COLORS[Math.floor(Math.random() * CINEMATIC_COLORS.length)];
-        result.cinematic = `A breathtaking blockbuster shot of ${cleanInput}, set ${cEnv}. Lighting: ${cLight}. ${cCam}, ${cColor}. High-end cinematic VFX. Aspect ratio: ${selectedAR}.`;
-
-        const pEnv = PHOTOREAL_ENVS[Math.floor(Math.random() * PHOTOREAL_ENVS.length)];
-        const pLight = PHOTOREAL_LIGHTS[Math.floor(Math.random() * PHOTOREAL_LIGHTS.length)];
-        const pCam = PHOTOREAL_CAMS[Math.floor(Math.floor(Math.random() * PHOTOREAL_CAMS.length))];
-        const pColor = PHOTOREAL_COLORS[Math.floor(Math.random() * PHOTOREAL_COLORS.length)];
-        result.photoreal = `An ultra-photorealistic RAW macro photograph of ${cleanInput}, set ${pEnv}. Atmosphere: ${pLight}. ${pCam}, ${pColor}. 32k UHD depth. Aspect ratio: ${selectedAR}.`;
-
-        // --- THE MOST UNIQUE PHOTOREALISTIC LOGIKA (BEZ NEON/CYBERPUNK) ---
-        const uDop = UNIQUE_DOP_STYLES[Math.floor(Math.random() * UNIQUE_DOP_STYLES.length)];
-        const uLen = UNIQUE_LENSES[Math.floor(Math.random() * UNIQUE_LENSES.length)];
-        const uLig = UNIQUE_LIGHTING[Math.floor(Math.random() * UNIQUE_LIGHTING.length)];
-        const uTex = UNIQUE_TEXTURES[Math.floor(Math.random() * UNIQUE_TEXTURES.length)];
-        
-        // CENZURA: Brisanje zabranjenih reči
-        const noCyberNeonInput = demoInput.trim()
-            .replace(/cyberpunk/gi, '')
-            .replace(/cyberpank/gi, '')
-            .replace(/neon/gi, '')
-            .replace(/\s\s+/g, ' ')
-            .trim().toUpperCase();
-
-        result.cctv = `The most unique photorealistic image ever of ${noCyberNeonInput}. ${uDop}, meticulously using ${uLen} for optical fidelity and ${uTex}. Scene is masterfully ${uLig}. Absolute RAW 8k clarity, zero-digital noise. Aspect ratio: ${selectedAR}.`;
+        const cleanInput = sanitize(customerPrompt);
+        result.single = `[FIDELITY_INJECTION] ${cleanInput.toUpperCase()}. ${pick(MOTION_TOKENS)} • ${tokens} • Aspect ratio: ${selectedAR}`;
+    } else if (demoInput.trim().length > 0) {
+        const cleanInput = sanitize(demoInput).toUpperCase();
+        result.abstract = `[META_TOKEN: ABSTRACT] Surreal representation of ${cleanInput}. ${pick(STYLE_TOKENS)} • ${pick(REALISM_TOKENS)} • ${pick(COLOR_TOKENS)} • ${pick(DETAIL_TOKENS)} • Aspect ratio: ${selectedAR}`;
+        result.cinematic = `[META_TOKEN: CINEMA] A breathtaking IMAX movie still of ${cleanInput}. ${pick(STYLE_TOKENS)} • ${pick(CAMERA_TOKENS)} • ${pick(LIGHTING_TOKENS)} • ${pick(MOTION_TOKENS)} • Aspect ratio: ${selectedAR}`;
+        result.photoreal = `[META_TOKEN: PHOTOREAL] RAW documentary capture of ${cleanInput}. ${pick(CAMERA_TOKENS)} • ${pick(LENS_TOKENS)} • ${pick(DETAIL_TOKENS)} • ${pick(REALISM_TOKENS)} • Aspect ratio: ${selectedAR}`;
+        result.cctv = `[ULTIMATE_UNIQUE_FIDELITY] The most unique photorealistic image ever of ${cleanInput}. ${pick(STYLE_TOKENS)} • ${pick(CAMERA_TOKENS)} • ${pick(LENS_TOKENS)} • ${pick(LIGHTING_TOKENS)} • ${pick(DETAIL_TOKENS)} • ${pick(REALISM_TOKENS)} • ${pick(COLOR_TOKENS)} • Aspect ratio: ${selectedAR}`;
     }
     return result;
 };
 
-// --- KOMPONENTE ---
-export function TypewriterText({ text, speed = 15 }) { const [displayedText, setDisplayedText] = useState(''); useEffect(() => { setDisplayedText(''); if (!text) return; let i = 0; const intervalId = setInterval(() => { setDisplayedText(text.slice(0, i + 1)); i++; if (i >= text.length) clearInterval(intervalId); }, speed); return () => clearInterval(intervalId); }, [text, speed]); return <>{displayedText}</>; }
-export function UniversalVideoPlayer({ url, autoPlay = true, loop = false, muted = false, hideControls = false, onEnded, videoRef }) { const ytId = getYouTubeId(url); const baseClasses = hideControls ? "w-full h-full object-cover pointer-events-none" : "w-full h-full object-cover"; const iframeClasses = hideControls ? "w-full h-full pointer-events-none" : "w-full h-full"; if (ytId) { let src = `https://www.youtube.com/embed/${ytId}?autoplay=${autoPlay ? 1 : 0}&rel=0&controls=${hideControls ? 0 : 1}`; if (muted) src += `&mute=1`; if (loop) src += `&loop=1&playlist=${ytId}`; return <iframe className={iframeClasses} src={src} frameBorder="0" allow="autoplay; encrypted-media" allowFullScreen onContextMenu={(e) => e.preventDefault()}></iframe>; } return <video ref={videoRef} src={url} className={baseClasses} autoPlay={autoPlay} loop={loop} muted={muted} controls={!hideControls} playsInline preload="metadata" onEnded={onEnded} controlsList="nodownload" onContextMenu={(e) => e.preventDefault()} />; }
-export const renderDescription = (text) => { const { d: cleanDesc } = extractSys(text); if (!cleanDesc) return <p className="text-zinc-500 italic text-[10px]">Data ready.</p>; return cleanDesc.split('\n').map((line, idx) => { const trimmed = line.trim(); if (!trimmed) return <div key={idx} className="h-2"></div>; const upperTrimmed = trimmed.toUpperCase(); if (upperTrimmed.includes('KEY FEATURES') || upperTrimmed.includes('WHO IS THIS FOR') || upperTrimmed.includes('[DESCRIPTION]') || upperTrimmed.includes('VALUE MULTIPLIER')) { return <h3 key={idx} className="text-[12px] font-black text-white mt-10 mb-4 uppercase tracking-widest border-l-4 border-orange-500 pl-4 italic text-left">{trimmed}</h3>; } if (trimmed.startsWith('*') || trimmed.startsWith('-')) { return <div key={idx} className="flex gap-3 items-start my-2 bg-white/[0.02] p-3 rounded-2xl border border-white/5 text-left"><CheckCircle2 className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" /><p className="text-white text-[11px] font-bold">{trimmed.replace(/^[*-]\s*/, '')}</p></div>; } return <p key={idx} className="text-white text-[11px] font-bold leading-relaxed my-3 text-left">{trimmed}</p>; }); };
-export function FullScreenBoot({ onComplete }) { const [lines, setLines] = useState([]); const [fading, setFading] = useState(false); useEffect(() => { const hexChars = '0123456789ABCDEF'; const protocols = ["Decrypting V8 Engine modules...", "Bypassing mainframe firewalls...", "Injecting hyper-realistic datasets...", "Allocating 128GB VRAM...", "Compiling Abstract nodes...", "Establishing neural handshake...", "Syncing with global matrix..."]; const generateLine = () => { if (Math.random() > 0.8) return `> [OK] ${protocols[Math.floor(Math.random() * protocols.length)]}`; let line = '0x'; for(let i=0; i<8; i++) line += hexChars[Math.floor(Math.random() * hexChars.length)]; line += ' '; const length = Math.floor(Math.random() * 50) + 30; for(let i=0; i<length; i++) line += hexChars[Math.floor(Math.random() * hexChars.length)]; return line; }; const interval = setInterval(() => { setLines(prev => { const newLines = [...prev, generateLine()]; return newLines.length > 70 ? newLines.slice(newLines.length - 70) : newLines; }); }, 30); const t1 = setTimeout(() => { clearInterval(interval); setLines(prev => [...prev, "", "> SYSTEM INTEGRATION COMPLETE.", "> ACCESS GRANTED."]); }, 2200); const t2 = setTimeout(() => setFading(true), 2600); const t3 = setTimeout(() => onComplete(), 3000); return () => { clearInterval(interval); clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); }; }, [onComplete]); return ( <div className={`fixed inset-0 z-[9999] bg-[#050505] text-green-500 font-mono text-[9px] sm:text-[11px] overflow-hidden transition-opacity duration-[400ms] pointer-events-none ${fading ? 'opacity-0' : 'opacity-100'}`}> <div className="absolute bottom-0 left-0 w-full px-4 py-6 sm:px-8 sm:py-8 flex flex-col justify-end space-y-0.5 opacity-90">{lines.map((l, i) => (<div key={i} className={l.includes('ACCESS GRANTED') ? 'text-green-400 font-black text-sm sm:text-base mt-4 animate-pulse' : 'break-all'}>{l}</div>))}</div> </div> ); }
-export function MatrixRain() { const canvasRef = useRef(null); useEffect(() => { const canvas = canvasRef.current; if(!canvas) return; const ctx = canvas.getContext('2d'); const resizeCanvas = () => { canvas.width = canvas.parentElement.offsetWidth; canvas.height = canvas.parentElement.offsetHeight; }; resizeCanvas(); window.addEventListener('resize', resizeCanvas); const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()'; const fontSize = 14; let drops = Array(Math.floor(canvas.width / fontSize)).fill(1); const draw = () => { ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#0F0'; ctx.font = fontSize + 'px monospace'; for (let i = 0; i < drops.length; i++) { ctx.fillText(letters[Math.floor(Math.random() * letters.length)], i * fontSize, drops[i] * fontSize); if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0; drops[i]++; } }; const interval = setInterval(draw, 35); return () => clearInterval(interval); }, []); return <canvas ref={canvasRef} className="absolute inset-0 z-[15] opacity-[0.15] pointer-events-none" />; }
-export function UrgencyBar() { const [timeLeft, setTimeLeft] = useState("02:45:12"); useEffect(() => { const timer = setInterval(() => { const now = new Date(); setTimeLeft(`${String(23-now.getHours()).padStart(2,'0')}:${String(59-now.getMinutes()).padStart(2,'0')}:${String(59-now.getSeconds()).padStart(2,'0')}`); }, 1000); return () => clearInterval(timer); }, []); return ( <div className="w-full bg-black border-b border-orange-500/20 py-1.5 overflow-hidden flex items-center justify-center gap-3 md:gap-6 px-4 relative z-[200]"> <span className="text-[7px] md:text-[8px] font-black text-orange-500 uppercase tracking-[0.3em] animate-pulse">System Alert: Flash License Deal</span> <div className="flex items-center gap-2 bg-orange-600/10 px-3 py-0.5 rounded-full border border-orange-500/30"><span className="text-[8px] font-black text-white font-mono">{timeLeft}</span></div> <span className="hidden sm:inline text-[7px] md:text-[8px] font-black text-zinc-500 uppercase tracking-widest">Price Increase Imminent</span> </div> ); }
-export function TutorialCard({ vid }) { const videoId = getYouTubeId(vid.url); const [imgSrc, setImgSrc] = useState(videoId ? `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg` : bannerUrl); return ( <div className="p-[1px] bg-gradient-to-br from-orange-500 to-blue-500 shadow-xl rounded-[2rem] flex flex-col h-full transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(59,130,246,0.3)] group"> <div className="bg-[#0a0a0a] rounded-[1.9rem] p-4 flex flex-col h-full relative"> <div className="aspect-video relative overflow-hidden rounded-2xl mb-4 bg-zinc-900 border-2 border-blue-500/60 group-hover:border-blue-400 cursor-pointer transition-all duration-500" onClick={() => { if (videoId) { window.open(vid.url, '_blank'); trackEvent("tutorial_external_open", { title: vid.title, video_id: videoId }); } }}> <img src={imgSrc} onError={() => setImgSrc(videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : bannerUrl)} className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-all" alt="" /> {videoId && (<div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-transparent transition-all"><PlayCircle className="w-12 h-12 text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.8)] opacity-90 group-hover:scale-110 transition-all" /></div>)} <div className="absolute top-3 left-3 bg-red-600/90 backdrop-blur-md px-2 py-1 rounded-lg text-[7px] font-black uppercase text-white border border-white/10 flex items-center gap-1.5 shadow-xl"><div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(249,115,22,0.8)]"></div> Live</div> </div> <h4 className="text-zinc-300 group-hover:text-white font-bold text-[10px] uppercase tracking-tight line-clamp-2 transition-colors leading-relaxed text-left">{vid.title}</h4> </div> </div> ); }
-export function AssetCard({ app }) { const mediaItem = app?.media?.[0]; const isVideo = mediaItem?.type === 'video' || mediaItem?.url?.match(/\.(mp4|webm|ogg|mov)$/i); const displayUrl = isVideo ? `${mediaItem.url}#t=0.001` : getMediaThumbnail(mediaItem?.url, mediaItem?.type); const [isPlaying, setIsPlaying] = useState(false); const videoRef = useRef(null); const { s: sysData } = extractSys(app.description); const ribbonText = sysData.t && sysData.t !== "LATEST ⚡" ? sysData.t : ((app.type && app.type !== "AI ASSET") ? app.type : "LATEST ⚡"); let ribbonColor = "from-blue-700 via-blue-500 to-blue-700 shadow-[0_5px_15px_rgba(59,130,246,0.6)] border-blue-400/50"; const upperText = ribbonText.toUpperCase(); if (upperText.includes("HOT")) ribbonColor = "from-red-700 via-red-500 to-red-700 shadow-[0_5px_15px_rgba(220,38,38,0.6)] border-red-400/50"; else if (upperText.includes("POPULAR") || upperText.includes("BEST")) ribbonColor = "from-yellow-600 via-yellow-400 to-yellow-600 shadow-[0_5px_15px_rgba(234,179,8,0.6)] border-yellow-400/50"; else if (upperText.includes("NEW") || upperText.includes("UPDATE")) ribbonColor = "from-green-600 via-green-400 to-green-600 shadow-[0_5px_15px_rgba(34,197,94,0.6)] border-green-400/50"; return ( <div className="relative overflow-hidden p-[1px] bg-gradient-to-br from-orange-500 to-blue-500 shadow-2xl rounded-[2.5rem] transition-all duration-500 hover:scale-[1.02] flex flex-col group h-full text-white hover:shadow-[4px_0px_0px_rgba(239,68,68,0.4),-4px_0px_0px_rgba(59,130,246,0.4)]"> <div className={`absolute top-7 -right-10 z-50 w-40 bg-gradient-to-r ${ribbonColor} text-white text-center py-1.5 font-black text-[9px] uppercase tracking-[0.2em] border-y transform rotate-45 pointer-events-none`}>{ribbonText}</div> <div className="bg-[#0a0a0a] rounded-[2.4rem] flex flex-col h-full p-8 relative"> <div className="aspect-video relative overflow-hidden rounded-[1.5rem] mb-6 border-2 border-blue-500/60 group-hover:border-blue-400 group-hover:shadow-[0_0_25px_rgba(59,130,246,0.3)] transition-all duration-500 bg-zinc-900 cursor-pointer" onClick={(e) => { if (!isPlaying && isVideo && videoRef.current) { e.preventDefault(); e.stopPropagation(); videoRef.current.play(); setIsPlaying(true); trackEvent("asset_preview_start", { name: app.name, asset_id: app.id }); } }}> {isVideo ? ( <> <video ref={videoRef} src={displayUrl} preload="metadata" muted playsInline controls={isPlaying} controlsList="nodownload" onContextMenu={(e) => e.preventDefault()} className={`w-full h-full object-cover transition-all ${isPlaying ? 'opacity-100' : 'opacity-80 group-hover:opacity-100'}`} onPlay={() => { setIsPlaying(true); trackEvent("asset_preview_start", { name: app.name }); }} onPause={() => setIsPlaying(false)} onEnded={() => { setIsPlaying(false); if(videoRef.current) videoRef.current.currentTime = 0.001; }} /> {!isPlaying && (<div className="absolute inset-0 flex items-center justify-center pointer-events-none"><PlayCircle className="w-12 h-12 text-orange-500 drop-shadow-[0_0_15px_rgba(249,115,22,0.8)] group-hover:scale-110 transition-transform" /></div>)} </> ) : (<img src={displayUrl} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-105 transition-all" alt="" onContextMenu={(e) => e.preventDefault()} draggable="false" />)} </div> <div className="flex justify-between items-start mb-3 gap-4"> <h2 className="text-sm md:text-base font-black uppercase group-hover:text-orange-500 transition-all duration-300 leading-none text-left group-hover:translate-x-1">{app.name}</h2> <div className="px-3 py-1.5 bg-blue-600/10 border border-blue-500/20 rounded-xl text-[10px] font-black text-blue-400 shadow-lg">${app.price}</div> </div> <p className="text-zinc-400 text-[10px] md:text-xs mb-4 line-clamp-2 text-left">{app.headline}</p> <div className="flex gap-4 mb-8 border-t border-white/5 pt-4"> <div className="flex flex-col"><span className="text-[6px] text-zinc-500 font-black uppercase tracking-widest">V8 Speed</span><span className="text-[9px] font-bold text-white">0.{Math.floor(Math.random() * 9)}ms</span></div> <div className="flex flex-col"><span className="text-[6px] text-zinc-500 font-black uppercase tracking-widest">Logic</span><span className="text-[9px] font-bold text-white">{95 + Math.floor(Math.random() * 4)}%</span></div> <div className="flex flex-col"><span className="text-[6px] text-zinc-500 font-black uppercase tracking-widest">Engine</span><span className="text-[9px] font-bold text-blue-500">MAX</span></div> </div> <div className="mt-auto pt-4 text-left"> <Link to={`/app/${app.id}`} onClick={() => trackEvent("asset_click", { name: app.name, asset_id: app.id })} className="w-full py-3.5 bg-blue-600 border border-blue-500 text-white rounded-2xl font-black text-[9px] uppercase tracking-[0.2em] text-center flex items-center justify-center gap-3 group-hover:bg-blue-500 shadow-xl transition-all">MORE DETAILS <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1.5 transition-all" /></Link> </div> </div> </div> ); }
-export function LiveSalesNotification({ apps }) { const [notification, setNotification] = useState(null); const [isVisible, setIsVisible] = useState(false); useEffect(() => { if(!apps || apps.length === 0) return; const interval = setInterval(() => { const randomName = SALES_NAMES[Math.floor(Math.random() * SALES_NAMES.length)]; const randomCountry = SALES_COUNTRIES[Math.floor(Math.random() * SALES_COUNTRIES.length)]; const randomApp = apps[Math.floor(Math.random() * apps.length)].name; setNotification({ name: randomName, country: randomCountry, product: randomApp }); setIsVisible(true); setTimeout(() => { setIsVisible(false); }, 5000); }, 28000); return () => clearInterval(interval); }, [apps]); return ( <div className={`fixed bottom-6 left-6 z-[200] bg-[#0a0a0a]/95 backdrop-blur-md border border-white/10 p-4 rounded-2xl shadow-2xl flex items-center gap-4 transition-all duration-700 transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'}`}> <div className="bg-green-500/20 p-2.5 rounded-full border border-green-500/30"><Check className="text-green-500 w-4 h-4"/></div> <div><p className="text-[9px] text-zinc-400 font-bold mb-0.5">{notification?.name} from {notification?.country} just bought</p><p className="text-[11px] font-black text-white">{notification?.product}</p></div> </div> ); }
+// --- POMOĆNE FUNKCIJE ---
+export const getYouTubeId = (url) => { if (!url || url === "#") return null; const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|\/shorts\/)([^#&?]*).*/); return (match && match[2].length === 11) ? match[2] : null; };
+export const getMediaThumbnail = (url) => { const ytId = getYouTubeId(url); return ytId ? `https://i.ytimg.com/vi/${ytId}/maxresdefault.jpg` : (url || bannerUrl); };
+export const formatExternalLink = (url) => { if (!url || url === "#") return "#"; return url.trim().startsWith("http") ? url.trim() : `https://${url.trim()}`; };
+export const extractSys = (desc) => { let d = desc || ""; let s = { w: '', g: '', b: 'AI ASSET', t: 'LATEST ⚡' }; if (d.includes("|||SYS|||")) { const parts = d.split("|||SYS|||"); d = parts[0].trim(); try { s = { ...s, ...JSON.parse(parts[1]) }; } catch(e) {} } return { d: d, s }; };
+export const SESSION_ID = Math.random().toString(36).substring(2, 15);
+export const trackEvent = async (action, details = {}) => { try { await addDoc(collection(db, "site_stats"), { action, ...details, sessionId: SESSION_ID, timestamp: serverTimestamp() }); } catch (e) {} };
+
+// --- UI KOMPONENTE ---
+export function TypewriterText({ text, speed = 15 }) { const [displayedText, setDisplayedText] = useState(''); useEffect(() => { setDisplayedText(''); if (!text) return; let i = 0; const intv = setInterval(() => { setDisplayedText(text.slice(0, i + 1)); i++; if (i >= text.length) clearInterval(intv); }, speed); return () => clearInterval(intv); }, [text, speed]); return <>{displayedText}</>; }
+export function UniversalVideoPlayer({ url, autoPlay = true, loop = false, muted = false, hideControls = false, videoRef }) { const ytId = getYouTubeId(url); if (ytId) { let src = `https://www.youtube.com/embed/${ytId}?autoplay=${autoPlay ? 1 : 0}&rel=0&controls=${hideControls ? 0 : 1}`; if (muted) src += `&mute=1`; if (loop) src += `&loop=1&playlist=${ytId}`; return <iframe className="w-full h-full" src={src} frameBorder="0" allowFullScreen title="video"></iframe>; } return <video ref={videoRef} src={url} className="w-full h-full object-cover" autoPlay={autoPlay} loop={loop} muted={muted} controls={!hideControls} playsInline />; }
+
+// --- FUNKCIJA GDE SE ISCRTAVA TEKST (SA NOVIM NASLOVIMA) ---
+export const renderDescription = (text) => {
+  const { d: cleanDesc } = extractSys(text);
+  if (!cleanDesc) return null;
+  return cleanDesc.split('\n').map((line, idx) => {
+    const trimmed = line.trim();
+    if (!trimmed) return <div key={idx} className="h-2"></div>;
+    const upper = trimmed.toUpperCase();
+    
+    // OVO JE DEO KOJI PREPOZNAJE NASLOVE I DAJE IM STIL
+    if (
+      upper.includes('[DESCRIPTION]') || 
+      upper.includes('VALUE MULTIPLIER') || 
+      upper.includes('KEY FEATURES') ||
+      upper.includes('THE ARSENAL') ||
+      upper.includes('THE 5 PILLARS') ||
+      upper.includes('THE ROI FINALE')
+    ) {
+        // border-l-4 znaci linija sa LEVE strane
+        return <h3 key={idx} className="text-[12px] font-black text-white mt-10 mb-4 uppercase tracking-widest border-l-4 border-orange-500 pl-4 italic text-left">{trimmed}</h3>;
+    }
+    
+    if (trimmed.startsWith('*') || trimmed.startsWith('-')) {
+      return <div key={idx} className="flex gap-3 items-start my-2 bg-white/[0.02] p-3 rounded-2xl border border-white/5"><CheckCircle2 className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" /><p className="text-white text-[11px] font-bold text-left">{trimmed.replace(/^[*-]\s*/, '')}</p></div>;
+    }
+    return <p key={idx} className="text-white text-[11px] font-bold leading-relaxed my-3 text-left">{trimmed}</p>;
+  });
+};
+
+export function FullScreenBoot({ onComplete }) { const [lines, setLines] = useState([]); const [fading, setFading] = useState(false); useEffect(() => { const intv = setInterval(() => { setLines(prev => [...prev, `0x${Math.random().toString(16).slice(2, 10).toUpperCase()} SYNC`].slice(-40)); }, 30); setTimeout(() => { clearInterval(intv); setLines(prev => [...prev, "", "> ACCESS GRANTED."]); }, 1800); setTimeout(() => setFading(true), 2400); setTimeout(() => onComplete(), 2800); return () => clearInterval(intv); }, [onComplete]); return <div className={`fixed inset-0 z-[9999] bg-[#050505] text-green-500 font-mono text-[10px] overflow-hidden transition-opacity duration-500 ${fading ? 'opacity-0' : 'opacity-100'}`}><div className="absolute bottom-0 left-0 w-full px-8 py-8 flex flex-col justify-end space-y-0.5 opacity-90">{lines.map((l, i) => (<div key={i} className={l.includes('GRANTED') ? 'text-green-400 font-black text-lg mt-4 animate-pulse' : 'break-all'}>{l}</div>))}</div></div>; }
+export function MatrixRain() { const canvasRef = useRef(null); useEffect(() => { const canvas = canvasRef.current; if(!canvas) return; const ctx = canvas.getContext('2d'); canvas.width = canvas.parentElement.offsetWidth; canvas.height = canvas.parentElement.offsetHeight; const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; const fontSize = 14; let drops = Array(Math.floor(canvas.width / fontSize)).fill(1); const draw = () => { ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#0F0'; ctx.font = fontSize + 'px monospace'; for (let i = 0; i < drops.length; i++) { ctx.fillText(letters[Math.floor(Math.random() * letters.length)], i * fontSize, drops[i] * fontSize); if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0; drops[i]++; } }; const intv = setInterval(draw, 35); return () => clearInterval(intv); }, []); return <canvas ref={canvasRef} className="absolute inset-0 z-[15] opacity-[0.15] pointer-events-none" />; }
+export function UrgencyBar() { const [timeLeft, setTimeLeft] = useState("02:45:12"); useEffect(() => { const timer = setInterval(() => { const now = new Date(); setTimeLeft(`${String(23-now.getHours()).padStart(2,'0')}:${String(59-now.getMinutes()).padStart(2,'0')}:${String(59-now.getSeconds()).padStart(2,'0')}`); }, 1000); return () => clearInterval(timer); }, []); return <div className="w-full bg-black border-b border-orange-500/20 py-1.5 flex items-center justify-center gap-6 px-4 relative z-[200]"><span className="text-[8px] font-black text-orange-500 uppercase tracking-[0.3em] animate-pulse">System Alert: Flash License Deal</span><div className="flex items-center gap-2 bg-orange-600/10 px-3 py-0.5 rounded-full border border-orange-500/30"><span className="text-[8px] font-black text-white font-mono">{timeLeft}</span></div></div>; }
+export function TutorialCard({ vid }) { const videoId = getYouTubeId(vid.url); return <div className="p-[1px] bg-gradient-to-br from-orange-500 to-blue-500 rounded-[2rem] flex flex-col h-full hover:-translate-y-1 transition-all group shadow-xl"><div className="bg-[#0a0a0a] rounded-[1.9rem] p-4 flex flex-col h-full"><div className="aspect-video relative overflow-hidden rounded-2xl mb-4 bg-zinc-900 border-2 border-blue-500/60 cursor-pointer" onClick={() => window.open(vid.url, '_blank')}><img src={`https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`} alt="thumb" className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-all" /><div className="absolute inset-0 flex items-center justify-center"><PlayCircle className="w-12 h-12 text-red-500 drop-shadow-lg" /></div></div><h4 className="text-zinc-300 font-bold text-[10px] uppercase line-clamp-2 text-left">{vid.title}</h4></div></div>; }
+
+export function AssetCard({ app }) {
+  const mediaItem = app?.media?.[0];
+  const isVideo = mediaItem?.type === 'video' || mediaItem?.url?.match(/\.(mp4|webm|ogg|mov)$/i);
+  const displayUrl = isVideo ? `${mediaItem.url}#t=0.001` : getMediaThumbnail(mediaItem?.url);
+  return (
+    <div className="relative overflow-hidden p-[1px] bg-gradient-to-br from-orange-500 to-blue-500 rounded-[2.5rem] transition-all duration-500 hover:scale-[1.02] flex flex-col group h-full shadow-2xl">
+      <div className="bg-[#0a0a0a] rounded-[2.4rem] flex flex-col h-full p-8 relative">
+        <div className="aspect-video relative overflow-hidden rounded-[1.5rem] mb-6 border-2 border-blue-500/60 bg-zinc-900">
+          {isVideo ? <video src={displayUrl} className="w-full h-full object-cover" muted playsInline /> : <img src={displayUrl} className="w-full h-full object-cover" alt="asset" />}
+        </div>
+        <div className="flex justify-between items-start mb-3 gap-4 text-left">
+          <h2 className="text-sm font-black uppercase group-hover:text-orange-500 transition-all">{app.name}</h2>
+          <div className="px-3 py-1.5 bg-blue-600/10 border border-blue-500/20 rounded-xl text-[10px] font-black text-blue-400 shadow-lg">${app.price}</div>
+        </div>
+        <div className="mt-auto pt-4 text-left">
+          <Link to={`/app/${app.id}`} className="w-full py-3.5 bg-blue-600 text-white rounded-2xl font-black text-[9px] uppercase tracking-[0.2em] text-center flex items-center justify-center gap-3 hover:bg-blue-500 transition-all shadow-xl">MORE DETAILS <ArrowRight className="w-3.5 h-3.5" /></Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function LiveSalesNotification({ apps }) {
+  const [notification, setNotification] = useState(null);
+  const [isVisible, setIsVisible] = useState(false);
+  useEffect(() => {
+    if(!apps || apps.length === 0) return;
+    const interval = setInterval(() => {
+       const randomApp = apps[Math.floor(Math.random() * apps.length)].name;
+       setNotification({ product: randomApp });
+       setIsVisible(true); setTimeout(() => setIsVisible(false), 5000); 
+    }, 28000); 
+    return () => clearInterval(interval);
+  }, [apps]);
+  return <div className={`fixed bottom-6 left-6 z-[200] bg-[#0a0a0a]/95 border border-white/10 p-4 rounded-2xl transition-all duration-700 shadow-2xl text-left ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'}`}><div className="flex items-center gap-4"><div className="bg-green-500/20 p-2 rounded-full"><Check className="text-green-500 w-4 h-4"/></div><div><p className="text-[9px] text-zinc-400 font-bold">New License Activated</p><p className="text-[11px] font-black text-white">{notification?.product}</p></div></div></div>;
+}
+
 export function StarIcon() { return <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" /></svg>; }
-export const TwitterIcon = () => (<svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 22.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>);
-export const YouTubeIcon = () => (<svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>);
-export const InstagramIcon = () => (<svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><defs><linearGradient id="ig-grad" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stopColor="#f09433" /><stop offset="25%" stopColor="#e6683c" /><stop offset="50%" stopColor="#dc2743" /><stop offset="75%" stopColor="#cc2366" /><stop offset="100%" stopColor="#bc1888" /></linearGradient></defs><path fill="url(#ig-grad)" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>);
-export const TikTokIcon = () => (<svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93v7.2c0 1.95-.53 3.92-1.59 5.51-1.48 2.22-3.8 3.56-6.42 3.65-2.6.09-5.18-.9-6.99-2.75-1.68-1.71-2.58-4.08-2.45-6.48.11-2.14 1.05-4.18 2.62-5.63 1.54-1.43 3.63-2.17 5.74-2.15v4.01c-1.39-.01-2.8.46-3.84 1.39-1.07.95-1.63 2.4-1.53 3.86.11 1.46.9 2.8 2.09 3.64 1.34 1.01 3.19 1.25 4.8.72 1.5-.49 2.63-1.68 3.12-3.15.19-.57.26-1.17.26-1.77V.02h4.11z"/></svg>);
+export const BANNER_DATA = [{ url: slikaHubImg, badge: "CORE AI HUB", title: "Welcome to Our Hub", subtitle: "Command center for generating complex AI architectures." }, { url: zmajImg, badge: "DRAGON PROTOCOL", title: "ANCIENT EMPIRES REBORN", subtitle: "Generate epic scenes with dragons in 8K resolution." }, { url: novaSlikaImg, badge: "TIME TRAVELER", title: "UNIQUE PHOTO REALISTIC IMAGES", subtitle: "Merging historical eras using advanced AI engines." }, { url: slikaCopyImg, badge: "CYBER STEALTH", title: "GHOST IN THE MACHINE", subtitle: "Professional prompts for high-detail visuals." }, { url: slikaVideoImg, badge: "WARP SPEED", title: "TEMPORAL MOTION ENGINE", subtitle: "Optimized for fast generation of AI video content." }, { url: hollywoodImg, badge: "WINTER PROTOCOL", title: "HOLLYWOOD VFX GRADE", subtitle: "Epic cinematic battles and CGI-level detail." }];
