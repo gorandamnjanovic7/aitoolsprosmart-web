@@ -1,6 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { CheckCircle2, PlayCircle, ArrowRight, Check } from 'lucide-react';
 
-// --- IMAGE IMPORTS ---
+// --- FIREBASE INTEGRACIJA ---
+import { db } from './firebase';
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+
+// --- IMAGE IMPORTS (POPRAVLJENO) ---
 import zmajImg from './zmaj.jpg';
 import novaSlikaImg from './nova-slika.png';
 import slikaHubImg from './slika-hub.jpeg';
@@ -9,153 +15,121 @@ import hollywoodImg from './hollywood.png';
 import slikaVideoImg from './slika-video.jpeg';
 import mojLogo from './logo.png';
 
-// --- CLOUDINARY CONFIGURATION ---
+// --- KONFIGURACIJA ---
 export const CLOUDINARY_CLOUD_NAME = "drllxycnh"; 
 export const CLOUDINARY_UPLOAD_PRESET = "uploads1"; 
-
-// --- BRANDING ASSETS ---
 export const logoUrl = mojLogo; 
 export const bannerUrl = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop";
+export const ADMIN_DEFAULT_DESC = `[DESCRIPTION]\nEnter your main description here...\n\nKEY FEATURES\n* Feature 1\n* Feature 2\n* Feature 3\n\nVALUE MULTIPLIER\n* Benefit 1\n* Benefit 2`;
+export const PAYMENT_METHODS = ["Stripe", "PayPal", "Crypto"];
 
-// --- BANNER / HERO SLIDER DATA ---
-export const BANNER_DATA = [
-  { url: slikaHubImg, badge: "CORE AI HUB", title: "Welcome to Our Hub", subtitle: "Command center for data control and generating complex AI architectures." },
-  { url: zmajImg, badge: "DRAGON PROTOCOL", title: "ANCIENT EMPIRES REBORN", subtitle: "Generate epic, hyper-realistic scenes with dragons and mythical creatures in 8K resolution." },
-  { url: novaSlikaImg, badge: "TIME TRAVELER", title: "UNIQUE PHOTO REALISTIC IMAGES", subtitle: "Merging incompatible historical eras using advanced AI Prompt engines." },
-  { url: slikaCopyImg, badge: "CYBER STEALTH", title: "GHOST IN THE MACHINE", subtitle: "Professional prompts for digital art and high-detail cyberpunk visuals." },
-  { url: slikaVideoImg, badge: "WARP SPEED", title: "TEMPORAL MOTION ENGINE", subtitle: "Optimized for ultra-fast generation of AI video content with fluid motion." },
-  { url: hollywoodImg, badge: "WINTER PROTOCOL", title: "HOLLYWOOD VFX GRADE", subtitle: "Epic cinematic battles and CGI-level detail for your video and photo projects." }
-];
+// --- NIZOVI ZA ROLL DICE ---
+const DICE_SUBJECTS = ["a futuristic cybernetic lion", "a chrome-plated vintage Shelby Cobra", "an ancient Aztec high priest", "a massive obsidian dragon", "a lone astronaut on a red planet", "a cyberpunk ronin with a glowing katana", "a Victorian clockwork owl", "a bioluminescent deep-sea jellyfish", "a marble statue of a digital goddess", "a high-tech tactical battle droid", "a mystical druid in emerald robes", "a sleek stealth interceptor jet", "a giant robotic praying mantis", "a nomadic desert warrior", "a ghostly pirate captain", "a microscopic crystalline castle", "a colossal floating island fortress", "a zen monk meditating in zero gravity", "a vaporwave style retro mainframe", "a steampunk airship explorer", "a hyper-realistic cybernetic wolf", "a majestic phoenix made of plasma", "a neo-gothic vampire lord", "a futuristic F1 race car", "a samurai in high-tech carbon fiber armor", "a mysterious oracle in a temple", "a genetically modified tiger with neon stripes", "a robotic geisha with transparent skin", "a world-ending meteor impact", "a portal to another dimension", "a dense biomechanical forest", "a gold-plated humanoid android", "a futuristic city street with flying cars", "an overgrown post-apocalyptic New York", "a massive black hole event horizon", "a divine celestial entity", "a hyper-detailed luxury wristwatch gear", "a majestic eagle with metallic wings", "a futuristic holographic dancer", "a dark knight in heavy plate armor"];
+const DICE_ENVIRONMENTS = ["in a neon-drenched cyberpunk alley", "on a frozen lake under the aurora borealis", "inside a derelict space station corridor", "surrounded by a lush prehistoric jungle", "within a golden temple of light", "in a dark dystopian megacity rain", "at the bottom of a bioluminescent ocean", "on top of a crystalline mountain peak", "inside a smoky 1920s speakeasy", "floating in a nebula of purple gas", "in an ancient desert ruin with sandstorms", "within a high-tech minimalist white lab", "on a futuristic Mars colony", "in a deep cavern filled with glowing crystals", "overlooking a sprawling volcanic landscape", "in a Victorian library with floating books", "within a massive clockwork engine room", "on a quiet street in futuristic Tokyo", "inside an infinite mirror dimension", "in a dreamscape of floating geometric shapes"];
+const DICE_CAMERAS = ["shot on ARRI Alexa 35, Master Prime 35mm", "captured with RED V-Raptor, anamorphic 50mm", "shot on Hasselblad H6D-100c, macro 120mm", "Leica M11, Noctilux-M 50mm f/0.95", "Sony Venice 2, 70mm IMAX format", "vintage 35mm Panavision C-Series", "Nikon Z9, 85mm f/1.2 S-line", "Phase One XF, 80mm medium format", "Canon EOS R3, ultra-wide 14mm", "shot on Kodak Portra 400 film aesthetic", "captured with a probe lens for extreme macro", "shot on 70mm IMAX film stock", "Fujifilm GFX 100S, 45-100mm lens", "shot on 16mm grainy vintage film", "captured with a cinematic drone, 8k aerial view"];
+const DICE_LIGHTS = ["dramatic rim lighting with volumetric fog", "soft golden hour natural sunlight", "harsh magenta and cyan neon underglow", "cinematic chiaroscuro with deep shadows", "clinical high-key laboratory lighting", "ethereal moonlight filtering through clouds", "flickering firelight from a nearby forge", "underwater caustics and light refraction", "split lighting with warm and cool tones", "high-fashion strobe lighting setup", "moody noir lighting with long shadows", "bioluminescent glow from the subject", "intense overhead sun with sharp shadows", "soft-box studio lighting, professional", "volumetric god rays piercing the scene"];
 
-// --- TUTORIALS & PRODUCTS ---
+export const getRandomDicePrompt = () => {
+  const sub = DICE_SUBJECTS[Math.floor(Math.random() * DICE_SUBJECTS.length)];
+  const env = DICE_ENVIRONMENTS[Math.floor(Math.random() * DICE_ENVIRONMENTS.length)];
+  const cam = DICE_CAMERAS[Math.floor(Math.random() * DICE_CAMERAS.length)];
+  const light = DICE_LIGHTS[Math.floor(Math.random() * DICE_LIGHTS.length)];
+  return `${sub}, ${env}. ${cam}, ${light}.`;
+};
+
+// --- PODACI ---
+export const BANNER_DATA = [{ url: slikaHubImg, badge: "CORE AI HUB", title: "Welcome to Our Hub", subtitle: "Command center for data control and generating complex AI architectures." }, { url: zmajImg, badge: "DRAGON PROTOCOL", title: "ANCIENT EMPIRES REBORN", subtitle: "Generate epic, hyper-realistic scenes with dragons and mythical creatures in 8K resolution." }, { url: novaSlikaImg, badge: "TIME TRAVELER", title: "UNIQUE PHOTO REALISTIC IMAGES", subtitle: "Merging incompatible historical eras using advanced AI Prompt engines." }, { url: slikaCopyImg, badge: "CYBER STEALTH", title: "GHOST IN THE MACHINE", subtitle: "Professional prompts for digital art and high-detail cyberpunk visuals." }, { url: slikaVideoImg, badge: "WARP SPEED", title: "TEMPORAL MOTION ENGINE", subtitle: "Optimized for ultra-fast generation of AI video content with fluid motion." }, { url: hollywoodImg, badge: "WINTER PROTOCOL", title: "HOLLYWOOD VFX GRADE", subtitle: "Epic cinematic battles and CGI-level detail for your video and photo projects." }];
 export const MY_VIDEOS = [{ id: "dQw4w9WgXcQ", title: "PROTOCOL: How to install React Source Code", fallbackDesc: "Guide for setting up the development environment and deployment to Netlify." }];
-export const INITIAL_APPS = [{ id: "1", name: "Monument Architect", type: "AI PROMPT GENERATOR", price: "49", priceLifetime: "149", headline: "System protocol for massive digital sculptures and architecture.", description: "VALUE MULTIPLIER:\n* 880,000+ unique combinations\n* Optimized for Midjourney & Flux.1\n* Commercial license included", media: [{ url: zmajImg, type: 'image' }], whopLink: "https://whop.com/ai-tools-pro-smart[SPLIT]https://whop.com/checkout/react-source-code-monument", faq: [{ question: "V8 Architecture", answer: "Triple-injection protocol for high-fidelity output." }] }];
 export const DEFAULT_FAQ = [{ question: "V8 Architecture", answer: "Triple-injection protocol for high-fidelity output." }, { question: "Value Multiplier", answer: "Algorithmic expansion for 880,000+ combinations." }, { question: "Google Veo 3.1", answer: "Optimized temporal consistency for motion engines." }];
-export const TERMINAL_LINES = ["Establishing secure remote connection...", "Bypassing Matrix protocols...", "Decrypting AI Asset Registry...", "Loading high-fidelity resources...", "System integration complete.", "ACCESS GRANTED."];
 export const STATUSES = ["MATRIX: ONLINE", "V8 ENGINE: OPTIMAL", "SECURE CONNECTION"];
 export const SALES_NAMES = ["Michael T.", "David K.", "Sarah L.", "James W.", "Elena R.", "Alex M.", "Chris P.", "Tom H."];
 export const SALES_COUNTRIES = ["USA", "UK", "Canada", "Germany", "Australia", "France", "Sweden", "Brazil"];
 export const REVIEWS = ["Bro, these prompts are next level! - Alex M.", "The React source code saved me 3 weeks of dev. - Chris P.", "Absolutely insane detail in the Matrix generator. - Sarah L.", "Best AI asset investment I've made this year. - David K.", "10/10 quality. My clients are mind-blown. - Tom H.", "Finally, cinematic renders that actually look real. - Elena R."];
 
-// ============================================================================
-// 10X PROMPT ENHANCER MOTOR (V8 ARHITEKTURA) - KATEGORIZOVANI PODACI
-// ============================================================================
+// --- V8 ENGINE DATA ---
+export const CINEMATIC_ENVS = ["in a sprawling cyberpunk metropolis with neon reflections on wet asphalt", "standing on the edge of an ancient, crumbling ruin swallowed by a dense jungle", "inside a dimly lit, smoky 1920s speakeasy", "surrounded by the vast, empty dunes of an alien desert under twin moons"];
+export const CINEMATIC_LIGHTS = ["volumetric god rays piercing through dense fog", "dramatic cinematic chiaroscuro with deep, consuming shadows", "harsh neon rim lighting isolating the subject", "cinematic backlighting creating a striking silhouette"];
+export const CINEMATIC_CAMS = ["shot on ARRI Alexa 65, 35mm wide lens, f/1.8", "captured with Panavision 70mm, IMAX aspect ratio", "shot on RED Monstro 8K VV, classic 50mm cinematic lens", "Sony Venice 2, anamorphic anamorphic lenses with subtle blue flares"];
+export const CINEMATIC_COLORS = ["classic Hollywood blockbuster teal and orange color grade", "muted, gritty, and desaturated dystopian color palette", "vibrant cyberpunk neon color grading", "rich, warm melancholic sepia tones"];
+export const PHOTOREAL_ENVS = ["in a modern, minimalist living room with raw concrete textures", "on a busy intersection in Tokyo crossing during rush hour", "in a sterile, white, brightly lit medical facility", "standing in a lush, overgrown botanical greenhouse"];
+export const PHOTOREAL_LIGHTS = ["perfectly balanced natural window light", "Rembrandt studio lighting setup with a softbox", "harsh direct midday sunlight creating razor-sharp shadows", "clinical overhead fluorescent lighting"];
+export const PHOTOREAL_CAMS = ["shot on Hasselblad H6D-100c, 100MP medium format", "captured with Canon EOS R5, 85mm f/1.2 L lens, sharp focus", "photographed with Sony A7R IV, 90mm macro lens, extreme detail", "shot on Leica M11, 35mm Summilux lens"];
+export const PHOTOREAL_COLORS = ["true-to-life hyper-accurate color reproduction", "Kodak Portra 400 film simulation, pleasing skin tones", "Fujifilm Superia 400 aesthetic", "perfectly neutral white balance"];
+export const ABSTRACT_ENVS = ["floating freely within a void of non-Euclidean geometry", "inside a surreal, melting dreamscape defying the laws of physics", "in a quantum realm composed of vibrating energy strings", "surrounded by a multi-dimensional fractal structure of infinite mirrors"];
+export const ABSTRACT_LIGHTS = ["ethereal, shifting bioluminescent aura", "psychedelic, rapidly changing strobe lighting", "iridescent light refraction acting like a prism", "intense chromatic aberration and neon light leaks"];
+export const ABSTRACT_CAMS = ["viewed through a kaleidoscopic fractal lens filter", "tilt-shift macro photography distorting the scale completely", "simulated through an electron microscope 3D scan", "long exposure light painting capturing movement paths"];
+export const ABSTRACT_COLORS = ["iridescent, pearlescent shifting hues", "vibrant synthwave vaporwave neon palette", "monochromatic void of absolute white and Vantablack", "chaotic, high-contrast optical illusion colors"];
 
-export const CINEMATIC_ENVS = [
-  "in a sprawling cyberpunk metropolis with neon reflections on wet asphalt", "standing on the edge of an ancient, crumbling ruin swallowed by a dense jungle", "inside a dimly lit, smoky 1920s speakeasy", "surrounded by the vast, empty dunes of an alien desert under twin moons", "in a hyper-futuristic pristine laboratory with massive glass walls", "deep inside a glowing bioluminescent underwater cavern", "on a rain-slicked helipad overlooking a dystopian megacity", "in the center of an epic medieval battlefield covered in fog and ash"
-];
-export const CINEMATIC_LIGHTS = [
-  "volumetric god rays piercing through dense fog", "dramatic cinematic chiaroscuro with deep, consuming shadows", "harsh neon rim lighting isolating the subject", "cinematic backlighting creating a striking silhouette", "warm golden hour sunlight casting long shadows", "moody, practical low-key lighting", "dynamic flare and specular highlights from anamorphic lenses", "pulsing cyberpunk neon glow from off-camera"
-];
-export const CINEMATIC_CAMS = [
-  "shot on ARRI Alexa 65, 35mm wide lens, f/1.8", "captured with Panavision 70mm, IMAX aspect ratio", "shot on RED Monstro 8K VV, classic 50mm cinematic lens", "Sony Venice 2, anamorphic anamorphic lenses with subtle blue flares", "Cooke Anamorphic /i lenses, soft cinematic bokeh", "shot on 35mm Kodak celluloid film, cinematic motion blur", "drone sweeping aerial shot, ultra-wide angle", "low angle tracking shot, Steadicam stabilization"
-];
-export const CINEMATIC_COLORS = [
-  "classic Hollywood blockbuster teal and orange color grade", "muted, gritty, and desaturated dystopian color palette", "vibrant cyberpunk neon color grading", "rich, warm melancholic sepia tones", "high-contrast dramatic HDR colors", "vintage 1970s film stock aesthetic with fine grain", "monochromatic noir with a single piercing accent color"
-];
+// --- UNIQUE PHOTOREALISTIC PARAMETERS ---
+const UNIQUE_DOP_STYLES = ["in the cinematographic style of Roger Deakins", "captured with the visual poeticism of Emmanuel Lubezki", "lighting designed by Robert Richardson", "shot with the atmospheric depth of Hoyte van Hoytema", "visual texture by Greig Fraser"];
+const UNIQUE_LENSES = ["using Panavision C-Series Anamorphic glass", "shot with vintage Zeiss Super Speed T1.5 lenses", "captured on Cooke S4/i Optics", "using Leica Summilux-C prime lenses", "shot through Angénieux Optimo zoom for superior texture"];
+const UNIQUE_LIGHTING = ["featuring a complex 3-point Rembrandt lighting setup", "illuminated by soft natural light with subtle negative fill", "dramatic high-contrast chiaroscuro lighting", "bathed in the ethereal glow of the blue hour", "using volumetric atmospheric scattering and god rays"];
+const UNIQUE_TEXTURES = ["displaying ultra-fine skin pores and micro-surface details", "with realistic lens flares and organic film grain", "featuring perfect depth of field with creamy bokeh", "unfiltered RAW 100MP clarity", "hyper-accurate global illumination and Ray Tracing"];
 
-export const PHOTOREAL_ENVS = [
-  "in a modern, minimalist living room with raw concrete textures", "on a busy intersection in Tokyo crossing during rush hour", "in a sterile, white, brightly lit medical facility", "standing in a lush, overgrown botanical greenhouse", "against a clean, seamless photography studio backdrop", "in a messy, detail-rich artist's workshop", "on a rocky, moss-covered cliff face near a roaring ocean", "inside an abandoned, rust-covered industrial warehouse"
-];
-export const PHOTOREAL_LIGHTS = [
-  "perfectly balanced natural window light", "Rembrandt studio lighting setup with a softbox", "harsh direct midday sunlight creating razor-sharp shadows", "clinical overhead fluorescent lighting", "soft, diffused overcast sky lighting", "professional ring light reflection in the eyes", "bounced fill light revealing micro-details", "subtle ambient glow from nearby practical lamps"
-];
-export const PHOTOREAL_CAMS = [
-  "shot on Hasselblad H6D-100c, 100MP medium format", "captured with Canon EOS R5, 85mm f/1.2 L lens, sharp focus", "photographed with Sony A7R IV, 90mm macro lens, extreme detail", "shot on Leica M11, 35mm Summilux lens", "Phase One XF IQ4 camera system, absolute optical perfection", "Nikon Z9, 50mm f/1.8, razor-thin depth of field", "unfiltered RAW photo, 8k resolution, macro-level clarity", "iPhone 15 Pro Max, Apple ProRAW, computational photography"
-];
-export const PHOTOREAL_COLORS = [
-  "true-to-life hyper-accurate color reproduction", "Kodak Portra 400 film simulation, pleasing skin tones", "Fujifilm Superia 400 aesthetic", "perfectly neutral white balance", "rich, naturally saturated earthy tones", "unfiltered, raw, zero-post-processing aesthetic", "clinical, high-fidelity color depth"
-];
+// --- HELPER FUNKCIJE ---
+export const getYouTubeId = (url) => { if (!url || url === "#") return null; const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|\/shorts\/)([^#&?]*).*/; const match = url.match(regExp); return (match && match[2].length === 11) ? match[2] : null; };
+export const getMediaThumbnail = (url, type) => { if (!url) return bannerUrl; const ytId = getYouTubeId(url); if (ytId) return `https://i.ytimg.com/vi/${ytId}/maxresdefault.jpg`; return url; };
+export const formatExternalLink = (url) => { if (!url || url === "#") return "#"; return url.trim().startsWith("http") ? url.trim() : `https://${url.trim()}`; };
+export const extractSys = (desc) => { let d = desc || ""; let s = { w: '', g: '', b: 'AI ASSET', t: 'LATEST ⚡' }; if (d.includes("|||SYS|||")) { const parts = d.split("|||SYS|||"); d = parts[0].trim(); try { s = { ...s, ...JSON.parse(parts[1]) }; } catch(e) {} } return { d: d, s }; };
+export const SESSION_ID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+export const trackEvent = async (action, details = {}) => { try { await addDoc(collection(db, "site_stats"), { action, ...details, sessionId: SESSION_ID, localTime: Date.now(), timestamp: serverTimestamp(), userAgent: navigator.userAgent, path: window.location.pathname }); } catch (e) {} };
 
-export const ABSTRACT_ENVS = [
-  "floating freely within a void of non-Euclidean geometry", "inside a surreal, melting dreamscape defying the laws of physics", "in a quantum realm composed of vibrating energy strings", "surrounded by a multi-dimensional fractal structure of infinite mirrors", "in a liminal space consisting of endless, morphing corridors", "trapped inside the core of a crystalline tesseract hypercube", "within a fluid, constantly shifting nebula of pure energy", "in an avant-garde digital brutalist environment"
-];
-export const ABSTRACT_LIGHTS = [
-  "ethereal, shifting bioluminescent aura", "psychedelic, rapidly changing strobe lighting", "iridescent light refraction acting like a prism", "intense chromatic aberration and neon light leaks", "UV blacklight reactive glow illuminating hidden patterns", "impossible omnidirectional lighting without a source", "holographic, glitching light projections", "pure energy emission glowing from within"
-];
-export const ABSTRACT_CAMS = [
-  "viewed through a kaleidoscopic fractal lens filter", "tilt-shift macro photography distorting the scale completely", "simulated through an electron microscope 3D scan", "long exposure light painting capturing movement paths", "glitch art perspective with data moshing artifacts", "fluid dynamic simulation rendering engine", "rendered in Unreal Engine 5 with recursive ray tracing", "abstract geometric wide-angle fisheye lens"
-];
-export const ABSTRACT_COLORS = [
-  "iridescent, pearlescent shifting hues", "vibrant synthwave vaporwave neon palette", "monochromatic void of absolute white and Vantablack", "chaotic, high-contrast optical illusion colors", "pastel, soft dreamcore aesthetic with surreal gradients", "acid-trip psychedelic spectrum", "vivid, bleeding color splashes on a dark canvas"
-];
+// --- V8 PROMPT GENERATOR FUNKCIJA ---
+export const generatePrompts = (customerPrompt, demoInput, selectedQuality, selectedAR) => {
+    let result = { single: '', abstract: '', cinematic: '', photoreal: '', cctv: '' };
+    if (customerPrompt.trim().length > 0) {
+        const env = CINEMATIC_ENVS[Math.floor(Math.random() * CINEMATIC_ENVS.length)];
+        const light = CINEMATIC_LIGHTS[Math.floor(Math.random() * CINEMATIC_LIGHTS.length)];
+        const cam = CINEMATIC_CAMS[Math.floor(Math.random() * CINEMATIC_CAMS.length)];
+        const color = CINEMATIC_COLORS[Math.floor(Math.random() * CINEMATIC_COLORS.length)];
+        const cleanInput = customerPrompt.trim();
+        let finalPrompt = "";
+        if (selectedQuality === '1x') finalPrompt = `A high-quality cinematic image of ${cleanInput}, located ${env}. The scene features ${light}. ${cam}, ${color}. Aspect ratio: ${selectedAR}.`;
+        else if (selectedQuality === '2x') finalPrompt = `A breathtaking photorealistic render of ${cleanInput}, displaying monumental scale and precise details. Set ${env}. The environment is beautifully illuminated by ${light}. ${cam}, ${color}. Unreal Engine 5 render, 8k resolution, cinematic VFX. Aspect ratio: ${selectedAR}.`;
+        else finalPrompt = `A hyper-realistic, award-winning cinematic masterpiece of ${cleanInput}, featuring an unfathomable monumental scale, incredibly intricate and painstakingly detailed. The subject is perfectly placed ${env}. The dramatic atmosphere is defined by ${light}. ${cam}, ${color}. Octane render, full ray tracing, global illumination, subsurface scattering, trending on CGSociety, ultra-maximalist, extremely meticulous detailing, 32k UHD, absolute visual perfection. Aspect ratio: ${selectedAR}.`;
+        result.single = finalPrompt;
+    } 
+    else if (demoInput.trim().length > 0) {
+        const cleanInput = demoInput.trim().toUpperCase();
+        const aEnv = ABSTRACT_ENVS[Math.floor(Math.random() * ABSTRACT_ENVS.length)];
+        const aLight = ABSTRACT_LIGHTS[Math.floor(Math.random() * ABSTRACT_LIGHTS.length)];
+        const aCam = ABSTRACT_CAMS[Math.floor(Math.random() * ABSTRACT_CAMS.length)];
+        const aColor = ABSTRACT_COLORS[Math.floor(Math.random() * ABSTRACT_COLORS.length)];
+        let pAbs = "";
+        if (selectedQuality === '1x') pAbs = `A high-quality abstract representation of ${cleanInput}, located ${aEnv}. The scene features ${aLight}. ${aCam}, ${aColor}. Aspect ratio: ${selectedAR}.`;
+        else if (selectedQuality === '2x') pAbs = `A breathtaking surreal render of ${cleanInput}, displaying monumental scale and mind-bending details. Set ${aEnv}. The environment is beautifully illuminated by ${aLight}. ${aCam}, ${aColor}. Octane render, 8k resolution, conceptual art. Aspect ratio: ${selectedAR}.`;
+        else pAbs = `A hyper-detailed, award-winning abstract masterpiece of ${cleanInput}, featuring an unfathomable monumental scale, incredibly intricate and painstakingly constructed. The subject is perfectly placed ${aEnv}. The surreal atmosphere is defined by ${aLight}. ${aCam}, ${aColor}. Fluid simulation, full ray tracing, global illumination, subsurface scattering, trending on ArtStation, ultra-maximalist, extremely meticulous detailing, 32k UHD, absolute visual perfection. Aspect ratio: ${selectedAR}.`;
 
-export const CCTV_ENVS = [
-  "in a dimly lit underground parking garage", "at a deserted gas station at 3 AM", "inside a narrow, flickering apartment hallway", "overlooking a barbed-wire industrial compound fence", "in a messy, abandoned convenience store aisle", "at a desolate subway station platform late at night", "outside a suburban front porch with motion sensor lights", "in a high-security bank vault corridor"
-];
-export const CCTV_LIGHTS = [
-  "harsh infrared night vision glow", "flickering fluorescent overhead lights", "washed-out low-light camera sensor artifacting", "stark motion-activated floodlight illumination", "sodium vapor streetlamp glow casting deep shadows", "blown-out highlight glare from passing car headlights", "uneven, grainy low-lux ambient lighting", "creepy green-tinted night vision lighting"
-];
-export const CCTV_CAMS = [
-  "shot on an old VHS security feed, noticeable tracking lines", "captured with a cheap 480p wide-angle dome camera, extreme fisheye distortion", "Wyze or Ring doorbell cam aesthetic, heavily compressed mp4 artifacting", "commercial 1080p IP camera, timestamp overlay in the top right corner", "raw unedited found-footage, heavy sensor noise, low dynamic range", "black and white thermal security camera, low frame rate motion blur", "wide-angle focal length, severe lens vignetting and chromatic aberration", "dashcam dashboard camera perspective, dirty windshield glare"
-];
-export const CCTV_COLORS = [
-  "monochromatic grayscale with heavy digital noise", "sickly green infrared night vision tint", "desaturated, muddy colors with poor white balance", "washed out contrast due to cheap lens coating", "over-saturated yellow from sodium streetlights", "glitchy color banding and heavy compression artifacts", "stark black and white thermal contrast"
-];
+        const cEnv = CINEMATIC_ENVS[Math.floor(Math.random() * CINEMATIC_ENVS.length)];
+        const cLight = CINEMATIC_LIGHTS[Math.floor(Math.random() * CINEMATIC_LIGHTS.length)];
+        const cCam = CINEMATIC_CAMS[Math.floor(Math.random() * CINEMATIC_CAMS.length)];
+        const cColor = CINEMATIC_COLORS[Math.floor(Math.random() * CINEMATIC_COLORS.length)];
+        let pCin = "";
+        if (selectedQuality === '1x') pCin = `A high-quality cinematic movie still of ${cleanInput}, located ${cEnv}. The scene features ${cLight}. ${cCam}, ${cColor}. Aspect ratio: ${selectedAR}.`;
+        else if (selectedQuality === '2x') pCin = `A breathtaking cinematic blockbuster shot of ${cleanInput}, displaying monumental scale and precise details. Set ${cEnv}. The environment is beautifully illuminated by ${cLight}. ${cCam}, ${cColor}. Unreal Engine 5 render, 8k resolution, cinematic VFX. Aspect ratio: ${selectedAR}.`;
+        else pCin = `A hyper-realistic, award-winning cinematic masterpiece of ${cleanInput}, featuring an unfathomable monumental scale, incredibly intricate and painstakingly detailed. The subject is perfectly placed ${cEnv}. The dramatic atmosphere is defined by ${cLight}. ${cCam}, ${cColor}. Octane render, full ray tracing, global illumination, subsurface scattering, IMDb top rated aesthetic, ultra-maximalist, extremely meticulous detailing, 32k UHD, absolute visual perfection. Aspect ratio: ${selectedAR}.`;
 
+        const pEnv = PHOTOREAL_ENVS[Math.floor(Math.random() * PHOTOREAL_ENVS.length)];
+        const pLight = PHOTOREAL_LIGHTS[Math.floor(Math.random() * PHOTOREAL_LIGHTS.length)];
+        const pCam = PHOTOREAL_CAMS[Math.floor(Math.random() * PHOTOREAL_CAMS.length)];
+        const pColor = PHOTOREAL_COLORS[Math.floor(Math.random() * PHOTOREAL_COLORS.length)];
+        let pPho = "";
+        if (selectedQuality === '1x') pPho = `A high-quality raw photograph of ${cleanInput}, located ${pEnv}. The scene features ${pLight}. ${pCam}, ${pColor}. Aspect ratio: ${selectedAR}.`;
+        else if (selectedQuality === '2x') pPho = `A breathtaking hyper-realistic photography of ${cleanInput}, displaying precise details and sharp focus. Set ${pEnv}. The environment is beautifully illuminated by ${pLight}. ${pCam}, ${pColor}. 8k resolution, professional studio quality. Aspect ratio: ${selectedAR}.`;
+        else pPho = `An ultra-photorealistic, award-winning macro photography masterpiece of ${cleanInput}, incredibly intricate and painstakingly detailed. The subject is perfectly placed ${pEnv}. The natural atmosphere is defined by ${pLight}. ${pCam}, ${pColor}. Unfiltered RAW photo, extreme micro-details, global illumination, National Geographic aesthetic, true-to-life color depth, 32k UHD, absolute visual perfection. Aspect ratio: ${selectedAR}.`;
 
-// ============================================================================
-// HELPER FUNKCIJE & SVG KOMPONENTE
-// ============================================================================
+        // --- UNIQUE PHOTOREAL LOGIKA (Popravljena cenzura) ---
+        const uDop = UNIQUE_DOP_STYLES[Math.floor(Math.random() * UNIQUE_DOP_STYLES.length)];
+        const uLen = UNIQUE_LENSES[Math.floor(Math.random() * UNIQUE_LENSES.length)];
+        const uLig = UNIQUE_LIGHTING[Math.floor(Math.random() * UNIQUE_LIGHTING.length)];
+        const uTex = UNIQUE_TEXTURES[Math.floor(Math.random() * UNIQUE_TEXTURES.length)];
+        
+        // Cenzura cyberpunka za četvrto polje
+        const cleanUniqueInput = demoInput.trim().replace(/cyberpunk/gi, '').replace(/neon/gi, '').trim().toUpperCase();
 
-export const getYouTubeId = (url) => {
-  if (!url || url === "#") return null;
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|\/shorts\/)([^#&?]*).*/;
-  const match = url.match(regExp);
-  return (match && match[2].length === 11) ? match[2] : null;
+        result.cctv = `The most unique photorealistic image ever of ${cleanUniqueInput}. ${uDop}, ${uLen}. ${uLig}. ${uTex}. Absolute visual authenticity, 8k resolution, masterwork quality. Aspect ratio: ${selectedAR}.`;
+
+        result.abstract = pAbs; result.cinematic = pCin; result.photoreal = pPho;
+    }
+    return result;
 };
-
-export const getMediaThumbnail = (url, type) => {
-  if (!url) return bannerUrl;
-  const ytId = getYouTubeId(url);
-  if (ytId) return `https://i.ytimg.com/vi/${ytId}/maxresdefault.jpg`;
-  return url;
-};
-
-export const formatExternalLink = (url) => {
-  if (!url || url === "#") return "#";
-  return url.trim().startsWith("http") ? url.trim() : `https://${url.trim()}`;
-};
-
-export const extractSys = (desc) => {
-  let d = desc || ""; let s = { w: '', g: '', b: 'AI ASSET', t: 'LATEST ⚡' };
-  if (d.includes("|||SYS|||")) {
-      const parts = d.split("|||SYS|||"); d = parts[0].trim();
-      try { s = { ...s, ...JSON.parse(parts[1]) }; } catch(e) {}
-  }
-  return { d: d, s };
-};
-
-// --- SVG Icons ---
-export const TwitterIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 22.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-  </svg>
-);
-
-export const YouTubeIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-  </svg>
-);
-
-export const InstagramIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-    <defs>
-      <linearGradient id="ig-grad" x1="0%" y1="100%" x2="100%" y2="0%">
-        <stop offset="0%" stopColor="#f09433" />
-        <stop offset="25%" stopColor="#e6683c" />
-        <stop offset="50%" stopColor="#dc2743" />
-        <stop offset="75%" stopColor="#cc2366" />
-        <stop offset="100%" stopColor="#bc1888" />
-      </linearGradient>
-    </defs>
-    <path fill="url(#ig-grad)" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-  </svg>
-);
-
-export const TikTokIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-    <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93v7.2c0 1.95-.53 3.92-1.59 5.51-1.48 2.22-3.8 3.56-6.42 3.65-2.6.09-5.18-.9-6.99-2.75-1.68-1.71-2.58-4.08-2.45-6.48.11-2.14 1.05-4.18 2.62-5.63 1.54-1.43 3.63-2.17 5.74-2.15v4.01c-1.39-.01-2.8.46-3.84 1.39-1.07.95-1.63 2.4-1.53 3.86.11 1.46.9 2.8 2.09 3.64 1.34 1.01 3.19 1.25 4.8.72 1.5-.49 2.63-1.68 3.12-3.15.19-.57.26-1.17.26-1.77V.02h4.11z"/>
-  </svg>
-);
