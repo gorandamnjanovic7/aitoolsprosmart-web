@@ -2,9 +2,9 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { 
-  PlayCircle, Sparkles, Youtube, X, ChevronDown, Zap, ChevronLeft, ChevronRight, FileCode, Award, 
-  ArrowRight, Maximize2, PlusCircle, Edit, Trash2, UploadCloud, Loader2, Database, Fingerprint, Terminal,
-  Video, Camera, Cctv, Dices, HelpCircle, Eye, MousePointerClick, Clock, Users, ShoppingCart, Copy, Lock, Shield, CheckCircle2
+  PlayCircle, Sparkles, Youtube, X, ChevronLeft, ChevronRight, Award, 
+  ArrowRight, Maximize2, Edit, Loader2, Fingerprint,
+  Dices, Eye, MousePointerClick, Clock, Users, Zap
 } from 'lucide-react';
 
 import { db } from './firebase';
@@ -13,14 +13,61 @@ import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
 import * as data from './data';
 import { 
   TypewriterText, UniversalVideoPlayer, renderDescription, FullScreenBoot, 
-  MatrixRain, TutorialCard, AssetCard, trackEvent 
+  MatrixRain, TutorialCard, AssetCard 
 } from './data';
 import mojBaner from './moj-baner.png'; 
+
+// --- NUKLEARNA OPCIJA: Brišemo hash (#) iz linka prije nego što preglednik stigne reagirati ---
+if (typeof window !== 'undefined') {
+  if ('scrollRestoration' in window.history) {
+    window.history.scrollRestoration = 'manual';
+  }
+  if (window.location.hash) {
+    window.history.replaceState(null, '', window.location.pathname);
+  }
+  window.scrollTo(0, 0);
+}
+// --------------------------------------------------------------------------------------------
 
 const BASE_BACKEND_URL = "https://aitoolsprosmart-becend-production.up.railway.app"; 
 const API_URL = `${BASE_BACKEND_URL}/api/products`;
 const VIDEOS_API_URL = `${BASE_BACKEND_URL}/api/youtube`; 
-const HIDDEN_VIDEOS_API_URL = `${BASE_BACKEND_URL}/api/hidden-videos`;
+
+// --- HELPER COMPONENTS FOR OPTIMIZATION ---
+
+const OptionButton = ({ label, selected, onClick, type }) => {
+  const isQuality = type === 'quality';
+  const baseClass = isQuality 
+    ? "px-4 py-2 rounded-lg text-[9px] font-black border transition-all"
+    : "px-3 py-2 rounded-lg text-[9px] font-black border transition-all";
+  const activeClass = isQuality
+    ? "bg-orange-600 border-orange-500 text-white shadow-[0_0_10px_rgba(249,115,22,0.4)]"
+    : "bg-blue-600 border-blue-500 text-white shadow-[0_0_10px_rgba(37,99,235,0.4)]";
+  const inactiveClass = "bg-black border-white/10 text-zinc-500 hover:border-white/20";
+  
+  return (
+    <button onClick={onClick} className={`${baseClass} ${selected ? activeClass : inactiveClass}`}>
+      {label}
+    </button>
+  );
+};
+
+const PromptResultBox = ({ type, text, copiedBox, onCopy }) => {
+  const title = type === 'cctv' ? 'THE MOST UNIQUE PHOTOREALISTIC IMAGE EVER' : type.toUpperCase();
+  return (
+    <div className="w-full bg-black border border-white/5 rounded-2xl p-6 pb-16 relative shadow-inner flex flex-col min-h-[300px]">
+      <label className="text-[10px] font-black uppercase text-zinc-500 tracking-widest mb-4 border-b border-white/5 pb-3">{title}</label>
+      <p className={`w-full font-mono text-[10px] leading-relaxed text-left flex-1 ${text ? 'text-zinc-200' : 'text-zinc-600 italic flex items-center justify-center'}`}>
+        {text ? <TypewriterText text={text} speed={10} /> : "AWAITING..."}
+      </p>
+      {text && (
+        <button onClick={() => onCopy(text, type)} className="absolute bottom-4 right-4 px-4 py-2 rounded-lg text-[9px] font-black uppercase transition-all bg-white/10 text-white hover:bg-white/20">
+          {copiedBox === type ? "Copied" : "Copy"}
+        </button>
+      )}
+    </div>
+  );
+};
 
 // ============================================================================
 // HOME PAGE
@@ -39,13 +86,14 @@ function HomePage({ apps = [] }) {
   const location = useLocation();
 
   const sortedApps = [...apps].sort((a, b) => Number(b.id) - Number(a.id));
-  const sortedVideos = [...liveVideos].reverse();
+  const sortedVideos = [...liveVideos];
 
   useEffect(() => { 
     if(VIDEOS_API_URL) {
-      fetch(VIDEOS_API_URL).then(res => res.json()).then(db => { 
-        if (Array.isArray(db) && db.length > 0) setLiveVideos(db); else setLiveVideos(data.MY_VIDEOS || []);
-      }).catch(() => setLiveVideos(data.MY_VIDEOS || [])); 
+      fetch(VIDEOS_API_URL)
+        .then(res => res.json())
+        .then(db => { if (Array.isArray(db) && db.length > 0) setLiveVideos(db); else setLiveVideos(data.MY_VIDEOS || []); })
+        .catch(() => setLiveVideos(data.MY_VIDEOS || [])); 
     }
   }, []);
 
@@ -61,13 +109,13 @@ function HomePage({ apps = [] }) {
   const prevSlide = () => setActiveSlide(s => (s - 1 + (data.BANNER_DATA?.length || 1)) % (data.BANNER_DATA?.length || 1));
   useEffect(() => { const t = setInterval(nextSlide, 7000); return () => clearInterval(t); }, [nextSlide]);
 
-  const handleRollDice = () => { 
+  const handleRollDice = useCallback(() => { 
     setDemoInput(data.getRandomDicePrompt()); 
     setCustomerPrompt(''); 
     setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', cctv: '' }); 
-  };
+  }, []);
   
-  const handleEnhance = () => {
+  const handleEnhance = useCallback(() => {
     if(!demoInput && !customerPrompt) return;
     setIsEnhancing(true); 
     setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', cctv: '' });
@@ -75,13 +123,13 @@ function HomePage({ apps = [] }) {
       setGeneratedPrompts(data.generatePrompts(customerPrompt, demoInput, selectedQuality, selectedAR));
       setIsEnhancing(false);
     }, 1200);
-  };
+  }, [demoInput, customerPrompt, selectedQuality, selectedAR]);
 
-  const handleCopy = (text, boxName) => { 
+  const handleCopy = useCallback((text, boxName) => { 
     navigator.clipboard.writeText(text); 
     setCopiedBox(boxName); 
     setTimeout(() => setCopiedBox(''), 2000); 
-  };
+  }, []);
 
   return (
     <>
@@ -113,8 +161,9 @@ function HomePage({ apps = [] }) {
           <div className="flex items-center gap-2.5 shrink-0"><Youtube className="text-red-600 w-6 h-6" /><h3 className="text-white font-black uppercase text-[20px] tracking-widest italic text-left">Latest Intel Protocols</h3></div>
           <div className="h-[1px] w-32 bg-gradient-to-r from-red-600/80 to-transparent"></div>
         </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24">
-          {sortedVideos.slice(1).map((vid, i) => (<TutorialCard key={i} vid={vid} />))}
+          {sortedVideos.slice(0, 8).map((vid, i) => (<TutorialCard key={i} vid={vid} />))}
         </div>
 
         <div id="enhancer" className="mb-24 scroll-mt-32">
@@ -138,10 +187,26 @@ function HomePage({ apps = [] }) {
                    <div className="relative mb-8"><textarea value={customerPrompt} onChange={e => {setCustomerPrompt(e.target.value); setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', cctv: '' });}} placeholder="WE'RE WORKING ON SOMETHING AMAZING — COMING SOON" disabled={demoInput.length > 0} className={`w-full bg-black border rounded-xl p-5 pr-12 text-white text-[11px] outline-none transition-all shadow-inner resize-none min-h-[160px] ${demoInput.length > 0 ? 'border-white/5 opacity-30 cursor-not-allowed' : 'border-white/10 focus:border-blue-500/50'}`} /></div>
                    
                    <div className="flex justify-between items-center my-10 px-1">
-                      <div className="flex flex-col gap-3"><span className="text-[12px] font-black uppercase text-zinc-600 tracking-widest">Aspect Ratio</span><div className="flex gap-2">{['1:1', '9:16', '16:9', '21:9'].map(ar => <button key={ar} onClick={() => setSelectedAR(ar)} className={`px-3 py-2 rounded-lg text-[9px] font-black border transition-all ${selectedAR === ar ? 'bg-blue-600 border-blue-500 text-white shadow-[0_0_10px_rgba(37,99,235,0.4)]' : 'bg-black border-white/10 text-zinc-500 hover:border-white/20'}`}>{ar}</button>)}</div></div>
-                      <div className="flex flex-col gap-3 items-end"><span className="text-[12px] font-black uppercase text-zinc-600 tracking-widest">Quality</span><div className="flex gap-2">{['1x', '2x', '4x'].map(q => <button key={q} onClick={() => setSelectedQuality(q)} className={`px-4 py-2 rounded-lg text-[9px] font-black border transition-all ${selectedQuality === q ? 'bg-orange-600 border-orange-500 text-white shadow-[0_0_10px_rgba(249,115,22,0.4)]' : 'bg-black border-white/10 text-zinc-500 hover:border-white/20'}`}>{q}</button>)}</div></div>
+                      <div className="flex flex-col gap-3">
+                        <span className="text-[12px] font-black uppercase text-zinc-600 tracking-widest">Aspect Ratio</span>
+                        <div className="flex gap-2">
+                          {['1:1', '9:16', '16:9', '21:9'].map(ar => (
+                            <OptionButton key={ar} label={ar} selected={selectedAR === ar} onClick={() => setSelectedAR(ar)} type="ar" />
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-3 items-end">
+                        <span className="text-[12px] font-black uppercase text-zinc-600 tracking-widest">Quality</span>
+                        <div className="flex gap-2">
+                          {['1x', '2x', '4x'].map(q => (
+                            <OptionButton key={q} label={q} selected={selectedQuality === q} onClick={() => setSelectedQuality(q)} type="quality" />
+                          ))}
+                        </div>
+                      </div>
                    </div>
-                   <button onClick={handleEnhance} disabled={isEnhancing || (!demoInput && !customerPrompt)} className="w-full bg-blue-600 hover:bg-blue-500 text-white px-6 py-5 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center shadow-xl">{isEnhancing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Enhance"}</button>
+                   <button onClick={handleEnhance} disabled={isEnhancing || (!demoInput && !customerPrompt)} className="w-full bg-blue-600 hover:bg-blue-500 text-white px-6 py-5 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center shadow-xl">
+                     {isEnhancing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Enhance"}
+                   </button>
                  </div>
                </div>
                
@@ -154,13 +219,9 @@ function HomePage({ apps = [] }) {
                        {generatedPrompts.single && (<button onClick={() => handleCopy(generatedPrompts.single, 'single')} className="absolute bottom-6 right-6 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all bg-white/10 text-white hover:bg-white/20">{copiedBox === 'single' ? "Copied! ✓" : "Copy Prompt"}</button>)}
                      </div>
                  ) : (
-                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full h-full text-left">
+                     <div className="grid grid-cols-1 gap-6 w-full h-full text-left">
                         {['abstract', 'cinematic', 'photoreal', 'cctv'].map((type) => (
-                           <div key={type} className="w-full bg-black border border-white/5 rounded-2xl p-6 pb-16 relative shadow-inner flex flex-col min-h-[300px]">
-                              <label className="text-[10px] font-black uppercase text-zinc-500 tracking-widest mb-4 border-b border-white/5 pb-3">{type === 'cctv' ? 'THE MOST UNIQUE PHOTOREALISTIC IMAGE EVER' : type.toUpperCase()}</label>
-                              <p className={`w-full font-mono text-[10px] leading-relaxed text-left flex-1 ${generatedPrompts[type] ? 'text-zinc-200' : 'text-zinc-600 italic flex items-center justify-center'}`}>{generatedPrompts[type] ? <TypewriterText text={generatedPrompts[type]} speed={10} /> : "AWAITING..."}</p>
-                              {generatedPrompts[type] && (<button onClick={() => handleCopy(generatedPrompts[type], type)} className="absolute bottom-4 right-4 px-4 py-2 rounded-lg text-[9px] font-black uppercase transition-all bg-white/10 text-white hover:bg-white/20">{copiedBox === type ? "Copied" : "Copy"}</button>)}
-                           </div>
+                           <PromptResultBox key={type} type={type} text={generatedPrompts[type]} copiedBox={copiedBox} onCopy={handleCopy} />
                         ))}
                      </div>
                  )}
@@ -173,8 +234,8 @@ function HomePage({ apps = [] }) {
           <div className="flex items-center gap-2.5 shrink-0"><Sparkles className="text-blue-500 w-6 h-6" /><h3 className="text-white font-black uppercase text-[20px] tracking-widest italic text-left">Premium AI Asset Store</h3></div>
           <div className="h-[1px] w-32 bg-gradient-to-r from-blue-500/80 to-transparent"></div>
         </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 pb-32">
-          {sortedVideos.length > 0 && <data.TutorialCard vid={sortedVideos[0]} />}
           {sortedApps.map(app => (<AssetCard key={app.id} app={app} />))}
         </div>
       </div>
@@ -190,7 +251,6 @@ function SingleProductPage({ apps = [] }) {
   const app = apps.find(a => a.id === id);
   const [activeMedia, setActiveMedia] = useState(0);
   const [fullScreenImage, setFullScreenImage] = useState(null);
-  const [openFaq, setOpenFaq] = useState(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
   const mainVideoRef = useRef(null);
@@ -297,7 +357,6 @@ function AdminPage({ apps = [], refreshData }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [tab, setTab] = useState('system');
-  const [isUploading, setIsUploading] = useState(false);
   const initialForm = { name: '', category: 'AI ASSET', type: '', headline: '', price: '', priceLifetime: '', description: data.ADMIN_DEFAULT_DESC, media: [], whopLink: '', reactSourceCode: '', faq: Array.from({ length: 7 }, () => ({ q: '', a: '' })) }; 
   const [formData, setFormData] = useState(initialForm); 
 
@@ -343,18 +402,68 @@ function AdminPage({ apps = [], refreshData }) {
   ); 
 }
 
+const WelcomeBanner = ({ onClose }) => {
+  return (
+    <div className="fixed inset-0 z-[2000] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+      <div className="bg-[#0a0a0a] border border-orange-500/50 rounded-[2rem] max-w-3xl w-full overflow-hidden shadow-[0_0_60px_rgba(249,115,22,0.15)] relative">
+        <button 
+          onClick={onClose} 
+          className="absolute top-4 right-4 bg-black/50 p-2 rounded-full text-white hover:text-orange-500 hover:bg-black z-10 transition-all border border-white/10"
+        >
+          <X className="w-6 h-6" />
+        </button>
+        <img src={mojBaner} alt="Welcome" className="w-full h-48 md:h-64 object-cover border-b border-orange-500/20" />
+        <div className="p-8 md:p-12 text-center">
+          <h2 className="text-2xl md:text-4xl font-black text-white uppercase tracking-widest mb-4">
+            Welcome to AI TOOLS <span className="text-orange-500">PRO</span>
+          </h2>
+          <p className="text-zinc-400 text-sm md:text-base mb-8 uppercase tracking-[0.2em]">
+            Central system for Premium AI Architecture is online.
+          </p>
+          <button 
+            onClick={onClose} 
+            className="bg-orange-600 text-white px-10 py-4 rounded-xl font-black text-[12px] uppercase tracking-[0.2em] shadow-xl hover:bg-orange-500 transition-all"
+          >
+            Access System
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ============================================================================
 // MAIN APP COMPONENT
 // ============================================================================
 function AppContent({ appsData, refreshData }) {
   const [isBooting, setIsBooting] = useState(true);
+  const [showBanner, setShowBanner] = useState(false);
   const location = useLocation();
-  const handleHomeClick = (e) => { if (location.pathname === '/') { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); } };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }, 50);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleHomeClick = (e) => { 
+    if (location.pathname === '/') { 
+      e.preventDefault(); 
+      window.scrollTo({ top: 0, behavior: 'smooth' }); 
+      window.history.replaceState(null, '', '/'); 
+    } 
+  };
+  
   useEffect(() => { data.trackEvent("page_view", { path: location.pathname + location.hash }); }, [location]);
   
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-100 flex flex-col font-sans relative pb-20 lg:pb-0 text-left">
-      {isBooting && <FullScreenBoot onComplete={() => setIsBooting(false)} />}
+      
+      {isBooting && <FullScreenBoot onComplete={() => { setIsBooting(false); setShowBanner(true); window.scrollTo(0,0); }} />}
+      
+      {!isBooting && showBanner && <WelcomeBanner onClose={() => setShowBanner(false)} />}
+
       <div className="fixed top-0 left-0 w-full z-[1000]">
         <nav className="w-full px-4 md:px-8 py-6 md:py-8 bg-[#050505]/80 backdrop-blur-xl border-b border-orange-500/20 shadow-lg">
           <div className="max-w-7xl mx-auto flex justify-between items-center px-2">
