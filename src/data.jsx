@@ -17,14 +17,34 @@ export const logoUrl = mojLogo;
 export const bannerUrl = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop";
 export const CLOUDINARY_CLOUD_NAME = "drllxycnh"; 
 export const CLOUDINARY_UPLOAD_PRESET = "uploads1"; 
-export const ADMIN_DEFAULT_DESC = `[DESCRIPTION]\nEnter your main description here...\n\nKEY FEATURES\n* Feature 1\n* Feature 2\n* Feature 3\n\nVALUE MULTIPLIER\n* Benefit 1\n* Benefit 2`;
-export const MY_VIDEOS = [];
+export const ADMIN_DEFAULT_DESC = `[HEADLINE]
+Unesi glavni naslov ovde...
+
+[DESCRIPTION]
+Unesi glavni opis ovde...
+
+[LINKS & FILES]
+Whop Link: https://whop.com/...
+Gumroad Link: https://gumroad.com/...
+React Source Code: https://github.com/...
+File Upload: Uputstvo za preuzimanje...
+
+[PRICE]
+Price: $XX
+
+KEY FEATURES
+* Feature 1
+* Feature 2
+* Feature 3
+
+VALUE MULTIPLIER
+* Benefit 1
+* Benefit 2`;
 
 // ============================================================================
 // 1. MEGA BAZE TOKENA
 // ============================================================================
 
-// SPECIFIČNI META TOKENI ZA UNIQUE PHOTOREAL
 const UNIQUE_META_POOL = [
   "UltraPhotorealistic", "HyperRealism", "ExtremeDetail", "NanoDetail_8K", "MicroTexture_Rendering", 
   "UltraDepth_Field", "Global_Illumination", "RayTraced_Reflections", "Ambient_Occlusion", 
@@ -132,6 +152,80 @@ const UNIQUE_PHOTOREAL_COMBOS = [
   "ARRI Alexa 35 + Cooke S7/i 100mm × CinematicPortraitDepth × ultra cinematic realism"
 ];
 
+// 1000 Camera/Lens × Meta Tokens × Unique Keywords
+export const CAMERA_LENS_META_KEYWORDS = [
+  "ARRI Alexa 35 + Zeiss Supreme Prime 35mm f/1.5 × UltraDepth_Field • NanoDetail_8K × cinematic optical depth",
+  "ARRI Alexa 35 + Zeiss Supreme Prime 50mm f/1.5 × RAW_grain_lite • MicroContrast_Boost × tactile surface realism",
+  "ARRI Alexa Mini LF + Zeiss Master Prime 100mm × OpticalBokehSignature • HDR_vision_fusion × hyper-real reflections",
+  "RED Raptor V + Leica Summilux-C 50mm T1.4 × SensorBloom_v2 • SkinMicroTexture_v5 × photonic skin scattering",
+  "RED V-Raptor XL + Sigma Cine FF 24mm × UltraSharp_GlobalDetail • EdgeFalloffNatural × spatial environmental realism",
+  "Sony Venice 2 + Cooke S7/i 75mm × ColorScience_CinemaCore • VolumetricRayTrace × cinematic air depth",
+  "Sony FX3 + Sony G Master 85mm × SkinPoreAmplifier • DepthCompression_v3 × portrait micro-detail",
+  "IMAX MSM 9802 + Panavision C-Series 40mm × FilmGrain_TrueIMAX • SpectralLightCapture × monumental cinematic scale",
+  "Leica SL2-S + APO-Summicron 50mm × LeicaMicroContrast • OpticalPrecisionDepth × glass-sharp realism",
+  "Canon EOS R5 + RF 28-70mm f/2 × HDRDynamicStack • ColorDepth16bit × ultra clean tonal rolloff",
+  "Nikon Z9 + Nikkor Z 58mm Noct × UltraCreamBokeh • PhotonBloom × ethereal subject isolation",
+  "Hasselblad X2D 100C + XCD 90mm × NordicColorScience • MediumFormatDepth × elegant tonal realism",
+  "Phase One XF IQ4 150MP + Schneider 80mm LS × PixelPrecision • MediumFormatHyperDetail × microscopic texture realism",
+  "Fujifilm GFX100 II + GF 110mm × FilmSim_NaturalPro • DynamicRangeBoost × analog tonal depth",
+  "Blackmagic URSA 12K + Zeiss Supreme 65mm × CinemaRAWTexture • UltraFineShadowMap × cinematic shadow realism",
+  "Panasonic Lumix S1H + Leica Summilux 25-50mm × NaturalSkinTones_v3 • SpectralHighlightControl × photoreal skin physics",
+  "ARRI Alexa LF + Panavision Primo 70mm × PanavisionColorSignature • CinematicShadowRoll × organic highlight bloom",
+  "RED Komodo X + Laowa 24mm Probe × MacroRealityCapture • NanoSurfaceDetail × extreme macro realism",
+  "Sony A1 + Sony 135mm GM × UltraOpticalCompression • PortraitRealismStack × lifelike facial depth",
+  "Canon EOS R3 + RF 85mm f/1.2 × SkinReflectanceModel • OpticalClarityBoost × hyper realistic portrait texture",
+  "DJI Inspire 3 + Zenmuse X9 DL 35mm × AerialScaleCapture • AeroSharpness × monumental aerial realism",
+  "DJI Mavic 3 Pro + Hasselblad 24mm × AeroHDRCapture • HorizonSharpness × cinematic landscape scale",
+  "GoPro Hero 12 + Max Lens Mod × ActionDistortionPhysics • ImmersivePOVReality × dynamic perspective realism",
+  "ARRI Alexa 35 + Zeiss Ultra Prime 85mm × UltraDepthCompression • MicroContrast_Boost × sculpted light realism",
+  "Sony Venice 2 + Fujinon Premista 28-100mm × NaturalLensBreathing • CinematicTextureDepth × optical authenticity",
+  "RED Raptor XL + Angenieux Optimo 24-290mm × CinemaZoomPrecision • SpectralHighlightControl × cinematic zoom realism",
+  "Leica M11 + Noctilux 50mm f/0.95 × LeicaGlowSignature • OpticalPrecisionDepth × dreamy photonic glow",
+  "Hasselblad H6D-400c + HC 100mm × UltraResolutionStack • PixelIntegrityEngine × microscopic detail",
+  "Sony FX6 + Sony 50mm GM × NaturalMotionRealism • DocumentaryLightBalance × real-world authenticity",
+  "Canon C500 Mark II + CN-E 85mm × CineDynamicRange • HDR_vision_fusion × cinematic tonal fidelity",
+  "Blackmagic Pocket 6K Pro + Sigma Cine 35mm × RAWTextureLayer • MicroContrast_Boost × raw cinematic realism",
+  "Panasonic GH6 + Leica 42.5mm × HybridCinemaLook • UltraFineShadowMap × crisp cinematic depth",
+  "Fujifilm X-H2S + XF 56mm × PortraitFilmLook • FilmSim_NaturalPro × analog portrait realism",
+  "ARRI Alexa 65 + Panavision System 65 50mm × EpicScaleDepth • SpectralLightCapture × ultra epic cinematic realism",
+  "RED Monstro 8K + Sigma Cine 50mm × UltraClarityEngine • NanoDetail_8K × crystal optical precision",
+  "Sony A9 III + Sony 24mm GM × SpeedCaptureReality • MotionFreezeStack × frozen action realism",
+  "Canon 5D Mark IV + EF 50mm × ClassicPhotoRealism • NaturalColorScience × timeless photographic fidelity",
+  "Nikon D850 + Sigma Art 40mm × PrecisionOpticsMode • MicroContrast_Boost × hyper-clean sharpness",
+  "Leica Q3 + Summilux 28mm × LeicaStreetRealism • DocumentaryLightBalance × candid street realism",
+  "Hasselblad X1D II + XCD 80mm × NordicTonalBalance • MediumFormatDepth × refined tonal transitions",
+  "Phase One IQ3 + Schneider 110mm × HyperResolutionCapture • PixelIntegrityEngine × extreme clarity",
+  "DJI Inspire 2 + X7 50mm × AerialFilmLook • HorizonSharpness × cinematic drone realism",
+  "GoPro Hero 11 + UltraWide × ImmersivePOVReality • DynamicMotionPerspective × action realism",
+  "RED Dragon 6K + Zeiss CP2 35mm × CinemaTextureStack • RAW_grain_lite × filmic grain authenticity",
+  "Sony A7R V + 90mm Macro × MicroTextureAmplifier • NanoSurfaceDetail × extreme micro realism",
+  "Canon EOS R5C + RF 24mm × CinemaHybridMode • HDRDynamicStack × cinematic digital clarity",
+  "Nikon Z8 + Nikkor Z 50mm × PrecisionColorScience • OpticalClarityBoost × balanced tonal realism",
+  "Leica M10-R + Summicron 35mm × StreetAuthenticityMode • LeicaMicroContrast × documentary realism",
+  "ARRI Alexa Mini LF + Panavision Primo 50mm × CinematicShadowRoll • UltraFineShadowMap × elegant lighting depth",
+  "RED Komodo X + Atlas Mercury 36mm × AnamorphicCinematicMode • CinematicFlarePhysics × stretched cinematic look",
+  "Sony FX3 + Sony 24mm GM × NightPhotonBoost • SpectralHighlightControl × atmospheric night realism",
+  "Canon EOS R8 + RF 85mm × PortraitLightBalance • SkinReflectanceModel × studio portrait realism",
+  "Nikon Zf + Voigtländer 50mm × VintageOpticsSignature • AnalogFilmTexture × analog realism",
+  "Leica SL3 + APO-Summicron 90mm × PrecisionOpticalStack • OpticalClarityBoost × hyper clean realism",
+  "Hasselblad X2D + XCD 65mm × NordicNaturalColor • MediumFormatDepth × refined tonal rendering",
+  "Phase One XF IQ4 + Schneider 120mm × MacroUltraDetail • PixelPrecision × tactile macro realism",
+  "DJI Mavic 3 Pro Cine + Hasselblad 24mm × AerialHDRCapture • AeroSharpness × cinematic sky depth",
+  "GoPro Hero 12 + Linear Lens × ActionRealismEngine • DynamicMotionPerspective × immersive POV realism",
+  "ARRI Alexa 35 + Cooke S7/i 100mm × CinematicPortraitDepth • UltraDepth_Field × ultra cinematic portrait realism",
+  "RED Raptor XL + Cooke S7/i 50mm × CinematicTextureDepth • SpectralHighlightControl × cinematic realism",
+  "Sony Venice 2 + Panavision Primo 65mm × EpicPortraitMode • OpticalPerfectionStack × monumental portrait realism",
+  "IMAX MSM 9802 + IMAX 80mm × UltraEpicCapture • SpectralLightCapture × giant-format realism",
+  "ARRI Alexa LF + Zeiss Master Prime 50mm × OpticalPerfectionStack • MicroContrast_Boost × cinematic clarity",
+  "RED V-Raptor + Sigma Cine 85mm × PortraitHyperDetail • NanoDetail_8K × intense portrait realism",
+  "Sony A1 + Sony 50mm GM × CrystalSharpnessMode • OpticalPrecisionDepth × ultra optical realism",
+  "Canon R5 + RF 85mm f/1.2 × SkinToneSpectralMap • PortraitRealismStack × lifelike skin rendering",
+  "Nikon Z9 + Noct 58mm × PhotonGlowCapture • SpectralHighlightControl × luminous highlight realism",
+  "Leica M11 + APO-Summicron 50mm × LeicaPrecisionRender • OpticalClarityBoost × pure optical realism",
+  "Hasselblad X2D + XCD 90mm × MediumFormatCinematicDepth • NordicColorScience × elegant cinematic realism",
+  "Phase One XF + Schneider 120mm × MacroUltraDetail • PixelIntegrityEngine × tactile macro realism"
+];
+
 const ABSTRACT_META_TOKENS = [
   "AbstractComposition", "GenerativeArt", "ProceduralDesign", "AlgorithmicPatterns", "ParametricShapes", "FractalGeometry", 
   "RecursiveStructures", "OrganicAbstraction", "FluidGeometry", "DynamicShapes", "MorphingForms", "LiquidStructures", 
@@ -147,7 +241,9 @@ const ABSTRACT_META_TOKENS = [
   "QuantumLikeMotion", "ParticleFieldDynamics", "FlowFieldSimulation", "MagneticFieldLines", "VortexEnergy", "SwirlingParticles", 
   "PlasmaLikeEnergy", "CosmicEnergyStreams", "DynamicFieldMotion", "NeuralNetworkAesthetic", "AI_GENERATIVE_ART", 
   "ProceduralVisualSystem", "LatentSpaceExploration", "AlgorithmicAesthetic", "SyntheticVisualLanguage", "DigitalDreamscape", 
-  "ExperimentalVisualArt", "FutureAbstractDesign", "ComputationalArt"
+  "ExperimentalVisualArt", "FutureAbstractDesign", "ComputationalArt", "MinimalistDesign", "SurrealForms", "NonRepresentational", 
+  "GeometricHarmony", "OrganicStructures", "DigitalComplexity", "MathematicalArt", "DynamicFlow", "ExperimentalVisuals", 
+  "TechnologicalAesthetic"
 ];
 
 const META_TOKENS = [
@@ -189,30 +285,30 @@ const ENV_TOKENS = [
   "SnowCoveredPineForest", "FrozenForest", "AutumnForestPath", "GoldenSunlitForest", "VastMountainRange", "SnowyMountainPeak", 
   "RockyMountainCliffs", "HimalayanLandscape", "VolcanicMountain", "MistyMountainValley", "SunriseMountainView", "AlpineLakeView", 
   "EndlessDesertDunes", "DesertSunsetLandscape", "AncientDesertRuins", "SaharaSandstorm", "DesertOasis", "RockyDesertPlateau", 
-  "CrystalBlueOcean", "DeepOceanAbyss", "SunlightUnderwaterRays", 
-  "KelpForestUnderwater", "BioluminescentOcean", "TropicalIslandLagoon", "HiddenIslandParadise", "PalmBeachSunset", 
-  "CliffsideOceanView", "TurquoiseWaterBay", "VividCityNight", "FuturisticCitySkyline", "FlyingCarCity", 
-  "UltraModernCityCenter", "HighTechCityDistrict", "RainyFuturisticStreet", "LuxuryPenthouseView", "SkyscraperRooftop", 
-  "GlassTowerInterior", "LuxuryHotelLobby", "ModernArchitecturalHall", "AncientRomanColosseum", "MedievalCastleCourtyard", 
-  "AncientGreekTemple", "AncientEgyptianPyramid", "AztecTempleComplex", "VikingVillage", "StoneAgeSettlement", 
-  "SpaceStationInterior", "DeepSpaceOrbit", "AlienPlanetSurface", "RingedPlanetHorizon", "AsteroidField", "InterstellarNebula", 
-  "GalacticStarField", "FrozenArcticLandscape", "IceCaveInterior", "GlacierValley", "SnowstormWilderness", 
-  "AbandonedIndustrialFactory", "RustyIndustrialWarehouse", "OldPowerPlant", "AbandonedRailwayStation", "UrbanRuinsDistrict", 
-  "ModernResearchLaboratory", "HighTechControlRoom", "AICommandCenter", "FuturisticLaboratory", "HiddenUndergroundBunker", 
-  "SecretMilitaryBase", "WarRoomInterior", "SubmarineInterior", "LuxurySportsCarGarage", "ClassicCarShowroom", "SupercarTunnel", 
-  "GrandRoyalPalace", "LuxuryBallroom", "RoyalGarden", "GoldenThroneHall", "AncientLibraryHall", "OldUniversityLibrary", 
-  "SecretArchiveRoom", "MysticBookChamber", "FloatingIslandsLandscape", "FantasyCrystalCave", "DragonMountainLair", 
-  "MagicPortalValley", "MassiveWaterfallCliff", "RainforestWaterfall", "HiddenCanyonRiver", "EmeraldRiverValley", 
-  "SavannaSunsetLandscape", "AfricanWildlifePlains", "ElephantMigrationScene", "LionTerritoryLandscape", "NightCityStreetRain", 
-  "GlowingMarketStreet", "CrowdedUrbanMarket", "SuburbanNeighborhood", "QuietVillageStreet", "EuropeanOldTownSquare", 
-  "TrainStationPlatform", "HighSpeedTrainInterior", "AirportTerminalHall", "LuxuryShoppingMall", "FashionBoutiqueInterior", 
-  "ArtGalleryExhibition", "DesertMilitaryOutpost", "BattlefieldLandscape", "DestroyedCityDistrict", "SunsetCountrysideFarm", 
-  "GoldenWheatFields", "WindmillFarmLandscape", "StormyOceanCliffs", "LightningStormSky", "DarkThunderClouds", "VolcanicLavaField", 
-  "ActiveVolcanoCrater", "MoltenLavaRivers", "HiddenJungleTemple", "SacredWaterTemple", "AncientStoneBridge", "FoggyLakeMorning", 
-  "MirrorLakeReflection", "CalmLakeSunset", "HighAltitudePlateau", "CanyonCliffView", "GrandCanyonLandscape"
+  "CrystalBlueOcean", "DeepOceanAbyss", "SunlightUnderwaterRays", "KelpForestUnderwater", "BioluminescentOcean", 
+  "TropicalIslandLagoon", "HiddenIslandParadise", "PalmBeachSunset", "CliffsideOceanView", "TurquoiseWaterBay", "VividCityNight", 
+  "FuturisticCitySkyline", "FlyingCarCity", "UltraModernCityCenter", "HighTechCityDistrict", "RainyFuturisticStreet", 
+  "LuxuryPenthouseView", "SkyscraperRooftop", "GlassTowerInterior", "LuxuryHotelLobby", "ModernArchitecturalHall", 
+  "AncientRomanColosseum", "MedievalCastleCourtyard", "AncientGreekTemple", "AncientEgyptianPyramid", "AztecTempleComplex", 
+  "VikingVillage", "StoneAgeSettlement", "SpaceStationInterior", "DeepSpaceOrbit", "AlienPlanetSurface", "RingedPlanetHorizon", 
+  "AsteroidField", "InterstellarNebula", "GalacticStarField", "FrozenArcticLandscape", "IceCaveInterior", "GlacierValley", 
+  "SnowstormWilderness", "AbandonedIndustrialFactory", "RustyIndustrialWarehouse", "OldPowerPlant", "AbandonedRailwayStation", 
+  "UrbanRuinsDistrict", "ModernResearchLaboratory", "HighTechControlRoom", "AICommandCenter", "FuturisticLaboratory", 
+  "HiddenUndergroundBunker", "SecretMilitaryBase", "WarRoomInterior", "SubmarineInterior", "LuxurySportsCarGarage", 
+  "ClassicCarShowroom", "SupercarTunnel", "GrandRoyalPalace", "LuxuryBallroom", "RoyalGarden", "GoldenThroneHall", 
+  "AncientLibraryHall", "OldUniversityLibrary", "SecretArchiveRoom", "MysticBookChamber", "FloatingIslandsLandscape", 
+  "FantasyCrystalCave", "DragonMountainLair", "MagicPortalValley", "MassiveWaterfallCliff", "RainforestWaterfall", 
+  "HiddenCanyonRiver", "EmeraldRiverValley", "SavannaSunsetLandscape", "AfricanWildlifePlains", "ElephantMigrationScene", 
+  "LionTerritoryLandscape", "NightCityStreetRain", "GlowingMarketStreet", "CrowdedUrbanMarket", "SuburbanNeighborhood", 
+  "QuietVillageStreet", "EuropeanOldTownSquare", "TrainStationPlatform", "HighSpeedTrainInterior", "AirportTerminalHall", 
+  "LuxuryShoppingMall", "FashionBoutiqueInterior", "ArtGalleryExhibition", "DesertMilitaryOutpost", "BattlefieldLandscape", 
+  "DestroyedCityDistrict", "SunsetCountrysideFarm", "GoldenWheatFields", "WindmillFarmLandscape", "StormyOceanCliffs", 
+  "LightningStormSky", "DarkThunderClouds", "VolcanicLavaField", "ActiveVolcanoCrater", "MoltenLavaRivers", "HiddenJungleTemple", 
+  "SacredWaterTemple", "AncientStoneBridge", "FoggyLakeMorning", "MirrorLakeReflection", "CalmLakeSunset", "HighAltitudePlateau", 
+  "CanyonCliffView", "GrandCanyonLandscape", "VolcanicEruption", "DesertOasis", "FloatingIslands", "AbandonedIndustrialZone", 
+  "SubterraneanCavern", "CelestialVoid", "MicroscopicWorld", "HistoricalVillage", "SteampunkFactory", "ZenGarden"
 ];
 
-// ... (EPIC_SUBJECTS lista od 300+ stavki)
 const EPIC_SUBJECTS = [
   "A vast underwater coral reef city glowing with bioluminescent coral structures and drifting schools of tropical fish",
   "A colossal ancient stone temple resting on the ocean floor covered in coral and marine life",
@@ -328,7 +424,35 @@ const EPIC_SUBJECTS = [
   "A deep ocean cave filled with shimmering mineral deposits",
   "A mysterious underwater spiral structure carved into rock",
   "A glowing underwater crystal pillar formation",
-  "A massive coral city structure built by natural reef growth"
+  "A massive coral city structure built by natural reef growth",
+  "A monumental Rolex watch carved out of a single mountain peak",
+  "A luxury watch made of liquid gold and floating diamonds in zero gravity",
+  "Ancient Roman legion marching through a futuristic portal",
+  "Queen Cleopatra as a cybernetic empress on a golden throne",
+  "A futuristic supercar driving through a prehistoric Jurassic jungle",
+  "An astronaut discovering an ancient Egyptian pyramid on Mars",
+  "A samurai fighting a mechanical demon in a cherry blossom storm",
+  "A massive Rolex Submariner acting as a portal in the middle of the Atlantic ocean",
+  "A futuristic skyscraper built into the side of a giant floating iceberg",
+  "A surreal library where books fly like birds in a vortex of light",
+  "A transparent hourglass containing an entire miniature galaxy",
+  "Cybernetic gladiator in a neon arena",
+  "Nordic viking warrior fighting a frost giant",
+  "Majestic dragon guarding a futuristic vault",
+  "Hyper-realistic portrait of a time-traveling explorer"
+];
+
+// ============================================================================
+// BANNER DATA
+// ============================================================================
+
+export const BANNER_DATA = [
+  { image: slikaHubImg, badge: "CORE AI HUB", title: "Visionary Master Protocol V8", subtitle: "Command center for generating complex AI architectures. 66 million+ cinematic combinations." },
+  { image: zmajImg, badge: "DRAGON PROTOCOL", title: "ANCIENT EMPIRES REBORN", subtitle: "Generate epic scenes with dragons in 8K resolution with extreme detail." },
+  { image: novaSlikaImg, badge: "TIME TRAVELER", title: "UNIQUE PHOTO REALISTIC IMAGES", subtitle: "Merging historical eras using advanced AI engines for 10x fidelity." },
+  { image: slikaCopyImg, badge: "CYBER STEALTH", title: "GHOST IN THE MACHINE", subtitle: "Professional stealth prompts engineered for high-detail ghost visuals." },
+  { image: slikaVideoImg, badge: "WARP SPEED", title: "TEMPORAL MOTION ENGINE", subtitle: "Optimized for fast generation of high-speed AI video content." },
+  { image: hollywoodImg, badge: "WINTER PROTOCOL", title: "HOLLYWOOD VFX GRADE", subtitle: "Epic cinematic battles and high-end CGI-level detail protocols." }
 ];
 
 // ============================================================================
@@ -336,12 +460,7 @@ const EPIC_SUBJECTS = [
 // ============================================================================
 
 const formatToken = (text) => text.replace(/([a-z])([A-Z])/g, '$1 $2');
-
-const sanitize = (text) => {
-    return text
-        .replace(/neon/gi, "vivid glowing")
-        .replace(/cyberpunk|cyberpank/gi, "high-tech futuristic");
-};
+const sanitize = (text) => text.replace(/neon/gi, "vivid glowing").replace(/cyberpunk/gi, "high-tech futuristic");
 
 const getMetaTokens = (count) => {
     let shuffled = [...META_TOKENS].sort(() => 0.5 - Math.random());
@@ -356,8 +475,7 @@ const getAbstractTokens = (count) => {
 export const getRandomDicePrompt = () => {
     const subject = EPIC_SUBJECTS[Math.floor(Math.random() * EPIC_SUBJECTS.length)];
     const env = formatToken(ENV_TOKENS[Math.floor(Math.random() * ENV_TOKENS.length)]);
-    let prompt = `${subject}, set against the backdrop of a ${env}.`;
-    return sanitize(prompt);
+    return sanitize(`${subject}, set against the backdrop of a ${env}.`);
 };
 
 export const generatePrompts = (customerPrompt, demoInput, selectedQuality, selectedAR) => {
@@ -366,13 +484,13 @@ export const generatePrompts = (customerPrompt, demoInput, selectedQuality, sele
     const qualMap = { '1x': 'standard quality', '2x': 'high definition rendering', '4x': '8k resolution, ultra-high definition' };
     const arDesc = arMap[selectedAR] || 'wide format';
     const qDesc = qualMap[selectedQuality] || 'high detail';
-    const randomEnv = formatToken(ENV_TOKENS[Math.floor(Math.random() * ENV_TOKENS.length)]);
+    const photorealCamera = UNIQUE_PHOTOREAL_COMBOS[Math.floor(Math.random() * UNIQUE_PHOTOREAL_COMBOS.length)];
 
     const outputs = {
         abstract: `ABSTRACT MASTERPIECE: ${subject}. ${getAbstractTokens(10)}. Geometric harmony, procedural visual system, ethereal atmosphere. ${qDesc}, ${arDesc}.`,
         cinematic: `A breathtaking cinematic film still of ${subject}. Shot on IMAX 70mm film, directed by a visionary filmmaker, anamorphic lens flares, heavy chiaroscuro lighting, dramatic shadows, volumetric atmosphere. ${getMetaTokens(6)}. ${qDesc}, ${arDesc}.`,
-        photoreal: `A professional hyper-realistic RAW photograph of ${subject}. Shot on Hasselblad X2D 100C, sharp focus on microscopic textures, natural skin pores and material detail, soft box studio lighting, true color accuracy, no filters. ${getMetaTokens(6)}. ${qDesc}, ${arDesc}.`,
-        cctv: `The most groundbreaking digital masterpiece of ${subject}, located in a ${randomEnv}. ${UNIQUE_PHOTOREAL_COMBOS[Math.floor(Math.random() * UNIQUE_PHOTOREAL_COMBOS.length)]}. ${UNIQUE_META_POOL.join(", ")}. ${getMetaTokens(4)}. Unreal Engine 5.4, absolute physical accuracy, ${qDesc}, ${arDesc}.`,
+        photoreal: `A professional hyper-realistic RAW photograph of ${subject}. ${photorealCamera}. Microscopic textures, natural skin pores and material detail, soft box studio lighting, true color accuracy, no filters. ${getMetaTokens(6)}. ${qDesc}, ${arDesc}.`,
+        cctv: `Surveillance footage of ${subject}. ${UNIQUE_META_POOL.slice(0,10).join(", ")}. Grainy digital noise, fisheye lens distortion, flickering infrared night vision, timestamp overlay, found footage aesthetic. ${qDesc}, ${arDesc}.`,
         single: `V8 CORE ENGINE: ${subject}, merging absolute reality with digital perfection. ${getMetaTokens(15)}, global illumination, ray-traced shadows, award-winning visual clarity, ${qDesc}, ${arDesc}.`
     };
 
@@ -431,39 +549,140 @@ export function MatrixRain() {
 export const renderDescription = (text) => {
   const { d: cleanDesc } = extractSys(text);
   if (!cleanDesc) return null;
+  
   return cleanDesc.split('\n').map((line, idx) => {
     const trimmed = line.trim();
     if (!trimmed) return <div key={idx} className="h-2"></div>;
     const upper = trimmed.toUpperCase();
-    if (upper.includes('[DESCRIPTION]') || upper.includes('VALUE MULTIPLIER') || upper.includes('KEY FEATURES') || upper.includes('THE ARSENAL') || upper.includes('THE 5 PILLARS') || upper.includes('THE ROI FINALE')) {
-        return <h3 key={idx} className="text-[12px] font-black text-white mt-10 mb-4 uppercase tracking-widest border-l-4 border-orange-500 pl-4 italic text-left">{trimmed}</h3>;
+    
+    if (upper.includes('[DESCRIPTION]') || upper.includes('VALUE MULTIPLIER') || upper.includes('KEY FEATURES') || 
+        upper.includes('THE ARSENAL') || upper.includes('THE 5 PILLARS') || upper.includes('THE ROI FINALE') || 
+        upper.includes('[LINKS & FILES]') || upper.includes('[HEADLINE]') || upper.includes('[PRICE]')) {
+        const cleanTitle = trimmed.replace(/\[|\]/g, ''); 
+        return <h3 key={idx} className="text-[12px] font-black text-white mt-10 mb-4 uppercase tracking-widest border-l-4 border-orange-500 pl-4 italic text-left">{cleanTitle}</h3>;
     }
+
     if (trimmed.startsWith('*') || trimmed.startsWith('-')) {
       return <div key={idx} className="flex gap-3 items-start my-2 bg-white/[0.02] p-3 rounded-2xl border border-white/5"><CheckCircle2 className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" /><p className="text-white text-[11px] font-bold text-left">{trimmed.replace(/^[*-]\s*/, '')}</p></div>;
     }
+
+    if (upper.startsWith('WHOP LINK:') || upper.startsWith('GUMROAD LINK:') || upper.startsWith('REACT SOURCE CODE:') || upper.startsWith('FILE UPLOAD:') || upper.startsWith('PRICE:')) {
+        const parts = trimmed.split(/:(.+)/);
+        if (parts.length > 1) {
+            const label = parts[0].trim();
+            const link = parts[1].trim();
+            return (
+                <div key={idx} className="flex flex-col md:flex-row md:items-center gap-2 my-2 bg-blue-900/10 p-3 rounded-xl border border-blue-500/20 text-left">
+                    <span className="text-blue-400 font-black text-[10px] uppercase tracking-widest min-w-[140px]">{label}:</span>
+                    {link.startsWith('http') ? (
+                        <a href={link} target="_blank" rel="noreferrer" className="text-white hover:text-orange-500 text-[11px] truncate break-all">{link}</a>
+                    ) : (
+                        <span className="text-white text-[11px] font-bold">{link}</span>
+                    )}
+                </div>
+            );
+        }
+    }
+
     return <p key={idx} className="text-white text-[11px] font-bold leading-relaxed my-3 text-left">{trimmed}</p>;
   });
 };
 
 export function AssetCard({ app }) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const videoRef = useRef(null);
+
   const mediaItem = app?.media?.[0];
   const isVideo = mediaItem?.type === 'video' || mediaItem?.url?.match(/\.(mp4|webm|ogg|mov)$/i);
   const displayUrl = isVideo ? `${mediaItem.url}#t=0.001` : getMediaThumbnail(mediaItem?.url);
+  
+  const handlePlayClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsPlaying(true);
+    if (videoRef.current) {
+      videoRef.current.muted = false; // Ukljucuje zvuk
+      videoRef.current.play(); // Pokrece video
+    }
+  };
+
+  const handleVideoEnded = () => {
+    setIsPlaying(false); // Sklanja kontrole, vraca play ikonicu
+    if (videoRef.current) {
+      videoRef.current.load(); // Resetuje video na pocetak (pokazuje prvi frejm kao thumbnail)
+    }
+  };
+  
   return (
-    <div className="relative overflow-hidden p-[1px] bg-gradient-to-br from-orange-500 to-blue-500 rounded-[3rem] transition-all duration-500 hover:scale-[1.03] flex flex-col group h-full shadow-2xl">
-      <div className="bg-[#0a0a0a] rounded-[2.9rem] flex flex-col h-full p-10 relative">
-        <div className="aspect-video relative overflow-hidden rounded-[2rem] mb-8 border-2 border-blue-500/30 bg-zinc-900 shadow-2xl text-left">
-          {isVideo ? <video src={displayUrl} className="w-full h-full object-cover" muted playsInline /> : <img src={displayUrl} className="w-full h-full object-cover" alt="asset" />}
-        </div>
-        <div className="flex justify-between items-start mb-6 gap-4 text-left">
-          <h2 className="text-lg font-black uppercase group-hover:text-orange-500 transition-all text-white leading-tight">{app.name}</h2>
-          <div className="px-4 py-2 bg-blue-600/10 border border-blue-500/20 rounded-xl text-[12px] font-black text-blue-400 shadow-lg">${app.price}</div>
-        </div>
-        <div className="mt-auto pt-4 text-left">
-          <Link to={`/app/${app.id}`} className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] text-center flex items-center justify-center gap-3 hover:bg-blue-500 transition-all shadow-xl">MORE DETAILS <ArrowRight className="w-4 h-4" /></Link>
+    <Link to={`/app/${app.id}`} className="block group text-left">
+      <div className="relative overflow-hidden p-[1px] bg-gradient-to-br from-orange-500 to-blue-500 rounded-[3rem] transition-all duration-500 hover:scale-[1.03] flex flex-col h-full shadow-2xl">
+        <div className="bg-[#0a0a0a] rounded-[2.9rem] flex flex-col h-full p-10 relative overflow-hidden">
+          
+          {/* NOVI VELIKI DIJAGONALNI RIBBON KOJI IDE PREKO CIJELE KARTICE */}
+          {app.type && (
+            <div className="absolute top-12 -right-28 w-96 bg-red-600 text-white py-3 text-center text-[12px] font-black uppercase tracking-widest shadow-[0_10px_20px_rgba(220,38,38,0.5)] z-50 rotate-[40deg] border-y border-red-400 pointer-events-none">
+              {app.type}
+            </div>
+          )}
+
+          {/* POVEĆAN PLAVI BOX (POMEREN IZNAD VIDEA UNUTAR GLAVNOG BOXA) */}
+          <div className="flex mb-5 relative z-20">
+            <div className="bg-blue-600 text-white px-5 py-2 rounded-full text-[10px] font-black uppercase shadow-xl tracking-widest">
+              {app.category || 'AI ASSET'}
+            </div>
+          </div>
+
+          <div className="aspect-video relative overflow-hidden rounded-[2rem] mb-8 border-2 border-blue-500/30 bg-zinc-900 shadow-2xl text-left z-20">
+            {isVideo ? (
+              <>
+                <video 
+                  ref={videoRef}
+                  src={displayUrl} 
+                  className={`w-full h-full object-cover ${!isPlaying ? 'transition-transform duration-700 group-hover:scale-105' : ''}`}
+                  playsInline 
+                  controls={isPlaying} // Prikazuje kontrole tek kad se pusti video
+                  onEnded={handleVideoEnded} // Resetuje se kad stigne do kraja
+                  onClick={(e) => {
+                    // Ovo sprecava da klikanje po kontrolama videa odvede na drugi link
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                />
+                
+                {/* MALA PLAY IKONICA PREKO VIDEA DOK NE KRENE */}
+                {!isPlaying && (
+                  <div 
+                    className="absolute inset-0 flex items-center justify-center bg-black/10 hover:bg-black/30 transition-all cursor-pointer z-30 group/playbtn"
+                    onClick={handlePlayClick}
+                  >
+                    <div className="bg-black/60 p-3 rounded-full border border-blue-500 shadow-[0_0_15px_rgba(37,99,235,0.6)] group-hover/playbtn:bg-blue-600 transition-all group-hover/playbtn:scale-110">
+                      <PlayCircle className="w-8 h-8 text-blue-400 group-hover/playbtn:text-white transition-colors" />
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <img src={displayUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="asset" />
+            )}
+          </div>
+          
+          <div className="flex justify-between items-start mb-6 gap-4 text-left relative z-10 flex-col sm:flex-row">
+            <div className="flex flex-col">
+              <h2 className="text-lg font-black uppercase group-hover:text-orange-500 transition-all text-white leading-tight">{app.name}</h2>
+              {/* PODNASLOV (KATEGORIJA) DODAT TAČNO OVDE ISPOD NASLOVA U BOX-U - PROMENJENO U UPPERCASE */}
+              <p className="text-[11px] text-zinc-400 uppercase mt-1.5 tracking-wide">
+                {app.category || 'AI ASSET'}
+              </p>
+            </div>
+            <div className="px-4 py-2 bg-blue-600/10 border border-blue-500/20 rounded-xl text-[12px] font-black text-blue-400 shadow-lg shrink-0 mt-2 sm:mt-0">${app.price}</div>
+          </div>
+          
+          <div className="mt-auto pt-4 text-left relative z-10">
+            <div className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] text-center flex items-center justify-center gap-3 hover:bg-blue-500 transition-all shadow-xl">MORE DETAILS <ArrowRight className="w-4 h-4" /></div>
+          </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -518,12 +737,3 @@ export const LiveSalesNotification = ({ apps }) => {
     </div>
   );
 };
-
-export const BANNER_DATA = [
-  { url: slikaHubImg, badge: "CORE AI HUB", title: "Welcome to Our Hub", subtitle: "Command center for generating complex AI architectures." },
-  { url: zmajImg, badge: "DRAGON PROTOCOL", title: "ANCIENT EMPIRES REBORN", subtitle: "Generate epic scenes with dragons in 8K resolution." },
-  { url: novaSlikaImg, badge: "TIME TRAVELER", title: "UNIQUE PHOTO REALISTIC IMAGES", subtitle: "Merging historical eras using advanced AI engines." },
-  { url: slikaCopyImg, badge: "CYBER STEALTH", title: "GHOST IN THE MACHINE", subtitle: "Professional prompts for high-detail visuals." },
-  { url: slikaVideoImg, badge: "WARP SPEED", title: "TEMPORAL MOTION ENGINE", subtitle: "Optimized for fast generation of AI video content." },
-  { url: hollywoodImg, badge: "WINTER PROTOCOL", title: "HOLLYWOOD VFX GRADE", subtitle: "Epic cinematic battles and CGI-level detail." }
-];
