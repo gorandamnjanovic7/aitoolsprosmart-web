@@ -1,10 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { CheckCircle2, PlayCircle, ArrowRight, Check, Award, HelpCircle, Database, Zap, ChevronDown, X } from 'lucide-react';
-import { db } from './firebase';
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import React from 'react';
 
-// --- IMAGE IMPORTS ---
+// --- TVOJI ORIGINALNI IMAGE IMPORTS ---
 import zmajImg from './zmaj.jpg';
 import novaSlikaImg from './nova-slika.png';
 import slikaHubImg from './slika-hub.jpeg';
@@ -13,45 +9,1755 @@ import hollywoodImg from './hollywood.png';
 import slikaVideoImg from './slika-video.jpeg';
 import mojLogo from './logo.png';
 
+// ============================================================================
+// OSNOVNI PODACI I POMOĆNE KOMPONENTE
+// ============================================================================
+
+export const bannerUrl = zmajImg; 
 export const logoUrl = mojLogo; 
-export const bannerUrl = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop";
-export const CLOUDINARY_CLOUD_NAME = "drllxycnh"; 
-export const CLOUDINARY_UPLOAD_PRESET = "uploads1"; 
-export const ADMIN_DEFAULT_DESC = `[HEADLINE]
-Unesi glavni naslov ovde...
 
-[DESCRIPTION]
-Unesi glavni opis ovde...
-
-[LINKS & FILES]
-Whop Link: https://whop.com/...
-Gumroad Link: https://gumroad.com/...
-React Source Code: https://github.com/...
-File Upload: Uputstvo za preuzimanje...
-
-[PRICE]
-Price: $XX
-
-KEY FEATURES
-* Feature 1
-* Feature 2
-* Feature 3
-
-VALUE MULTIPLIER
-* Benefit 1
-* Benefit 2`;
-
-// ============================================================================
-// 1. MEGA BAZE TOKENA
-// ============================================================================
-
-const UNIQUE_META_POOL = [
-  "UltraPhotorealistic", "HyperRealism", "ExtremeDetail", "NanoDetail_8K", "MicroTexture_Rendering", 
-  "UltraDepth_Field", "Global_Illumination", "RayTraced_Reflections", "Ambient_Occlusion", 
-  "Sensor_Noise_Realism", "Film_Grain_Texture", "Natural_Skin_Pores", "Subsurface_Scattering", "Optical_Lens_Distortion"
+export const BANNER_DATA = [
+  { image: zmajImg, badge: "NEW PROTOCOL", title: "AI VIDEO GENERATION v8", subtitle: "Hyper-realistic temporal diffusion models are now active. Create 4K cinematic sequences from raw text inputs." },
+  { image: novaSlikaImg, badge: "CORE UPDATE", title: "QUANTUM PROMPT ENGINE", subtitle: "Leverage the new multi-modal prompt architecture. Achieve 99.8% prompt adherence." },
+  { image: hollywoodImg, badge: "PREMIUM ASSET", title: "PHOTOREALISM MATRICES", subtitle: "Access classified rendering algorithms used by top-tier visual architects." },
+  { image: slikaHubImg, badge: "SYSTEM UPGRADE", title: "NEURAL NETWORK EXPANSION", subtitle: "Ultra-fast processing for maximum quality." },
+  { image: slikaVideoImg, badge: "CINEMATIC", title: "HOLLYWOOD LEVEL RENDERS", subtitle: "Achieve the most unique photorealistic images ever." },
+  { image: slikaCopyImg, badge: "NEW FEATURE", title: "ADVANCED DATA PARSING", subtitle: "Extract and manipulate complex visual structures." }
 ];
 
-const UNIQUE_PHOTOREAL_COMBOS = [
+export const formatExternalLink = (url) => { if (!url) return '#'; if (!url.startsWith('http://') && !url.startsWith('https://')) return `https://${url}`; return url; };
+export const extractSys = (desc) => { if (!desc) return { d: '', s: {} }; const m = desc.match(/\[SYS\]([\s\S]*?)\[\/SYS\]/i); if (!m) return { d: desc, s: {} }; try { return { d: desc.replace(m[0], '').trim(), s: JSON.parse(m[1]) }; } catch { return { d: desc, s: {} }; } };
+export const renderDescription = (text) => { if (!text) return null; const { d } = extractSys(text); return <div className="w-full text-left"><p className="text-zinc-400 text-sm md:text-base leading-relaxed mb-6 whitespace-pre-wrap font-sans">{d}</p></div>; };
+export const getMediaThumbnail = (url) => { if (!url) return ''; if (url.match(/\.(mp4|webm|ogg|mov)$/i)) return `${url}#t=0.001`; return url; };
+
+export const LiveSalesNotification = ({ apps }) => {
+  const [notif, setNotif] = React.useState(null);
+  React.useEffect(() => {
+    if (!apps || apps.length === 0) return;
+    const names = ['Michael', 'Alex', 'David', 'Sarah', 'James', 'Emma', 'Daniel', 'Chris', 'Sophia', 'John'];
+    const countries = ['USA', 'UK', 'Canada', 'Germany', 'Australia', 'France', 'Japan', 'Sweden'];
+    const times = ['Just now', '2 minutes ago', '5 minutes ago', '10 minutes ago', '15 minutes ago'];
+    const show = () => { const app = apps[Math.floor(Math.random() * apps.length)]; setNotif({ user: `${names[Math.floor(Math.random() * names.length)]} from ${countries[Math.floor(Math.random() * countries.length)]}`, action: 'purchased', item: app.name, time: times[Math.floor(Math.random() * times.length)] }); setTimeout(() => setNotif(null), 5000); setTimeout(show, Math.random() * 30000 + 15000); };
+    const t = setTimeout(show, 10000); return () => clearTimeout(t);
+  }, [apps]);
+  if (!notif) return null;
+  return (
+    <div className="fixed bottom-6 left-6 z-[9999] bg-[#0a0a0a] border border-blue-500/30 rounded-2xl p-4 shadow-[0_0_20px_rgba(37,99,235,0.2)] flex items-center gap-4 animate-in slide-in-from-bottom-5 fade-in duration-500 font-sans max-w-sm">
+      <div className="w-10 h-10 rounded-full bg-blue-600/20 flex items-center justify-center shrink-0 border border-blue-500/50 text-blue-500"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg></div>
+      <div className="text-left"><p className="text-[11px] font-medium text-zinc-300"><span className="text-white font-bold">{notif.user}</span> {notif.action}</p><p className="text-[13px] font-black text-blue-400 uppercase tracking-wide truncate max-w-[200px]">{notif.item}</p><p className="text-[9px] text-zinc-500 mt-0.5 font-bold uppercase">{notif.time}</p></div>
+    </div>
+  );
+};
+
+export const FullScreenBoot = ({ onComplete }) => {
+  const [step, setStep] = React.useState(0);
+  React.useEffect(() => {
+    const s1 = setTimeout(() => setStep(1), 800);
+    const s2 = setTimeout(() => setStep(2), 2000);
+    const s3 = setTimeout(() => { setStep(3); onComplete(); }, 2800);
+    return () => { clearTimeout(s1); clearTimeout(s2); clearTimeout(s3); };
+  }, [onComplete]);
+  return (
+    <div className={`fixed inset-0 z-[9000] bg-black flex flex-col items-center justify-center transition-opacity duration-500 ${step === 3 ? 'opacity-0 pointer-events-none' : 'opacity-100'} font-mono`}>
+      <div className="text-orange-500 text-4xl mb-4 animate-pulse"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" /></svg></div>
+      <div className="text-[10px] text-zinc-500 uppercase tracking-[0.4em] mb-8">V8 Core Engine</div>
+      <div className="w-64 bg-zinc-900 h-1 rounded-full overflow-hidden"><div className="h-full bg-orange-600 transition-all duration-[2000ms] ease-out" style={{ width: step >= 1 ? '100%' : '0%' }} /></div>
+      <div className="mt-4 text-[9px] text-zinc-600 uppercase tracking-widest">{step === 0 ? "INITIALIZING NEURAL NETWORKS..." : step === 1 ? "LOADING AI ASSETS..." : "ESTABLISHING SECURE CONNECTION..."}</div>
+    </div>
+  );
+};
+
+export const TypewriterText = ({ text, speed = 20 }) => {
+  const [displayed, setDisplayed] = React.useState('');
+  React.useEffect(() => { setDisplayed(''); let i = 0; const t = setInterval(() => { if (i < text.length) { setDisplayed(prev => prev + text.charAt(i)); i++; } else { clearInterval(t); } }, speed); return () => clearInterval(t); }, [text, speed]);
+  return <span>{displayed}<span className="animate-pulse opacity-50">_</span></span>;
+};
+
+export const UniversalVideoPlayer = ({ url, isMuted = false }) => {
+  const [isPlaying, setIsPlaying] = React.useState(false);
+  const videoRef = React.useRef(null);
+  const isYouTube = url.includes('youtube.com') || url.includes('youtu.be');
+  if (isYouTube) { const videoId = url.includes('v=') ? url.split('v=')[1].split('&')[0] : url.split('/').pop(); return (<div className="aspect-video w-full rounded-[2rem] overflow-hidden bg-black border border-white/5 relative group"><iframe className="w-full h-full pointer-events-none" src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}&showinfo=0&rel=0&modestbranding=1`} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen /></div>); }
+  return (
+    <div className="aspect-video w-full rounded-[2rem] overflow-hidden bg-black border border-white/5 relative group" onMouseEnter={() => {setIsPlaying(true); videoRef.current?.play();}} onMouseLeave={() => {setIsPlaying(false); videoRef.current?.pause();}}>
+      <video ref={videoRef} src={url} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500" loop muted={isMuted} playsInline />
+      {!isPlaying && <div className="absolute inset-0 flex items-center justify-center bg-black/20"><div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center bg-black/40 text-white"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div></div>}
+    </div>
+  );
+};
+
+export const MatrixRain = () => {
+  const canvasRef = React.useRef(null);
+  React.useEffect(() => {
+    const canvas = canvasRef.current; const ctx = canvas.getContext('2d'); canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%""\'#&_(),.;:?!\\|{}<>[]^~'.split('');
+    const fontSize = 14; const columns = canvas.width / fontSize; const drops = [];
+    for(let x = 0; x < columns; x++) drops[x] = 1;
+    const draw = () => {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#f97316'; ctx.font = fontSize + 'px monospace';
+      for(let i = 0; i < drops.length; i++) {
+        const text = chars[Math.floor(Math.random() * chars.length)];
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      }
+    };
+    const interval = setInterval(draw, 33);
+    const handleResize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+    window.addEventListener('resize', handleResize);
+    return () => { clearInterval(interval); window.removeEventListener('resize', handleResize); };
+  }, []);
+  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />;
+};
+
+export const TutorialCard = ({ vid }) => {
+  const videoId = vid.url.includes('v=') ? vid.url.split('v=')[1].split('&')[0] : vid.url.split('/').pop();
+  return (
+    <a href={vid.url} target="_blank" rel="noopener noreferrer" className="block p-[2px] bg-gradient-to-br from-zinc-800 to-zinc-900 hover:from-red-600 hover:to-red-900 rounded-[2.5rem] transition-all duration-500 group relative shadow-xl hover:shadow-[0_0_30px_rgba(220,38,38,0.3)]">
+      <div className="bg-[#0a0a0a] rounded-[2.4rem] p-6 flex flex-col h-full relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-24 h-24 bg-red-600/10 blur-2xl rounded-full group-hover:bg-red-600/20 transition-all duration-500 pointer-events-none"></div>
+        <div className="aspect-video relative rounded-3xl overflow-hidden bg-black border-2 border-white/5 group-hover:border-red-500/50 transition-colors duration-500 mb-6 shadow-inner"><img src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`} className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" alt={vid.title} /><div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-transparent transition-all duration-500"><div className="w-14 h-14 rounded-full bg-red-600/90 text-white flex items-center justify-center shadow-[0_0_15px_rgba(220,38,38,0.5)] transform group-hover:scale-110 transition-all duration-500"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div></div><div className="absolute bottom-3 right-3 bg-black/80 px-2 py-1 rounded text-[9px] font-black text-white tracking-widest border border-white/10">INTEL</div></div>
+        <h4 className="text-white font-black text-[13px] uppercase tracking-wide line-clamp-2 leading-relaxed group-hover:text-red-400 transition-colors mb-4">{vid.title}</h4>
+        <div className="mt-auto flex items-center justify-between text-zinc-500 text-[10px] font-bold tracking-widest uppercase border-t border-white/5 pt-4"><span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> SYSTEM ACTIVE</span><span className="group-hover:text-red-500 transition-colors flex items-center gap-1">ACCESS <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></div>
+      </div>
+    </a>
+  );
+};
+
+
+// ============================================================================
+// GIGANTSKI NIZOVI PODATAKA (NIŠTA NIJE OBRISANO)
+// ============================================================================
+
+export const DICE_PROMPTS = [
+  "A neon glowing samurai sword in a dark rainy cyberpunk city", 
+  "A cinematic wide shot of a futuristic spaceship flying through a nebula", 
+  "Photorealistic portrait of a cybernetic geisha with glowing blue eyes", 
+  "Macro photography of a tiny glowing mushroom in a mystical forest", 
+  "A classic 1980s retro-futuristic synthwave sports car driving towards a sunset", 
+  "A highly detailed portrait of an ancient robotic knight, intricate armor", 
+  "A sprawling hyper-advanced alien metropolis with flying vehicles", 
+  "A close-up of a futuristic cyber-eye with glowing red iris", 
+  "A dramatic shot of a lone warrior standing on a cliff looking at a ruined city",
+  "A sleek black BMW 7-series parked in a rainy cyberpunk city",
+  "A portrait of a 24-year-old beautiful woman with glowing digital static hair",
+  "Viking king Ragnar Lothbrok covered in battle mud and blood",
+  "A massive T-Rex roaring in a prehistoric jungle during a heavy thunderstorm",
+  "Daenerys Targaryen standing before a massive dragon breathing fire",
+  "A cityscape where all buildings are made of giant moving shadow puppets",
+  "A sky that is actually a deep ocean floor with massive glowing jellyfish",
+  "A mysterious golden relic found in an abandoned Serbian coal mine",
+  "Roman legionaries marching through a dense foggy forest in ancient times",
+  "A neon green Lamborghini Aventador drifting on a neon-lit mountain road",
+  "A futuristic McLaren supercar hovering above a sci-fi metropolis",
+  "The Iron Throne illuminated by a single shaft of cinematic god rays",
+  "Ivar the Boneless leading a Viking shield wall in the freezing snow",
+  "A cinematic wide shot of a massive futuristic spaceship flying through a purple nebula", 
+  "Macro photography of a tiny glowing bioluminescent mushroom in a mystical forest", 
+  "A classic 1980s retro-futuristic synthwave sports car driving towards a neon sunset", 
+  "A highly detailed portrait of an ancient robotic knight wearing intricate golden armor", 
+  "A sprawling hyper-advanced alien metropolis with flying vehicles and glass towers", 
+  "A close-up of a futuristic cyber-eye with a glowing red iris scanning the area", 
+  "A dramatic shot of a lone warrior standing on a cliff looking at a ruined city below",
+  "A hyper-realistic cinematic shot of a luxury Ferrari driving through the Alps",
+  "An ancient Greek gladiator arena filled with cheering crowds in the afternoon sun",
+  "A close-up macro shot of a metallic dragonfly covered in morning dew drops",
+  "A stunning 24-year-old woman wearing a high-fashion dress made of liquid glass",
+  "An astronaut floating in zero gravity overlooking the glowing curve of Earth",
+  "A massive prehistoric Allosaurus hunting prey in a dense Jurassic swamp",
+  "A cyberpunk street vendor selling glowing neon noodles in a dark alleyway",
+  "A hyper-detailed majestic lion with a crown made of burning flames",
+  "A cinematic wide shot of a medieval castle under siege by flaming catapults",
+  "A meticulously crafted luxury wristwatch featuring exposed gold gears, suspended perfectly still under crystal clear water with tiny air bubbles rising",
+  "A colossal futuristic spacecraft hovering silently above a glowing cyberpunk city skyline at night",
+  "A transparent glass cube containing a miniature tropical island ecosystem with waterfalls and palm trees",
+  "A hyper-detailed ancient Roman helmet resting on a marble pedestal under dramatic torchlight",
+  "A glowing crystal skull slowly levitating above an ancient stone altar covered in mysterious symbols",
+  "A massive dragon made entirely of molten lava emerging from a volcanic crater at sunset",
+  "A futuristic AI server core floating in a dark room with cables radiating outward like neural veins",
+  "A deep sea bioluminescent jellyfish drifting through an endless black ocean abyss",
+  "A medieval knight standing alone in heavy rain on a battlefield illuminated by lightning",
+  "A perfectly polished obsidian pyramid reflecting a star-filled galaxy sky",
+  "A cybernetic samurai warrior standing under neon rain in a futuristic Tokyo alley",
+  "A colossal ancient library chamber filled with floating glowing books",
+  "A hyper-realistic mechanical heart made of titanium and glass beating slowly",
+  "A massive iceberg cathedral rising from frozen polar waters",
+  "A golden phoenix made of light particles rising from burning ashes",
+  "A mysterious astronaut standing in a vast desert beneath a giant ringed planet",
+  "A giant clock tower mechanism filled with spinning brass gears and pendulums",
+  "A surreal floating city built on massive stone platforms drifting in clouds",
+  "A glowing tree of life with roots made of light spreading across the ground",
+  "A futuristic underwater research base surrounded by deep sea creatures",
+  "A gigantic crystal cavern illuminated by natural glowing minerals",
+  "A luxury sports car parked alone on a wet neon street at night",
+  "A mysterious ancient temple hidden deep within a jungle waterfall",
+  "A transparent glass hourglass containing a swirling miniature galaxy",
+  "A massive steampunk airship flying slowly above Victorian city rooftops",
+  "A colossal stone statue of a forgotten god half buried in desert sand",
+  "A cyberpunk hacker surrounded by floating holographic data screens",
+  "A glowing sword embedded deep inside an ancient stone pedestal",
+  "A floating island with waterfalls cascading endlessly into clouds",
+  "A futuristic city skyline built inside a giant glass dome",
+  "A hyper-realistic robotic eye reflecting an entire futuristic city",
+  "A massive underwater whale skeleton illuminated by blue bioluminescent light",
+  "A luxury diamond ring slowly rotating in zero gravity",
+  "A mysterious portal opening inside an abandoned gothic cathedral",
+  "A colossal ancient dragon skeleton stretching across a canyon",
+  "A futuristic train speeding through a neon megacity tunnel",
+  "A massive glowing crystal suspended inside a dark cavern chamber",
+  "A hyper-detailed mechanical butterfly made of polished chrome",
+  "A surreal staircase spiraling endlessly into clouds",
+  "A glowing meteor frozen in mid-air above a crater",
+  "A colossal moon rising behind a medieval mountain castle",
+  "A cybernetic panther walking silently through neon jungle foliage",
+  "A golden crown resting on a velvet throne in dim candlelight",
+  "A massive space station orbiting a glowing blue planet",
+  "A mysterious cloaked figure standing at the entrance of an ancient ruin",
+  "A futuristic drone swarm forming geometric patterns in the sky",
+  "A deep ocean trench illuminated by strange alien creatures",
+  "A glass bottle containing a swirling storm cloud miniature",
+  "A colossal lighthouse standing against a raging ocean storm",
+  "A surreal floating forest with trees growing upside down",
+  "A futuristic AI brain made of glowing neural circuits",
+  "A hyper-realistic ice dragon perched atop a frozen mountain",
+  "A luxury mechanical watch exploding into floating golden gears",
+  "A giant marble staircase leading into an endless black void",
+  "A glowing ancient rune stone surrounded by mist",
+  "A cyberpunk motorcycle rider speeding through neon rain",
+  "A massive spiral galaxy visible from the surface of an alien planet",
+  "A colossal underground cavern containing a glowing crystal lake",
+  "A futuristic robotic hand holding a fragile glowing butterfly",
+  "A medieval castle floating above clouds at sunrise",
+  "A glowing meteor shower crossing a purple alien sky",
+  "A transparent sphere containing a miniature city",
+  "A massive bronze gate slowly opening into a hidden world",
+  "A glowing jellyfish forest drifting through the ocean depths",
+  "A futuristic soldier standing on the edge of a ruined megacity",
+  "A hyper-realistic phoenix made of molten gold",
+  "A mysterious mirror portal floating in a dark forest",
+  "A colossal mechanical dragon coiled around a skyscraper",
+  "A golden compass spinning slowly on an ancient map",
+  "A deep space explorer drifting beside a massive nebula",
+  "A futuristic underwater city protected by a giant energy dome",
+  "A glowing sword forged from blue plasma energy",
+  "A hyper-realistic mechanical owl perched silently on a branch",
+  "A massive glacier cave glowing with blue crystalline light",
+  "A floating stone temple surrounded by swirling clouds",
+  "A colossal titan statue cracked with glowing lava veins",
+  "A cyberpunk skyline reflected in a rain soaked street",
+  "A glowing lotus flower floating on dark water",
+  "A giant ancient tree whose branches reach into the stars",
+  "A futuristic AI core glowing inside a glass containment sphere",
+  "A medieval battlefield covered in morning fog",
+  "A massive cosmic portal opening in deep space",
+  "A glowing emerald dragon flying above misty mountains",
+  "A luxury diamond crown resting inside a glass display",
+  "A futuristic orbital elevator stretching into the sky",
+  "A surreal desert landscape with floating monoliths",
+  "A glowing mechanical sun inside a massive chamber",
+  "A giant waterfall falling into an endless abyss",
+  "A cyberpunk robot monk meditating in neon light",
+  "A massive crystal dragon frozen inside ice",
+  "A hyper-realistic golden scarab slowly crawling across black marble",
+  "A mysterious glowing rune circle carved into ancient stone",
+  "A futuristic city built inside a hollow asteroid",
+  "A colossal stone bridge stretching across a misty canyon",
+  "A glowing meteor suspended above an ancient temple",
+  "A deep ocean research submarine drifting past giant squid",
+  "A luxury yacht sailing under a galaxy filled sky",
+  "A surreal floating staircase made of glowing light",
+  "A massive mechanical spider walking across desert ruins",
+  "A futuristic AI hologram forming inside a dark room",
+  "A giant glass pyramid standing alone in a desert",
+  "A glowing cosmic whale swimming through space",
+  "A cyberpunk street market illuminated by neon lanterns",
+  "A hyper-realistic platinum crown encrusted with diamonds",
+  "A mysterious ancient portal glowing inside jungle ruins",
+  "A colossal stone dragon carved into a mountain",
+  "A futuristic aircraft carrier floating in clouds",
+  "A glowing crystal forest inside a dark cavern",
+  "A luxury perfume bottle surrounded by floating diamonds",
+  "A giant robotic titan standing in a ruined city",
+  "A deep ocean coral cathedral glowing in bioluminescent light",
+  "A futuristic motorcycle parked under neon rain",
+  "A hyper-realistic obsidian dagger resting on black velvet",
+  "A colossal alien structure emerging from desert sands",
+  "A glowing phoenix feather floating in darkness",
+  "A surreal floating castle drifting above a star ocean",
+  "A futuristic AI server room with endless glowing racks",
+  "A mysterious hooded guardian standing beside ancient gates",
+  "A hyper-realistic golden dragon egg glowing softly",
+  "A massive spiral staircase carved inside a stone tower",
+  "A glowing crystal crown hovering above a marble pedestal",
+  "A futuristic space elevator dock station in orbit",
+  "A deep sea anglerfish illuminating the dark abyss",
+  "A luxury mechanical watch submerged in dark ink water",
+  "A giant marble statue cracked with glowing blue energy",
+  "A glowing rune sword embedded in frozen ice",
+  "A futuristic neon city skyline under heavy rain",
+  "A hyper-realistic titanium skull reflecting firelight",
+  "A massive volcanic dragon emerging from magma",
+  "A surreal floating library filled with endless books",
+  "A glowing portal opening inside an abandoned laboratory",
+  "A giant mechanical clock suspended in mid air",
+  "A futuristic AI orb floating above a glass platform",
+  "A deep ocean trench illuminated by alien lights",
+  "A luxury diamond necklace glowing under spotlight",
+  "A colossal ancient stone face carved into a cliff",
+  "A glowing meteor fragment resting on black sand",
+  "A futuristic hover car speeding through neon highways",
+  "A mysterious crystal monolith rising from ocean waves",
+  "A hyper-realistic robotic wolf standing in snow",
+  "A massive cosmic storm swirling across a distant galaxy",
+  "A glowing sapphire crown floating in darkness",
+  "A giant mechanical bird flying across sunset skies",
+  "A futuristic city skyline inside a glass sphere",
+  "A deep sea creature drifting through glowing coral reefs",
+  "A luxury gold compass resting on antique wood",
+  "A surreal floating temple surrounded by thunder clouds",
+  "A massive dragon statue illuminated by moonlight",
+  "A glowing crystal skull resting on ancient stone",
+  "A futuristic AI holographic interface forming mid air",
+  "A hyper-realistic molten lava sword forged in fire",
+  "A giant alien planet rising behind mountain peaks",
+  "A mysterious rune altar glowing in dark forest",
+  "A luxury watch exploding into particles of light",
+  "A massive cyberpunk megacity skyline at night",
+  "A glowing emerald dragon egg cracking open",
+  "A deep ocean submarine passing through glowing jellyfish",
+  "A futuristic robotic knight standing under neon rain",
+  "A colossal ancient gateway opening into light",
+  "A hyper-realistic glass heart filled with golden liquid",
+  "A massive floating island city drifting above clouds",
+  "A glowing rune stone pulsing with blue energy",
+  "A futuristic AI data sphere hovering in darkness",
+  "A giant cosmic whale drifting through nebula clouds",
+  "A luxury gold crown reflecting firelight",
+  "A deep sea leviathan emerging from darkness",
+  "A surreal floating pyramid surrounded by lightning",
+  "A hyper-realistic robotic dragon perched on metal ruins",
+  "A glowing ancient artifact resting inside a stone chamber",
+  "A vast emerald valley covered in morning fog with golden sunlight slowly breaking through distant mountain peaks",
+  "A dramatic coastal cliff landscape with gigantic waves crashing against black volcanic rock at sunset",
+  "A surreal desert landscape filled with towering sand dunes glowing orange under a massive rising moon",
+  "A frozen arctic wasteland illuminated by dancing green aurora lights across the night sky",
+  "A breathtaking alpine mountain range with snow-covered peaks reflecting perfectly in a crystal clear lake",
+  "A dense ancient forest valley with towering trees and beams of sunlight cutting through morning mist",
+  "A massive canyon landscape carved by a winding turquoise river seen from an epic aerial view",
+  "A surreal floating island landscape with waterfalls pouring endlessly into clouds below",
+  "A dramatic thunderstorm forming over endless wheat fields with lightning striking the distant horizon",
+  "A mystical valley filled with glowing fireflies beneath a sky filled with bright stars",
+  "A cinematic sunset landscape over rolling hills covered in golden grass swaying in the wind",
+  "A colossal glacier field stretching endlessly beneath pale blue polar skies",
+  "A remote tropical island surrounded by crystal clear turquoise water and coral reefs",
+  "A vast alien desert with purple sand dunes and two giant planets rising on the horizon",
+  "A giant waterfall cascading down moss covered cliffs deep inside a jungle canyon",
+  "A cinematic fjord landscape with dark waters reflecting towering cliffs and storm clouds",
+  "A golden savanna landscape with scattered acacia trees under a burning orange sunset",
+  "A surreal salt flat landscape reflecting the entire sky like a giant mirror",
+  "A vast volcanic landscape filled with rivers of glowing lava flowing between black rock formations",
+  "A lush rainforest canopy stretching endlessly beneath morning mist",
+  "A dramatic highland plateau with massive stone monoliths rising from grassy plains",
+  "A cinematic river valley landscape winding between steep mountain walls",
+  "A frozen mountain lake surrounded by jagged snowy peaks under twilight skies",
+  "A mysterious fog covered swamp landscape with twisted trees rising from dark water",
+  "A desert canyon glowing deep red during the last light of sunset",
+  "A vast prairie landscape under a sky filled with enormous thunderclouds",
+  "A remote mountain monastery overlooking endless misty valleys",
+  "A glowing bioluminescent jungle landscape illuminated by strange plants",
+  "A surreal alien forest filled with towering crystal trees",
+  "A massive iceberg field drifting slowly across the polar ocean",
+  "A cinematic sunset over terraced rice fields stretching across mountain slopes",
+  "A remote volcanic island with smoke rising from its central crater",
+  "A mystical ancient forest clearing with soft rays of morning sunlight",
+  "A colossal stone arch formation standing alone in a desert landscape",
+  "A cinematic winter forest landscape covered in fresh untouched snow",
+  "A dramatic lightning storm over an endless desert horizon",
+  "A glowing canyon landscape illuminated by hundreds of small waterfalls",
+  "A remote mountain valley filled with blooming wildflowers",
+  "A cinematic ocean horizon under a sky full of glowing stars",
+  "A massive glacier cave glowing blue from trapped ice light",
+  "A peaceful countryside landscape with golden wheat fields and distant windmills",
+  "A vast tundra landscape stretching endlessly under pale northern skies",
+  "A surreal foggy mountain ridge floating above a sea of clouds",
+  "A dramatic coastal lighthouse standing against raging storm waves",
+  "A lush green valley with a winding river reflecting the sunset",
+  "A cinematic desert plateau filled with giant sandstone pillars",
+  "A remote rainforest waterfall surrounded by dense jungle canopy",
+  "A glowing red canyon landscape during sunset golden hour",
+  "A massive frozen waterfall hanging like glass from a cliff",
+  "A mysterious island landscape emerging slowly from morning fog",
+  "A cinematic coastal bay with turquoise water and white cliffs",
+  "A surreal mountain valley illuminated by glowing blue mist",
+  "A dramatic storm rolling over distant mountain ranges",
+  "A peaceful alpine meadow filled with colorful wildflowers",
+  "A giant canyon landscape seen from an epic aerial perspective",
+  "A cinematic sunrise breaking through fog over forested hills",
+  "A volcanic plateau glowing faintly with underground lava heat",
+  "A remote arctic coastline covered in drifting sea ice",
+  "A mystical forest valley filled with ancient towering trees",
+  "A glowing alien desert with crystalline sand formations",
+  "A cinematic twilight landscape over silent mountain lakes",
+  "A dramatic ridge overlooking endless rolling hills",
+  "A glowing jungle valley illuminated by bioluminescent plants",
+  "A massive waterfall dropping into a deep jungle basin",
+  "A surreal floating mountain landscape surrounded by clouds",
+  "A cinematic coastline illuminated by moonlight reflections",
+  "A frozen fjord landscape under bright northern lights",
+  "A desert oasis surrounded by tall sand dunes",
+  "A massive canyon filled with layered red rock cliffs",
+  "A cinematic aerial view of a winding river through dense forest",
+  "A glowing mountain peak above clouds during sunrise",
+  "A peaceful valley landscape filled with mist and soft light",
+  "A dramatic thunderstorm forming over distant hills",
+  "A vast grassland landscape stretching beneath a glowing sunset",
+  "A mysterious jungle temple hidden deep inside dense rainforest",
+  "A cinematic night desert landscape illuminated by stars",
+  "A giant glacier wall rising above frozen ocean water",
+  "A surreal forest lake reflecting perfectly still skies",
+  "A massive rocky coastline battered by powerful ocean waves",
+  "A cinematic mountain pass winding through snowy peaks",
+  "A glowing canyon valley illuminated by sunset light",
+  "A remote island lagoon surrounded by tropical cliffs",
+  "A mystical forest filled with towering ancient redwood trees",
+  "A surreal alien valley with glowing crystal mountains",
+  "A cinematic sunset over a quiet countryside village",
+  "A vast ocean horizon seen from towering coastal cliffs",
+  "A frozen lake landscape beneath purple twilight skies",
+  "A dramatic valley filled with swirling storm clouds",
+  "A glowing desert landscape illuminated by moonlight",
+  "A massive waterfall system flowing through jungle cliffs",
+  "A cinematic aerial view of a winding canyon river",
+  "A peaceful mountain valley with grazing horses in the distance",
+  "A surreal floating plateau landscape surrounded by clouds",
+  "A glowing alien canyon filled with luminous fog",
+  "A cinematic dawn landscape over silent frozen plains",
+  "A vast volcanic valley with steam rising from hot ground",
+  "A mystical rainforest valley filled with soft golden light",
+  "A dramatic lightning storm illuminating mountain peaks",
+  "A cinematic coastal sunrise reflecting over calm waters",
+  "A meticulously crafted luxury wristwatch featuring exposed gold gears and a sapphire crystal case",
+  "A handcrafted diamond necklace resting on black velvet under dramatic spotlight lighting",
+  "A polished platinum ring set with a flawless emerald gemstone",
+  "A luxury mechanical chronograph watch with intricate skeleton movement",
+  "A handcrafted gold fountain pen placed on an antique wooden desk",
+  "A diamond studded tiara resting on silk fabric",
+  "A polished obsidian chess set with gold and silver pieces",
+  "A luxury leather briefcase with hand stitched seams",
+  "A crystal perfume bottle filled with shimmering golden liquid",
+  "A handcrafted Swiss tourbillon watch displayed inside a glass showcase",
+  "A luxury gold cufflink set engraved with intricate patterns",
+  "A vintage pocket watch with ornate Victorian engravings",
+  "A diamond encrusted bracelet reflecting light in every direction",
+  "A luxury sports car key resting on a polished marble surface",
+  "A handcrafted leather wallet placed beside a gold coin",
+  "A luxury champagne bottle chilling in a silver ice bucket",
+  "A polished mahogany jewelry box filled with sparkling gemstones",
+  "A designer handbag made from exotic crocodile leather",
+  "A luxury silk scarf folded neatly on a glass table",
+  "A diamond ring resting on dark velvet fabric",
+  "A platinum wedding band illuminated by soft studio lighting",
+  "A luxury wristwatch resting on polished marble",
+  "A handcrafted gold cigarette case with engraved artwork",
+  "A luxury pen set arranged inside a velvet lined box",
+  "A diamond necklace displayed inside a museum style case",
+  "A luxury watch with sapphire crystal back revealing intricate gears",
+  "A polished gold lighter resting on a marble table",
+  "A luxury fountain pen writing on parchment paper",
+  "A designer sunglasses pair resting on a leather case",
+  "A luxury watch collection displayed in a wooden showcase",
+  "A diamond bracelet lying on silk cloth",
+  "A luxury gold chain resting on black velvet",
+  "A crystal whiskey decanter filled with aged amber whiskey",
+  "A luxury leather travel bag resting on polished wood",
+  "A handcrafted gold pocket watch chain",
+  "A platinum luxury watch with deep blue dial",
+  "A luxury diamond earrings displayed on black velvet",
+  "A luxury perfume bottle with gold accents",
+  "A handcrafted leather belt with gold buckle",
+  "A luxury watch winder displaying rotating watches",
+  "A crystal jewelry display filled with diamonds",
+  "A luxury pen with gold nib resting beside a notebook",
+  "A handcrafted gold compass placed on antique maps",
+  "A luxury crystal wine glass reflecting candlelight",
+  "A luxury watch submerged in crystal clear water with air bubbles",
+  "A diamond crown displayed in a museum glass case",
+  "A luxury car steering wheel wrapped in premium leather",
+  "A handcrafted luxury chessboard with marble pieces",
+  "A gold plated mechanical watch movement close up",
+  "A diamond brooch resting on silk fabric",
+  "A luxury briefcase opened revealing important documents",
+  "A crystal sculpture reflecting rainbow light",
+  "A luxury gold watch bracelet placed on velvet",
+  "A polished platinum cuff bracelet",
+  "A luxury jewelry display inside a boutique store",
+  "A diamond necklace illuminated by studio lights",
+  "A luxury watch resting beside a leather strap",
+  "A gold plated pen with engraved initials",
+  "A luxury watch dial reflecting ambient light",
+  "A diamond ring placed inside an elegant box",
+  "A luxury leather journal with gold edges",
+  "A gold pocket watch placed beside antique coins",
+  "A luxury watch submerged in golden champagne",
+  "A crystal decanter placed beside whiskey glasses",
+  "A luxury cufflink box opened on velvet",
+  "A diamond bracelet placed on a mirror surface",
+  "A luxury watch reflecting city lights",
+  "A designer handbag resting on marble",
+  "A luxury gold necklace illuminated by warm lighting",
+  "A platinum watch dial with intricate patterns",
+  "A luxury jewelry display inside a boutique showcase",
+  "A diamond crown resting on silk pillow",
+  "A luxury perfume bottle surrounded by flowers",
+  "A luxury mechanical watch macro close up",
+  "A gold plated pen resting on dark wood",
+  "A diamond stud earrings pair displayed on velvet",
+  "A luxury watch with rotating tourbillon mechanism",
+  "A crystal jewelry box filled with pearls",
+  "A luxury leather suitcase standing beside a door",
+  "A diamond ring illuminated by dramatic spotlight",
+  "A gold bracelet reflecting candlelight",
+  "A luxury watch resting beside a magnifying glass",
+  "A crystal whiskey glass filled with aged whiskey",
+  "A luxury watch crown and dial macro detail",
+  "A gold pen writing on expensive paper",
+  "A diamond necklace hanging inside a jewelry case",
+  "A luxury watch placed beside a compass",
+  "A crystal perfume bottle glowing in soft light",
+  "A luxury watch submerged in sparkling water",
+  "A diamond tiara reflecting golden lighting",
+  "A luxury gold chain lying across black velvet",
+  "A platinum luxury watch dial reflecting light",
+  "A luxury jewelry boutique window display",
+  "A diamond bracelet placed beside roses",
+  "A luxury watch resting inside a collector case",
+  "A gold lighter resting beside a cigar",
+  "A crystal decanter reflecting studio lighting",
+  "A luxury pen placed on an antique desk",
+  "A diamond necklace draped across velvet",
+  "A luxury watch dial macro photograph",
+  "A gold cufflinks pair resting on silk fabric",
+  "A luxury watch bracelet detail macro",
+  "A diamond ring reflecting candlelight",
+  "A luxury watch resting on polished marble",
+  "A crystal perfume bottle glowing softly",
+  "A luxury watch movement with rotating gears",
+  "A gold plated fountain pen writing elegant script",
+  "A diamond earrings pair inside velvet box",
+  "A luxury watch displayed on glass pedestal",
+  "A platinum bracelet reflecting ambient light",
+  "A luxury jewelry set arranged on velvet",
+  "A crystal wine glass beside a champagne bottle",
+  "A luxury watch resting on leather strap",
+  "A gold necklace reflecting spotlight",
+  "A luxury watch dial illuminated in macro detail",
+  "A diamond bracelet sparkling in soft light",
+  "A luxury pen placed beside a watch",
+  "A crystal jewelry box glowing under lights",
+  "A luxury watch resting beside cufflinks",
+  "A diamond crown inside glass display",
+  "A luxury watch dial macro photography",
+  "A gold bracelet resting on silk cloth",
+  "A luxury watch placed on polished stone",
+  "A crystal decanter beside luxury glasses",
+  "A luxury gold pen with engraved patterns",
+  "A diamond necklace reflecting spotlight",
+  "A luxury watch submerged in clear water",
+  "A platinum watch reflecting studio light",
+  "A luxury jewelry display inside boutique",
+  "A diamond bracelet lying on velvet",
+  "A luxury watch movement macro detail",
+  "A gold chain reflecting warm lighting",
+  "A crystal perfume bottle reflecting rainbow light",
+  "A luxury watch resting on marble table",
+  "A diamond ring illuminated by studio lights",
+  "A luxury gold watch bracelet macro detail",
+  "A crystal whiskey glass beside cigar",
+  "A luxury pen writing calligraphy",
+  "A diamond necklace displayed elegantly",
+  "A luxury watch inside collector box",
+  "A gold bracelet reflecting warm light",
+  "A crystal jewelry box filled with gems",
+  "A luxury watch dial reflecting reflections",
+  "A diamond earrings pair shining softly",
+  "A luxury watch placed beside gold coin",
+  "A gold plated watch crown macro detail",
+  "A luxury pen resting beside notebook",
+  "A crystal perfume bottle on velvet",
+  "A luxury watch movement with rotating tourbillon",
+  "A diamond crown resting inside case",
+  "A luxury watch placed beside jewelry",
+  "A gold chain placed across velvet",
+  "A luxury watch illuminated dramatically",
+  "A diamond bracelet sparkling under lights",
+  "A luxury watch resting on dark marble",
+  "A crystal decanter reflecting warm glow",
+  "A luxury pen writing elegant signature",
+  "A diamond necklace glowing softly",
+  "A luxury watch dial reflecting light",
+  "A gold bracelet macro close up",
+  "A luxury jewelry set displayed elegantly",
+  "A crystal whiskey decanter filled with amber liquid",
+  "A luxury watch resting inside leather case",
+  "A diamond ring reflecting golden light",
+  "A luxury watch crown detail macro",
+  "A gold pen placed on silk cloth",
+  "A luxury watch movement gears macro",
+  "A diamond earrings shining under lights",
+  "A luxury watch dial with glowing reflections",
+  "A gold chain reflecting dramatic light",
+  "A luxury jewelry display inside boutique",
+  "A diamond necklace draped over velvet",
+  "A luxury watch resting on glass surface",
+  "A crystal perfume bottle reflecting light",
+  "A luxury watch placed beside jewelry tools",
+  "A gold bracelet reflecting warm glow",
+  "A diamond crown glowing softly",
+  "A luxury watch dial macro photography",
+  "A crystal decanter glowing in candlelight",
+  "A luxury pen placed beside expensive notebook",
+  "A diamond bracelet reflecting light",
+  "A luxury watch resting inside velvet case",
+  "A gold chain lying on silk fabric",
+  "A luxury watch movement macro shot",
+  "A crystal whiskey glass glowing warmly",
+  "A luxury pen writing elegant script",
+  "A diamond necklace displayed beautifully",
+  "A luxury watch resting on polished marble",
+  "A gold bracelet reflecting soft lighting",
+  "A crystal perfume bottle glowing softly",
+  "A luxury watch dial reflecting studio lights",
+  "A diamond ring shining under spotlight",
+  "A luxury jewelry boutique display",
+  "A gold chain reflecting dramatic lighting",
+  "A luxury watch placed beside cufflinks",
+  "A crystal decanter reflecting warm glow",
+  "A diamond necklace resting on velvet",
+  "A luxury watch movement macro detail",
+  "A gold pen resting beside leather notebook",
+  "A luxury watch dial illuminated softly",
+  "A diamond bracelet glowing in warm light",
+  "A crystal perfume bottle reflecting light",
+  "A luxury watch resting inside a collector's case",
+  "A gold chain shining under studio lights",
+  "A diamond crown resting on velvet pillow",
+  "A luxury watch movement gears macro",
+  "A crystal whiskey decanter beside glasses",
+  "A luxury pen writing elegant calligraphy",
+  "A diamond necklace sparkling brightly",
+  "A luxury watch dial reflecting light",
+  "A gold bracelet macro detail",
+  "A luxury jewelry display on marble",
+  "A crystal perfume bottle glowing under lights",
+  "A luxury watch placed beside gold jewelry",
+  "A diamond ring reflecting warm glow",
+  "A luxury watch resting on velvet cushion",
+  "A gold chain draped across marble",
+  "A luxury watch movement macro photography",
+  "A crystal whiskey glass reflecting candlelight",
+  "A luxury pen resting on polished desk",
+  "A diamond necklace illuminated by soft lighting",
+  "A luxury watch dial glowing softly",
+  "A gold bracelet shining brightly",
+  "A luxury jewelry display inside boutique",
+  "A crystal perfume bottle reflecting studio light",
+  "A luxury watch placed inside velvet case",
+  "A diamond bracelet glowing under lights",
+  "A luxury watch dial macro detail",
+  "A gold chain reflecting warm glow",
+  "A luxury watch movement macro shot",
+  "A crystal decanter glowing in candlelight",
+  "A luxury pen writing elegant letters",
+  "A diamond necklace resting on silk",
+  "A luxury watch dial reflecting light",
+  "A gold bracelet reflecting warm lighting",
+  "A crystal perfume bottle shining softly",
+  "A luxury watch placed beside jewelry",
+  "A diamond ring glowing under lights",
+  "A luxury watch resting on marble",
+  "A gold chain shining under spotlight",
+  "A luxury watch movement gears macro",
+  "A crystal whiskey decanter glowing softly",
+  "A luxury pen resting beside notebook",
+  "A diamond necklace reflecting light",
+  "A luxury watch dial illuminated softly",
+  "A gold bracelet glowing under warm light",
+  "A crystal perfume bottle reflecting studio lights",
+  "A luxury watch resting inside glass display",
+  "A diamond bracelet shining brightly",
+  "A luxury watch movement macro photography",
+  "A gold chain reflecting dramatic light",
+  "A crystal decanter glowing warmly",
+  "A luxury pen writing elegant signature",
+  "A diamond necklace sparkling softly",
+  "A luxury watch dial reflecting light",
+  "A gold bracelet shining brightly",
+  "A luxury jewelry display illuminated elegantly",
+  "A crystal perfume bottle glowing under studio lights",
+  "A luxury watch resting inside collector showcase",
+  "A diamond ring glowing softly",
+  "A gold chain resting on velvet",
+  "A luxury watch movement macro detail",
+  "A crystal whiskey glass glowing warmly",
+  "A luxury pen placed beside leather journal",
+  "A diamond necklace glowing softly",
+  "A luxury watch dial reflecting studio lights",
+  "A gold bracelet shining under warm light",
+  "A crystal perfume bottle reflecting light",
+  "A luxury watch placed beside jewelry",
+  "A diamond bracelet sparkling brightly",
+  "A luxury watch resting on marble table",
+  "A gold chain reflecting soft lighting",
+  "A luxury watch movement gears macro detail",
+  "A crystal decanter glowing softly",
+  "A luxury pen writing elegant calligraphy",
+  "A diamond necklace resting on velvet cloth",
+  "A luxury watch dial reflecting dramatic lighting",
+  "A gold bracelet shining under spotlight",
+  "A luxury jewelry display inside boutique window",
+  "A vast coral reef city glowing with bioluminescent corals and drifting schools of tropical fish",
+  "A colossal ancient stone temple resting on the ocean floor covered with coral and sea plants",
+  "A deep ocean abyss illuminated by glowing jellyfish drifting through total darkness",
+  "A massive shipwreck slowly decaying beneath colorful coral growth",
+  "A mysterious underwater cave glowing with blue bioluminescent crystals",
+  "A giant sea turtle gliding peacefully above a vibrant coral reef",
+  "A swirling school of silver fish forming a living tornado underwater",
+  "A dense underwater kelp forest swaying slowly in ocean currents",
+  "A deep sea research station surrounded by glowing marine creatures",
+  "A colossal underwater canyon illuminated by shafts of sunlight",
+  "A giant whale gliding slowly through blue ocean water",
+  "A surreal underwater cathedral built entirely from coral formations",
+  "A glowing swarm of jellyfish floating through dark water",
+  "A massive whale skeleton resting silently on the ocean floor",
+  "A mysterious underwater portal ring carved from ancient stone",
+  "A crystal clear tropical lagoon filled with colorful reef fish",
+  "A submerged ancient city street lined with coral covered statues",
+  "A giant octopus emerging from a dark underwater cave",
+  "A deep sea trench filled with strange alien-like marine creatures",
+  "A sunken pirate ship surrounded by schools of fish",
+  "A glowing underwater garden of bioluminescent plants",
+  "A giant manta ray gliding gracefully above sandy seabed",
+  "A hydrothermal vent releasing glowing mineral clouds",
+  "A mysterious underwater cavern illuminated by filtered sunlight",
+  "A massive whale swimming through glowing plankton clouds",
+  "A hidden underwater temple entrance carved into reef stone",
+  "A vast underwater kelp forest stretching endlessly",
+  "A submarine wreck partially buried in ocean sand",
+  "A natural coral arch forming an underwater gateway",
+  "A deep sea floor scattered with giant seashell formations",
+  "A mysterious underwater stone altar surrounded by fish",
+  "A massive coral wall rising from the ocean floor",
+  "A drifting jellyfish field glowing softly",
+  "A deep sea anglerfish illuminating darkness with its lure",
+  "A submerged marble statue slowly dissolving beneath coral",
+  "A crystal underwater cave reflecting sunlight",
+  "A giant crab crawling slowly across sandy seabed",
+  "A glowing plankton cloud floating through deep water",
+  "A massive coral structure resembling an underwater city",
+  "A mysterious stone monolith standing on the seabed",
+  "A colossal whale drifting beneath shimmering surface water",
+  "A giant underwater sinkhole descending into darkness",
+  "A coral labyrinth filled with twisting passages",
+  "A deep ocean battlefield of ancient shipwreck remains",
+  "A surreal underwater landscape with towering coral pillars",
+  "A swirling school of barracuda moving through clear water",
+  "A glowing underwater volcanic vent releasing steam",
+  "A hidden lagoon beneath coral cliffs",
+  "A mysterious coral covered ruin reclaimed by nature",
+  "A giant sea serpent silhouette moving through blue depths",
+  "A glowing jellyfish swarm illuminating the abyss",
+  "A deep sea exploration drone scanning ocean floor",
+  "A colossal underwater mountain rising from abyssal plains",
+  "A giant clam slowly opening beneath coral formations",
+  "A flowing underwater sand river across the seabed",
+  "A massive coral plateau stretching across the ocean floor",
+  "A natural reef archway forming an underwater corridor",
+  "A giant stingray gliding above sand dunes underwater",
+  "A deep sea cave filled with glowing plankton",
+  "A submerged stone staircase descending into darkness",
+  "A glowing coral canyon filled with marine life",
+  "A whale calf swimming beside its enormous parent",
+  "A mysterious metallic sphere artifact resting in sand",
+  "A glowing coral tunnel leading into hidden caverns",
+  "A massive underwater plateau surrounded by deep drop-offs",
+  "A trench illuminated by alien-like sea creatures",
+  "A giant translucent jellyfish drifting slowly",
+  "A coral throne formation rising from reef",
+  "A submerged battlefield of ancient armor and weapons",
+  "A massive school of fish forming shimmering clouds",
+  "A mysterious circular stone ring half buried in sand",
+  "A giant squid moving through deep ocean darkness",
+  "A glowing coral city built by natural reef growth",
+  "A prehistoric sea creature skeleton resting on seabed",
+  "A hidden lagoon beneath towering reef cliffs",
+  "A giant turtle resting on colorful coral",
+  "A glowing underwater canyon illuminated by sunlight beams",
+  "A deep ocean abyss filled with drifting organisms",
+  "A mysterious underwater stone portal",
+  "A coral tower reaching toward sunlight",
+  "A sea anemone field moving gently in currents",
+  "A giant shark silhouette gliding through blue water",
+  "A mineral rich trench filled with strange formations",
+  "A glowing reef valley filled with exotic fish",
+  "A mysterious underwater dome structure covered in coral",
+  "A giant whale shark swimming above reef",
+  "A cave entrance surrounded by glowing organisms",
+  "A coral pathway stretching across ocean floor",
+  "A giant underwater rock formation shaped like a dragon",
+  "A coral labyrinth stretching across reef landscape",
+  "A mysterious ancient obelisk rising from seabed",
+  "A deep sea submarine exploring coral formations",
+  "A coral dome filled with vibrant fish",
+  "A glowing crystal cavern beneath reef rock",
+  "A manta ray swimming through glowing plankton clouds",
+  "A deep sea sinkhole opening into darkness",
+  "A glowing artifact emitting blue light",
+  "A coral tunnel leading deeper into ocean caverns",
+  "A massive reef system stretching endlessly",
+  "A giant sea creature silhouette fading into darkness",
+  "A glowing coral throne surrounded by marine life",
+  "A mineral cave glittering beneath ocean floor",
+  "A spiral coral formation rising from seabed",
+  "A glowing underwater crystal pillar",
+  "A coral city structure shaped by nature",
+  "A giant whale drifting beneath sunlit surface",
+  "A mysterious reef ruin covered in algae",
+  "A coral cliff wall rising dramatically",
+  "A glowing underwater valley filled with fish",
+  "A drifting cloud of plankton reflecting sunlight",
+  "A giant sea turtle swimming above reef canyon",
+  "A coral maze filled with hidden pathways",
+  "A submerged stone statue garden",
+  "A deep sea valley filled with drifting creatures",
+  "A coral archway forming a natural gateway",
+  "A giant jellyfish floating through dark waters",
+  "A glowing coral forest beneath blue ocean water",
+  "A massive underwater plateau with coral towers",
+  "A glowing sea cave hidden inside reef cliffs",
+  "A coral labyrinth surrounding an underwater ruin",
+  "A mysterious artifact buried in ocean sand",
+  "A giant whale skeleton surrounded by fish",
+  "A coral canyon illuminated by beams of sunlight",
+  "A glowing coral field stretching endlessly",
+  "A deep sea valley filled with giant sponges",
+  "A giant manta ray gliding over coral gardens",
+  "A mysterious coral throne room",
+  "A glowing underwater archway",
+  "A giant sea creature skeleton buried in sand",
+  "A coral city illuminated by filtered sunlight",
+  "A glowing underwater cave full of plankton",
+  "A deep sea trench illuminated by glowing creatures",
+  "A coral reef labyrinth filled with hidden passages",
+  "A giant sea turtle gliding above reef cliffs",
+  "A glowing coral arch mouth forming a natural tunnel",
+  "A massive reef valley filled with marine life",
+  "A mysterious underwater ruin covered with coral",
+  "A glowing coral canyon stretching into distance",
+  "A giant whale swimming across coral plains",
+  "A deep sea cave entrance surrounded by glowing fish",
+  "A coral palace formed by centuries of reef growth",
+  "A glowing underwater reef plateau",
+  "A mysterious coral altar hidden beneath reef",
+  "A giant manta ray passing over coral towers",
+  "A coral canyon filled with schools of fish",
+  "A glowing reef cavern illuminated by plankton",
+  "A deep sea coral cliff descending into darkness",
+  "A coral forest swaying with ocean currents",
+  "A glowing underwater crystal cavern",
+  "A coral valley filled with colorful marine life",
+  "A giant sea turtle passing coral cliffs",
+  "A mysterious underwater coral throne",
+  "A glowing reef canyon illuminated by sunlight",
+  "A coral labyrinth covering ocean floor",
+  "A giant jellyfish drifting above coral plains",
+  "A glowing coral garden beneath blue waters",
+  "A coral ridge rising above sandy seabed",
+  "A mysterious underwater coral monument",
+  "A giant whale shark gliding above reef plateau",
+  "A glowing coral reef glowing beneath sunlight",
+  "A coral canyon valley filled with life",
+  "A mysterious coral pillar rising from seabed",
+  "A glowing reef cavern filled with fish",
+  "A giant manta ray gliding through coral valley",
+  "A coral palace surrounded by fish schools",
+  "A glowing coral cliff beneath ocean surface",
+  "A coral labyrinth stretching across seabed",
+  "A glowing reef valley beneath sunlight",
+  "A coral canyon filled with marine creatures",
+  "A mysterious coral ruin beneath water",
+  "A glowing reef archway above seabed",
+  "A giant whale drifting above coral landscape",
+  "A coral valley glowing with sunlight",
+  "A glowing underwater reef forest",
+  "A coral plateau filled with fish",
+  "A mysterious coral shrine beneath ocean water",
+  "A glowing reef canyon stretching far into distance",
+  "A coral city formed by natural reef growth",
+  "A glowing coral cliff illuminated by sunlight",
+  "A coral canyon filled with drifting fish",
+  "A glowing reef plateau filled with life",
+  "A coral labyrinth beneath blue ocean",
+  "A giant manta ray gliding above reef",
+  "A glowing coral valley beneath sunlight",
+  "A coral ridge rising above sand",
+  "A glowing reef cave beneath coral cliffs",
+  "A coral city hidden beneath ocean water",
+  "A glowing coral canyon filled with marine life",
+  "A giant whale gliding across reef valley",
+  "A coral labyrinth stretching endlessly",
+  "A glowing reef archway beneath water",
+  "A coral canyon illuminated by sunlight",
+  "A glowing coral garden beneath ocean",
+  "A coral valley filled with fish",
+  "A glowing reef cave filled with plankton",
+  "A coral plateau beneath shimmering water",
+  "A glowing coral ridge above seabed",
+  "A coral labyrinth filled with marine creatures",
+  "A glowing coral canyon beneath blue ocean",
+  "A coral valley stretching endlessly",
+  "A glowing reef canyon beneath sunlight",
+  "A coral plateau filled with marine life",
+  "A glowing coral valley beneath ocean surface",
+  "A coral canyon filled with drifting fish",
+  "A glowing reef cavern beneath coral cliffs",
+  "A coral valley beneath blue ocean waters",
+  "A glowing coral plateau beneath sunlight",
+  "A coral labyrinth beneath ocean depths",
+  "A glowing coral canyon beneath water",
+  "A coral valley beneath shimmering sunlight",
+  "A glowing coral garden beneath reef cliffs",
+  "A coral canyon beneath drifting fish",
+  "A glowing coral valley beneath ocean waters",
+  "A coral plateau beneath bright sunlight",
+  "A glowing coral labyrinth beneath reef",
+  "A coral canyon beneath clear ocean water",
+  "A glowing coral ridge beneath sunlight",
+  "A coral valley beneath shimmering blue waters",
+  "A glowing coral canyon beneath reef cliffs",
+  "A coral plateau beneath ocean light",
+  "A glowing coral valley beneath sunlight beams",
+  "A coral canyon beneath drifting plankton",
+  "A glowing coral garden beneath reef cliffs",
+  "A coral valley beneath ocean currents",
+  "A glowing coral canyon beneath sunlight",
+  "A coral plateau beneath blue ocean",
+  "A glowing coral ridge beneath sunlight beams",
+  "A coral canyon beneath drifting marine life",
+  "A glowing coral valley beneath ocean surface",
+  "A coral plateau beneath shimmering sunlight",
+  "A glowing coral canyon beneath reef formations",
+  "A coral valley beneath ocean light",
+  "A glowing coral ridge beneath water surface",
+  "A coral canyon beneath sunlight beams",
+  "A glowing coral valley beneath drifting plankton",
+  "A coral plateau beneath reef formations",
+  "A glowing coral canyon beneath ocean water",
+  "A coral valley beneath sunlight reflections",
+  "A glowing coral ridge beneath ocean currents",
+  "A coral canyon beneath glowing plankton",
+  "A glowing coral valley beneath reef cliffs",
+  "A coral plateau beneath ocean depths",
+  "A glowing coral canyon beneath sunlight rays",
+  "A coral valley beneath ocean currents",
+  "A glowing coral ridge beneath drifting fish",
+  "A coral canyon beneath reef shadows",
+  "A glowing coral valley beneath ocean surface",
+  "A vast mountain valley covered in morning fog with golden sunlight breaking through distant peaks",
+  "A dramatic coastal cliff landscape with gigantic waves crashing against black volcanic rock",
+  "A surreal desert filled with towering sand dunes glowing under a massive full moon",
+  "A frozen arctic wasteland illuminated by dancing green aurora lights",
+  "A breathtaking alpine mountain range reflected perfectly in a crystal clear lake",
+  "A dense ancient forest with beams of sunlight piercing through the mist",
+  "A massive canyon carved by a winding turquoise river seen from an aerial perspective",
+  "A floating island landscape with waterfalls cascading endlessly into clouds",
+  "A thunderstorm forming over endless grasslands with lightning striking distant hills",
+  "A mystical valley filled with glowing fireflies beneath a star filled sky",
+  "A cinematic sunset over rolling hills covered with golden grass",
+  "A colossal glacier field stretching across polar landscapes",
+  "A tropical island surrounded by turquoise water and coral reefs",
+  "A surreal alien desert with purple sand dunes and two planets rising on the horizon",
+  "A gigantic waterfall plunging into a jungle basin",
+  "A cinematic fjord landscape reflecting towering cliffs",
+  "A golden savanna landscape with scattered acacia trees",
+  "A mirror like salt flat reflecting dramatic clouds",
+  "A volcanic valley with glowing rivers of lava",
+  "A rainforest canopy stretching endlessly beneath mist",
+  "A plateau landscape with ancient stone monoliths",
+  "A winding river cutting through a mountain valley",
+  "A frozen lake surrounded by jagged icy peaks",
+  "A fog covered swamp with twisted cypress trees",
+  "A red canyon glowing during sunset",
+  "A prairie landscape under enormous thunderclouds",
+  "A remote monastery overlooking misty valleys",
+  "A glowing bioluminescent jungle landscape",
+  "A surreal forest filled with crystal trees",
+  "A massive iceberg drifting across polar seas",
+  "A terraced rice field landscape during sunrise",
+  "A volcanic island with smoke rising from the crater",
+  "A forest clearing illuminated by golden sunlight",
+  "A stone arch formation rising from desert sands",
+  "A winter forest covered in fresh snow",
+  "A lightning storm above desert plateaus",
+  "A canyon filled with cascading waterfalls",
+  "A valley covered with colorful wildflowers",
+  "A calm ocean horizon beneath glowing sunset clouds",
+  "A glowing glacier cave deep beneath ice",
+  "A peaceful countryside landscape with wheat fields",
+  "A tundra stretching endlessly under pale skies",
+  "A mountain ridge floating above clouds",
+  "A lighthouse standing against a raging ocean storm",
+  "A winding river reflecting golden sunlight",
+  "A desert plateau with towering sandstone pillars",
+  "A rainforest waterfall surrounded by thick jungle",
+  "A glowing canyon illuminated by red sunset light",
+  "A frozen waterfall hanging from a cliff",
+  "A misty island rising from ocean fog",
+  "A turquoise bay surrounded by white cliffs",
+  "A glowing mountain valley covered in blue mist",
+  "A storm rolling over distant mountain peaks",
+  "A meadow filled with colorful alpine flowers",
+  "A canyon landscape seen from high aerial view",
+  "A sunrise breaking through fog over forest hills",
+  "A volcanic plateau glowing faintly beneath dark clouds",
+  "A frozen coastline covered with sea ice",
+  "A rainforest valley filled with towering trees",
+  "A glowing alien desert with crystal formations",
+  "A twilight landscape over silent lakes",
+  "A dramatic ridge overlooking endless valleys",
+  "A jungle valley glowing with bioluminescent plants",
+  "A massive waterfall falling between steep cliffs",
+  "A floating mountain surrounded by clouds",
+  "A moonlit coastline reflecting silver light",
+  "A frozen fjord beneath northern lights",
+  "A desert oasis surrounded by tall dunes",
+  "A canyon of layered red rock cliffs",
+  "A winding river flowing through dense forest",
+  "A glowing peak rising above cloud layers",
+  "A mist filled valley illuminated by soft sunlight",
+  "A thunderstorm building above distant hills",
+  "A grassland landscape glowing beneath sunset",
+  "A jungle temple hidden among towering trees",
+  "A desert illuminated by bright starlight",
+  "A glacier wall rising above frozen ocean",
+  "A mirror lake reflecting mountain peaks",
+  "A rocky coastline battered by waves",
+  "A mountain pass winding through snow peaks",
+  "A canyon glowing beneath sunset light",
+  "A lagoon surrounded by tropical cliffs",
+  "A forest of towering ancient redwoods",
+  "A glowing alien valley with crystal mountains",
+  "A peaceful village landscape during sunset",
+  "A cliff overlooking endless ocean horizon",
+  "A frozen lake beneath purple twilight skies",
+  "A valley filled with swirling storm clouds",
+  "A desert illuminated by pale moonlight",
+  "A jungle basin filled with waterfalls",
+  "A canyon river seen from aerial perspective",
+  "A quiet valley with grazing horses",
+  "A floating plateau surrounded by clouds",
+  "A glowing alien canyon filled with mist",
+  "A dawn landscape over frozen plains",
+  "A volcanic valley releasing steam",
+  "A rainforest valley filled with golden sunlight",
+  "A lightning storm illuminating peaks",
+  "A sunrise reflecting across ocean waters",
+  "A desert canyon with shadows stretching across rock",
+  "A glowing valley beneath aurora skies",
+  "A tropical beach with turquoise water",
+  "A frozen forest landscape beneath snow",
+  "A canyon ridge overlooking desert plains",
+  "A jungle canopy seen from aerial perspective",
+  "A glowing waterfall deep within rainforest",
+  "A mist covered mountain village",
+  "A storm approaching across wide plains",
+  "A desert landscape with ancient ruins",
+  "A golden valley beneath evening light",
+  "A rocky island surrounded by waves",
+  "A forest lake glowing beneath sunset",
+  "A snowy mountain range under clear sky",
+  "A canyon with glowing red rock walls",
+  "A valley of flowers beneath mountains",
+  "A waterfall plunging through jungle",
+  "A desert road stretching toward horizon",
+  "A storm cloud formation above plains",
+  "A frozen valley beneath pale winter sky",
+  "A jungle river winding through trees",
+  "A glowing canyon beneath sunset",
+  "A massive mountain rising above clouds",
+  "A desert valley beneath star filled sky",
+  "A glowing rainforest waterfall",
+  "A rocky desert landscape beneath orange sunset",
+  "A lush valley with winding river",
+  "A frozen tundra beneath glowing aurora",
+  "A tropical island lagoon surrounded by cliffs",
+  "A vast canyon beneath dramatic clouds",
+  "A peaceful valley beneath sunrise",
+  "A jungle valley glowing in morning mist",
+  "A volcanic island surrounded by dark ocean",
+  "A forest valley beneath sunset",
+  "A glacier valley filled with blue ice",
+  "A canyon landscape beneath golden sunlight",
+  "A mountain ridge illuminated by moonlight",
+  "A desert basin beneath glowing sky",
+  "A waterfall valley surrounded by cliffs",
+  "A glowing alpine meadow",
+  "A jungle plateau beneath mist",
+  "A canyon valley filled with sunlight",
+  "A frozen mountain landscape beneath twilight",
+  "A glowing river valley beneath sunset",
+  "A rocky plateau beneath dramatic sky",
+  "A jungle valley beneath tropical rain",
+  "A glowing canyon beneath storm clouds",
+  "A mountain landscape beneath sunrise",
+  "A desert valley beneath glowing sky",
+  "A glowing waterfall beneath jungle canopy",
+  "A canyon plateau beneath golden light",
+  "A forest valley beneath misty sky",
+  "A glowing glacier landscape beneath twilight",
+  "A mountain lake reflecting sunset",
+  "A canyon valley beneath glowing clouds",
+  "A jungle river valley beneath mist",
+  "A frozen plateau beneath pale sunlight",
+  "A glowing desert valley beneath moonlight",
+  "A canyon landscape beneath storm sky",
+  "A tropical valley beneath sunrise",
+  "A forest ridge beneath golden sunset",
+  "A mountain valley beneath glowing clouds",
+  "A desert plateau beneath starry sky",
+  "A glowing canyon valley beneath sunset",
+  "A jungle waterfall valley beneath mist",
+  "A glacier valley beneath northern lights",
+  "A canyon ridge beneath dramatic clouds",
+  "A forest valley beneath sunrise",
+  "A glowing mountain landscape beneath sunset",
+  "A desert valley beneath twilight sky",
+  "A jungle valley beneath glowing mist",
+  "A canyon plateau beneath golden sunlight",
+  "A mountain valley beneath star filled sky",
+  "A forest lake beneath glowing sunset",
+  "A desert landscape beneath glowing clouds",
+  "A jungle valley beneath storm clouds",
+  "A canyon valley beneath dramatic sky",
+  "A glowing mountain ridge beneath sunset",
+  "A desert canyon beneath moonlight",
+  "A forest valley beneath glowing sky",
+  "A jungle plateau beneath misty sunlight",
+  "A canyon ridge beneath glowing sunset",
+  "A mountain valley beneath golden clouds",
+  "A glowing glacier valley beneath twilight",
+  "A forest ridge beneath sunrise",
+  "A desert plateau beneath sunset sky",
+  "A canyon valley beneath glowing horizon",
+  "A jungle valley beneath golden sunlight",
+  "A mountain ridge beneath glowing sunset",
+  "A glowing canyon valley beneath clouds",
+  "A forest valley beneath glowing twilight",
+  "A desert ridge beneath glowing sky",
+  "A canyon landscape beneath sunset clouds",
+  "A jungle valley beneath misty light",
+  "A mountain valley beneath glowing sky",
+  "A forest valley beneath sunset glow",
+  "A desert canyon beneath glowing twilight",
+  "A canyon valley beneath dramatic sunset",
+  "A glowing jungle valley beneath sunlight",
+  "A mountain ridge beneath glowing clouds",
+  "A forest valley beneath glowing sunset",
+  "A desert valley beneath glowing horizon",
+  "A canyon ridge beneath glowing twilight",
+  "A jungle valley beneath golden mist",
+  "A mountain valley beneath glowing sunset",
+  "A forest valley beneath glowing clouds",
+  "A desert ridge beneath sunset glow",
+  "A canyon valley beneath glowing sky",
+  "A jungle valley beneath glowing sunrise",
+  "A mountain ridge beneath glowing horizon",
+  "A forest valley beneath golden light",
+  "A desert valley beneath glowing sunset",
+  "A canyon plateau beneath glowing clouds",
+  "A jungle valley beneath glowing twilight",
+  "A mountain valley beneath glowing sky",
+  "A forest ridge beneath glowing sunrise",
+  "A desert plateau beneath glowing horizon",
+  "A canyon valley beneath glowing sunset",
+  "A jungle valley beneath glowing sky",
+  "A mountain ridge beneath glowing twilight",
+  "A forest valley beneath glowing horizon",
+  "A desert canyon beneath glowing clouds",
+  "A canyon ridge beneath glowing sunset",
+  "A jungle valley beneath glowing light",
+  "A mountain valley beneath glowing sunrise",
+  "A forest valley beneath glowing sky",
+  "A desert plateau beneath glowing twilight",
+  "A canyon valley beneath glowing clouds",
+  "A jungle valley beneath glowing horizon",
+  "A mountain ridge beneath glowing sunset",
+  "A forest valley beneath glowing twilight",
+  "A desert valley beneath glowing sky",
+  "A majestic lion standing on a rocky cliff at sunrise overlooking the vast savanna",
+  "A powerful tiger walking slowly through dense jungle mist",
+  "A giant elephant crossing a dusty savanna beneath a golden sunset",
+  "A snow leopard perched silently on a frozen mountain ridge",
+  "A wolf pack running across a snowy valley beneath a full moon",
+  "A bald eagle soaring high above rugged mountain peaks",
+  "A great white shark gliding silently through deep blue ocean water",
+  "A giant whale breaching dramatically above ocean waves",
+  "A falcon diving rapidly through the sky during sunset",
+  "A leopard resting on a tree branch in the African savanna",
+  "A polar bear walking across drifting arctic ice",
+  "A herd of wild horses running across open grasslands",
+  "A black panther emerging slowly from jungle shadows",
+  "A giant manta ray gliding through glowing plankton clouds",
+  "A crocodile resting along a muddy riverbank",
+  "A cheetah sprinting across a wide savanna plain",
+  "A majestic stag standing proudly in a misty forest",
+  "A fox walking quietly through a snow covered woodland",
+  "A golden eagle perched on a cliff edge",
+  "A wolf howling beneath a glowing moon",
+  "A giant sea turtle swimming above coral reefs",
+  "A powerful grizzly bear walking through dense forest",
+  "A mountain goat climbing a steep rocky cliff",
+  "A hawk gliding across dramatic canyon winds",
+  "A jaguar walking through dense rainforest foliage",
+  "A herd of elephants walking across dusty plains",
+  "A penguin colony standing along icy Antarctic coast",
+  "A dolphin leaping through ocean waves",
+  "A giant owl flying silently through a dark forest",
+  "A rhino standing alone in tall grasslands",
+  "A moose walking through a foggy northern forest",
+  "A herd of deer grazing in a peaceful meadow",
+  "A falcon perched on ancient ruins",
+  "A tiger swimming across a jungle river",
+  "A lion roaring across golden savanna",
+  "A snow wolf standing on frozen tundra",
+  "A humpback whale swimming beneath ocean surface",
+  "A giant eagle spreading wings on cliff edge",
+  "A cheetah resting under an acacia tree",
+  "A panther stalking quietly through jungle",
+  "A polar bear standing beneath aurora lights",
+  "A wolf running through a misty forest",
+  "A golden lion walking across sunlit plains",
+  "A tiger standing in tall jungle grass",
+  "A massive whale drifting through deep ocean",
+  "A snowy owl perched on a frozen branch",
+  "A jaguar drinking from a rainforest river",
+  "A fox sitting quietly in autumn forest",
+  "A wolf pack crossing a snowy mountain pass",
+  "A hawk flying above open plains",
+  "A lion resting beneath a lone tree",
+  "A tiger walking through bamboo forest",
+  "A leopard walking across rocky cliffs",
+  "A grizzly bear fishing in a river",
+  "A sea turtle drifting across clear ocean water",
+  "A manta ray gliding above coral reef",
+  "A dolphin swimming through glowing plankton",
+  "A shark circling silently in deep water",
+  "A penguin walking across frozen ice",
+  "A polar bear swimming through icy water",
+  "A moose crossing a shallow forest stream",
+  "A stag standing in golden sunlight",
+  "A wolf looking across snowy landscape",
+  "A fox running through snowy forest",
+  "A hawk landing on rocky ledge",
+  "A falcon watching from cliff edge",
+  "A jaguar resting in rainforest canopy",
+  "A leopard jumping between tree branches",
+  "A tiger roaring in dense jungle",
+  "A lion standing proudly at sunset",
+  "A cheetah walking across grassland",
+  "A bear wandering through forest clearing",
+  "A giant whale swimming through blue ocean",
+  "A dolphin pod swimming together",
+  "A manta ray drifting through ocean currents",
+  "A sea lion resting on rocky coast",
+  "A walrus resting on arctic ice",
+  "A penguin colony walking along frozen shore",
+  "A wolf running across frozen tundra",
+  "A fox hunting in snowy field",
+  "A deer standing among tall trees",
+  "A stag walking through morning fog",
+  "A moose standing near mountain lake",
+  "A hawk circling high above valley",
+  "A falcon diving through clouds",
+  "A golden eagle soaring above canyon",
+  "A lion watching over savanna",
+  "A tiger moving through tall grass",
+  "A leopard resting in jungle tree",
+  "A jaguar stalking through rainforest",
+  "A wolf pack traveling through forest",
+  "A polar bear walking across glacier",
+  "A grizzly bear climbing rocky slope",
+  "A panda eating bamboo in forest",
+  "A red panda climbing tree branches",
+  "A kangaroo standing in Australian outback",
+  "A koala resting in eucalyptus tree",
+  "A gorilla walking through dense jungle",
+  "A chimpanzee sitting quietly in forest",
+  "A giraffe standing against sunset sky",
+  "A zebra herd crossing open plains",
+  "A rhino walking across savanna",
+  "A buffalo herd standing in dusty field",
+  "A camel caravan crossing desert dunes",
+  "A desert fox walking across sand",
+  "A lynx standing on snowy rock",
+  "A bobcat walking through forest floor",
+  "A wild horse galloping across prairie",
+  "A mustang running through open plains",
+  "A seal resting on icy shoreline",
+  "A sea otter floating on ocean surface",
+  "A walrus resting on frozen beach",
+  "A giant squid moving through deep ocean",
+  "A hammerhead shark swimming through blue water",
+  "A whale shark gliding slowly through ocean",
+  "A barracuda swimming through reef waters",
+  "A school of fish moving like a silver cloud",
+  "A giant octopus crawling across ocean floor",
+  "A jellyfish drifting through glowing water",
+  "A coral reef filled with colorful fish",
+  "A sea turtle swimming through reef canyon",
+  "A manta ray gliding above coral city",
+  "A dolphin jumping above waves",
+  "A shark swimming through underwater canyon",
+  "A whale diving into deep ocean",
+  "A penguin diving into icy water",
+  "A polar bear hunting near frozen sea",
+  "A wolf walking across icy plains",
+  "A fox standing beneath snowy trees",
+  "A deer crossing forest clearing",
+  "A stag watching sunrise in valley",
+  "A moose standing beside mountain lake",
+  "A hawk flying across canyon",
+  "A falcon landing on rocky cliff",
+  "A golden eagle flying above mountains",
+  "A lion standing atop rocky hill",
+  "A tiger watching jungle river",
+  "A leopard hidden in jungle shadows",
+  "A jaguar climbing rainforest tree",
+  "A cheetah running across plains",
+  "A wolf pack running through snow",
+  "A polar bear standing on drifting ice",
+  "A grizzly bear standing beside river",
+  "A panda resting in bamboo forest",
+  "A gorilla watching jungle horizon",
+  "A giraffe walking across savanna",
+  "A zebra herd running across plains",
+  "A rhino standing beneath sunset sky",
+  "A buffalo herd walking across grassland",
+  "A camel walking through desert dunes",
+  "A kangaroo jumping across outback",
+  "A koala resting in tall tree",
+  "A lynx walking across snowy forest",
+  "A bobcat watching from rocky ledge",
+  "A wild horse running across prairie",
+  "A seal diving into cold water",
+  "A sea otter floating on ocean waves",
+  "A walrus standing on ice shelf",
+  "A whale swimming through blue ocean",
+  "A dolphin jumping across waves",
+  "A shark gliding silently underwater",
+  "A manta ray drifting above reef",
+  "A sea turtle swimming across coral",
+  "A jellyfish glowing beneath ocean surface",
+  "A giant squid swimming through abyss",
+  "A hammerhead shark crossing open water",
+  "A whale shark swimming beneath sunlight",
+  "A barracuda hunting in reef waters",
+  "A school of fish forming silver shapes",
+  "A coral reef full of life",
+  "A dolphin pod swimming through waves",
+  "A whale rising toward the surface",
+  "A penguin walking across ice",
+  "A polar bear crossing frozen tundra",
+  "A wolf watching across snowy valley",
+  "A fox walking across frozen field",
+  "A deer grazing near forest edge",
+  "A stag standing proudly in meadow",
+  "A moose walking through shallow lake",
+  "A hawk soaring above hills",
+  "A falcon gliding through wind",
+  "A golden eagle perched on cliff",
+  "A lion watching sunset across savanna",
+  "A tiger stalking through tall grass",
+  "A leopard resting on rocky ledge",
+  "A jaguar standing beside jungle river",
+  "A cheetah sprinting across plains",
+  "A wolf pack hunting in snow",
+  "A grizzly bear fishing in river",
+  "A panda climbing bamboo trees",
+  "A gorilla walking across jungle floor",
+  "A giraffe eating leaves from tall tree",
+  "A zebra herd standing beneath acacia trees",
+  "A rhino walking through dusty savanna",
+  "A buffalo herd crossing river",
+  "A camel caravan walking through desert",
+  "A kangaroo standing beneath sunset sky",
+  "A koala sleeping in eucalyptus tree",
+  "A lynx walking across frozen forest",
+  "A bobcat standing on rocky outcrop",
+  "A wild horse running through wind",
+  "A seal resting on ocean rocks",
+  "A sea otter floating peacefully",
+  "A walrus standing on ice cliff",
+  "A whale swimming beneath sunlight beams",
+  "A dolphin leaping above waves",
+  "A shark moving through blue water",
+  "A manta ray drifting across ocean floor",
+  "A sea turtle gliding through reef",
+  "A jellyfish glowing in dark ocean",
+  "A giant squid drifting through abyss",
+  "A hammerhead shark swimming through reef canyon",
+  "A whale shark gliding through blue depths",
+  "A barracuda hunting through coral reef",
+  "A school of fish forming swirling shapes",
+  "A coral reef ecosystem filled with life",
+  "A dolphin pod racing through ocean waves",
+  "A whale diving deep beneath the sea",
+  "A colossal humpback whale breaching dramatically above stormy ocean waves",
+  "A graceful manta ray gliding slowly through glowing plankton clouds",
+  "A great white shark circling silently in deep blue ocean water",
+  "A giant squid emerging from the dark abyss beneath the ocean surface",
+  "A massive whale shark swimming peacefully through turquoise tropical waters",
+  "A sea turtle gliding above colorful coral reefs illuminated by sunlight",
+  "A glowing jellyfish drifting slowly through dark deep ocean waters",
+  "A pod of dolphins leaping energetically through rolling ocean waves",
+  "A giant octopus crawling across rocky seabed near coral formations",
+  "A hammerhead shark swimming through a canyon of coral reefs",
+  "A massive blue whale swimming through endless deep ocean waters",
+  "A school of silver fish forming swirling patterns beneath sunlight",
+  "A giant stingray gliding gracefully above sandy ocean floor",
+  "A deep sea anglerfish glowing in the darkness of the abyss",
+  "A sea dragon drifting gently through underwater kelp forests",
+  "A giant manta ray flying through ocean currents like a winged creature",
+  "A tiger shark gliding through murky coastal waters",
+  "A bioluminescent jellyfish colony illuminating the dark ocean",
+  "A giant squid extending its tentacles through deep sea currents",
+  "A pod of dolphins swimming through glowing plankton",
+  "A massive sea turtle resting on a coral reef plateau",
+  "A glowing comb jelly drifting through black ocean depths",
+  "A school of barracuda moving like a living silver tornado",
+  "A giant octopus hiding among coral formations",
+  "A whale shark surrounded by tropical reef fish",
+  "A giant moray eel emerging from coral caves",
+  "A deep sea dragonfish glowing with eerie bioluminescent light",
+  "A manta ray swimming through shafts of sunlight",
+  "A pod of killer whales swimming through icy arctic waters",
+  "A giant sea turtle gliding through underwater canyons",
+  "A tiger shark hunting through coral reef valleys",
+  "A glowing lanternfish swimming through dark abyss",
+  "A massive humpback whale diving beneath ocean waves",
+  "A giant squid drifting through deep ocean currents",
+  "A hammerhead shark swimming through blue ocean horizon",
+  "A swarm of glowing jellyfish floating through deep water",
+  "A giant octopus resting on volcanic ocean rock",
+  "A whale shark swimming above colorful reef gardens",
+  "A pod of dolphins racing across the ocean surface",
+  "A giant stingray gliding across sandy seabed",
+  "A massive blue whale drifting through deep ocean",
+  "A school of sardines forming shimmering clouds",
+  "A deep sea viperfish glowing beneath abyssal darkness",
+  "A giant cuttlefish changing colors across coral reef",
+  "A giant manta ray surrounded by drifting plankton",
+  "A pod of orcas hunting through icy northern waters",
+  "A giant sea turtle swimming beneath coral arches",
+  "A glowing jellyfish drifting through midnight waters",
+  "A tiger shark gliding through deep ocean canyon",
+  "A giant squid slowly emerging from underwater darkness",
+  "A whale shark moving gracefully through tropical reefs",
+  "A school of fish forming swirling spirals underwater",
+  "A deep sea anglerfish glowing in total darkness",
+  "A giant octopus stretching across rocky ocean floor",
+  "A manta ray gliding above glowing coral gardens",
+  "A pod of dolphins leaping through sunset waves",
+  "A massive humpback whale breaching against orange sunset",
+  "A glowing jellyfish drifting beneath moonlit waters",
+  "A giant squid swimming through abyssal trenches",
+  "A hammerhead shark circling coral reef cliffs",
+  "A whale shark gliding through plankton rich waters",
+  "A school of anchovies forming shimmering underwater storms",
+  "A deep sea gulper eel opening massive jaws",
+  "A giant sea turtle gliding through reef valleys",
+  "A manta ray drifting through underwater currents",
+  "A pod of dolphins swimming through coral reef arches",
+  "A tiger shark hunting through reef canyons",
+  "A glowing lanternfish drifting through black water",
+  "A giant squid silhouetted against deep ocean blue",
+  "A massive blue whale gliding through endless ocean",
+  "A giant octopus moving slowly across seabed",
+  "A school of tuna racing through open ocean",
+  "A deep sea hatchetfish glowing faintly in darkness",
+  "A manta ray gliding through underwater caves",
+  "A whale shark surrounded by hundreds of small fish",
+  "A glowing jellyfish drifting beneath ocean surface",
+  "A giant squid drifting through dark abyss",
+  "A hammerhead shark swimming across reef canyon",
+  "A pod of dolphins gliding through turquoise waters",
+  "A giant sea turtle drifting across coral reef",
+  "A tiger shark gliding through ocean depths",
+  "A glowing deep sea jellyfish illuminating darkness",
+  "A massive humpback whale gliding beneath waves",
+  "A giant manta ray swimming across reef plains",
+  "A deep sea viperfish swimming through darkness",
+  "A school of barracuda forming hunting formations",
+  "A giant octopus crawling through coral ruins",
+  "A whale shark swimming through blue ocean currents",
+  "A manta ray gliding beneath ocean sunlight",
+  "A pod of dolphins swimming across coral reefs",
+  "A giant squid drifting through deep sea canyon",
+  "A tiger shark swimming across reef valley",
+  "A glowing comb jelly drifting through darkness",
+  "A massive blue whale swimming through endless sea",
+  "A giant sea turtle gliding above coral city",
+  "A manta ray gliding across sandy seabed",
+  "A pod of orcas swimming through icy ocean waters",
+  "A giant octopus resting on coral plateau",
+  "A whale shark gliding through sunlit ocean",
+  "A glowing jellyfish drifting through abyss",
+  "A giant squid drifting through deep trench",
+  "A hammerhead shark swimming across coral reef",
+  "A manta ray gliding through plankton clouds",
+  "A pod of dolphins racing through ocean waves",
+  "A giant sea turtle gliding across reef valley",
+  "A tiger shark circling coral reef canyon",
+  "A glowing deep sea jellyfish floating through darkness",
+  "A massive humpback whale swimming beneath waves",
+  "A giant manta ray gliding through ocean currents",
+  "A deep sea dragonfish glowing beneath abyss",
+  "A school of fish forming giant silver spirals",
+  "A giant octopus moving slowly through reef caves",
+  "A whale shark swimming through coral gardens",
+  "A manta ray drifting across reef valley",
+  "A pod of dolphins swimming through glowing plankton",
+  "A giant squid moving through abyssal darkness",
+  "A hammerhead shark circling underwater cliffs",
+  "A giant sea turtle drifting through coral arches",
+  "A tiger shark gliding through deep blue water",
+  "A glowing lanternfish drifting through abyss",
+  "A massive blue whale gliding across deep ocean",
+  "A manta ray gliding through reef canyons",
+  "A pod of orcas swimming through polar seas",
+  "A giant octopus resting across rocky seabed",
+  "A whale shark drifting across tropical ocean",
+  "A glowing jellyfish drifting through midnight ocean",
+  "A giant squid drifting across ocean trench",
+  "A hammerhead shark swimming through reef valley",
+  "A manta ray gliding across coral plains",
+  "A pod of dolphins racing through waves",
+  "A giant sea turtle gliding through reef labyrinth",
+  "A tiger shark swimming through open ocean",
+  "A glowing comb jelly drifting across abyss",
+  "A massive humpback whale gliding through ocean depths",
+  "A manta ray drifting across glowing plankton clouds",
+  "A deep sea viperfish glowing beneath dark water",
+  "A giant squid swimming through ocean abyss",
+  "A whale shark swimming through reef gardens",
+  "A manta ray gliding through turquoise waters",
+  "A pod of dolphins swimming beneath sunlight",
+  "A tiger shark circling reef canyon",
+  "A glowing jellyfish drifting through dark ocean",
+  "A giant octopus crawling across coral formations",
+  "A massive blue whale swimming across deep ocean",
+  "A manta ray drifting through reef valleys",
+  "A hammerhead shark swimming through coral reef",
+  "A pod of dolphins leaping through ocean waves",
+  "A giant sea turtle gliding through reef canyon",
+  "A glowing deep sea creature drifting through abyss",
+  "A giant squid swimming beneath ocean darkness",
+  "A whale shark drifting across tropical waters",
+  "A manta ray gliding across coral reef",
+  "A tiger shark swimming through deep ocean",
+  "A glowing jellyfish floating through abyss",
+  "A giant octopus resting across reef plateau",
+  "A massive humpback whale swimming beneath waves",
+  "A manta ray drifting through plankton clouds",
+  "A hammerhead shark circling coral valley",
+  "A pod of dolphins swimming through blue ocean",
+  "A giant sea turtle gliding across coral plains",
+  "A tiger shark moving through ocean currents",
+  "A glowing deep sea jellyfish illuminating darkness",
+  "A giant squid drifting through trench shadows",
+  "A whale shark swimming beneath sunlight",
+  "A manta ray gliding across reef valley",
+  "A pod of dolphins racing through turquoise water",
+  "A giant octopus crawling across coral seabed",
+  "A hammerhead shark gliding across reef canyon",
+  "A glowing jellyfish drifting beneath ocean waves",
+  "A massive blue whale swimming across deep ocean",
+  "A giant sea turtle gliding through reef labyrinth",
+  "A manta ray drifting across plankton clouds",
+  "A tiger shark swimming through reef canyon",
+  "A glowing comb jelly floating through abyss",
+  "A giant squid swimming through dark trench",
+  "A whale shark gliding through coral valley",
+  "A manta ray drifting through reef plains",
+  "A pod of dolphins leaping across waves",
+  "A hammerhead shark swimming across reef cliffs",
+  "A giant octopus crawling across ocean floor",
+  "A glowing deep sea jellyfish drifting through darkness",
+  "A massive humpback whale gliding beneath ocean surface",
+  "A manta ray gliding through turquoise reef waters",
+  "A tiger shark circling coral reef canyon",
+  "A giant squid drifting through abyssal waters",
+  "A whale shark swimming across tropical reef",
+  "A glowing lanternfish drifting through deep ocean",
+  "A pod of dolphins racing across open sea",
+  "A giant sea turtle gliding above coral gardens",
+  "A manta ray drifting across sandy seabed",
+  "A hammerhead shark swimming across reef canyon",
+  "A glowing jellyfish drifting through ocean darkness",
+  "A giant squid swimming through trench shadows",
+  "A whale shark gliding through plankton waters",
+  "A manta ray gliding through coral valley",
+  "A pod of dolphins swimming across blue ocean",
+  "A tiger shark swimming through reef valley",
+  "A giant octopus resting across coral plateau",
+  "A glowing comb jelly drifting through abyss",
+  "A massive blue whale swimming through deep ocean",
+  "A manta ray drifting across reef labyrinth",
+  "A hammerhead shark swimming through coral canyon",
+  "A giant squid drifting through dark ocean",
+  "A whale shark gliding through coral gardens",
+  "A glowing deep sea jellyfish drifting through darkness",
+  "A pod of dolphins racing through ocean currents",
+  "A giant sea turtle gliding across coral plains",
+  "A tiger shark circling ocean valley",
+  "A manta ray gliding through reef caves",
+  "A hammerhead shark swimming across reef cliffs",
+  "A giant octopus crawling through coral ruins",
+  "A glowing lanternfish drifting through abyss",
+  "A massive humpback whale gliding through ocean waves",
+  "A giant squid drifting through deep trench",
+  "A whale shark swimming through coral reef valley",
+  "A manta ray drifting through ocean currents",
+  "A pod of dolphins swimming beneath sunlight",
+  "A tiger shark swimming through coral reef canyon",
+  "A glowing jellyfish floating through midnight waters",
+  "A giant octopus resting on rocky seabed",
+  "A massive blue whale drifting across deep ocean",
+  "A manta ray gliding through plankton clouds",
+  "A hammerhead shark circling coral reef",
+  "A giant squid drifting through ocean abyss",
+  "A whale shark gliding through tropical waters",
+  "A glowing deep sea creature drifting through abyss",
+  "A pod of dolphins racing across ocean waves",
+  "A giant sea turtle gliding through coral reef",
+  "A tiger shark swimming through blue ocean",
+  "A manta ray drifting across reef valley",
+  "A hammerhead shark gliding across coral canyon",
+  "A giant octopus moving across ocean floor",
+  "A glowing jellyfish drifting through dark waters",
+  "A massive humpback whale gliding beneath waves"
+];
+
+export const ABSTRACT_AI_IMAGE_COMBINATIONS = [
+  "Sony A1 + 50mm f/1.2 × quantum_glow_render × liquid fractal bloom × volumetric_light_diffusion × infinite mist chamber",
+  "Sony A1 + 35mm f/1.4 × spectral_diffusion_field × prism ribbon vortex × chromatic_aberration_layers × vapor basin horizon",
+  "Sony A1 + 85mm f/1.4 × ultra_chromatic_bloom × molten color spirals × micro_particle_refraction × glass fractal valley",
+  "Sony A1 + 24mm f/1.8 × prism_light_cascade × luminous particle ocean × spectral_color_scattering × cosmic gradient atmosphere",
+  "Sony A1 + 16mm f/2.8 × holographic_diffusion × floating spectrum clouds × optical_wave_distortion × aurora cloud field",
+  "Canon EOS R5 + 85mm f/1.2 × hyper_color_fusion × molten geometry field × fluid_simulation_render × crystal dome environment",
+  "Canon EOS R5 + 50mm f/1.2 × nano_glow_particles × liquid mirror waves × reflective_surface_mapping × prism cavern chamber",
+  "Canon EOS R5 + 35mm f/1.4 × prism_diffraction_engine × pigment splash currents × multi_layer_reflection × chromatic void basin",
+  "Canon EOS R5 + 24mm f/1.8 × spectral_diffusion_fog × flowing ribbon currents × optical_depth_blending × vapor plateau field",
+  "Canon EOS R5 + 16mm f/2.8 × fractal_bloom_expansion × spiral geometry currents × volumetric_color_field × mineral mist valley",
+  "Nikon Z9 + 105mm f/1.4 × nano_crystal_diffusion × glowing fiber mesh × micro_light_refraction × crystal cloud atmosphere",
+  "Nikon Z9 + 85mm f/1.4 × ultra_depth_fractal × liquid nebula folds × multi_spectrum_render × cosmic crystal basin",
+  "Nikon Z9 + 50mm f/1.2 × hyper_light_trails × radiant geometry burst × light_wave_interference × infinite gradient expanse",
+  "Nikon Z9 + 35mm f/1.4 × spectral_energy_swirl × pigment particle rain × volumetric_particle_field × abstract storm plateau",
+  "Nikon Z9 + 24mm f/1.8 × holographic_plasma × spectrum wave currents × optical_wave_layering × glowing horizon fog",
+  "Leica SL2-S + Summilux 50mm × ultra_micro_glow × liquid color ribbons × reflective_glass_render × chromatic glass fog",
+  "Leica SL2-S + Summilux 35mm × spectral_prism_flow × vortex bloom currents × spectral_dispersion_render × prism mist valley",
+  "Leica SL2-S + Summilux 75mm × chromatic_light_burst × infinite fractal mesh × optical_field_layering × cosmic light ocean",
+  "Leica SL2-S + APO 90mm × nano_reflection_grid × luminous wave storm × reflective_particle_engine × atmospheric vapor sky",
+  "Leica SL2-S + Elmarit 28mm × prism_flare_diffusion × abstract fog currents × light_dispersion_matrix × horizon glow chamber",
+  "Hasselblad X2D 100C + 80mm × ultra_detail_fractal × molten color spirals × micro_structure_render × prism chamber field",
+  "Hasselblad X2D 100C + 55mm × spectral_diffusion_bloom × radiant crystal mist × volumetric_scattering_model × glass valley basin",
+  "Hasselblad X2D 100C + 90mm × hyper_glow_reflections × liquid prism folds × reflective_surface_simulation × mineral chamber void",
+  "Hasselblad X2D 100C + 38mm × chromatic_plasma_swirl × luminous geometry rain × multi_wave_interference × fluid ocean field",
+  "Hasselblad X2D 100C + 21mm × holographic_bloom_engine × fractal storm currents × volumetric_light_engine × cosmic prism mist",
+  "RED V-Raptor 8K + 50mm cine × cinematic_fractal_motion × glowing energy vortex × temporal_light_blending × mist dome field",
+  "RED V-Raptor 8K + 35mm cine × ultra_plasma_diffusion × radiant wave collapse × volumetric_particle_interference × atmospheric storm basin",
+  "RED V-Raptor 8K + 24mm cine × spectral_lens_energy × particle burst cluster × optical_energy_mapping × cosmic vapor clouds",
+  "RED V-Raptor 8K + 85mm cine × hyper_prism_distortion × liquid galaxy bloom × reflective_fluid_engine × chromatic plasma sky",
+  "RED V-Raptor 8K + 16mm cine × chromatic_vortex_engine × abstract light storm × volumetric_wave_field × infinite prism expanse",
+  "ARRI Alexa 35 + Master Prime 50mm × filmic_glow_diffusion × cosmic ribbon flow × cinematic_particle_field × gradient mist basin",
+  "ARRI Alexa 35 + Master Prime 35mm × spectral_flare_bloom × molten glass waves × reflective_glass_diffusion × chromatic energy sea",
+  "ARRI Alexa 35 + Master Prime 85mm × ultra_depth_prism × fractal color vortex × volumetric_depth_render × prism valley horizon",
+  "ARRI Alexa 35 + Master Prime 24mm × cinematic_particle_diffusion × fractal mist currents × layered_light_scattering × abstract light ocean",
+  "ARRI Alexa 35 + Master Prime 16mm × chromatic_energy_burst × radiant abstract storm × energy_wave_interference × vapor dome field",
+  "Blackmagic 6K Pro + Sigma 35mm × hyper_bloom_diffusion × liquid fractal ribbons × multi_layer_refraction × cloud chamber void",
+  "Blackmagic 6K Pro + Sigma 50mm × spectral_wave_distortion × particle rain field × volumetric_particle_render × spectrum sky basin",
+  "Blackmagic 6K Pro + Sigma 85mm × prism_vortex_engine × molten geometry layers × reflective_geometry_engine × fractal mist plateau",
+  "Blackmagic 6K Pro + Sigma 24mm × holographic_particle_flow × swirling fluid currents × fluid_simulation_render × gradient plasma fog",
+  "Blackmagic 6K Pro + Sigma 16mm × chromatic_plasma_burst × infinite fractal space × optical_wave_interference × color horizon field",
+  "Sony A7R V + 50mm GM × nano_glow_fractals × luminous abstract currents × volumetric_particle_light × plasma valley basin",
+  "Sony A7R V + 35mm GM × spectral_light_ribbons × glass prism vortex × reflective_prism_render × chromatic light ocean",
+  "Sony A7R V + 85mm GM × hyper_color_explosion × liquid nebula storm × fluid_particle_simulation × cosmic spectrum mist",
+  "Sony A7R V + 24mm GM × ultra_prism_bloom × radiant particle ocean × spectral_light_dispersion × vapor field horizon",
+  "Sony A7R V + 16mm GM × chromatic_fractal_engine × floating spectrum clouds × volumetric_wave_model × mist layer plateau",
+  "Panavision DXL2 + Primo 50mm × cinematic_spectral_bloom × radiant vortex layers × filmic_light_scatter × plasma dome environment",
+  "Panavision DXL2 + Primo 35mm × ultra_glow_fractal_mesh × cosmic light rain × reflective_particle_dispersion × prism horizon basin",
+  "Panavision DXL2 + Primo 75mm × prism_distortion_waves × molten color ribbons × fluid_wave_render × gradient expanse field",
+  "Panavision DXL2 + Primo 24mm × chromatic_particle_storm × holographic fractal fog × volumetric_light_blending × cosmic chamber basin",
+  "Panavision DXL2 + Primo 14mm × hyper_diffusion_engine × abstract energy storm × optical_energy_dispersion × atmospheric sky field",
+  "Phase One XF IQ4 + 80mm × ultra_detail_prism_bloom × glass nebula ribbons × micro_reflection_render × void horizon plateau",
+  "Phase One XF IQ4 + 55mm × spectral_glow_particles × luminous vortex storm × volumetric_particle_engine × plasma chamber basin",
+  "Phase One XF IQ4 + 110mm × hyper_color_diffusion × fractal mirror waves × reflective_surface_model × spectrum valley field",
+  "Phase One XF IQ4 + 35mm × chromatic_liquid_geometry × fluid cloud structures × fluid_render_engine × gradient dome plateau",
+  "Phase One XF IQ4 + 28mm × holographic_spectrum_mesh × radiant fractal rain × spectral_particle_simulation × prism sky basin",
+  "Fujifilm GFX100 II + 80mm × nano_prism_diffusion × glowing fractal bloom × volumetric_light_dispersion × chromatic light field",
+  "Fujifilm GFX100 II + 63mm × spectral_energy_waves × geometry storm currents × optical_wave_field × vapor cloud horizon",
+  "Fujifilm GFX100 II + 110mm × hyper_chromatic_glow × molten abstract ribbons × reflective_fluid_mapping × prism valley plateau",
+  "Fujifilm GFX100 II + 45mm × holographic_diffusion_field × cosmic prism fog × volumetric_light_layering × energy horizon basin",
+  "Fujifilm GFX100 II + 32mm × prism_particle_explosion × infinite fractal vortex × multi_wave_particle_render × plasma mist plateau",
+  "DJI Inspire 3 + Zenmuse X9 × aerial_fractal_diffusion × glowing color vortex × atmospheric_light_scattering × cosmic sky chamber",
+  "DJI Inspire 3 + Zenmuse X9 × spectral_cloud_formations × holographic energy waves × volumetric_cloud_render × gradient horizon field",
+  "DJI Inspire 3 + Zenmuse X9 × hyper_prism_glow × abstract particle storm × optical_particle_dispersion × vapor ocean basin",
+  "DJI Inspire 3 + Zenmuse X9 × chromatic_plasma_ribbons × infinite color spiral × wave_interference_render × prism sky plateau",
+  "DJI Inspire 3 + Zenmuse X9 × luminous_geometry_rain × cosmic fractal bloom × volumetric_light_matrix × mist dome environment"
+];
+
+export const ABSTRACT_META_TOKENS = [
+  "unreal engine 5", "octane render", "v-ray", "cinema 4d", "houdini", "zbrush", 
+  "redshift render", "arnold render", "touchdesigner", "mandelbulb 3d", 
+  "x-particles", "substance designer", "clarisse ifx", "keyshot", "marvelous designer"
+];
+
+export const ENV_TOKENS = [
+  "studio lighting", "dramatic shadows", "neon rim light", "volumetric fog", "god rays",
+  "atmospheric haze", "cinematic smoke", "floating dust motes", "tyndall effect", 
+  "morning mist", "rain-slicked neon reflections", "deep underwater bioluminescence", 
+  "aurora borealis sky", "strobe flashes", "dust particles suspended in light"
+];
+
+export const CAMERA_TOKENS = [
+  "Canon EOS R5", "Sony A7R IV", "ARRI Alexa 65", "RED Monstro 8K", "Fujifilm GFX 100", "Nikon Z9",
+  "Hasselblad X2D 100C", "Phase One XF IQ4 150MP", "Leica M11", "Sony Venice 2 8K", 
+  "Panavision DXL2", "RED V-Raptor XL 8K VV", "IMAX MSM 9802", "Blackmagic URSA Mini Pro 12K", 
+  "DJI Inspire 3", "Leica SL2-S"
+];
+
+export const LENS_TOKENS = [
+  "50mm f/1.2", "85mm f/1.4", "35mm f/1.4", "100mm Macro", "24mm f/1.4", "14mm f/2.8",
+  "Zeiss Master Prime 50mm T1.3", "Cooke S7/i 75mm T2.0", "Leica Noctilux-M 50mm f/0.95", 
+  "Canon RF 85mm f/1.2L USM", "Nikon Z 58mm f/0.95 S Noct", "Panavision Primo 70", 
+  "Hasselblad XCD 80mm f/1.9", "Sigma Cine 24mm T1.5", "Angenieux Optimo Prime"
+];
+
+export const LIGHTING_TOKENS = [
+  "volumetric lighting", "cinematic lighting", "chiaroscuro", "neon glow", "bioluminescent", "soft softbox lighting",
+  "rembrandt lighting", "three-point studio lighting", "golden hour backlight", "blue hour ambient", 
+  "cyberpunk neon rim light", "harsh chiaroscuro", "diffused window softbox", "tungsten practicals", 
+  "HMI fresnel spot", "cinematic teal and orange", "dramatic key light"
+];
+
+export const MODIFIER_TOKENS = [
+  "8k resolution", "hyper-detailed", "photorealistic", "masterpiece", "award-winning", "intricate details", "sharp focus",
+  "16k resolution", "unreal engine 5.3", "megascans", "path-traced", "global illumination", 
+  "subsurface scattering", "pbr textures", "aces color space", "micro-detail", "flawless optics", 
+  "cinematic depth of field", "natural bokeh", "photogrammetry", "zero cgi artifacts"
+];
+
+export const UNIQUE_PHOTOREAL_COMBOS = [
   "ARRI Alexa 35 + Zeiss Supreme Prime 35mm f/1.5 × UltraDepth_Field • NanoDetail_8K • RAW_grain_lite × atmospheric micro-particles, tactile realism, cinematic optical depth",
   "RED Raptor V + Leica Summilux-C 50mm T1.4 × SensorBloom_v2 • SkinMicroTexture_v5 • HDR_vision_fusion × hyper-real pores, organic skin scattering, optical contrast",
   "Sony Venice 2 + Cooke S7/i 75mm T2 × ColorScience_CinemaCore • VolumetricRayTrace • UltraFineShadowMap × luminous dust particles, volumetric air depth",
@@ -136,7 +1842,7 @@ const UNIQUE_PHOTOREAL_COMBOS = [
   "Hasselblad X2D + XCD 65mm × NordicNaturalColor × refined tones",
   "Phase One XF IQ4 + Schneider 80mm × PixelDepthEngine × extreme clarity",
   "DJI Mavic 3 Pro Cine + Hasselblad 24mm × AerialHDRCapture × cinematic skies",
-  "GoPro Hero 12 + Linear Lens × ActionRealismEngine × dynamic POV immersion",
+  "GoPro Hero 12 + Linear Lens × ActionRealismEngine • DynamicMotionPerspective × immersive realism × cinematic_action_frame • motion_energy_blur × mountain_bike_trail",
   "ARRI Alexa 35 + Zeiss Supreme 50mm × UltraRealismStack × evidence-grade detail",
   "RED Raptor XL + Cooke S7/i 50mm × CinematicTextureDepth × cinematic realism",
   "Sony Venice 2 + Panavision Primo 65mm × EpicPortraitMode × monumental portrait realism",
@@ -152,593 +1858,225 @@ const UNIQUE_PHOTOREAL_COMBOS = [
   "ARRI Alexa 35 + Cooke S7/i 100mm × CinematicPortraitDepth × ultra cinematic realism"
 ];
 
-// 1000 Camera/Lens × Meta Tokens × Unique Keywords
-export const CAMERA_LENS_META_KEYWORDS = [
-  "ARRI Alexa 35 + Zeiss Supreme Prime 35mm f/1.5 × UltraDepth_Field • NanoDetail_8K × cinematic optical depth",
-  "ARRI Alexa 35 + Zeiss Supreme Prime 50mm f/1.5 × RAW_grain_lite • MicroContrast_Boost × tactile surface realism",
-  "ARRI Alexa Mini LF + Zeiss Master Prime 100mm × OpticalBokehSignature • HDR_vision_fusion × hyper-real reflections",
-  "RED Raptor V + Leica Summilux-C 50mm T1.4 × SensorBloom_v2 • SkinMicroTexture_v5 × photonic skin scattering",
-  "RED V-Raptor XL + Sigma Cine FF 24mm × UltraSharp_GlobalDetail • EdgeFalloffNatural × spatial environmental realism",
-  "Sony Venice 2 + Cooke S7/i 75mm × ColorScience_CinemaCore • VolumetricRayTrace × cinematic air depth",
-  "Sony FX3 + Sony G Master 85mm × SkinPoreAmplifier • DepthCompression_v3 × portrait micro-detail",
-  "IMAX MSM 9802 + Panavision C-Series 40mm × FilmGrain_TrueIMAX • SpectralLightCapture × monumental cinematic scale",
-  "Leica SL2-S + APO-Summicron 50mm × LeicaMicroContrast • OpticalPrecisionDepth × glass-sharp realism",
-  "Canon EOS R5 + RF 28-70mm f/2 × HDRDynamicStack • ColorDepth16bit × ultra clean tonal rolloff",
-  "Nikon Z9 + Nikkor Z 58mm Noct × UltraCreamBokeh • PhotonBloom × ethereal subject isolation",
-  "Hasselblad X2D 100C + XCD 90mm × NordicColorScience • MediumFormatDepth × elegant tonal realism",
-  "Phase One XF IQ4 150MP + Schneider 80mm LS × PixelPrecision • MediumFormatHyperDetail × microscopic texture realism",
-  "Fujifilm GFX100 II + GF 110mm × FilmSim_NaturalPro • DynamicRangeBoost × analog tonal depth",
-  "Blackmagic URSA 12K + Zeiss Supreme 65mm × CinemaRAWTexture • UltraFineShadowMap × cinematic shadow realism",
-  "Panasonic Lumix S1H + Leica Summilux 25-50mm × NaturalSkinTones_v3 • SpectralHighlightControl × photoreal skin physics",
-  "ARRI Alexa LF + Panavision Primo 70mm × PanavisionColorSignature • CinematicShadowRoll × organic highlight bloom",
-  "RED Komodo X + Laowa 24mm Probe × MacroRealityCapture • NanoSurfaceDetail × extreme macro realism",
-  "Sony A1 + Sony 135mm GM × UltraOpticalCompression • PortraitRealismStack × lifelike facial depth",
-  "Canon EOS R3 + RF 85mm f/1.2 × SkinReflectanceModel • OpticalClarityBoost × hyper realistic portrait texture",
-  "DJI Inspire 3 + Zenmuse X9 DL 35mm × AerialScaleCapture • AeroSharpness × monumental aerial realism",
-  "DJI Mavic 3 Pro + Hasselblad 24mm × AeroHDRCapture • HorizonSharpness × cinematic landscape scale",
-  "GoPro Hero 12 + Max Lens Mod × ActionDistortionPhysics • ImmersivePOVReality × dynamic perspective realism",
-  "ARRI Alexa 35 + Zeiss Ultra Prime 85mm × UltraDepthCompression • MicroContrast_Boost × sculpted light realism",
-  "Sony Venice 2 + Fujinon Premista 28-100mm × NaturalLensBreathing • CinematicTextureDepth × optical authenticity",
-  "RED Raptor XL + Angenieux Optimo 24-290mm × CinemaZoomPrecision • SpectralHighlightControl × cinematic zoom realism",
-  "Leica M11 + Noctilux 50mm f/0.95 × LeicaGlowSignature • OpticalPrecisionDepth × dreamy photonic glow",
-  "Hasselblad H6D-400c + HC 100mm × UltraResolutionStack • PixelIntegrityEngine × microscopic detail",
-  "Sony FX6 + Sony 50mm GM × NaturalMotionRealism • DocumentaryLightBalance × real-world authenticity",
-  "Canon C500 Mark II + CN-E 85mm × CineDynamicRange • HDR_vision_fusion × cinematic tonal fidelity",
-  "Blackmagic Pocket 6K Pro + Sigma Cine 35mm × RAWTextureLayer • MicroContrast_Boost × raw cinematic realism",
-  "Panasonic GH6 + Leica 42.5mm × HybridCinemaLook • UltraFineShadowMap × crisp cinematic depth",
-  "Fujifilm X-H2S + XF 56mm × PortraitFilmLook • FilmSim_NaturalPro × analog portrait realism",
-  "ARRI Alexa 65 + Panavision System 65 50mm × EpicScaleDepth • SpectralLightCapture × ultra epic cinematic realism",
-  "RED Monstro 8K + Sigma Cine 50mm × UltraClarityEngine • NanoDetail_8K × crystal optical precision",
-  "Sony A9 III + Sony 24mm GM × SpeedCaptureReality • MotionFreezeStack × frozen action realism",
-  "Canon 5D Mark IV + EF 50mm × ClassicPhotoRealism • NaturalColorScience × timeless photographic fidelity",
-  "Nikon D850 + Sigma Art 40mm × PrecisionOpticsMode • MicroContrast_Boost × hyper-clean sharpness",
-  "Leica Q3 + Summilux 28mm × LeicaStreetRealism • DocumentaryLightBalance × candid street realism",
-  "Hasselblad X1D II + XCD 80mm × NordicTonalBalance • MediumFormatDepth × refined tonal transitions",
-  "Phase One IQ3 + Schneider 110mm × HyperResolutionCapture • PixelIntegrityEngine × extreme clarity",
-  "DJI Inspire 2 + X7 50mm × AerialFilmLook • HorizonSharpness × cinematic drone realism",
-  "GoPro Hero 11 + UltraWide × ImmersivePOVReality • DynamicMotionPerspective × action realism",
-  "RED Dragon 6K + Zeiss CP2 35mm × CinemaTextureStack • RAW_grain_lite × filmic grain authenticity",
-  "Sony A7R V + 90mm Macro × MicroTextureAmplifier • NanoSurfaceDetail × extreme micro realism",
-  "Canon EOS R5C + RF 24mm × CinemaHybridMode • HDRDynamicStack × cinematic digital clarity",
-  "Nikon Z8 + Nikkor Z 50mm × PrecisionColorScience • OpticalClarityBoost × balanced tonal realism",
-  "Leica M10-R + Summicron 35mm × StreetAuthenticityMode • LeicaMicroContrast × documentary realism",
-  "ARRI Alexa Mini LF + Panavision Primo 50mm × CinematicShadowRoll • UltraFineShadowMap × elegant lighting depth",
-  "RED Komodo X + Atlas Mercury 36mm × AnamorphicCinematicMode • CinematicFlarePhysics × stretched cinematic look",
-  "Sony FX3 + Sony 24mm GM × NightPhotonBoost • SpectralHighlightControl × atmospheric night realism",
-  "Canon EOS R8 + RF 85mm × PortraitLightBalance • SkinReflectanceModel × studio portrait realism",
-  "Nikon Zf + Voigtländer 50mm × VintageOpticsSignature • AnalogFilmTexture × analog realism",
-  "Leica SL3 + APO-Summicron 90mm × PrecisionOpticalStack • OpticalClarityBoost × hyper clean realism",
-  "Hasselblad X2D + XCD 65mm × NordicNaturalColor • MediumFormatDepth × refined tonal rendering",
-  "Phase One XF IQ4 + Schneider 120mm × MacroUltraDetail • PixelPrecision × tactile macro realism",
-  "DJI Mavic 3 Pro Cine + Hasselblad 24mm × AerialHDRCapture • AeroSharpness × cinematic sky depth",
-  "GoPro Hero 12 + Linear Lens × ActionRealismEngine • DynamicMotionPerspective × immersive POV realism",
-  "ARRI Alexa 35 + Cooke S7/i 100mm × CinematicPortraitDepth • UltraDepth_Field × ultra cinematic portrait realism",
-  "RED Raptor XL + Cooke S7/i 50mm × CinematicTextureDepth • SpectralHighlightControl × cinematic realism",
-  "Sony Venice 2 + Panavision Primo 65mm × EpicPortraitMode • OpticalPerfectionStack × monumental portrait realism",
-  "IMAX MSM 9802 + IMAX 80mm × UltraEpicCapture • SpectralLightCapture × giant-format realism",
-  "ARRI Alexa LF + Zeiss Master Prime 50mm × OpticalPerfectionStack • MicroContrast_Boost × cinematic clarity",
-  "RED V-Raptor + Sigma Cine 85mm × PortraitHyperDetail • NanoDetail_8K × intense portrait realism",
-  "Sony A1 + Sony 50mm GM × CrystalSharpnessMode • OpticalPrecisionDepth × ultra optical realism",
-  "Canon R5 + RF 85mm f/1.2 × SkinToneSpectralMap • PortraitRealismStack × lifelike skin rendering",
-  "Nikon Z9 + Noct 58mm × PhotonGlowCapture • SpectralHighlightControl × luminous highlight realism",
-  "Leica M11 + APO-Summicron 50mm × LeicaPrecisionRender • OpticalClarityBoost × pure optical realism",
-  "Hasselblad X2D + XCD 90mm × MediumFormatCinematicDepth • NordicColorScience × elegant cinematic realism",
-  "Phase One XF + Schneider 120mm × MacroUltraDetail • PixelIntegrityEngine × tactile macro realism"
+export const THE_MOST_UNIQUE_PHOTOREALISTIC_TOKENS = [
+  "perfect optical physics", "subsurface scattering", "micro-texture mapping", 
+  "insane levels of realism", "world-record level of clarity", "path tracing", 
+  "global illumination", "multi-layer refraction", "hyper-detailed geometry",
+  "photographic truth", "physical based rendering", "raw unedited aesthetic", 
+  "ultra-sharp focus", "hyper-realistic textures", "8K-16K resolution", "flawless details",
+  "cinematic depth of field", "unreal engine 5 render", "octane render", "V-Ray", 
+  "volumetric light diffusion", "ray-traced reflections", "hyper-maximalist", 
+  "intricate micro-details", "pore-level skin texture", "retina-display clarity", 
+  "photogrammetry", "nano-level sharpness", "crystalline clarity", "zero CGI artifacts", 
+  "true-to-life lighting", "breathtaking lighting physics", "next-gen realism", 
+  "absolute photographic fidelity", "hyper-focus", "lens flare physics", "chromatic aberration accuracy",
+  "maximum visual fidelity", "beyond real", "god-tier photography", "unprecedented resolution"
 ];
 
-const ABSTRACT_META_TOKENS = [
-  "AbstractComposition", "GenerativeArt", "ProceduralDesign", "AlgorithmicPatterns", "ParametricShapes", "FractalGeometry", 
-  "RecursiveStructures", "OrganicAbstraction", "FluidGeometry", "DynamicShapes", "MorphingForms", "LiquidStructures", 
-  "GeometricHarmony", "ComplexSymmetry", "AsymmetricBalance", "VisualEntropy", "StructuredChaos", "RandomizedPatterns", 
-  "EmergentForms", "InterlockingGeometry", "FractalPatterns", "MandelbrotStructures", "JuliaFractalForms", "RecursiveGeometry", 
-  "InfinitePatternLoops", "SelfSimilarStructures", "MathematicalTextures", "AlgorithmicFractals", "HyperbolicGeometry", 
-  "TopologyInspiredForms", "LiquidMetalFlow", "FluidDynamicsPatterns", "InkInWaterEffect", "SmokeLikeStructures", 
-  "MeltingGeometry", "ViscousFlowForms", "OrganicWavePatterns", "BiomorphicShapes", "CellularPatterns", "NeuralLikeStructures", 
-  "SpectralColorGradient", "IridescentSurface", "LuminousLight", "ChromaticEnergyFlow", "PrismaticReflections", 
-  "RainbowDiffraction", "LuminousColorFields", "ElectricColorPulse", "GlowingParticleFields", "GlassLikeSurfaces", 
-  "CrystalStructures", "LiquidGlassEffect", "MetallicFluidTextures", "GranularSurfaces", "ParticleDustFields", 
-  "SoftGradientTextures", "SmoothProceduralSurface", "EnergyFilamentTextures", "FiberLikeStructures", "EnergyWavePatterns", 
-  "QuantumLikeMotion", "ParticleFieldDynamics", "FlowFieldSimulation", "MagneticFieldLines", "VortexEnergy", "SwirlingParticles", 
-  "PlasmaLikeEnergy", "CosmicEnergyStreams", "DynamicFieldMotion", "NeuralNetworkAesthetic", "AI_GENERATIVE_ART", 
-  "ProceduralVisualSystem", "LatentSpaceExploration", "AlgorithmicAesthetic", "SyntheticVisualLanguage", "DigitalDreamscape", 
-  "ExperimentalVisualArt", "FutureAbstractDesign", "ComputationalArt", "MinimalistDesign", "SurrealForms", "NonRepresentational", 
-  "GeometricHarmony", "OrganicStructures", "DigitalComplexity", "MathematicalArt", "DynamicFlow", "ExperimentalVisuals", 
-  "TechnologicalAesthetic"
+export const ADDITIONAL_REALISM_TOKENS = [
+  "National Geographic award winner", "Pulitzer Prize photography", "masterclass in lighting", 
+  "32k uncompressed RAW", "museum-grade print", "breathtaking visual fidelity", 
+  "insanely detailed", "optical perfection", "hyper-maximalist", "true-to-life physics"
 ];
 
-const META_TOKENS = [
-  "UltraPhotorealistic", "HyperRealism", "ExtremeDetail", "NanoDetail", "MicroTextureRendering", "UltraSharpFocus", 
-  "CrystalClearImage", "PerfectExposure", "UltraDynamicRange", "HDRFusion", "TrueColorAccuracy", "ACESColorScience", 
-  "CinematicColorGrading", "RealWorldOptics", "LensMicroContrast", "OpticalAccuracy", "SensorPrecision", "RAWImageQuality", 
-  "NaturalSkinPores", "SubsurfaceScattering", "SkinMicroDetail", "HairStrandRendering", "NaturalImperfections", 
-  "PhotographicNoise", "SensorGrain", "FilmGrainTexture", "CinematicDepth", "RealisticLightBounce", "GlobalIllumination", 
-  "VolumetricLighting", "GodRays", "SoftShadowGradients", "RayTracedReflections", "AmbientOcclusion", "NaturalLightFalloff", 
-  "SpecularHighlights", "MicroShadowDetail", "HighFrequencyDetail", "UltraSharpEdges", "LensBokeh", "ShallowDepthFocus", 
-  "UltraWidePerspective", "LongLensCompression", "NaturalPerspective", "RealisticScale", "PhysicalCameraPlacement", 
-  "LensSignatureLook", "LensDistortion", "ChromaticAberration", "LensBloom", "LightDiffusion", "AtmosphericPerspective", 
-  "EnvironmentalDepth", "FogScattering", "VolumetricFog", "DustParticlesInAir", "MoistureInAir", "CondensationEffects", 
-  "SurfaceTexturePrecision", "MaterialAccuracy", "SurfaceMicroScratches", "BrushedMetalTexture", "GlassRefraction", 
-  "WaterSurfacePhysics", "RealisticReflections", "WetSurfaceHighlights", "NaturalMotionBlur", "HighShutterClarity", 
-  "FreezeFrameDetail", "DynamicRangeCompression", "PhotographicColorScience", "KodakFilmLook", "FujiFilmLook", 
-  "ARRIColorProfile", "SonyVeniceColorScience", "IMAXClarity", "StudioLightingPrecision", "GoldenHourLighting", 
-  "BlueHourLighting", "SunsetColorTemperature", "MorningSoftLight", "NaturalDaylightBalance", "NightCinematicLighting", 
-  "NeonLightReflections", "UrbanNightAtmosphere", "EpicLandscapeScale", "GrandEnvironmentDetail", "UltraWideCinematicFrame", 
-  "ProfessionalPhotographyLook", "EditorialPhotographyStyle", "LuxuryAdvertisingLook", "DocumentaryPhotography", 
-  "NationalGeographicStyle", "StreetPhotographyRealism", "ArchitecturalPrecision", "ProductPhotographyLuxury", 
-  "UltraLuxuryVisualStyle", "MuseumGradeImage", "MasterpieceComposition", "PerfectExposureBalance", "HumanEyeRealism", 
-  "RealityGradeImage", "PhotorealCameraPhysics", "OpticalDepthMapping", "UltraHDRDetail", "HyperSurfaceTexture", 
-  "PrecisionLightingModel", "PhysicallyAccurateReflections", "OpticalGlareEffect", "HighDynamicContrast", "MicroSurfaceDetail", 
-  "SpectralColorAccuracy", "NaturalShadowDepth", "RayBasedLighting", "StudioGradeExposure", "RealSensorBehavior", 
-  "CinematicOpticalFlow", "VisualClarityEngine", "DeepFocusCinematic", "LensCompressionEffect", "FineTextureCapture", 
-  "HDRMicroContrast", "AdvancedColorCalibration", "NaturalSkinReflection", "SubtleFilmGrain", "RealGlassReflections", 
-  "AmbientLightDiffusion", "NaturalColorBalance", "DeepShadowDetail", "UltraContrastClarity", "RealWorldLightPhysics", 
-  "OpticalSurfaceReflections", "LightScatterSimulation", "AtmosphericLightDiffusion", "SubtleDepthLayers", 
-  "DynamicShadowGradient", "SpectralLightingAccuracy", "FineDetailRendering", "MicroHighlightDetail", "LensEdgeFalloff", 
-  "UltraFocusPrecision", "NaturalAtmosphericDepth", "UltraSharpMicroContrast", "ProfessionalCameraLook", "SensorLevelDetail", 
-  "HDRLightMapping", "UltraDetailEnhancement", "HyperCinematicLighting", "GlobalLightTransport", "RealisticSpecularResponse", 
-  "FilmGradeColorScience", "PhotographicSharpness", "UltraFineGrain", "TrueMaterialResponse", "AdvancedLensSimulation", 
-  "DeepColorDepth", "RealReflectionMapping", "HDRShadowRecovery", "MicroDetailEnhancer", "HyperRealSurfaceResponse"
+export const CINEMATIC_COMBINATIONS = [
+  "ARRI Alexa 35 + Zeiss Supreme Prime 35mm × UltraDepth_Field • NanoDetail_8K × cinematic optical depth × anamorphic_bloom • cinematic_light_wrap × foggy_mountain_pass",
+  "ARRI Alexa 35 + Cooke S7/i 50mm × MicroContrast_Boost • RAW_grain_lite × tactile realism × cinematic_shadow_roll • filmic_motion_blur × ancient_stone_ruins",
+  "RED V-Raptor XL + Leica Summilux-C 75mm × HDR_vision_fusion • SpectralHighlightControl × dramatic contrast × epic_scale_perspective • cinematic_color_grade × desert_canyon_valley",
+  "Sony Venice 2 + Fujinon Premista 28-100mm × ColorScience_CinemaCore • UltraFineShadowMap × atmospheric depth × volumetric_light_rays • cinematic_haze_layer × misty_forest",
+  "IMAX MSM 9802 + Panavision C-Series 40mm × FilmGrain_TrueIMAX • UltraDepthCompression × monumental scale × epic_frame_composition • giant_format_render × frozen_glacier_field",
+  "ARRI Alexa Mini LF + Zeiss Master Prime 100mm × OpticalBokehSignature • NanoSurfaceDetail × cinematic texture × lens_flare_physics • filmic_glow_highlights × moonlit_coastal_cliffs",
+  "RED Raptor V + Sigma Cine 24mm × UltraSharp_GlobalDetail • EdgeFalloffNatural × spatial realism × dynamic_camera_motion • cinematic_light_wrap × urban_rooftop_cityscape",
+  "Sony FX3 + Sony GM 85mm × SkinMicroTexture_v5 • DepthCompression_v3 × portrait realism × cinematic_skin_tone_map • subtle_film_grain × neon_free_night_street",
+  "Leica SL3 + APO-Summicron 50mm × LeicaMicroContrast • OpticalPrecisionDepth × glass-sharp detail × cinematic_soft_highlights • natural_light_balance × marble_palace_hall",
+  "Canon EOS R5C + RF 85mm × SkinReflectanceModel • UltraFineShadowMap × hyper realistic portrait × cinematic_portrait_depth • rim_light_accent × royal_throne_room",
+  "Nikon Z9 + Nikkor Noct 58mm × PhotonBloom • SpectralHighlightControl × glowing highlights × cinematic_night_render • atmospheric_light_scatter × aurora_arctic_plain",
+  "Hasselblad X2D + XCD 90mm × NordicColorScience • MediumFormatDepth × tonal elegance × cinematic_tonal_rolloff • epic_scale_perspective × snow_mountain_peak",
+  "Phase One XF IQ4 + Schneider 80mm × PixelPrecision • MediumFormatHyperDetail × microscopic realism × cinematic_macro_depth • cinematic_light_wrap × crystal_cave",
+  "DJI Inspire 3 + Zenmuse X9 DL 35mm × AerialScaleCapture • AeroSharpness × monumental landscape × epic_aerial_perspective • cinematic_cloud_layers × jungle_valley",
+  "DJI Mavic 3 Pro + Hasselblad 24mm × AeroHDRCapture • HorizonSharpness × panoramic realism × cinematic_aerial_depth • dynamic_cloud_shadows × tropical_island_chain",
+  "ARRI Alexa LF + Panavision Primo 70mm × PanavisionColorSignature • CinematicShadowRoll × filmic contrast × cinematic_master_grade • dramatic_light_direction × medieval_castle_courtyard",
+  "RED Komodo X + Laowa Probe 24mm × MacroRealityCapture • NanoSurfaceDetail × extreme close realism × cinematic_macro_lighting • shallow_focus_plane × mossy_forest_floor",
+  "Sony A7R V + Sony 135mm GM × UltraOpticalCompression • PortraitRealismStack × depth compression × cinematic_portrait_focus • rim_light_highlight × rainy_city_alley",
+  "Canon C500 Mark II + CN-E 50mm × CineDynamicRange • HDRDynamicStack × tonal range × cinematic_dynamic_grade • volumetric_light_rays × cathedral_interior",
+  "Blackmagic URSA 12K + Zeiss Supreme 65mm × CinemaRAWTexture • UltraFineShadowMap × filmic realism × cinematic_light_scatter • atmospheric_depth_layers × canyon_cliff_edge",
+  "Fujifilm GFX100 II + GF 110mm × FilmSim_NaturalPro • DynamicRangeBoost × analog realism × cinematic_color_curve • natural_light_wrap × alpine_lake",
+  "Panasonic Lumix S1H + Leica Summilux 25mm × NaturalSkinTones_v3 • SpectralHighlightControl × realistic skin physics × cinematic_portrait_grade • soft_film_grain × royal_garden",
+  "GoPro Hero 12 + Max Lens Mod × ActionDistortionPhysics • ImmersivePOVReality × immersive action × cinematic_motion_energy • dynamic_motion_blur × waterfall_cliff_edge",
+  "ARRI Alexa 65 + Panavision System 65 50mm × EpicScaleDepth • SpectralLightCapture × ultra epic realism × cinematic_epic_frame • grand_light_beams × colossal_statue_valley",
+  "RED Monstro 8K + Sigma Cine 50mm × UltraClarityEngine • NanoDetail_8K × crystal precision × cinematic_texture_render • subtle_film_grain × ancient_temple_ruins",
+  "Sony A9 III + Sony 24mm GM × SpeedCaptureReality • MotionFreezeStack × frozen action realism × cinematic_dynamic_frame • cinematic_light_wrap × glacier_edge",
+  "Canon 5D Mark IV + EF 50mm × ClassicPhotoRealism • NaturalColorScience × timeless photography × cinematic_color_grade • subtle_lens_flare × cobblestone_street",
+  "Nikon D850 + Sigma Art 40mm × PrecisionOpticsMode • MicroContrast_Boost × crisp clarity × cinematic_shadow_depth • atmospheric_light_scatter × rocky_mountain_pass",
+  "Leica M11 + Summilux 35mm × LeicaStreetRealism • DocumentaryLightBalance × candid realism × cinematic_street_frame • natural_light_wrap × european_city_square",
+  "Hasselblad H6D + HC 100mm × UltraResolutionStack • PixelIntegrityEngine × extreme detail × cinematic_precision_depth • cinematic_light_wrap × frozen_waterfall",
+  "Phase One IQ3 + Schneider 110mm × HyperResolutionCapture • PixelPrecision × hyper clarity × cinematic_tonal_depth • atmospheric_light_haze × ancient_library_hall",
+  "DJI Inspire 2 + X7 50mm × AerialFilmLook • HorizonSharpness × cinematic drone realism × epic_aerial_scale • cinematic_cloud_layers × desert_oasis",
+  "GoPro Hero 11 + UltraWide × ImmersivePOVReality • DynamicMotionPerspective × action immersion × cinematic_energy_frame • motion_blur_depth × cliffside_path",
+  "ARRI Alexa Mini LF + Panavision Primo 50mm × CinematicShadowRoll • UltraFineShadowMap × elegant lighting × cinematic_master_grade • volumetric_light_rays × cathedral_ruins",
+  "RED V-Raptor + Atlas Mercury 36mm × AnamorphicCinematicMode • CinematicFlarePhysics × anamorphic glow × cinematic_frame_composition • horizontal_flare_signature × foggy_bridge",
+  "Sony FX3 + Sony 24mm GM × NightPhotonBoost • SpectralHighlightControl × atmospheric night realism × cinematic_night_render • atmospheric_light_scatter × lantern_forest",
+  "Canon EOS R8 + RF 85mm × PortraitLightBalance • SkinReflectanceModel × studio realism × cinematic_portrait_focus • rim_light_highlight × palace_balcony",
+  "Nikon Zf + Voigtländer 50mm × VintageOpticsSignature • AnalogFilmTexture × vintage realism × cinematic_retro_grade • subtle_film_grain × retro_train_station",
+  "Leica SL3 + APO-Summicron 90mm × PrecisionOpticalStack • OpticalClarityBoost × hyper clean realism × cinematic_portrait_depth • cinematic_light_wrap × marble_hall",
+  "Hasselblad X2D + XCD 65mm × NordicNaturalColor • MediumFormatDepth × refined tones × cinematic_color_curve • soft_light_direction × snowy_forest",
+  "Phase One XF IQ4 + Schneider 120mm × MacroUltraDetail • PixelPrecision × tactile realism × cinematic_macro_lighting • shallow_focus_plane × dew_on_leaves",
+  "DJI Mavic 3 Pro Cine + Hasselblad 24mm × AerialHDRCapture • AeroSharpness × cinematic sky realism × photoreal_sky_texture • atmospheric_cloud_light × fjord_landscape",
+  "GoPro Hero 12 + Linear Lens × ActionRealismEngine • DynamicMotionPerspective × immersive realism × cinematic_action_frame • motion_energy_blur × mountain_bike_trail",
+  "ARRI Alexa 35 + Cooke S7/i 100mm × CinematicPortraitDepth • UltraDepth_Field × portrait cinematic realism × cinematic_skin_tone_map • rim_light_highlight × palace_chamber",
+  "RED Raptor XL + Cooke S7/i 50mm × CinematicTextureDepth • SpectralHighlightControl × cinematic realism × cinematic_master_grade • volumetric_light_rays × canyon_overlook",
+  "Sony Venice 2 + Panavision Primo 65mm × EpicPortraitMode • OpticalPerfectionStack × monumental portrait realism × cinematic_frame_composition • dramatic_light_direction × throne_hall",
+  "IMAX MSM 9802 + IMAX 80mm × UltraEpicCapture • SpectralLightCapture × giant-format realism × cinematic_epic_frame • grand_light_beams × glacier_valley"
 ];
 
-const ENV_TOKENS = [
-  "AncientStoneTemple", "LostJungleCity", "DenseRainforest", "MysticalForest", "FogCoveredForest", "EnchantedWoods", 
-  "SnowCoveredPineForest", "FrozenForest", "AutumnForestPath", "GoldenSunlitForest", "VastMountainRange", "SnowyMountainPeak", 
-  "RockyMountainCliffs", "HimalayanLandscape", "VolcanicMountain", "MistyMountainValley", "SunriseMountainView", "AlpineLakeView", 
-  "EndlessDesertDunes", "DesertSunsetLandscape", "AncientDesertRuins", "SaharaSandstorm", "DesertOasis", "RockyDesertPlateau", 
-  "CrystalBlueOcean", "DeepOceanAbyss", "SunlightUnderwaterRays", "KelpForestUnderwater", "BioluminescentOcean", 
-  "TropicalIslandLagoon", "HiddenIslandParadise", "PalmBeachSunset", "CliffsideOceanView", "TurquoiseWaterBay", "VividCityNight", 
-  "FuturisticCitySkyline", "FlyingCarCity", "UltraModernCityCenter", "HighTechCityDistrict", "RainyFuturisticStreet", 
-  "LuxuryPenthouseView", "SkyscraperRooftop", "GlassTowerInterior", "LuxuryHotelLobby", "ModernArchitecturalHall", 
-  "AncientRomanColosseum", "MedievalCastleCourtyard", "AncientGreekTemple", "AncientEgyptianPyramid", "AztecTempleComplex", 
-  "VikingVillage", "StoneAgeSettlement", "SpaceStationInterior", "DeepSpaceOrbit", "AlienPlanetSurface", "RingedPlanetHorizon", 
-  "AsteroidField", "InterstellarNebula", "GalacticStarField", "FrozenArcticLandscape", "IceCaveInterior", "GlacierValley", 
-  "SnowstormWilderness", "AbandonedIndustrialFactory", "RustyIndustrialWarehouse", "OldPowerPlant", "AbandonedRailwayStation", 
-  "UrbanRuinsDistrict", "ModernResearchLaboratory", "HighTechControlRoom", "AICommandCenter", "FuturisticLaboratory", 
-  "HiddenUndergroundBunker", "SecretMilitaryBase", "WarRoomInterior", "SubmarineInterior", "LuxurySportsCarGarage", 
-  "ClassicCarShowroom", "SupercarTunnel", "GrandRoyalPalace", "LuxuryBallroom", "RoyalGarden", "GoldenThroneHall", 
-  "AncientLibraryHall", "OldUniversityLibrary", "SecretArchiveRoom", "MysticBookChamber", "FloatingIslandsLandscape", 
-  "FantasyCrystalCave", "DragonMountainLair", "MagicPortalValley", "MassiveWaterfallCliff", "RainforestWaterfall", 
-  "HiddenCanyonRiver", "EmeraldRiverValley", "SavannaSunsetLandscape", "AfricanWildlifePlains", "ElephantMigrationScene", 
-  "LionTerritoryLandscape", "NightCityStreetRain", "GlowingMarketStreet", "CrowdedUrbanMarket", "SuburbanNeighborhood", 
-  "QuietVillageStreet", "EuropeanOldTownSquare", "TrainStationPlatform", "HighSpeedTrainInterior", "AirportTerminalHall", 
-  "LuxuryShoppingMall", "FashionBoutiqueInterior", "ArtGalleryExhibition", "DesertMilitaryOutpost", "BattlefieldLandscape", 
-  "DestroyedCityDistrict", "SunsetCountrysideFarm", "GoldenWheatFields", "WindmillFarmLandscape", "StormyOceanCliffs", 
-  "LightningStormSky", "DarkThunderClouds", "VolcanicLavaField", "ActiveVolcanoCrater", "MoltenLavaRivers", "HiddenJungleTemple", 
-  "SacredWaterTemple", "AncientStoneBridge", "FoggyLakeMorning", "MirrorLakeReflection", "CalmLakeSunset", "HighAltitudePlateau", 
-  "CanyonCliffView", "GrandCanyonLandscape", "VolcanicEruption", "DesertOasis", "FloatingIslands", "AbandonedIndustrialZone", 
-  "SubterraneanCavern", "CelestialVoid", "MicroscopicWorld", "HistoricalVillage", "SteampunkFactory", "ZenGarden"
+export const PHOTOREAL_COMBINATIONS = [
+  "ARRI Alexa 35 + Zeiss Supreme Prime 35mm × NanoDetail_8K • MicroContrast_Boost × tactile surface realism × photoreal_micro_texture • natural_light_physics × snowy_forest",
+  "ARRI Alexa 35 + Zeiss Supreme Prime 50mm × UltraDepth_Field • RAW_grain_lite × optical depth realism × photoreal_skin_detail • sensor_color_accuracy × urban_street",
+  "ARRI Alexa Mini LF + Zeiss Master Prime 100mm × OpticalBokehSignature • NanoSurfaceDetail × extreme texture fidelity × photoreal_fur_render • organic_light_scatter × rocky_mountain_pass",
+  "RED V-Raptor XL + Sigma Cine 24mm × UltraSharp_GlobalDetail • EdgeFalloffNatural × spatial realism × photoreal_shadow_accuracy • atmospheric_particle_detail × desert_dunes",
+  "RED Raptor V + Leica Summilux-C 50mm × HDR_vision_fusion • SkinMicroTexture_v5 × lifelike skin pores × photoreal_skin_reflectance • subsurface_light_scatter × indoor_portrait_room",
+  "Sony Venice 2 + Cooke S7/i 75mm × ColorScience_CinemaCore • UltraFineShadowMap × natural tonal depth × photoreal_color_response • real_world_dynamic_range × misty_forest",
+  "Sony FX3 + Sony GM 85mm × DepthCompression_v3 • SkinMicroTexture_v5 × portrait realism × photoreal_face_geometry • natural_eye_reflection × modern_city_rooftop",
+  "Leica SL3 + APO-Summicron 50mm × LeicaMicroContrast • OpticalPrecisionDepth × glass sharp detail × photoreal_sensor_clarity • natural_tonal_balance × marble_hall",
+  "Canon EOS R5 + RF 85mm f/1.2 × SkinReflectanceModel • HDRDynamicStack × hyper realistic skin × photoreal_light_behavior • accurate_skin_color × royal_garden",
+  "Nikon Z9 + Noct 58mm × PhotonBloom • SpectralHighlightControl × luminous highlights × photoreal_highlight_rolloff • realistic_glass_reflection × aurora_arctic_plain",
+  "Hasselblad X2D 100C + XCD 90mm × NordicColorScience • MediumFormatDepth × tonal elegance × photoreal_medium_format_texture • natural_color_gradation × snow_mountain_peak",
+  "Phase One XF IQ4 150MP + Schneider 80mm × PixelPrecision • MediumFormatHyperDetail × microscopic detail × photoreal_surface_grain • ultra_resolution_render × crystal_cave",
+  "Fujifilm GFX100 II + GF 110mm × FilmSim_NaturalPro • DynamicRangeBoost × analog realism × photoreal_color_transition • natural_shadow_softness × alpine_lake",
+  "Blackmagic URSA 12K + Zeiss Supreme 65mm × CinemaRAWTexture • UltraFineShadowMap × natural film texture × photoreal_shadow_gradation • accurate_light_falloff × canyon_edge",
+  "Panasonic Lumix S1H + Leica 42.5mm × NaturalSkinTones_v3 • SpectralHighlightControl × realistic skin tone × photoreal_color_science • natural_portrait_light × garden_path",
+  "ARRI Alexa LF + Panavision Primo 70mm × PanavisionColorSignature • CinematicShadowRoll × natural cinematic contrast × photoreal_shadow_depth • realistic_light_direction × medieval_castle_courtyard",
+  "RED Komodo X + Laowa Probe 24mm × MacroRealityCapture • NanoSurfaceDetail × macro realism × photoreal_macro_texture • natural_surface_reflection × mossy_forest_floor",
+  "Sony A7R V + Sony 135mm GM × UltraOpticalCompression • PortraitRealismStack × compressed depth realism × photoreal_portrait_skin • natural_depth_transition × rainy_city_alley",
+  "Canon C500 Mark II + CN-E 50mm × CineDynamicRange • HDRDynamicStack × tonal fidelity × photoreal_dynamic_range • realistic_light_balance × cathedral_interior",
+  "Blackmagic Pocket 6K Pro + Sigma Cine 35mm × RAWTextureLayer • MicroContrast_Boost × organic texture × photoreal_sensor_noise • natural_color_render × canyon_cliff",
+  "Fujifilm X-H2S + XF 56mm × PortraitFilmLook • FilmSim_NaturalPro × natural portrait tone × photoreal_skin_detail • organic_light_response × palace_balcony",
+  "Panasonic GH6 + Leica 25mm × HybridCinemaLook • UltraFineShadowMap × crisp realism × photoreal_color_depth • accurate_light_scatter × stone_bridge",
+  "GoPro Hero 12 + Max Lens Mod × ActionDistortionPhysics • ImmersivePOVReality × immersive realism × photoreal_motion_perspective • environmental_light_response × waterfall_cliff",
+  "ARRI Alexa 65 + Panavision System 65 50mm × EpicScaleDepth • SpectralLightCapture × ultra realistic scale × photoreal_environment_depth • natural_light_direction × glacier_valley",
+  "RED Monstro 8K + Sigma Cine 50mm × UltraClarityEngine • NanoDetail_8K × crystal sharp realism × photoreal_texture_accuracy • natural_shadow_softness × ancient_ruins",
+  "Sony A9 III + Sony 24mm GM × SpeedCaptureReality • MotionFreezeStack × frozen motion realism × photoreal_motion_capture • natural_light_motion × glacier_edge",
+  "Canon 5D Mark IV + EF 50mm × ClassicPhotoRealism • NaturalColorScience × timeless photography × photoreal_color_accuracy • realistic_skin_color × cobblestone_street",
+  "Nikon D850 + Sigma Art 40mm × PrecisionOpticsMode • MicroContrast_Boost × crisp clarity × photoreal_surface_detail • natural_light_diffusion × rocky_mountain_pass",
+  "Leica M11 + Summilux 35mm × LeicaStreetRealism • DocumentaryLightBalance × candid realism × photoreal_street_texture • environmental_light_balance × european_square",
+  "Hasselblad H6D + HC 100mm × UltraResolutionStack • PixelIntegrityEngine × extreme detail × photoreal_texture_resolution • realistic_light_depth × frozen_waterfall",
+  "Phase One IQ3 + Schneider 110mm × HyperResolutionCapture • PixelPrecision × hyper clarity × photoreal_resolution_depth • natural_shadow_gradient × ancient_library",
+  "DJI Inspire 3 + Zenmuse X9 DL 35mm × AerialScaleCapture • AeroSharpness × aerial realism × photoreal_landscape_scale • atmospheric_light_scatter × jungle_valley",
+  "DJI Mavic 3 Pro + Hasselblad 24mm × AeroHDRCapture • HorizonSharpness × panoramic realism × photoreal_sky_depth • natural_cloud_shadow × tropical_islands",
+  "GoPro Hero 11 + UltraWide × ImmersivePOVReality • DynamicMotionPerspective × action immersion × photoreal_motion_view • environmental_light_response × cliffside_path",
+  "ARRI Alexa Mini LF + Panavision Primo 50mm × CinematicShadowRoll • UltraFineShadowMap × elegant lighting realism × photoreal_light_gradient • natural_shadow_balance × cathedral_ruins",
+  "RED V-Raptor + Atlas Mercury 36mm × AnamorphicCinematicMode • CinematicFlarePhysics × anamorphic realism × photoreal_light_streaks • environmental_light_diffusion × foggy_bridge",
+  "Sony FX3 + Sony 24mm GM × NightPhotonBoost • SpectralHighlightControl × atmospheric night realism × photoreal_night_light • natural_shadow_depth × lantern_forest",
+  "Canon EOS R8 + RF 85mm × PortraitLightBalance • SkinReflectanceModel × studio realism × photoreal_portrait_light • accurate_skin_reflection × palace_balcony",
+  "Nikon Zf + Voigtländer 50mm × VintageOpticsSignature • AnalogFilmTexture × vintage realism × photoreal_film_texture • natural_light_balance × retro_station",
+  "Leica SL3 + APO-Summicron 90mm × PrecisionOpticalStack • OpticalClarityBoost × hyper clean realism × photoreal_sensor_detail • natural_color_balance × marble_hall",
+  "Hasselblad X2D + XCD 65mm × NordicNaturalColor • MediumFormatDepth × refined tones × photoreal_medium_format_color • natural_light_falloff × snowy_forest",
+  "Phase One XF IQ4 + Schneider 120mm × MacroUltraDetail • PixelPrecision × tactile realism × photoreal_macro_surface • natural_light_reflection × dew_leaves",
+  "DJI Mavic 3 Pro Cine + Hasselblad 24mm × AerialHDRCapture • AeroSharpness × cinematic sky realism × photoreal_sky_texture • atmospheric_cloud_light × fjord_landscape",
+  "GoPro Hero 12 + Linear Lens × ActionRealismEngine • DynamicMotionPerspective × immersive realism × photoreal_motion_perspective • environmental_light_behavior × mountain_trail",
+  "ARRI Alexa 35 + Cooke S7/i 100mm × CinematicPortraitDepth • UltraDepth_Field × portrait realism × photoreal_skin_depth • natural_light_wrap × palace_chamber",
+  "RED Raptor XL + Cooke S7/i 50mm × CinematicTextureDepth • SpectralHighlightControl × cinematic realism × photoreal_surface_texture • environmental_light_depth × canyon_overlook",
+  "Sony Venice 2 + Panavision Primo 65mm × EpicPortraitMode • OpticalPerfectionStack × monumental portrait realism × photoreal_face_detail • natural_light_shadow × throne_hall",
+  "IMAX MSM 9802 + IMAX 80mm × UltraEpicCapture • SpectralLightCapture × giant format realism × photoreal_scale_render • environmental_light_depth × glacier_valley"
 ];
 
-const EPIC_SUBJECTS = [
-  "A vast underwater coral reef city glowing with bioluminescent coral structures and drifting schools of tropical fish",
-  "A colossal ancient stone temple resting on the ocean floor covered in coral and marine life",
-  "A deep ocean abyss illuminated only by glowing jellyfish drifting slowly through dark water",
-  "A giant submerged shipwreck slowly decaying beneath layers of coral and sea plants",
-  "A mysterious underwater cave filled with glowing blue crystals reflecting through clear water",
-  "A massive school of silver fish swirling together like a living tornado above coral reefs",
-  "A glowing underwater forest made of towering kelp swaying slowly with ocean currents",
-  "A deep sea research station surrounded by strange bioluminescent creatures",
-  "A colossal underwater canyon carved into the ocean floor with rays of sunlight piercing through",
-  "A giant sea turtle gliding slowly above colorful coral reefs",
-  "A surreal underwater cathedral formed entirely from coral and sea sponges",
-  "A glowing deep sea jellyfish drifting in total darkness of the abyss",
-  "A massive whale skeleton resting silently on the ocean floor",
-  "A mysterious glowing underwater portal opening between ancient ruins",
-  "A crystal clear tropical lagoon filled with vibrant coral and reef fish",
-  "A submerged ancient city street lined with statues covered in coral",
-  "A giant octopus slowly emerging from a dark underwater cave",
-  "A deep ocean trench filled with strange alien-like sea creatures",
-  "A sunken pirate ship surrounded by swirling schools of fish",
-  "A glowing underwater garden filled with bioluminescent plants",
-  "A colossal manta ray gliding gracefully above a coral plateau",
-  "A deep sea hydrothermal vent releasing glowing mineral clouds",
-  "A mysterious underwater cavern illuminated by shafts of sunlight",
-  "A massive whale passing through a field of glowing plankton",
-  "A hidden underwater temple entrance carved into coral rock",
-  "A vast underwater kelp forest stretching endlessly beneath the surface",
-  "A giant submarine wreck resting half buried in ocean sand",
-  "A glowing coral archway forming a natural underwater gateway",
-  "A deep ocean floor scattered with giant seashell formations",
-  "A mysterious underwater stone altar surrounded by drifting fish",
-  "A massive underwater cliff wall covered in colorful coral",
-  "A glowing field of jellyfish drifting together through dark water",
-  "A deep sea anglerfish illuminating the abyss with its glowing lure",
-  "A submerged marble statue slowly dissolving beneath coral growth",
-  "A crystal underwater cavern with refracted sunlight patterns",
-  "A giant crab crawling slowly across the ocean floor",
-  "A glowing underwater cave filled with floating plankton particles",
-  "A massive reef structure shaped like a natural underwater city",
-  "A mysterious underwater monolith standing on the seabed",
-  "A colossal whale gliding slowly through shafts of light",
-  "A giant underwater sinkhole descending into darkness",
-  "A glowing coral labyrinth filled with narrow passages",
-  "A deep ocean battlefield of ancient shipwreck remains",
-  "A surreal underwater landscape with towering coral pillars",
-  "A massive school of barracuda circling through blue water",
-  "A glowing underwater volcano vent releasing mineral clouds",
-  "A hidden underwater grotto filled with crystal clear water",
-  "A mysterious underwater ruin slowly reclaimed by coral",
-  "A giant sea serpent silhouette moving through deep water",
-  "A glowing jellyfish swarm illuminating the dark ocean",
-  "A deep sea exploration drone scanning ancient ruins",
-  "A colossal underwater mountain rising from the ocean floor",
-  "A giant clam slowly opening beneath coral reefs",
-  "A glowing underwater river flowing through sand valleys",
-  "A massive coral wall stretching across the ocean horizon",
-  "A mysterious underwater archway carved through reef rock",
-  "A giant stingray gliding over sandy ocean plains",
-  "A deep ocean cave filled with glowing plankton clouds",
-  "A submerged stone staircase descending into darkness",
-  "A glowing reef canyon filled with exotic marine life",
-  "A giant whale calf swimming beside its massive parent",
-  "A mysterious underwater sphere artifact resting on the seabed",
-  "A glowing coral tunnel leading into a hidden cavern",
-  "A massive underwater plateau surrounded by deep ocean drop-offs",
-  "A deep sea trench illuminated by alien looking creatures",
-  "A giant jellyfish floating slowly through silent waters",
-  "A glowing coral throne formation rising from reef structures",
-  "A submerged ancient battlefield filled with broken weapons",
-  "A massive school of fish forming moving silver clouds",
-  "A mysterious underwater ring structure half buried in sand",
-  "A giant squid moving through deep ocean darkness",
-  "A glowing underwater reef city filled with marine life",
-  "A deep ocean skeleton of a prehistoric sea creature",
-  "A hidden underwater lagoon beneath towering reef cliffs",
-  "A giant sea turtle resting peacefully on coral",
-  "A glowing underwater canyon illuminated by sunlight beams",
-  "A deep sea abyss filled with strange drifting organisms",
-  "A mysterious underwater portal ring made of ancient stone",
-  "A massive underwater coral tower reaching toward sunlight",
-  "A glowing sea anemone field moving with ocean currents",
-  "A giant shark silhouette gliding silently through blue water",
-  "A deep underwater trench filled with mineral formations",
-  "A glowing reef valley surrounded by coral mountains",
-  "A mysterious underwater dome structure covered in coral",
-  "A massive whale shark swimming slowly above the reef",
-  "A deep sea cave entrance surrounded by bioluminescent life",
-  "A glowing coral pathway stretching across the seabed",
-  "A giant underwater pillar formation shaped by erosion",
-  "A mysterious underwater artifact glowing faintly on sand",
-  "A glowing reef plateau filled with vibrant marine life",
-  "A deep ocean crater filled with drifting sediment clouds",
-  "A giant underwater statue face half buried in coral",
-  "A glowing underwater waterfall flowing down reef cliffs",
-  "A deep sea canyon illuminated by drifting plankton",
-  "A massive coral archway forming a natural gateway",
-  "A mysterious underwater temple chamber hidden in reef",
-  "A glowing jellyfish corridor drifting slowly through water",
-  "A deep ocean valley surrounded by towering coral cliffs",
-  "A giant underwater rock formation shaped like a dragon",
-  "A glowing reef labyrinth stretching across the ocean floor",
-  "A mysterious ancient underwater obelisk rising from sand",
-  "A deep sea exploration submarine scanning coral structures",
-  "A massive underwater coral dome filled with tropical fish",
-  "A glowing underwater crystal cavern beneath reef rock",
-  "A giant manta ray gliding through glowing plankton clouds",
-  "A deep ocean sinkhole opening into total darkness",
-  "A mysterious underwater artifact emitting faint blue light",
-  "A glowing reef tunnel leading into deep ocean caverns",
-  "A massive underwater reef system stretching endlessly",
-  "A giant sea creature silhouette disappearing into darkness",
-  "A glowing coral throne surrounded by tropical fish",
-  "A deep ocean cave filled with shimmering mineral deposits",
-  "A mysterious underwater spiral structure carved into rock",
-  "A glowing underwater crystal pillar formation",
-  "A massive coral city structure built by natural reef growth",
-  "A monumental Rolex watch carved out of a single mountain peak",
-  "A luxury watch made of liquid gold and floating diamonds in zero gravity",
-  "Ancient Roman legion marching through a futuristic portal",
-  "Queen Cleopatra as a cybernetic empress on a golden throne",
-  "A futuristic supercar driving through a prehistoric Jurassic jungle",
-  "An astronaut discovering an ancient Egyptian pyramid on Mars",
-  "A samurai fighting a mechanical demon in a cherry blossom storm",
-  "A massive Rolex Submariner acting as a portal in the middle of the Atlantic ocean",
-  "A futuristic skyscraper built into the side of a giant floating iceberg",
-  "A surreal library where books fly like birds in a vortex of light",
-  "A transparent hourglass containing an entire miniature galaxy",
-  "Cybernetic gladiator in a neon arena",
-  "Nordic viking warrior fighting a frost giant",
-  "Majestic dragon guarding a futuristic vault",
-  "Hyper-realistic portrait of a time-traveling explorer"
-];
+const r = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 // ============================================================================
-// BANNER DATA
+// HELPER FUNKCIJE ZA PERFEKTNO PISANJE PROMPTOVA
 // ============================================================================
-
-export const BANNER_DATA = [
-  { image: slikaHubImg, badge: "CORE AI HUB", title: "Visionary Master Protocol V8", subtitle: "Command center for generating complex AI architectures. 66 million+ cinematic combinations." },
-  { image: zmajImg, badge: "DRAGON PROTOCOL", title: "ANCIENT EMPIRES REBORN", subtitle: "Generate epic scenes with dragons in 8K resolution with extreme detail." },
-  { image: novaSlikaImg, badge: "TIME TRAVELER", title: "UNIQUE PHOTO REALISTIC IMAGES", subtitle: "Merging historical eras using advanced AI engines for 10x fidelity." },
-  { image: slikaCopyImg, badge: "CYBER STEALTH", title: "GHOST IN THE MACHINE", subtitle: "Professional stealth prompts engineered for high-detail ghost visuals." },
-  { image: slikaVideoImg, badge: "WARP SPEED", title: "TEMPORAL MOTION ENGINE", subtitle: "Optimized for fast generation of high-speed AI video content." },
-  { image: hollywoodImg, badge: "WINTER PROTOCOL", title: "HOLLYWOOD VFX GRADE", subtitle: "Epic cinematic battles and high-end CGI-level detail protocols." }
-];
-
-// ============================================================================
-// 2. LOGIKA GENERATORA
-// ============================================================================
-
-const formatToken = (text) => text.replace(/([a-z])([A-Z])/g, '$1 $2');
-const sanitize = (text) => text.replace(/neon/gi, "vivid glowing").replace(/cyberpunk/gi, "high-tech futuristic");
-
-const getMetaTokens = (count) => {
-    let shuffled = [...META_TOKENS].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, count).map(formatToken).join(", ");
+export const getRandomTokens = (arr, count = 1) => {
+  const shuffled = [...arr].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count).join(', ');
 };
 
-const getAbstractTokens = (count) => {
-    let shuffled = [...ABSTRACT_META_TOKENS].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, count).map(formatToken).join(", ");
+export const buildPrompt = (...parts) => {
+  return parts.filter(part => part && part.trim() !== '').join(', ');
 };
 
-export const getRandomDicePrompt = () => {
-    const subject = EPIC_SUBJECTS[Math.floor(Math.random() * EPIC_SUBJECTS.length)];
-    const env = formatToken(ENV_TOKENS[Math.floor(Math.random() * ENV_TOKENS.length)]);
-    return sanitize(`${subject}, set against the backdrop of a ${env}.`);
-};
-
-export const generatePrompts = (customerPrompt, demoInput, selectedQuality, selectedAR) => {
-    let subject = (customerPrompt || demoInput || "").trim();
-    const arMap = { '1:1': 'aspect ratio 1:1', '9:16': 'vertical format 9:16', '16:9': 'wide cinematic 16:9', '21:9': 'panoramic 21:9' };
-    const qualMap = { '1x': 'standard quality', '2x': 'high definition rendering', '4x': '8k resolution, ultra-high definition' };
-    const arDesc = arMap[selectedAR] || 'wide format';
-    const qDesc = qualMap[selectedQuality] || 'high detail';
-    const photorealCamera = UNIQUE_PHOTOREAL_COMBOS[Math.floor(Math.random() * UNIQUE_PHOTOREAL_COMBOS.length)];
-
-    const outputs = {
-        abstract: `ABSTRACT MASTERPIECE: ${subject}. ${getAbstractTokens(10)}. Geometric harmony, procedural visual system, ethereal atmosphere. ${qDesc}, ${arDesc}.`,
-        cinematic: `A breathtaking cinematic film still of ${subject}. Shot on IMAX 70mm film, directed by a visionary filmmaker, anamorphic lens flares, heavy chiaroscuro lighting, dramatic shadows, volumetric atmosphere. ${getMetaTokens(6)}. ${qDesc}, ${arDesc}.`,
-        photoreal: `A professional hyper-realistic RAW photograph of ${subject}. ${photorealCamera}. Microscopic textures, natural skin pores and material detail, soft box studio lighting, true color accuracy, no filters. ${getMetaTokens(6)}. ${qDesc}, ${arDesc}.`,
-        cctv: `Surveillance footage of ${subject}. ${UNIQUE_META_POOL.slice(0,10).join(", ")}. Grainy digital noise, fisheye lens distortion, flickering infrared night vision, timestamp overlay, found footage aesthetic. ${qDesc}, ${arDesc}.`,
-        single: `V8 CORE ENGINE: ${subject}, merging absolute reality with digital perfection. ${getMetaTokens(15)}, global illumination, ray-traced shadows, award-winning visual clarity, ${qDesc}, ${arDesc}.`
-    };
-
-    return Object.fromEntries(Object.entries(outputs).map(([key, val]) => [key, sanitize(val)]));
-};
-
-// ============================================================================
-// 3. UI KOMPONENTE
-// ============================================================================
-
-export const getYouTubeId = (url) => { if (!url || url === "#") return null; const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|\/shorts\/)([^#&?]*).*/); return (match && match[2].length === 11) ? match[2] : null; };
-export const getMediaThumbnail = (url) => { const ytId = getYouTubeId(url); return ytId ? `https://i.ytimg.com/vi/${ytId}/maxresdefault.jpg` : (url || bannerUrl); };
-export const formatExternalLink = (url) => { if (!url || url === "#") return "#"; return url.trim().startsWith("http") ? url.trim() : `https://${url.trim()}`; };
-export const extractSys = (desc) => { let d = desc || ""; let s = { w: '', g: '', b: 'AI ASSET', t: 'LATEST ⚡' }; if (d.includes("|||SYS|||")) { const parts = d.split("|||SYS|||"); d = parts[0].trim(); try { s = { ...s, ...JSON.parse(parts[1]) }; } catch(e) {} } return { d: d, s }; };
-export const SESSION_ID = Math.random().toString(36).substring(2, 15);
-export const trackEvent = async (action, details = {}) => { try { await addDoc(collection(db, "site_stats"), { action, ...details, sessionId: SESSION_ID, timestamp: serverTimestamp() }); } catch (e) {} };
-
-export function UniversalVideoPlayer({ url, videoRef }) {
-    const ytId = getYouTubeId(url);
-    if (ytId) return <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}`} frameBorder="0" allowFullScreen></iframe>;
-    return <video ref={videoRef} src={url} className="w-full h-full object-cover" autoPlay loop muted playsInline />;
-}
-
-export function TypewriterText({ text, speed = 10 }) {
-  const [disp, setDisp] = useState('');
-  useEffect(() => {
-    let i = 0; setDisp(''); if (!text) return;
-    const t = setInterval(() => { setDisp(text.slice(0, i + 1)); i++; if (i >= text.length) clearInterval(t); }, speed);
-    return () => clearInterval(t);
-  }, [text, speed]);
-  return <span>{disp}</span>;
-}
-
-export function MatrixRain() {
-  const canvasRef = useRef(null);
-  useEffect(() => {
-    const canvas = canvasRef.current; if(!canvas) return;
-    const ctx = canvas.getContext('2d');
-    canvas.width = canvas.parentElement.offsetWidth; canvas.height = canvas.parentElement.offsetHeight;
-    const letters = '10XV8PROAI'; const fontSize = 14;
-    let drops = Array(Math.floor(canvas.width / fontSize)).fill(1);
-    const draw = () => {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#f97316'; ctx.font = fontSize + 'px monospace';
-      for (let i = 0; i < drops.length; i++) {
-        ctx.fillText(letters[Math.floor(Math.random() * letters.length)], i * fontSize, drops[i] * fontSize);
-        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-        drops[i]++;
-      }
-    };
-    const intv = setInterval(draw, 35); return () => clearInterval(intv);
-  }, []);
-  return <canvas ref={canvasRef} className="absolute inset-0 z-[15] opacity-[0.1] pointer-events-none" />;
-}
-
-export const renderDescription = (text) => {
-  const { d: cleanDesc } = extractSys(text);
-  if (!cleanDesc) return null;
-  
-  return cleanDesc.split('\n').map((line, idx) => {
-    const trimmed = line.trim();
-    if (!trimmed) return <div key={idx} className="h-2"></div>;
-    const upper = trimmed.toUpperCase();
-    
-    if (upper.includes('[DESCRIPTION]') || upper.includes('VALUE MULTIPLIER') || upper.includes('KEY FEATURES') || 
-        upper.includes('THE ARSENAL') || upper.includes('THE 5 PILLARS') || upper.includes('THE ROI FINALE') || 
-        upper.includes('[LINKS & FILES]') || upper.includes('[HEADLINE]') || upper.includes('[PRICE]')) {
-        const cleanTitle = trimmed.replace(/\[|\]/g, ''); 
-        return <h3 key={idx} className="text-[12px] font-black text-white mt-10 mb-4 uppercase tracking-widest border-l-4 border-orange-500 pl-4 italic text-left">{cleanTitle}</h3>;
-    }
-
-    if (trimmed.startsWith('*') || trimmed.startsWith('-')) {
-      return <div key={idx} className="flex gap-3 items-start my-2 bg-white/[0.02] p-3 rounded-2xl border border-white/5"><CheckCircle2 className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" /><p className="text-white text-[11px] font-bold text-left">{trimmed.replace(/^[*-]\s*/, '')}</p></div>;
-    }
-
-    if (upper.startsWith('WHOP LINK:') || upper.startsWith('GUMROAD LINK:') || upper.startsWith('REACT SOURCE CODE:') || upper.startsWith('FILE UPLOAD:') || upper.startsWith('PRICE:')) {
-        const parts = trimmed.split(/:(.+)/);
-        if (parts.length > 1) {
-            const label = parts[0].trim();
-            const link = parts[1].trim();
-            return (
-                <div key={idx} className="flex flex-col md:flex-row md:items-center gap-2 my-2 bg-blue-900/10 p-3 rounded-xl border border-blue-500/20 text-left">
-                    <span className="text-blue-400 font-black text-[10px] uppercase tracking-widest min-w-[140px]">{label}:</span>
-                    {link.startsWith('http') ? (
-                        <a href={link} target="_blank" rel="noreferrer" className="text-white hover:text-orange-500 text-[11px] truncate break-all">{link}</a>
-                    ) : (
-                        <span className="text-white text-[11px] font-bold">{link}</span>
-                    )}
-                </div>
-            );
-        }
-    }
-
-    return <p key={idx} className="text-white text-[11px] font-bold leading-relaxed my-3 text-left">{trimmed}</p>;
-  });
-};
-
-export function AssetCard({ app }) {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const videoRef = useRef(null);
-
-  const mediaItem = app?.media?.[0];
-  const isVideo = mediaItem?.type === 'video' || mediaItem?.url?.match(/\.(mp4|webm|ogg|mov)$/i);
-  const displayUrl = isVideo ? `${mediaItem.url}#t=0.001` : getMediaThumbnail(mediaItem?.url);
-  
-  const handlePlayClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsPlaying(true);
-    if (videoRef.current) {
-      videoRef.current.muted = false; // Ukljucuje zvuk
-      videoRef.current.play(); // Pokrece video
-    }
-  };
-
-  const handleVideoEnded = () => {
-    setIsPlaying(false); // Sklanja kontrole, vraca play ikonicu
-    if (videoRef.current) {
-      videoRef.current.load(); // Resetuje video na pocetak (pokazuje prvi frejm kao thumbnail)
-    }
-  };
-  
-  return (
-    <Link to={`/app/${app.id}`} className="block group text-left">
-      <div className="relative overflow-hidden p-[1px] bg-gradient-to-br from-orange-500 to-blue-500 rounded-[3rem] transition-all duration-500 hover:scale-[1.03] flex flex-col h-full shadow-2xl">
-        <div className="bg-[#0a0a0a] rounded-[2.9rem] flex flex-col h-full p-10 relative overflow-hidden">
-          
-          {/* NOVI VELIKI DIJAGONALNI RIBBON KOJI IDE PREKO CIJELE KARTICE */}
-          {app.type && (
-            <div className="absolute top-12 -right-28 w-96 bg-red-600 text-white py-3 text-center text-[12px] font-black uppercase tracking-widest shadow-[0_10px_20px_rgba(220,38,38,0.5)] z-50 rotate-[40deg] border-y border-red-400 pointer-events-none">
-              {app.type}
-            </div>
-          )}
-
-          {/* POVEĆAN PLAVI BOX (POMEREN IZNAD VIDEA UNUTAR GLAVNOG BOXA) */}
-          <div className="flex mb-5 relative z-20">
-            <div className="bg-blue-600 text-white px-5 py-2 rounded-full text-[10px] font-black uppercase shadow-xl tracking-widest">
-              {app.category || 'AI ASSET'}
-            </div>
-          </div>
-
-          <div className="aspect-video relative overflow-hidden rounded-[2rem] mb-8 border-2 border-blue-500/30 bg-zinc-900 shadow-2xl text-left z-20">
-            {isVideo ? (
-              <>
-                <video 
-                  ref={videoRef}
-                  src={displayUrl} 
-                  className={`w-full h-full object-cover ${!isPlaying ? 'transition-transform duration-700 group-hover:scale-105' : ''}`}
-                  playsInline 
-                  controls={isPlaying} // Prikazuje kontrole tek kad se pusti video
-                  onEnded={handleVideoEnded} // Resetuje se kad stigne do kraja
-                  onClick={(e) => {
-                    // Ovo sprecava da klikanje po kontrolama videa odvede na drugi link
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }}
-                />
-                
-                {/* MALA PLAY IKONICA PREKO VIDEA DOK NE KRENE */}
-                {!isPlaying && (
-                  <div 
-                    className="absolute inset-0 flex items-center justify-center bg-black/10 hover:bg-black/30 transition-all cursor-pointer z-30 group/playbtn"
-                    onClick={handlePlayClick}
-                  >
-                    <div className="bg-black/60 p-3 rounded-full border border-blue-500 shadow-[0_0_15px_rgba(37,99,235,0.6)] group-hover/playbtn:bg-blue-600 transition-all group-hover/playbtn:scale-110">
-                      <PlayCircle className="w-8 h-8 text-blue-400 group-hover/playbtn:text-white transition-colors" />
-                    </div>
-                  </div>
-                )}
-              </>
-            ) : (
-              <img src={displayUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="asset" />
-            )}
-          </div>
-          
-          <div className="flex justify-between items-start mb-6 gap-4 text-left relative z-10 flex-col sm:flex-row">
-            <div className="flex flex-col">
-              <h2 className="text-lg font-black uppercase group-hover:text-orange-500 transition-all text-white leading-tight">{app.name}</h2>
-              {/* PODNASLOV (KATEGORIJA) DODAT TAČNO OVDE ISPOD NASLOVA U BOX-U - PROMENJENO U UPPERCASE */}
-              <p className="text-[11px] text-zinc-400 uppercase mt-1.5 tracking-wide">
-                {app.category || 'AI ASSET'}
-              </p>
-            </div>
-            <div className="px-4 py-2 bg-blue-600/10 border border-blue-500/20 rounded-xl text-[12px] font-black text-blue-400 shadow-lg shrink-0 mt-2 sm:mt-0">${app.price}</div>
-          </div>
-          
-          <div className="mt-auto pt-4 text-left relative z-10">
-            <div className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] text-center flex items-center justify-center gap-3 hover:bg-blue-500 transition-all shadow-xl">MORE DETAILS <ArrowRight className="w-4 h-4" /></div>
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-export function TutorialCard({ vid }) {
-  const videoId = getYouTubeId(vid.url);
-  return (
-    <div className="p-[1px] bg-gradient-to-br from-orange-500 to-blue-500 rounded-[2.5rem] flex flex-col h-full hover:-translate-y-2 transition-all group shadow-xl">
-      <div className="bg-[#0a0a0a] rounded-[2.4rem] p-6 flex flex-col h-full">
-        <div className="aspect-video relative overflow-hidden rounded-3xl mb-6 bg-zinc-900 border-2 border-orange-500/30 cursor-pointer" onClick={() => window.open(vid.url, '_blank')}>
-          <img src={`https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`} alt="tut" className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-all" />
-          <div className="absolute inset-0 flex items-center justify-center"><PlayCircle className="w-16 h-16 text-red-500 drop-shadow-2xl scale-110" /></div>
-        </div>
-        <h4 className="text-zinc-200 font-black text-[13px] uppercase line-clamp-2 text-left tracking-tight">{vid.title}</h4>
-        <div className="mt-4 inline-flex items-center gap-2 text-orange-500 font-black text-[9px] uppercase tracking-widest"><Zap className="w-3 h-3"/> Video Intelligence</div>
-      </div>
-    </div>
-  );
-}
-
-export function FullScreenBoot({ onComplete }) {
-  useEffect(() => { const t = setTimeout(onComplete, 2500); return () => clearTimeout(t); }, [onComplete]);
-  return (
-    <div className="fixed inset-0 z-[2000] bg-black flex flex-col items-center justify-center">
-      <img src={mojLogo} className="h-16 mb-8 animate-pulse" alt="boot" />
-      <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden relative">
-        <div className="absolute top-0 left-0 h-full bg-orange-600 animate-[loading_1.5s_infinite] w-1/2" style={{ animation: 'loading 1.5s infinite linear' }}></div>
-        <style>{`@keyframes loading { 0% { left: -100%; } 100% { left: 100%; } }`}</style>
-      </div>
-      <p className="text-[8px] font-black uppercase tracking-[0.5em] text-zinc-500 mt-6 animate-pulse text-center">Initializing V8 Protocols...</p>
-    </div>
-  );
-}
-
-export const LiveSalesNotification = ({ apps }) => {
-  const [active, setActive] = useState(false);
-  const [sale, setSale] = useState(null);
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (apps && apps.length > 0) {
-        const randomApp = apps[Math.floor(Math.random() * apps.length)];
-        setSale({ name: randomApp.name }); setActive(true);
-        setTimeout(() => setActive(false), 5000);
-      }
-    }, 28000);
-    return () => clearInterval(interval);
-  }, [apps]);
-  if (!active || !sale) return null;
-  return (
-    <div className="fixed bottom-10 left-10 z-[1000] bg-black/95 border border-orange-500/30 p-4 rounded-2xl flex items-center gap-4 shadow-2xl transition-all duration-700 text-left">
-      <div className="w-10 h-10 rounded-full bg-orange-600/20 flex items-center justify-center"><Zap className="w-5 h-5 text-orange-500" /></div>
-      <div><p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">New Access Granted</p><p className="text-[11px] font-black text-white uppercase">{sale.name}</p></div>
-    </div>
+export const generateAbstractPrompt = (subject, qToken, baseAR) => {
+  return buildPrompt(
+    subject,
+    r(ABSTRACT_AI_IMAGE_COMBINATIONS),
+    getRandomTokens(ABSTRACT_META_TOKENS, 3),
+    getRandomTokens(ENV_TOKENS, 2),
+    "abstract visual language",
+    "conceptual art",
+    "mind-bending",
+    "surreal",
+    qToken,
+    baseAR
   );
 };
+
+export const generateCinematicPrompt = (subject, qToken, baseAR) => {
+  return buildPrompt(
+    `Cinematic shot of ${subject}`,
+    r(CINEMATIC_COMBINATIONS),
+    getRandomTokens(LIGHTING_TOKENS, 2),
+    "dramatic composition",
+    "movie still",
+    "color graded",
+    qToken,
+    baseAR
+  );
+};
+
+export const generatePhotorealPrompt = (subject, qToken, baseAR) => {
+  return buildPrompt(
+    `Professional photography of ${subject}`,
+    r(PHOTOREAL_COMBINATIONS),
+    getRandomTokens(LIGHTING_TOKENS, 2),
+    "highly detailed",
+    "sharp focus",
+    "photorealistic",
+    "lifelike",
+    "real world",
+    getRandomTokens(MODIFIER_TOKENS, 4),
+    qToken,
+    baseAR
+  );
+};
+
+export const generateUniquePhotorealPrompt = (subject, qToken, baseAR) => {
+  return buildPrompt(
+    subject,
+    r(UNIQUE_PHOTOREAL_COMBOS),
+    "THE MOST UNIQUE PHOTOREALISTIC IMAGE EVER",
+    getRandomTokens(THE_MOST_UNIQUE_PHOTOREALISTIC_TOKENS, 12),
+    getRandomTokens(ADDITIONAL_REALISM_TOKENS, 5),
+    qToken,
+    baseAR
+  );
+};
+
 // ============================================================================
-// PAMETNI TEKST PARSER (AUTOMATIZOVAN ŠABLON ZA OPISE)
+// MAIN GENERATOR
+// ============================================================================
+export const generatePrompts = (customerPrompt, demoPrompt, quality, ar) => {
+  const subject = (customerPrompt || demoPrompt || "").trim();
+  if (!subject) return { single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' };
+
+  const qToken = quality === '4x' ? 'masterpiece, 8k resolution, ultra-detailed' : quality === '2x' ? 'high quality, 4k, detailed' : 'good quality';
+  const baseAR = `${ar.replace(':', ':')} aspect ratio`; 
+
+  const abstractPrompt = generateAbstractPrompt(subject, qToken, baseAR);
+  const cinematicPrompt = generateCinematicPrompt(subject, qToken, baseAR);
+  const photorealPrompt = generatePhotorealPrompt(subject, qToken, baseAR);
+  const uniquePhotoPrompt = generateUniquePhotorealPrompt(subject, qToken, baseAR);
+
+  const singlePremium = `**CORE SUBJECT:** ${subject}
+**AESTHETIC PROTOCOL:** ${r(['Hyper-Realistic', 'Cinematic Dark', 'Neon Cyberpunk', 'Ethereal Dreamscape'])}
+**CAMERA SYSTEM:** ${r(CAMERA_TOKENS)} + ${r(LENS_TOKENS)}
+**LIGHTING ENGINE:** ${r(LIGHTING_TOKENS)} + ${r(ENV_TOKENS)}
+**RENDER PIPELINE:** ${r(ABSTRACT_META_TOKENS)} + ${qToken}
+**FORMAT:** ${baseAR}`;
+
+  return { single: singlePremium, abstract: abstractPrompt, cinematic: cinematicPrompt, photoreal: photorealPrompt, uniquePhoto: uniquePhotoPrompt };
+};
+
+// ============================================================================
+// PAMETNI TEKST PARSER ZA SINGLE PRODUCT PAGE OPIS
 // ============================================================================
 export const FormattedDescription = ({ text }) => {
   if (!text) return null;
@@ -751,7 +2089,6 @@ export const FormattedDescription = ({ text }) => {
         const t = line.trim();
         if (!t) return <div key={idx} className="h-2"></div>;
 
-        // 1. VALUE MULTIPLIER (Uvek narandžasto)
         if (t.toUpperCase().includes("VALUE MULTIPLIER")) {
           return (
             <p key={idx} className="text-orange-500 font-black text-[18px] md:text-[20px] uppercase tracking-widest mt-8 mb-6 leading-relaxed">
@@ -760,7 +2097,6 @@ export const FormattedDescription = ({ text }) => {
           );
         }
 
-        // 2. NASLOVI (VELIKA SLOVA ili **tekst**)
         const isTitle = (t === t.toUpperCase() && /[A-Z]/.test(t) && !t.startsWith('-') && !t.startsWith('*')) || (t.startsWith('**') && t.endsWith('**'));
         const cleanTitle = t.replace(/\*\*/g, ''); 
 
@@ -772,7 +2108,6 @@ export const FormattedDescription = ({ text }) => {
           );
         }
 
-        // 3. BULLET POENTI (✓ kružić)
         if (t.startsWith('-') || t.startsWith('*') || t.startsWith('•') || t.startsWith('✓')) {
           const bulletText = t.substring(1).trim().replace(/\*\*/g, ''); 
           return (
@@ -789,7 +2124,6 @@ export const FormattedDescription = ({ text }) => {
           );
         }
 
-        // 4. OBIČAN TEKST (Boldovan u belo)
         return (
           <p key={idx} className="text-white font-bold text-[16px] md:text-[18px] leading-relaxed mb-6 tracking-wide">
             {t.replace(/\*\*/g, '')}
@@ -799,3 +2133,5 @@ export const FormattedDescription = ({ text }) => {
     </div>
   );
 };
+
+export const getRandomDicePrompt = () => DICE_PROMPTS[Math.floor(Math.random() * DICE_PROMPTS.length)];
