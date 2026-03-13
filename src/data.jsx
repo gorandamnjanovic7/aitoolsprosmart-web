@@ -737,3 +737,65 @@ export const LiveSalesNotification = ({ apps }) => {
     </div>
   );
 };
+// ============================================================================
+// PAMETNI TEKST PARSER (AUTOMATIZOVAN ŠABLON ZA OPISE)
+// ============================================================================
+export const FormattedDescription = ({ text }) => {
+  if (!text) return null;
+  const cleanText = text.replace(/\[SYS\][\s\S]*?\[\/SYS\]/gi, '');
+  const lines = cleanText.split('\n');
+
+  return (
+    <div className="w-full text-left space-y-3">
+      {lines.map((line, idx) => {
+        const t = line.trim();
+        if (!t) return <div key={idx} className="h-2"></div>;
+
+        // 1. VALUE MULTIPLIER (Uvek narandžasto)
+        if (t.toUpperCase().includes("VALUE MULTIPLIER")) {
+          return (
+            <p key={idx} className="text-orange-500 font-black text-[18px] md:text-[20px] uppercase tracking-widest mt-8 mb-6 leading-relaxed">
+              {t.replace(/\*\*/g, '')}
+            </p>
+          );
+        }
+
+        // 2. NASLOVI (VELIKA SLOVA ili **tekst**)
+        const isTitle = (t === t.toUpperCase() && /[A-Z]/.test(t) && !t.startsWith('-') && !t.startsWith('*')) || (t.startsWith('**') && t.endsWith('**'));
+        const cleanTitle = t.replace(/\*\*/g, ''); 
+
+        if (isTitle) {
+          return (
+            <h3 key={idx} className="text-[22px] md:text-[28px] font-black text-white uppercase tracking-widest mb-6 mt-12 border-l-[5px] border-orange-500 pl-5 italic text-left leading-tight">
+              {cleanTitle}
+            </h3>
+          );
+        }
+
+        // 3. BULLET POENTI (✓ kružić)
+        if (t.startsWith('-') || t.startsWith('*') || t.startsWith('•') || t.startsWith('✓')) {
+          const bulletText = t.substring(1).trim().replace(/\*\*/g, ''); 
+          return (
+            <div key={idx} className="flex items-start gap-4 mb-4">
+              <div className="bg-orange-500 rounded-full w-6 h-6 mt-0.5 shrink-0 flex items-center justify-center shadow-[0_0_12px_rgba(249,115,22,0.6)] border-2 border-orange-400">
+                <svg className="w-3.5 h-3.5 text-white font-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+              <p className="text-white font-bold text-[16px] md:text-[18px] leading-relaxed flex-1 m-0 tracking-wide">
+                {bulletText}
+              </p>
+            </div>
+          );
+        }
+
+        // 4. OBIČAN TEKST (Boldovan u belo)
+        return (
+          <p key={idx} className="text-white font-bold text-[16px] md:text-[18px] leading-relaxed mb-6 tracking-wide">
+            {t.replace(/\*\*/g, '')}
+          </p>
+        );
+      })}
+    </div>
+  );
+};
