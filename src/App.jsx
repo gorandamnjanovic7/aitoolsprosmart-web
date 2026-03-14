@@ -124,7 +124,6 @@ const OptionButton = ({ label, selected, onClick, type }) => {
   return <button type="button" onClick={onClick} className={`px-4 py-2 rounded-lg text-[9px] font-black border transition-all ${selected ? activeClass : "bg-black border-white/10 text-zinc-500 hover:border-white/20"}`}>{label}</button>;
 };
 
-// --- SREĐENO: SVI BOKSOVI SADA IMAJU EPSKI I SVETLEĆI DIZAJN ---
 const PromptResultBox = ({ type, text, copiedBox, onCopy }) => {
   let title = type.toUpperCase();
   let icon = null;
@@ -168,9 +167,9 @@ const PromptResultBox = ({ type, text, copiedBox, onCopy }) => {
         {icon}
         {title}
       </label>
-      <p className="w-full font-mono text-[10px] md:text-[11px] leading-relaxed text-left flex-1 text-zinc-200">
-        {text ? <TypewriterText text={text} speed={10} /> : "AWAITING ENGINE CORE..."}
-      </p>
+      <div className="w-full font-mono text-[10px] md:text-[11px] leading-relaxed text-left flex-1 text-zinc-200 whitespace-pre-wrap">
+        {text ? <TypewriterText text={text} speed={8} /> : "AWAITING ENGINE CORE..."}
+      </div>
       {text && (
         <button type="button" onClick={() => onCopy(text, type)} className={buttonClass}>
           {copiedBox === type ? "Copied! ✓" : "Copy Prompt"}
@@ -178,6 +177,24 @@ const PromptResultBox = ({ type, text, copiedBox, onCopy }) => {
       )}
     </div>
   );
+};
+
+// --- DINAMIČKA LOGIKA ZA KAMERE ---
+const getDynamicMeta = (text) => {
+  const low = text.toLowerCase();
+  if (low.includes('person') || low.includes('face') || low.includes('man') || low.includes('woman') || low.includes('portrait')) {
+    return 'Shot on Canon EOS R5, 85mm f/1.2L II USM, ultra-sharp eye focus, natural skin pore texture, fashion editorial lighting, EXIF:35mmEquiv=85mm';
+  }
+  if (low.includes('car') || low.includes('vehicle') || low.includes('motorcycle') || low.includes('bmw')) {
+    return 'Shot on Sony A7R V, 35mm f/1.4 GM, high-speed shutter 1/4000s, motion blur background, automotive commercial reflections, CPL filter';
+  }
+  if (low.includes('landscape') || low.includes('nature') || low.includes('mountain') || low.includes('forest')) {
+    return 'Shot on Hasselblad H6D-100c, 24mm wide angle, f/11 deep focus, National Geographic award-winning quality, volumetric atmospheric haze';
+  }
+  if (low.includes('watch') || low.includes('jewelry') || low.includes('macro') || low.includes('diamond')) {
+    return 'Shot on Nikon Z9, 105mm f/2.8 Macro, focus stacking, surgical precision lighting, micro-dust particles, industrial catalog aesthetic';
+  }
+  return 'Shot on Leica M11 + Summilux 50mm f/1.4, candid paparazzi outtake, IMG_1984.CR2, stills archive, EXIF:35mmEquiv=85mm';
 };
 
 // ============================================================================
@@ -188,10 +205,18 @@ function EnhancerPage() {
   const [customerPrompt, setCustomerPrompt] = useState(''); 
   const [generatedPrompts, setGeneratedPrompts] = useState({ single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' }); 
   const [isEnhancing, setIsEnhancing] = useState(false); 
+  const [isScanning, setIsScanning] = useState(false);
   const [selectedAR, setSelectedAR] = useState('16:9'); 
   const [selectedQuality, setSelectedQuality] = useState('4x'); 
   const [copiedBox, setCopiedBox] = useState(''); 
   const [isRolling, setIsRolling] = useState(false);
+
+  const handleClearAll = () => {
+    setCustomerPrompt('');
+    setDemoInput('');
+    setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' });
+    setIsScanning(false);
+  };
 
   const handleRollDice = (e) => { 
     if (e) e.preventDefault();
@@ -208,6 +233,8 @@ function EnhancerPage() {
   const handleEnhance = (e) => {
     if (e) e.preventDefault();
     const subject = (customerPrompt || demoInput || "").trim(); if(!subject) return; 
+    
+    setIsScanning(true);
     setIsEnhancing(true); 
     setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' });
     
@@ -215,36 +242,83 @@ function EnhancerPage() {
       try { 
         const std = data.generatePrompts(customerPrompt, demoInput, selectedQuality, selectedAR); 
         
-        // ====================================================================
-        // INJEKCIJA NAJJAČIH TOKENA ZA STILOVE (STEROIDI)
-        // ====================================================================
-        if (std.cinematic) {
-          std.cinematic += ", epic cinematic movie still, cinematic lighting, shot on 35mm lens, anamorphic depth of field, volumetric lighting, god rays, dramatic shadows, teal and orange color grading, 8k resolution, photorealistic masterpiece";
+        // BOX 2 LOGIKA SA ROAST I PHYSICS TOKENIMA
+        if (customerPrompt.trim() !== "") {
+          const low = customerPrompt.toLowerCase();
+          let camera = "Shot on Leica M11 + Summilux 50mm f/1.4"; 
+          let lighting = "natural ambient lighting, golden hour rim light";
+          
+          if (low.includes('car') || low.includes('bmw')) {
+            camera = "Shot on Sony A7R V, 35mm f/1.4 GM";
+            lighting = "automotive studio lighting, CPL filter reflections";
+          } else if (low.includes('landscape') || low.includes('mountain')) {
+            camera = "Shot on Hasselblad H6D-100c, 24mm wide";
+            lighting = "volumetric atmospheric haze, deep focus f/11";
+          } else if (low.includes('portrait') || low.includes('man') || low.includes('woman')) {
+            camera = "Shot on Canon EOS R5, 85mm f/1.2L II USM"; 
+            lighting = "soft-box studio lighting, sharp eye focus";
+          }
+
+          const realismTokens = "hyper-realistic 32k, zero digital artifacts, authentic micro-textures";
+          const physicsTokens = "physically based rendering (PBR), subsurface scattering, volumetric path-traced lighting";
+          const aiRenderTokens = "Unreal Engine 5.4, Octane Render, ray-traced reflections";
+          const hasDetails = customerPrompt.length > 40;
+
+          const roast = `[V8 ENGINE CORE ANALYSIS]\n\n# THE REPORT\n✅ Subject: ${customerPrompt.split(' ')[0].toUpperCase()}\n${hasDetails ? '✅ Detail density detected' : '❌ Low detail density'}\n❌ Missing Optics (EXIF Data)\n❌ Physics & AI_Render tokens missing\n\n# THE 10X SOLUTION\nDeploying high-end gear & physics protocols:\n- ${camera}\n- ${lighting}\n- ${physicsTokens}\n- ${aiRenderTokens}`;
+          
+          const enhanced = `${customerPrompt.trim()}, ${camera}, ${lighting}, ${realismTokens}, ${physicsTokens}, ${aiRenderTokens}, IMG_1984.CR2, stills archive --ar ${selectedAR.replace(':', '/')} --v 6.0`;
+          
+          std.single = `${roast}\n\n# 10X ENHANCED PROMPT\n${enhanced}`;
         }
-        if (std.abstract) {
-          std.abstract += ", abstract surrealism, fluid dynamics, sacred geometry, fractal patterns, vivid psychedelic colors, flowing organic forms, highly detailed 3D conceptual art, Octane Render, Unreal Engine 5, mind-bending masterpiece";
-        }
-        if (std.photoreal) {
-          std.photoreal += ", raw unedited photography, shot on Hasselblad H6D-100c medium format, 85mm f/1.2 lens, natural ambient lighting, authentic micro-details, subsurface scattering, ultra-sharp focus, 8k resolution, true-to-life physics, zero CGI artifacts, award-winning National Geographic photography";
-        }
-        if (std.uniquePhoto) {
-          std.uniquePhoto += ", a once-in-a-lifetime serendipitous masterpiece, the most unique and breathtaking photograph ever captured, shot on a custom gigapixel Phase One XF IQ4 150MP camera, Zeiss Master Prime optics, flawless hyper-tactile micro-textures, pore-level biological accuracy, absolute quantum-level physical lighting, infinite depth of field, 32k resolution uncompressed RAW, defying human imagination, National Geographic undisputed photograph of the century, mind-bending conceptual execution, flawlessly authentic, zero digital artifacts, hyper-maximalist visual perfection";
-        }
-        // ====================================================================
+
+        const box1Meta = getDynamicMeta(demoInput || customerPrompt);
+        if (std.cinematic) std.cinematic += `, ${box1Meta}, cinematic movie still, 8k`;
+        if (std.abstract) std.abstract += `, surreal fluid art, vivid masterpiece`;
+        if (std.photoreal) std.photoreal += `, ${box1Meta}, raw photography, 16k`;
+        if (std.uniquePhoto) std.uniquePhoto += `, one-in-a-billion masterpiece, ${box1Meta}`;
 
         setGeneratedPrompts(std); 
-      } catch (err) {} finally { setIsEnhancing(false); } 
-    }, 1200);
+      } catch (err) {} finally { 
+        setIsEnhancing(false); 
+        setIsScanning(false); 
+      } 
+    }, 2000); 
   };
 
-  const handleCopy = (text, boxName) => { navigator.clipboard.writeText(text); setCopiedBox(boxName); setTimeout(() => setCopiedBox(''), 2000); };
+  const handleCopy = (text, boxName) => { 
+    let textToCopy = text;
+    if (boxName === 'single' && text.includes('# 10X ENHANCED PROMPT')) {
+      textToCopy = text.split('# 10X ENHANCED PROMPT')[1].trim();
+    }
+    navigator.clipboard.writeText(textToCopy); 
+    setCopiedBox(boxName); 
+    setTimeout(() => setCopiedBox(''), 2000); 
+  };
   
   return (
     <div className="pt-32 pb-24 px-6 max-w-7xl mx-auto font-sans text-left text-white min-h-screen">
+      <style>{`
+        @keyframes scanLine {
+          0% { top: 0%; opacity: 0; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { top: 100%; opacity: 0; }
+        }
+        .animate-scan {
+          position: absolute;
+          left: 0;
+          width: 100%;
+          height: 3px;
+          background: #facc15;
+          box-shadow: 0 0 15px #facc15, 0 0 30px #facc15;
+          z-index: 50;
+          animation: scanLine 2s linear infinite;
+        }
+      `}</style>
       <Helmet><title>10X ENHANCER | AI TOOLS PRO SMART</title></Helmet>
       <div className="mb-10"><Link to="/" className="text-zinc-400 hover:text-white flex items-center gap-2 uppercase text-[10px] font-black tracking-widest transition-all"><ChevronLeft className="w-4 h-4" /> System Registry</Link></div>
       <div className="bg-[#0a0a0a] border border-orange-500/20 rounded-[2.5rem] p-12 md:p-20 shadow-2xl relative overflow-hidden flex flex-col group hover:border-orange-500/40 transition-all">
-         <div className="mb-12 text-left w-full"><h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-orange-500 mb-4">10x Prompt Enhancer</h2><div className="text-[13px] md:text-[15px] font-black text-green-500 uppercase tracking-[0.2em]">Premium tool worth $100/month. Currently free.</div></div>
+         <div className="mb-12 text-left w-full"><h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-orange-600 mb-4">10X PROMPT ENHANCER</h2><div className="text-[13px] md:text-[15px] font-black text-green-500 uppercase tracking-[0.2em]">Premium tool worth $100/month. Currently free.</div></div>
          <div className="flex flex-col lg:flex-row gap-12 w-full items-stretch">
            <div className="flex-1 w-full lg:max-w-md flex flex-col justify-start space-y-8 text-left">
              <div className="w-full">
@@ -252,10 +326,18 @@ function EnhancerPage() {
                <div className="relative mb-6">
                  <textarea value={demoInput} onChange={e => {setDemoInput(e.target.value); setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' });}} placeholder="e.g. 'a golden watch'" disabled={customerPrompt.length > 0} className="w-full bg-black border border-white/10 rounded-xl pl-4 pr-12 py-6 text-white text-[16px] md:text-[18px] font-medium leading-relaxed outline-none focus:border-blue-500/50 transition-all shadow-inner resize-none min-h-[150px]" />
                  {!demoInput && customerPrompt.length === 0 && (<button type="button" onClick={handleRollDice} disabled={isRolling} className="absolute right-3 top-4 bg-blue-600/10 p-2 rounded-lg group hover:bg-blue-600 transition-all cursor-pointer z-10"><Dices className={`w-5 h-5 text-blue-500 group-hover:text-white ${isRolling ? 'animate-spin' : ''}`} /></button>)}
-                 {demoInput && (<button type="button" onClick={() => setDemoInput('')} className="absolute right-3 top-4 bg-red-600/10 p-2 rounded-lg group hover:bg-red-600 transition-all cursor-pointer z-10"><X className="w-5 h-5 text-red-500 group-hover:text-white" /></button>)}
+                 {demoInput && (<button type="button" onClick={handleClearAll} className="absolute right-3 top-4 bg-red-600/10 p-2 rounded-lg group hover:bg-red-600 transition-all cursor-pointer z-10"><X className="w-5 h-5 text-red-500 group-hover:text-white" /></button>)}
                </div>
                <label className="text-[12px] font-black uppercase text-orange-500 tracking-widest block mb-4 ml-2">2. Paste Customer Prompt</label>
-               <div className="relative mb-8"><textarea value={customerPrompt} onChange={e => {setCustomerPrompt(e.target.value); setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' });}} placeholder="WE'RE WORKING ON SOMETHING AMAZING" disabled={demoInput.length > 0} className="w-full bg-black border border-white/10 rounded-xl p-5 text-white text-[11px] outline-none focus:border-blue-500/50 transition-all shadow-inner resize-none min-h-[160px]" /></div>
+               <div className="relative mb-8 overflow-hidden rounded-xl border border-white/10">
+                 {isScanning && <div className="animate-scan" />}
+                 <textarea value={customerPrompt} onChange={e => {setCustomerPrompt(e.target.value); setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' });}} placeholder="PASTE YOUR RAW PROMPT HERE" disabled={demoInput.length > 0} className="w-full bg-black p-5 text-white text-[11px] outline-none focus:border-blue-500/50 transition-all shadow-inner resize-none min-h-[160px]" />
+                 {customerPrompt && (
+                   <button type="button" onClick={handleClearAll} className="absolute right-3 top-4 bg-red-600/10 p-2 rounded-lg group hover:bg-red-600 transition-all cursor-pointer z-10">
+                     <X className="w-5 h-5 text-red-500 group-hover:text-white" />
+                   </button>
+                 )}
+               </div>
                <div className="flex justify-between items-center my-10 px-1">
                   <div className="flex flex-col gap-3"><span className="text-[12px] font-black uppercase text-zinc-100 tracking-widest"><b>ASPECT RATIO</b></span><div className="flex gap-2">{['1:1', '9:16', '16:9', '21:9'].map(ar => <OptionButton key={ar} label={ar} selected={selectedAR === ar} onClick={() => setSelectedAR(ar)} type="ar" />)}</div></div>
                   <div className="flex flex-col gap-3 items-end"><span className="text-[12px] font-black uppercase text-zinc-100 tracking-widest"><b>QUALITY</b></span><div className="flex gap-2">{['1x', '2x', '4x'].map(q => <OptionButton key={q} label={q} selected={selectedQuality === q} onClick={() => setSelectedQuality(q)} type="quality" />)}</div></div>
@@ -268,8 +350,10 @@ function EnhancerPage() {
              {customerPrompt.length > 0 || (!demoInput && !customerPrompt) ? (
                  <div className="w-full bg-black border border-white/5 rounded-2xl p-8 pb-20 relative flex flex-col items-start shadow-inner h-full min-h-[600px]">
                    {generatedPrompts.single && <div className="text-green-500 font-black text-[11px] uppercase tracking-[0.2em] mb-6 border-b border-green-500/20 pb-4 w-full text-left">Premium Matrix Output</div>}
-                   <p className="w-full font-mono text-[11px] md:text-[13px] leading-relaxed text-left flex-1 flex items-center justify-center text-zinc-200">{generatedPrompts.single ? <TypewriterText text={generatedPrompts.single} speed={10} /> : "AWAITING CORE INPUT..."}</p>
-                   {generatedPrompts.single && <button type="button" onClick={() => handleCopy(generatedPrompts.single, 'single')} className="absolute bottom-6 right-6 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all bg-white/10 text-white hover:bg-white/20">{copiedBox === 'single' ? "Copied! ✓" : "Copy Prompt"}</button>}
+                   <div className="w-full font-mono text-[11px] md:text-[13px] leading-relaxed text-left flex-1 text-zinc-200 whitespace-pre-wrap">
+                      {generatedPrompts.single ? <TypewriterText text={generatedPrompts.single} speed={10} /> : "AWAITING CORE INPUT..."}
+                   </div>
+                   {generatedPrompts.single && <button type="button" onClick={() => handleCopy(generatedPrompts.single, 'single')} className="absolute bottom-6 right-6 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all bg-white/10 text-white hover:bg-white/20">{copiedBox === 'single' ? "Copied! ✓" : "Copy 10X Prompt"}</button>}
                  </div>
              ) : (
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full h-full text-left">
@@ -285,9 +369,6 @@ function EnhancerPage() {
   );
 }
 
-// ============================================================================
-// HOME PAGE (PUNI DIZAJN)
-// ============================================================================
 function HomePage({ apps = [] }) {
   const [activeSlide, setActiveSlide] = useState(0); 
   const [liveVideos, setLiveVideos] = useState([]); 
@@ -342,7 +423,7 @@ function HomePage({ apps = [] }) {
         {isLoadingVideos ? <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24">{[...Array(4)].map((_, i) => <div key={i} className="p-[1px] bg-gradient-to-br from-zinc-800 to-zinc-900 rounded-[2.5rem] flex flex-col h-full shadow-xl animate-pulse"><div className="bg-[#0a0a0a] rounded-[2.4rem] p-6 flex flex-col h-full"><div className="aspect-video relative overflow-hidden rounded-3xl mb-6 bg-zinc-800/50 border-2 border-zinc-800/50" /><div className="h-4 bg-zinc-800/50 rounded w-3/4 mb-2" /><div className="h-4 bg-zinc-800/50 rounded w-1/2 mb-4" /><div className="h-3 bg-zinc-800/50 rounded w-1/3 mt-auto" /></div></div>)}</div> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24">{liveVideos.map((vid, i) => <data.TutorialCard key={i} vid={vid} />)}</div>}
         <div id="enhancer" className="mb-24 flex flex-col items-center justify-center text-center py-20 border-y border-orange-500/30 scroll-mt-32">
           <div className="bg-orange-600/10 p-4 rounded-full mb-6"><Zap className="w-12 h-12 text-orange-500 drop-shadow-[0_0_15px_rgba(249,115,22,0.6)]" strokeWidth={1.5} /></div>
-          <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-white mb-4">10X PROMPT ENHANCER</h2>
+          <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-orange-600 mb-4 drop-shadow-[0_0_15px_rgba(234,88,12,0.4)]">10X PROMPT ENHANCER</h2>
           <div className="text-[13px] md:text-[15px] font-black text-green-500 uppercase tracking-[0.2em] mb-8">Premium tool worth $100/month. Currently free.</div>
           <p className="text-zinc-400 text-[10px] md:text-[12px] max-w-2xl font-medium uppercase tracking-[0.2em] leading-relaxed mb-10 mx-auto">ACCESS THE PREMIUM AI PROMPT ENGINEERING ENGINE. CONVERT SIMPLE IDEAS INTO MASTERPIECES.<br /><br /><span className="text-orange-500 font-black uppercase">ENTER YOUR PROMPT; WE WILL ANALYZE IT IN DETAIL AND ENHANCE IT TO BE 10X BETTER.</span></p>
           <Link to="/enxance" className="bg-[#ea580c] hover:bg-orange-500 text-white px-10 py-4 rounded-xl font-black text-[12px] uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(234,88,12,0.4)] transition-all">LAUNCH ENGINE</Link>
@@ -357,9 +438,6 @@ function HomePage({ apps = [] }) {
   );
 }
 
-// ============================================================================
-// SINGLE PRODUCT PAGE (PUNI DIZAJN)
-// ============================================================================
 function SingleProductPage({ apps = [] }) {
   const { id } = useParams(); const app = apps.find(a => a.id === id); const [activeMedia, setActiveMedia] = useState(0); const [fullScreenImage, setFullScreenImage] = useState(null); const mainVideoRef = useRef(null); const navigate = useNavigate();
   useEffect(() => { window.scrollTo(0, 0); }, [id]);
@@ -460,7 +538,6 @@ function SingleProductPage({ apps = [] }) {
               </div>
               <a href={data.formatExternalLink(sysData.w || parts[0])} target="_blank" rel="noreferrer" className="w-full py-5 rounded-2xl flex items-center justify-center bg-blue-600 text-white font-black text-[13px] uppercase tracking-widest hover:bg-blue-500 transition-all shadow-xl">Unlock On Whop</a>
               
-              {/* DEV PACK SEKCIJA (REACT SOURCE CODE) */}
               <div className="pt-6 border-t border-white/5 mt-6">
                 <div className="flex items-center justify-center gap-2 mb-4 text-orange-500">
                   <Award className="w-5 h-5" />
@@ -538,10 +615,41 @@ function AppContent({ appsData, refreshData }) {
     <div className="min-h-screen bg-[#050505] text-zinc-100 flex flex-col font-sans relative pb-20 lg:pb-0 text-left">
       {isBooting && <FullScreenBoot onComplete={() => { setIsBooting(false); setShowBanner(true); window.scrollTo(0,0); }} />}
       {!isBooting && showBanner && <WelcomeBanner onClose={() => setShowBanner(false)} />}
-      <div className="fixed top-0 left-0 w-full z-[1000]"><nav className="w-full px-4 md:px-8 py-3 md:py-4 bg-[#050505]/80 backdrop-blur-xl border-b border-orange-500/20 shadow-lg"><div className="max-w-7xl mx-auto flex justify-between items-center px-2"><Link to="/" onClick={handleHomeClick} className="flex items-center gap-4 group"><img src={data.logoUrl} className="h-8 md:h-10 object-contain animate-pulse" alt="logo" /><span className="text-[10px] md:text-[12px] font-black uppercase tracking-[0.4em] hidden sm:block"><span className="text-blue-500">AI TOOLS</span> <span className="text-orange-500">PRO SMART</span></span></Link><div className="flex items-center gap-3 md:gap-4 font-black uppercase text-[10px] md:text-[11px] tracking-widest"><Link to="/#marketplace" className="bg-blue-600 px-4 md:px-5 py-1.5 md:py-2 rounded-full text-white shadow-xl hover:bg-blue-500 transition-all">Marketplace</Link>{location.pathname !== '/enxance' && (<Link to="/enxance" className="bg-transparent border-2 border-orange-600 text-orange-600 px-4 md:px-5 py-1.5 md:py-2 rounded-full shadow-xl hover:bg-orange-600/10 transition-all flex items-center gap-1.5"><Zap className="w-3.5 h-3.5" /> 10X ENHANCER</Link>)}<Link to="/" onClick={handleHomeClick} className="bg-emerald-900/60 px-4 md:px-5 py-1.5 md:py-2 rounded-full text-emerald-400 border border-emerald-800 shadow-xl">Home</Link><Link to="/admin" className="bg-orange-600 px-4 md:px-5 py-1.5 md:py-2 rounded-full text-white shadow-xl">Admin</Link></div></div></nav></div>
+      <div className="fixed top-0 left-0 w-full z-[1000]">
+        <nav className="w-full px-4 md:px-8 py-3 md:py-4 bg-[#050505]/80 backdrop-blur-xl border-b border-orange-500/20 shadow-lg">
+          <div className="max-w-7xl mx-auto flex justify-between items-center px-2">
+            <Link to="/" onClick={handleHomeClick} className="flex items-center gap-4 group">
+              <img src={data.logoUrl} className="h-8 md:h-10 object-contain animate-pulse" alt="logo" />
+              <span className="text-[10px] md:text-[12px] font-black uppercase tracking-[0.4em] hidden sm:block"><span className="text-blue-500">AI TOOLS</span> <span className="text-orange-500">PRO SMART</span></span>
+            </Link>
+            <div className="flex items-center gap-3 md:gap-4 font-black uppercase text-[10px] md:text-[11px] tracking-widest">
+              <Link to="/#marketplace" className="bg-blue-600 px-4 md:px-5 py-1.5 md:py-2 rounded-full text-white shadow-xl hover:bg-blue-500 transition-all">Marketplace</Link>
+              {location.pathname !== '/enxance' && (<Link to="/enxance" className="bg-transparent border-2 border-orange-600 text-orange-600 px-4 md:px-5 py-1.5 md:py-2 rounded-full shadow-xl hover:bg-orange-600/10 transition-all flex items-center gap-1.5"><Zap className="w-3.5 h-3.5" /> 10X ENHANCER</Link>)}
+              <Link to="/" onClick={handleHomeClick} className="bg-emerald-900/60 px-4 md:px-5 py-1.5 md:py-2 rounded-full text-emerald-400 border border-emerald-800 shadow-xl">Home</Link>
+              <Link to="/admin" className="bg-orange-600 px-4 md:px-5 py-1.5 md:py-2 rounded-full text-white shadow-xl">Admin</Link>
+            </div>
+          </div>
+        </nav>
+      </div>
       <div className="flex-1 text-left pt-20"><Routes><Route path="/" element={<HomePage apps={appsData} />} /><Route path="/enxance" element={<EnhancerPage />} /><Route path="/app/:id" element={<SingleProductPage apps={appsData} />} /><Route path="/admin" element={<AdminPage apps={appsData} refreshData={refreshData} />} /></Routes></div>
       <SmartScrollButton />
-      <footer className="flex flex-col items-center gap-4 text-center text-zinc-100 font-black italic uppercase text-[9px] tracking-[0.5em] py-6 mt-8" style={{ borderTop: '0.5px solid #f97316' }}><div className="flex items-center gap-6"><a href="#" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100 transition-opacity"><svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.045 4.126H5.078z"/></svg></a><a href="https://www.youtube.com/@SmartAiToolsPro-Smart-AI" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100 transition-opacity"><Youtube size={20} className="text-[#FF0000]" /></a><a href="#" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100 transition-opacity"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram" className="h-4 w-4 object-contain" /></a><a href="#" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100 transition-opacity"><img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" alt="TikTok" className="h-4 w-4 object-contain" /></a></div><div>© 2026 <span className="text-blue-500 font-black">AI TOOLS</span> <span className="text-orange-500 font-black">PRO SMART</span> <span className="mx-1 text-white font-black">|</span> ALL RIGHTS RESERVED</div></footer>
+      <footer className="flex flex-col items-center gap-4 text-center text-zinc-100 font-black italic uppercase text-[9px] tracking-[0.5em] py-6 mt-8" style={{ borderTop: '0.5px solid #f97316' }}>
+        <div className="flex items-center gap-6">
+          <a href="https://x.com/AiToolsProSmart" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100 transition-opacity">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.045 4.126H5.078z"/></svg>
+          </a>
+          <a href="https://www.youtube.com/@SmartAiToolsPro-Smart-AI" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100 transition-opacity">
+            <Youtube size={20} className="text-[#FF0000]" />
+          </a>
+          <a href="https://www.instagram.com/aitoolsprosmart/" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100 transition-opacity">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram" className="h-4 w-4 object-contain" />
+          </a>
+          <a href="https://www.tiktok.com/@smartaitoolspro" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100 transition-opacity">
+            <img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" alt="TikTok" className="h-4 w-4 object-contain" />
+          </a>
+        </div>
+        <div>© 2026 <span className="text-blue-500 font-black">AI TOOLS</span> <span className="text-orange-500 font-black">PRO SMART</span> <span className="mx-1 text-white font-black">|</span> ALL RIGHTS RESERVED</div>
+      </footer>
     </div>
   );
 }
