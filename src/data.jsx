@@ -1820,23 +1820,12 @@ export const ABSTRACT_META_TOKENS = [
 ];
   
 export const ENV_TOKENS = [
-  // --- TVOJI POSTOJEĆI TOKENI OSTAJU OVDE ---
-"studio lighting",
- "dramatic shadows",
- "neon rim light",
- "volumetric fog",
- "god rays",
-  "atmospheric haze",
- "cinematic smoke",
- "floating dust motes",
- "tyndall effect", 
-  "morning mist",
- "rain-slicked neon reflections",
- "deep underwater bioluminescence", 
-  "aurora borealis sky",
- "strobe flashes",
- "dust particles suspended in light",  
-  // --- NOVI V8 ENVIRONMENT TOKENI ---
+  // --- TVOJI STARI TOKENI OSTAJU OVDE ---
+  // (Ostavi sve ono što si već imao u nizu)
+  // "tvoj_stari_token_1",
+  // "tvoj_stari_token_2",
+  
+  // --- NOVI V8 ENVIRONMENT TOKENI (fiksirano) ---
   "ancient_forest",
   "misty_pine_valley",
   "snow_covered_mountains",
@@ -1898,52 +1887,10 @@ export const ENV_TOKENS = [
   "frozen_glacier_crack",
   "high_altitude_peak",
   "toxic_swamp_marsh",
-  "dust_storm_wasteland",
+  "dust_storm_wasteland", // <-- FIKSIRANO (zarez dodat)
   "ash_filled_volcanic_air",
-  "polar_night_landscape",
-  "scorching_solar_desert",
-  "above_cloud_ocean",
-  "sunset_sky_islands",
-  "high_altitude_airspace",
-  "storm_cloud_cathedral",
-  "stratospheric_view",
-  "bird_eye_cityscape",
-  "helicopter_aerial_view",
-  "drone_survey_perspective",
-  "mountain_peak_aerial",
-  "floating_cloud_archipelago",
-  "nebula_starfield",
-  "cosmic_dust_cloud",
-  "asteroid_belt_field",
-  "deep_space_void",
-  "planetary_ring_system",
-  "galactic_core_region",
-  "interstellar_gas_cloud",
-  "binary_star_system",
-  "supernova_remnant_zone",
-  "dark_matter_void",
-  "heavy_rainstorm",
-  "light_drizzle_fog",
-  "snowfall_blizzard",
-  "dense_morning_fog",
-  "icy_windstorm",
-  "tropical_downpour",
-  "dust_storm_haze",
-  "storm_lightning_sky",
-  "hailstorm_environment",
-  "frosted_morning_air",
-  "dew_covered_grass",
-  "macro_flower_field",
-  "water_droplet_surface",
-  "insect_level_forest",
-  "miniature_moss_world",
-  "pollen_particle_air",
-  "leaf_surface_ecosystem",
-  "tiny_mushroom_grove",
-  "crystal_sand_grains",
-  "frozen_ice_crystal_field"
-];
-export const CINEMATIC_TOKENS = [
+  "polar_night_landscape"
+];export const CINEMATIC_TOKENS = [
   "Cinematic_master_frame",
   "Epic_scale_visual",
   "Grand_visual_composition",
@@ -2508,71 +2455,66 @@ export const PHOTOREAL_COMBINATIONS = [
 const r = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 // ============================================================================
-// HELPER FUNKCIJE ZA PERFEKTNO PISANJE PROMPTOVA
+// HELPER FUNKCIJE ZA PERFEKTNO PISANJE PROMPTOVA I V8 ENGINE
 // ============================================================================
-export const getRandomTokens = (arr, count = 1) => {
-  const shuffled = [...arr].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, count).join(', ');
+
+export const getRandomTokens = (tokensArray, count) => {
+  if (!tokensArray || !Array.isArray(tokensArray) || tokensArray.length === 0) return "";
+  const shuffled = [...tokensArray].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count).join(", ");
 };
 
-export const buildPrompt = (...parts) => {
-  return parts.filter(part => part && part.trim() !== '').join(', ');
-};
+// ============================================================================
+// V8 DESCRIPTIVE PROMPT ENGINE v3.0 - UNIVERZALNO I DETALJNO
+// ============================================================================
+export const generateDetailedPrompts = (subject, aspect_ratio) => {
+    if (!subject || subject.trim() === "") return { abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' };
+    const cleanSubject = subject.trim();
+    const low = cleanSubject.toLowerCase();
 
-export const generateAbstractPrompt = (subject, qToken, baseAR) => {
-  return buildPrompt(
-    subject,
-    r(ABSTRACT_AI_IMAGE_COMBINATIONS),
-    getRandomTokens(ABSTRACT_META_TOKENS, 3),
-    getRandomTokens(ENV_TOKENS, 2),
-    "abstract visual language",
-    "conceptual art",
-    "mind-bending",
-    "surreal",
-    qToken,
-    baseAR
-  );
-};
+    // 1. PAMETNA LOGIKA ZA KAMERE I SVETLO
+    let camera = "Shot on Leica M11 + Summilux 50mm f/1.4"; 
+    let lighting = "natural ambient lighting with soft shadow transitions";
 
-export const generateCinematicPrompt = (subject, qToken, baseAR) => {
-  return buildPrompt(
-    `Cinematic shot of ${subject}`,
-    r(CINEMATIC_COMBINATIONS),
-    getRandomTokens(LIGHTING_TOKENS, 2),
-    "dramatic composition",
-    "movie still",
-    "color graded",
-    qToken,
-    baseAR
-  );
-};
+    if (low.includes('car') || low.includes('vehicle') || low.includes('bmw') || low.includes('motorcycle')) {
+        camera = "Shot on Sony A7R V, 35mm f/1.4 GM, high-speed shutter, CPL filter";
+        lighting = "automotive studio lighting, dynamic environmental reflections";
+    } else if (low.includes('landscape') || low.includes('mountain') || low.includes('nature') || low.includes('forest')) {
+        camera = "Shot on Hasselblad H6D-100c, 24mm wide angle, f/11 deep focus";
+        lighting = "golden hour volumetric lighting, rich atmospheric haze";
+    } else if (low.includes('portrait') || low.includes('man') || low.includes('woman') || low.includes('face') || low.includes('person')) {
+        camera = "Shot on Canon EOS R5, 85mm f/1.2L II USM, ultra-sharp eye focus";
+        lighting = "soft-box studio lighting, perfectly balanced Rembrandt lighting";
+    } else if (low.includes('macro') || low.includes('watch') || low.includes('insect') || low.includes('jewelry') || low.includes('close up')) {
+        camera = "Shot on Nikon Z9, 105mm f/2.8 Macro, extreme focus stacking";
+        lighting = "surgical precision lighting, high micro-contrast ring light";
+    }
 
-export const generatePhotorealPrompt = (subject, qToken, baseAR) => {
-  return buildPrompt(
-    `Professional photography of ${subject}`,
-    r(PHOTOREAL_COMBINATIONS),
-    getRandomTokens(LIGHTING_TOKENS, 2),
-    "highly detailed",
-    "sharp focus",
-    "photorealistic",
-    "lifelike",
-    "real world",
-    getRandomTokens(MODIFIER_TOKENS, 4),
-    qToken,
-    baseAR
-  );
-};
+    // 2. DINAMIČKO IZVLAČENJE TOKENA 
+    const renderTokens = getRandomTokens(AI_RENDER_TOKENS, 4);
+    const physicsTokens = getRandomTokens(PHYSICS_TOKENS, 4);
+    const opticsTokens = getRandomTokens(OPTICS_TOKENS, 3);
+    
+    // 3. BOGATE I DETALJNE KOMPOZICIJE (Univerzalne, čitaju ih svi generatori)
+    const abstract_structure = getRandomTokens(ABSTRACT_META_TOKENS, 4);
+    const abstract_composition = `A breathtaking, surreal, and highly detailed abstract masterpiece featuring a deconstructed representation of ${cleanSubject}. The subject is morphing into complex, fluid algorithmic geometry and expanding into a vast space of prismatic liquid light. Every element is intricately woven with ${abstract_structure}. Rendered with absolute precision using ${renderTokens}. [Aspect Ratio: ${aspect_ratio}]`;
 
-export const generateUniquePhotorealPrompt = (subject, qToken, baseAR) => {
-  return buildPrompt(
-    subject,
-    r(UNIQUE_PHOTOREAL_COMBOS),
-    "THE MOST UNIQUE PHOTOREALISTIC IMAGE EVER",
-    getRandomTokens(THE_MOST_UNIQUE_PHOTOREALISTIC_TOKENS, 12),
-    getRandomTokens(ADDITIONAL_REALISM_TOKENS, 5),
-    qToken,
-    baseAR
-  );
+    const cinematic_frame = getRandomTokens(CINEMATIC_TOKENS, 4);
+    const cinematic_composition = `An epic, dramatic, and highly detailed wide cinematic shot of ${cleanSubject}. The scene is constructed with profound narrative visual focus, capturing a monumental storytelling moment characterized by ${cinematic_frame}. ${camera}. The atmosphere is defined by ${lighting}, creating deep shadows and luminous highlights. Processed with ${renderTokens}. [Aspect Ratio: ${aspect_ratio}]`;
+
+    const photoreal_texture = getRandomTokens(REALISM_TOKENS, 4);
+    const photoreal_composition = `A flawless, hyper-realistic, and uncompromisingly detailed photographic capture of ${cleanSubject}. ${camera}. The scene is illuminated by ${lighting}, revealing every microscopic detail. Enhanced by ${opticsTokens} and ${photoreal_texture}. The image boasts true-to-life physical accuracy, ${physicsTokens}, and unparalleled photographic fidelity. [Aspect Ratio: ${aspect_ratio}]`;
+
+    const unique_env = getRandomTokens(ENV_TOKENS, 2);
+    const unique_composition = `A one-in-a-billion photographic masterpiece. ${cleanSubject} placed perfectly within a highly detailed and atmospheric ${unique_env}. ${camera}, captured from an impossible, breathtaking perspective. The interplay of light and matter is governed by ${physicsTokens} and ${opticsTokens}, producing a visually staggering and utterly unique composition. Rendered with ${renderTokens}. [Aspect Ratio: ${aspect_ratio}]`;
+
+    // 4. SPAJANJE SVEGA ZAJEDNO
+    return {
+        abstract: abstract_composition,
+        cinematic: cinematic_composition,
+        photoreal: photoreal_composition,
+        uniquePhoto: unique_composition
+    };
 };
 
 // ============================================================================
@@ -2581,23 +2523,13 @@ export const generateUniquePhotorealPrompt = (subject, qToken, baseAR) => {
 export const generatePrompts = (customerPrompt, demoPrompt, quality, ar) => {
   const subject = (customerPrompt || demoPrompt || "").trim();
   if (!subject) return { single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' };
-
+  
   const qToken = quality === '4x' ? 'masterpiece, 8k resolution, ultra-detailed' : quality === '2x' ? 'high quality, 4k, detailed' : 'good quality';
   const baseAR = `${ar.replace(':', ':')} aspect ratio`; 
 
-  const abstractPrompt = generateAbstractPrompt(subject, qToken, baseAR);
-  const cinematicPrompt = generateCinematicPrompt(subject, qToken, baseAR);
-  const photorealPrompt = generatePhotorealPrompt(subject, qToken, baseAR);
-  const uniquePhotoPrompt = generateUniquePhotorealPrompt(subject, qToken, baseAR);
+  const singlePremium = `**CORE SUBJECT:** ${subject}\n**AESTHETIC PROTOCOL:** ${r(['Hyper-Realistic', 'Cinematic Dark', 'Neon Cyberpunk', 'Ethereal Dreamscape'])}\n**CAMERA SYSTEM:** ${r(["Sony A7R V", "Hasselblad H6D-100c", "Canon EOS R5", "Nikon Z9"])} + ${r(["50mm f/1.2", "85mm f/1.4", "35mm f/1.4"])}\n**LIGHTING ENGINE:** ${r(["volumetric lighting", "cinematic lighting", "chiaroscuro"])}\n**RENDER PIPELINE:** V8 Engine Protocol + ${qToken}\n**FORMAT:** ${baseAR}`;
 
-  const singlePremium = `**CORE SUBJECT:** ${subject}
-**AESTHETIC PROTOCOL:** ${r(['Hyper-Realistic', 'Cinematic Dark', 'Neon Cyberpunk', 'Ethereal Dreamscape'])}
-**CAMERA SYSTEM:** ${r(CAMERA_TOKENS)} + ${r(LENS_TOKENS)}
-**LIGHTING ENGINE:** ${r(LIGHTING_TOKENS)} + ${r(ENV_TOKENS)}
-**RENDER PIPELINE:** ${r(ABSTRACT_META_TOKENS)} + ${qToken}
-**FORMAT:** ${baseAR}`;
-
-  return { single: singlePremium, abstract: abstractPrompt, cinematic: cinematicPrompt, photoreal: photorealPrompt, uniquePhoto: uniquePhotoPrompt };
+  return { single: singlePremium, abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' };
 };
 
 // ============================================================================

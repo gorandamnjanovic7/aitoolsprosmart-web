@@ -121,40 +121,40 @@ const WelcomeBanner = ({ onClose }) => (
 const OptionButton = ({ label, selected, onClick, type }) => {
   const isQuality = type === 'quality';
   const activeClass = isQuality ? "bg-orange-600 border-orange-500 text-white shadow-[0_0_10px_rgba(249,115,22,0.4)]" : "bg-blue-600 border-blue-500 text-white shadow-[0_0_10px_rgba(37,99,235,0.4)]";
-  return <button type="button" onClick={onClick} className={`px-4 py-2 rounded-lg text-[9px] font-black border transition-all ${selected ? activeClass : "bg-black border-white/10 text-zinc-500 hover:border-white/20"}`}>{label}</button>;
+  return <button type="button" onClick={onClick} className={`px-4 py-2 rounded-lg text-[9px] font-black border transition-all ${selected ? activeClass : "bg-black border-white/10 text-zinc-500 hover:border-white/20 hover:text-white"}`}>{label}</button>;
 };
 
 const PromptResultBox = ({ type, text, copiedBox, onCopy }) => {
   let title = type.toUpperCase();
   let icon = null;
-  let containerClass = "w-full bg-black/40 border rounded-2xl p-6 pb-16 relative flex flex-col min-h-[300px] transition-all ";
-  let labelClass = "text-[10px] md:text-[11px] font-black uppercase tracking-widest mb-4 border-b pb-3 flex items-center ";
-  let buttonClass = "absolute bottom-4 right-4 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg ";
+  let containerClass = "w-full bg-[#0a0a0a]/40 backdrop-blur-xl border rounded-2xl p-6 pb-20 relative flex flex-col h-full min-h-[250px] transition-all duration-500 hover:-translate-y-1 group ";
+  let labelClass = "text-[10px] md:text-[11px] font-black uppercase tracking-widest mb-4 border-b pb-3 flex items-center transition-colors duration-500 ";
+  let buttonClass = "absolute bottom-6 right-6 px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 shadow-lg ";
 
   if (type === 'uniquePhoto') {
     title = 'THE MOST UNIQUE PHOTOREALISTIC IMAGE EVER';
-    icon = <Zap className="w-4 h-4 mr-2 text-amber-500" />;
-    containerClass += "border-amber-400/30 shadow-[0_0_20px_rgba(249,115,22,0.2)]";
-    labelClass += "text-amber-400 border-amber-400/20";
-    buttonClass += "bg-gradient-to-r from-amber-600 to-orange-600 text-black hover:shadow-[0_0_15px_rgba(249,115,22,0.5)]";
+    icon = <Zap className="w-4 h-4 mr-2 text-amber-500 group-hover:animate-pulse" />;
+    containerClass += "border-amber-400/30 shadow-[0_0_20px_rgba(249,115,22,0.1)] hover:shadow-[0_10px_30px_rgba(249,115,22,0.25)] hover:border-amber-400/60";
+    labelClass += "text-amber-400 border-amber-400/20 group-hover:border-amber-400/50";
+    buttonClass += "bg-gradient-to-r from-amber-600 to-orange-600 text-black hover:shadow-[0_0_20px_rgba(249,115,22,0.6)] hover:scale-105";
   } else if (type === 'abstract') {
     title = 'ULTIMATE MIND-BENDING ABSTRACT MASTERPIECE';
-    icon = <Sparkles className="w-4 h-4 mr-2 text-purple-400" />;
-    containerClass += "border-purple-500/30 shadow-[0_0_20px_rgba(147,51,234,0.2)]";
-    labelClass += "text-purple-400 border-purple-500/20";
-    buttonClass += "bg-gradient-to-r from-purple-700 to-purple-500 text-white hover:shadow-[0_0_15px_rgba(147,51,234,0.5)]";
+    icon = <Sparkles className="w-4 h-4 mr-2 text-purple-400 group-hover:animate-pulse" />;
+    containerClass += "border-purple-500/30 shadow-[0_0_20px_rgba(147,51,234,0.1)] hover:shadow-[0_10px_30px_rgba(147,51,234,0.25)] hover:border-purple-500/60";
+    labelClass += "text-purple-400 border-purple-500/20 group-hover:border-purple-500/50";
+    buttonClass += "bg-gradient-to-r from-purple-700 to-purple-500 text-white hover:shadow-[0_0_20px_rgba(147,51,234,0.6)] hover:scale-105";
   } else if (type === 'cinematic') {
     title = 'EPIC HOLLYWOOD CINEMATIC BLOCKBUSTER SHOT';
-    icon = <PlayCircle className="w-4 h-4 mr-2 text-blue-400" />;
-    containerClass += "border-blue-500/30 shadow-[0_0_20px_rgba(37,99,235,0.2)]";
-    labelClass += "text-blue-400 border-blue-500/20";
-    buttonClass += "bg-gradient-to-r from-blue-700 to-blue-500 text-white hover:shadow-[0_0_15px_rgba(37,99,235,0.5)]";
+    icon = <PlayCircle className="w-4 h-4 mr-2 text-blue-400 group-hover:animate-pulse" />;
+    containerClass += "border-blue-500/30 shadow-[0_0_20px_rgba(37,99,235,0.1)] hover:shadow-[0_10px_30px_rgba(37,99,235,0.25)] hover:border-blue-500/60";
+    labelClass += "text-blue-400 border-blue-500/20 group-hover:border-blue-500/50";
+    buttonClass += "bg-gradient-to-r from-blue-700 to-blue-500 text-white hover:shadow-[0_0_20px_rgba(37,99,235,0.6)] hover:scale-105";
   } else if (type === 'photoreal') {
     title = 'FLAWLESS NEXT-GEN PHOTOREALISTIC RENDER';
-    icon = <Eye className="w-4 h-4 mr-2 text-emerald-400" />;
-    containerClass += "border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.2)]";
-    labelClass += "text-emerald-400 border-emerald-500/20";
-    buttonClass += "bg-gradient-to-r from-emerald-700 to-emerald-500 text-white hover:shadow-[0_0_15px_rgba(16,185,129,0.5)]";
+    icon = <Eye className="w-4 h-4 mr-2 text-emerald-400 group-hover:animate-pulse" />;
+    containerClass += "border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.1)] hover:shadow-[0_10px_30px_rgba(16,185,129,0.25)] hover:border-emerald-500/60";
+    labelClass += "text-emerald-400 border-emerald-500/20 group-hover:border-emerald-500/50";
+    buttonClass += "bg-gradient-to-r from-emerald-700 to-emerald-500 text-white hover:shadow-[0_0_20px_rgba(16,185,129,0.6)] hover:scale-105";
   } else {
     containerClass += "border-white/5 shadow-inner bg-black";
     labelClass += "text-zinc-500 border-white/5";
@@ -167,7 +167,7 @@ const PromptResultBox = ({ type, text, copiedBox, onCopy }) => {
         {icon}
         {title}
       </label>
-      <div className="w-full font-mono text-[10px] md:text-[11px] leading-relaxed text-left flex-1 text-zinc-200 whitespace-pre-wrap">
+      <div className="w-full font-mono text-[11px] md:text-[13px] leading-relaxed text-left flex-1 text-zinc-200 whitespace-pre-wrap mt-2">
         {text ? <TypewriterText text={text} speed={8} /> : "AWAITING ENGINE CORE..."}
       </div>
       {text && (
@@ -212,11 +212,12 @@ function EnhancerPage() {
     }
   };
   
-  const handleEnhance = (e) => {
+  const handleEnhance = (e, boxType) => {
     if (e) e.preventDefault();
     const subject = (customerPrompt || demoInput || "").trim(); if(!subject) return; 
     
-    if (customerPrompt.trim() !== "") {
+    // Skeniranje samo ako je unet Customer Prompt
+    if (customerPrompt.trim() !== "" && boxType === 'prompt') {
       setIsScanning(true);
     }
     
@@ -227,8 +228,9 @@ function EnhancerPage() {
       try { 
         const std = { single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' }; 
         
-        if (customerPrompt.trim() !== "") {
+        if (customerPrompt.trim() !== "" && boxType === 'prompt') {
           const low = customerPrompt.toLowerCase();
+          
           let camera = "Shot on Leica M11 + Summilux 50mm f/1.4"; 
           let lighting = "natural ambient lighting with soft shadow transitions";
           
@@ -243,16 +245,13 @@ function EnhancerPage() {
             lighting = "soft-box studio lighting, perfectly balanced Rembrandt lighting";
           }
 
-          const realismTokens = data.getRandomTokens(data.REALISM_TOKENS, 4) || "hyper-realistic 32k, zero digital artifacts, authentic micro-textures";
-          const physicsTokens = data.getRandomTokens(data.PHYSICS_TOKENS, 4) || "physically based rendering (PBR), subsurface scattering, volumetric path-traced lighting";
-          const opticsTokens = data.getRandomTokens(data.OPTICS_TOKENS, 3) || "Ultra_optical_clarity, Precision_lens_render";
+          const realismTokens = data.getRandomTokens(data.REALISM_TOKENS, 4) || "hyper-realistic 32k, zero digital artifacts";
+          const physicsTokens = data.getRandomTokens(data.PHYSICS_TOKENS, 4) || "physically based rendering (PBR), subsurface scattering";
           const aiRenderTokens = data.getRandomTokens(data.AI_RENDER_TOKENS, 4) || "Unreal Engine 5.4, Octane Render, ray-traced reflections";
 
-          const hasDetails = customerPrompt.length > 40;
-
-          const roast = `[V8 ENGINE CORE ANALYSIS]\n\n# THE REPORT\n✅ Subject: ${customerPrompt.split(' ')[0].toUpperCase()}\n${hasDetails ? '✅ Detail density detected' : '❌ Low detail density'}\n❌ Missing Optics & Camera Data\n❌ Physics & Render tokens missing\n\n# THE 10X SOLUTION\nDeploying high-end descriptive protocols:\n- ${camera}\n- ${lighting}\n- ${physicsTokens}\n- ${aiRenderTokens}`;
+          const enhanced = `A highly detailed, uncompromisingly realistic masterpiece of ${customerPrompt.trim()}. ${camera}. ${lighting}. ${realismTokens}, ${physicsTokens}, ${aiRenderTokens}. [Aspect Ratio: ${selectedAR}]`;
           
-          const enhanced = `A highly detailed, uncompromisingly realistic masterpiece of ${customerPrompt.trim()}. ${camera}. The atmosphere is crafted with ${lighting}. Optical and physical perfection is achieved through ${opticsTokens}, ${realismTokens}, and ${physicsTokens}. The final visual output is processed using ${aiRenderTokens}, ensuring zero artifacts and supreme fidelity. [Aspect Ratio: ${selectedAR}]`;
+          const roast = `[V8 ENGINE CORE ANALYSIS]\n\n# THE REPORT\n✅ Subject: ${customerPrompt.split(' ')[0].toUpperCase()}\n❌ Missing Optics & Camera Data\n❌ Physics & Render tokens missing\n\n# THE 10X SOLUTION\nDeploying universal high-end descriptive protocols:\n- ${camera}\n- ${lighting}`;
           
           std.single = `${roast}\n\n# 10X ENHANCED PROMPT\n${enhanced}`;
         }
@@ -285,78 +284,187 @@ function EnhancerPage() {
   };
   
   return (
-    <div className="pt-32 pb-24 px-6 max-w-7xl mx-auto font-sans text-left text-white min-h-screen">
+    <div className="pt-32 pb-24 px-6 max-w-[1600px] mx-auto font-sans text-left text-white min-h-screen relative">
       <style>{`
-        @keyframes scanLine {
+        /* Animirani laser visoke rezolucije - Amber varijanta za Boks 2 */
+        @keyframes scanLineAmber {
           0% { top: 0%; opacity: 0; }
           10% { opacity: 1; }
           90% { opacity: 1; }
           100% { top: 100%; opacity: 0; }
         }
-        .animate-scan {
+        .animate-scan-amber {
           position: absolute;
           left: 0;
           width: 100%;
-          height: 3px;
-          background: #ea580c;
-          box-shadow: 0 0 15px #ea580c, 0 0 30px #ea580c;
+          height: 2px;
+          background: #fbbf24;
+          box-shadow: 0 0 25px 3px #fbbf24, 0 0 50px 6px #fbbf24;
           z-index: 50;
-          animation: scanLine 2s linear infinite;
+          animation: scanLineAmber 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+        /* Animirani gradijent za Premium naslov */
+        @keyframes gradientMove {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .text-gradient-animate {
+          background-size: 200% auto;
+          animation: gradientMove 4s ease infinite;
         }
       `}</style>
+      
       <Helmet>
         <title>10X ENHANCER | AI TOOLS PRO SMART</title>
         <meta name="description" content="Use our 10X Prompt Enhancer to transform basic AI prompts into cinematic masterpieces. Optimized for Midjourney, Sora, and DALL-E." />
         <link rel="icon" type="image/png" href={data.logoUrl} />
       </Helmet>
-      <div className="mb-10"><Link to="/" className="text-zinc-400 hover:text-white flex items-center gap-2 uppercase text-[10px] font-black tracking-widest transition-all"><ChevronLeft className="w-4 h-4" /> System Registry</Link></div>
-      <div className="bg-[#0a0a0a] border border-orange-500/20 rounded-[2.5rem] p-12 md:p-20 shadow-2xl relative overflow-hidden flex flex-col group hover:border-orange-500/40 transition-all">
-         <div className="mb-12 text-left w-full"><h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-orange-600 mb-4 drop-shadow-[0_0_15px_rgba(234,88,12,0.4)]">10X PROMPT ENHANCER</h2><div className="text-[13px] md:text-[15px] font-black text-green-500 uppercase tracking-[0.2em]">Premium tool worth $100/month. Currently free.</div></div>
-         <div className="flex flex-col lg:flex-row gap-12 w-full items-stretch">
-           <div className="flex-1 w-full lg:max-w-md flex flex-col justify-start space-y-8 text-left">
-             <div className="w-full">
-               <label className="text-[12px] font-black uppercase text-orange-500 tracking-widest block mb-4 ml-2">1. Concept / Subject</label>
-               <div className="relative mb-6">
-                 <textarea value={demoInput} onChange={e => {setDemoInput(e.target.value); setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' });}} placeholder="e.g. 'a golden watch'" disabled={customerPrompt.length > 0} className="w-full bg-black border border-white/10 rounded-xl pl-4 pr-12 py-6 text-white text-[16px] md:text-[18px] font-medium leading-relaxed outline-none focus:border-blue-500/50 transition-all shadow-inner resize-none min-h-[150px]" />
-                 {!demoInput && customerPrompt.length === 0 && (<button type="button" onClick={handleRollDice} disabled={isRolling} className="absolute right-3 top-4 bg-blue-600/10 p-2 rounded-lg group hover:bg-blue-600 transition-all cursor-pointer z-10"><Dices className={`w-5 h-5 text-blue-500 group-hover:text-white ${isRolling ? 'animate-spin' : ''}`} /></button>)}
-                 {demoInput && (<button type="button" onClick={handleClearAll} className="absolute right-3 top-4 bg-red-600/10 p-2 rounded-lg group hover:bg-red-600 transition-all cursor-pointer z-10"><X className="w-5 h-5 text-red-500 group-hover:text-white" /></button>)}
+
+      {/* Suptilna pozadinska mreža (Grid) za inženjerski osećaj */}
+      <div className="absolute inset-0 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03] z-0"></div>
+
+      <div className="mb-8 relative z-10">
+        <Link to="/" className="text-zinc-400 hover:text-white flex items-center gap-2 uppercase text-[10px] font-black tracking-widest transition-all w-fit">
+          <ChevronLeft className="w-4 h-4" /> System Registry
+        </Link>
+      </div>
+
+      {/* GLAVNI NASLOV */}
+      <div className="mb-12 text-left lg:text-center w-full relative z-10 flex flex-col items-start lg:items-center">
+        <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-500 to-orange-400 text-gradient-animate drop-shadow-[0_0_15px_rgba(234,88,12,0.3)]">
+          10X PROMPT ENHANCER
+        </h1>
+        <div className="text-[12px] md:text-[14px] font-black text-green-400 uppercase tracking-[0.2em] flex items-center gap-3">
+          <span className="relative flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span>
+          Premium tool worth $100/month. Currently free.
+        </div>
+      </div>
+      
+      <div className="flex flex-col gap-12 w-full items-stretch relative z-10">
+           
+         {/* ============================================================================== */}
+         {/* BOKS 1: CONCEPT / SUBJECT + V8 OUTPUT + KONTROLE */}
+         {/* EFEKAT: EPIC HOLLYWOOD CINEMATIC (Plavi sjaj) */}
+         {/* ============================================================================== */}
+         <div className="bg-[#0a0a0a]/50 backdrop-blur-md border border-blue-500/30 rounded-[2.5rem] p-8 md:p-12 shadow-[0_0_30px_rgba(37,99,235,0.3)] relative flex flex-col gap-10 transition-all duration-500 hover:border-blue-500/60 group">
+            
+            {/* 1. INPUT */}
+            <div className="w-full flex flex-col lg:flex-row gap-8 relative z-10">
+               <div className="w-full lg:w-1/3 flex flex-col justify-start text-left">
+                 <label className="text-[14px] md:text-[16px] font-black uppercase text-blue-500 tracking-widest flex items-center gap-2 mb-3 drop-shadow-[0_0_10px_rgba(37,99,235,0.6)]">
+                   <PlayCircle className="w-5 h-5" /> Concept / Subject
+                 </label>
+                 <p className="text-[10px] md:text-[11px] text-white font-black uppercase tracking-widest mb-6 leading-relaxed pl-1">
+                   Enter your basic idea or use the V8 Dice to roll a random high-end concept.
+                 </p>
                </div>
-               <label className="text-[12px] font-black uppercase text-orange-500 tracking-widest block mb-4 ml-2">2. Paste Customer Prompt</label>
-               <div className="relative mb-8 overflow-hidden rounded-xl border border-white/10">
-                 {isScanning && customerPrompt.trim() !== "" && <div className="animate-scan" />}
-                 <textarea value={customerPrompt} onChange={e => {setCustomerPrompt(e.target.value); setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' });}} placeholder="PASTE YOUR RAW PROMPT HERE" disabled={demoInput.length > 0} className="w-full bg-black p-5 text-white text-[11px] outline-none focus:border-blue-500/50 transition-all shadow-inner resize-none min-h-[160px]" />
+               
+               <div className="w-full lg:w-2/3 relative flex flex-col rounded-2xl border border-white/10 shadow-inner bg-[#050505]/50 focus-within:border-blue-500/50 transition-all">
+                 <textarea value={demoInput} onChange={e => {setDemoInput(e.target.value); setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' });}} placeholder="e.g. 'a golden watch'" disabled={customerPrompt.length > 0} className="w-full flex-1 bg-transparent pl-6 pr-16 py-4 text-white text-[16px] md:text-[18px] font-medium leading-relaxed outline-none transition-all resize-none min-h-[100px]" />
+                 {!demoInput && customerPrompt.length === 0 && (<button type="button" onClick={handleRollDice} disabled={isRolling} className="absolute right-4 top-1/2 -translate-y-1/2 bg-blue-600/10 p-3 rounded-xl group hover:bg-blue-600 transition-all cursor-pointer z-10 hover:shadow-[0_0_15px_rgba(37,99,235,0.5)] hover:scale-105"><Dices className={`w-5 h-5 text-blue-500 group-hover:text-white ${isRolling ? 'animate-spin' : ''}`} /></button>)}
+                 {demoInput && (<button type="button" onClick={handleClearAll} className="absolute right-4 top-1/2 -translate-y-1/2 bg-red-600/10 p-3 rounded-xl group hover:bg-red-600 transition-all cursor-pointer z-10 hover:shadow-[0_0_15px_rgba(220,38,38,0.5)] hover:scale-105"><X className="w-5 h-5 text-red-500 group-hover:text-white" /></button>)}
+               </div>
+            </div>
+
+            {/* 2. V8 OUTPUT */}
+            <div className="w-full flex flex-col border-t border-blue-500/20 pt-8 relative z-10">
+               <label className="text-[10px] md:text-[12px] font-black uppercase text-blue-400 tracking-widest flex items-center gap-2 mb-6 drop-shadow-[0_0_10px_rgba(37,99,235,0.5)] border-b border-blue-500/20 pb-4">
+                 <Sparkles className="w-4 h-4 mr-1 text-blue-400" /> V8 Cinematic Engine Output
+               </label>
+               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 w-full text-left">
+                   {['abstract', 'cinematic', 'photoreal', 'uniquePhoto'].map((type) => (
+                       <PromptResultBox key={type} type={type} text={generatedPrompts[type]} copiedBox={copiedBox} onCopy={handleCopy} />
+                   ))}
+               </div>
+            </div>
+
+            {/* 3. KONTROLE I ENHANCE DUGME */}
+            <div className="w-full flex flex-col lg:flex-row justify-between items-center gap-8 mt-4 border-t border-blue-500/20 pt-8 relative z-10">
+               <div className="flex flex-col sm:flex-row gap-8 w-full lg:w-auto text-left">
+                  <div className="flex flex-col gap-4">
+                    <span className="text-[12px] font-black uppercase text-zinc-300 tracking-widest">ASPECT RATIO</span>
+                    <div className="flex flex-wrap gap-2">{['1:1', '9:16', '16:9', '21:9'].map(ar => <OptionButton key={`box1-ar-${ar}`} label={ar} selected={selectedAR === ar} onClick={() => setSelectedAR(ar)} type="ar" />)}</div>
+                  </div>
+                  <div className="flex flex-col gap-4">
+                    <span className="text-[12px] font-black uppercase text-zinc-300 tracking-widest">QUALITY</span>
+                    <div className="flex flex-wrap gap-2">{['1x', '2x', '4x'].map(q => <OptionButton key={`box1-q-${q}`} label={q} selected={selectedQuality === q} onClick={() => setSelectedQuality(q)} type="quality" />)}</div>
+                  </div>
+               </div>
+               <div className="w-full lg:w-[40%] xl:w-[30%] shrink-0">
+                 <button type="button" onClick={(e) => handleEnhance(e, 'concept')} disabled={isEnhancing || (!demoInput && !customerPrompt)} className="w-full bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-600 hover:to-blue-400 text-white px-8 py-6 rounded-2xl font-black text-[14px] uppercase tracking-widest transition-all duration-300 disabled:opacity-50 flex items-center justify-center shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:shadow-[0_0_40px_rgba(37,99,235,0.8)] hover:-translate-y-1 cursor-pointer">
+                   {isEnhancing ? <><Loader2 className="w-6 h-6 animate-spin mr-4" /> ENHANCING...</> : "Enhance Cinematic Concept"}
+                 </button>
+               </div>
+            </div>
+         </div>
+             
+         {/* ============================================================================== */}
+         {/* BOKS 2: CUSTOMER PROMPT + V8 OUTPUT + KONTROLE */}
+         {/* EFEKAT: THE MOST UNIQUE PHOTOREALISTIC (Zlatni sjaj i laser skener) */}
+         {/* ============================================================================== */}
+         <div className="bg-[#0a0a0a]/50 backdrop-blur-md border border-amber-400/30 rounded-[2.5rem] p-8 md:p-12 shadow-[0_0_30px_rgba(251,191,36,0.3)] relative flex flex-col gap-10 transition-all duration-500 hover:border-amber-400/60 group">
+            
+            {/* 1. INPUT */}
+            <div className="w-full flex flex-col lg:flex-row gap-8 relative z-10">
+               <div className="w-full lg:w-1/3 flex flex-col justify-start text-left">
+                 <label className="text-[14px] md:text-[16px] font-black uppercase text-amber-400 tracking-widest flex items-center gap-2 mb-3 drop-shadow-[0_0_10px_rgba(251,191,36,0.6)]">
+                   <Zap className="w-5 h-5" /> Paste Customer Prompt
+                 </label>
+                 <p className="text-[10px] md:text-[11px] text-white font-black uppercase tracking-widest mb-6 leading-relaxed pl-1">
+                   Paste the raw prompt you want to enhance. The V8 motor will completely rebuild it.
+                 </p>
+               </div>
+
+               <div className="w-full lg:w-2/3 relative flex flex-col overflow-hidden rounded-2xl border border-white/10 shadow-inner bg-[#050505]/50 focus-within:border-amber-400/50 transition-all">
+                 {isScanning && customerPrompt.trim() !== "" && <div className="animate-scan-amber" />}
+                 <textarea value={customerPrompt} onChange={e => {setCustomerPrompt(e.target.value); setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' });}} placeholder="PASTE YOUR RAW PROMPT HERE" disabled={demoInput.length > 0} className="w-full flex-1 bg-transparent p-6 md:p-8 text-white text-[12px] md:text-[14px] outline-none resize-none min-h-[160px]" />
                  {customerPrompt && (
-                   <button type="button" onClick={handleClearAll} className="absolute right-3 top-4 bg-red-600/10 p-2 rounded-lg group hover:bg-red-600 transition-all cursor-pointer z-10">
+                   <button type="button" onClick={handleClearAll} className="absolute right-4 top-4 bg-red-600/10 p-3 rounded-xl group hover:bg-red-600 transition-all cursor-pointer z-10 hover:shadow-[0_0_15px_rgba(220,38,38,0.5)] hover:scale-105 relative z-20">
                      <X className="w-5 h-5 text-red-500 group-hover:text-white" />
                    </button>
                  )}
                </div>
-               <div className="flex justify-between items-center my-10 px-1">
-                  <div className="flex flex-col gap-3"><span className="text-[12px] font-black uppercase text-zinc-100 tracking-widest"><b>ASPECT RATIO</b></span><div className="flex gap-2">{['1:1', '9:16', '16:9', '21:9'].map(ar => <OptionButton key={ar} label={ar} selected={selectedAR === ar} onClick={() => setSelectedAR(ar)} type="ar" />)}</div></div>
-                  <div className="flex flex-col gap-3 items-end"><span className="text-[12px] font-black uppercase text-zinc-100 tracking-widest"><b>QUALITY</b></span><div className="flex gap-2">{['1x', '2x', '4x'].map(q => <OptionButton key={q} label={q} selected={selectedQuality === q} onClick={() => setSelectedQuality(q)} type="quality" />)}</div></div>
+            </div>
+
+            {/* 2. V8 OUTPUT */}
+            <div className="w-full flex flex-col border-t border-amber-400/20 pt-8 relative z-10">
+               <label className="text-[10px] md:text-[12px] font-black uppercase text-amber-400 tracking-widest flex items-center gap-2 mb-6 drop-shadow-[0_0_10px_rgba(251,191,36,0.5)] border-b border-amber-400/20 pb-4">
+                 <Eye className="w-4 h-4 mr-1 text-amber-400" /> V8 Unique Photorealistic Matrix Output
+               </label>
+               <div className="w-full bg-[#0a0a0a]/50 backdrop-blur-xl border border-amber-400/20 rounded-[2rem] p-6 md:p-10 pb-20 relative flex flex-col items-start shadow-inner h-full min-h-[300px] transition-all hover:border-amber-400/40 hover:-translate-y-1">
+                 <div className="text-amber-400 font-black text-[12px] uppercase tracking-[0.2em] mb-6 border-b border-amber-400/10 pb-4 w-full text-left flex items-center gap-3">
+                   <Zap className="w-4 h-4 text-amber-400 group-hover:animate-pulse" /> Premium Unique Matrix Output
+                 </div>
+                 <div className="w-full font-mono text-[11px] md:text-[13px] leading-relaxed text-left flex-1 text-zinc-200 whitespace-pre-wrap">
+                    {generatedPrompts.single ? <TypewriterText text={generatedPrompts.single} speed={10} /> : "AWAITING CORE INPUT..."}
+                 </div>
+                 {generatedPrompts.single && <button type="button" onClick={() => handleCopy(generatedPrompts.single, 'single')} className="absolute bottom-6 right-6 px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all bg-amber-400/10 border border-amber-400/20 text-amber-300 hover:bg-amber-400 hover:text-black hover:scale-105 hover:shadow-[0_0_20px_rgba(251,191,36,0.5)]">{copiedBox === 'single' ? "Copied! ✓" : "Copy 10X Prompt"}</button>}
                </div>
-               <button type="button" onClick={handleEnhance} disabled={isEnhancing || (!demoInput && !customerPrompt)} className="w-full bg-blue-600 hover:bg-blue-500 text-white px-6 py-5 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center shadow-xl cursor-pointer">{isEnhancing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Enhance"}</button>
-             </div>
-           </div>
-           <div className="flex-1 w-full flex flex-col h-full relative">
-             <label className="text-[12px] font-black uppercase text-blue-500 tracking-widest block mb-4 ml-2">4. V8 Engine Output</label>
-             {customerPrompt.length > 0 || (!demoInput && !customerPrompt) ? (
-                 <div className="w-full bg-black border border-white/5 rounded-2xl p-8 pb-20 relative flex flex-col items-start shadow-inner h-full min-h-[600px]">
-                   {generatedPrompts.single && <div className="text-green-500 font-black text-[11px] uppercase tracking-[0.2em] mb-6 border-b border-green-500/20 pb-4 w-full text-left">Premium Matrix Output</div>}
-                   <div className="w-full font-mono text-[11px] md:text-[13px] leading-relaxed text-left flex-1 text-zinc-200 whitespace-pre-wrap">
-                      {generatedPrompts.single ? <TypewriterText text={generatedPrompts.single} speed={10} /> : "AWAITING CORE INPUT..."}
-                   </div>
-                   {generatedPrompts.single && <button type="button" onClick={() => handleCopy(generatedPrompts.single, 'single')} className="absolute bottom-6 right-6 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all bg-white/10 text-white hover:bg-white/20">{copiedBox === 'single' ? "Copied! ✓" : "Copy 10X Prompt"}</button>}
-                 </div>
-             ) : (
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full h-full text-left">
-                     {['abstract', 'cinematic', 'photoreal', 'uniquePhoto'].map((type) => (
-                         <PromptResultBox key={type} type={type} text={generatedPrompts[type]} copiedBox={copiedBox} onCopy={handleCopy} />
-                     ))}
-                 </div>
-             )}
-           </div>
+            </div>
+
+            {/* 3. KONTROLE I ENHANCE DUGME */}
+            <div className="w-full flex flex-col lg:flex-row justify-between items-center gap-8 mt-4 border-t border-amber-400/20 pt-8 relative z-10">
+               <div className="flex flex-col sm:flex-row gap-8 w-full lg:w-auto text-left">
+                  <div className="flex flex-col gap-4">
+                    <span className="text-[12px] font-black uppercase text-amber-100 tracking-widest drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]">ASPECT RATIO</span>
+                    <div className="flex flex-wrap gap-2">{['1:1', '9:16', '16:9', '21:9'].map(ar => <OptionButton key={`box2-ar-${ar}`} label={ar} selected={selectedAR === ar} onClick={() => setSelectedAR(ar)} type="ar" />)}</div>
+                  </div>
+                  <div className="flex flex-col gap-4">
+                    <span className="text-[12px] font-black uppercase text-amber-100 tracking-widest drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]">QUALITY</span>
+                    <div className="flex flex-wrap gap-2">{['1x', '2x', '4x'].map(q => <OptionButton key={`box2-q-${q}`} label={q} selected={selectedQuality === q} onClick={() => setSelectedQuality(q)} type="quality" />)}</div>
+                  </div>
+               </div>
+               <div className="w-full lg:w-[40%] xl:w-[30%] shrink-0">
+                 {/* Amber gradijent za Unique Photo */}
+                 <button type="button" onClick={(e) => handleEnhance(e, 'prompt')} disabled={isEnhancing || (!demoInput && !customerPrompt)} className="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-black px-8 py-6 rounded-2xl font-black text-[14px] uppercase tracking-widest transition-all duration-300 disabled:opacity-50 flex items-center justify-center shadow-[0_0_20px_rgba(251,191,36,0.4)] hover:shadow-[0_0_40px_rgba(251,191,36,0.8)] hover:-translate-y-1 cursor-pointer">
+                   {isEnhancing ? <><Loader2 className="w-6 h-6 animate-spin mr-4" /> ENHANCING...</> : "Enhance Unique Prompt"}
+                 </button>
+               </div>
+            </div>
+
          </div>
+
       </div>
     </div>
   );
