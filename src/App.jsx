@@ -179,24 +179,6 @@ const PromptResultBox = ({ type, text, copiedBox, onCopy }) => {
   );
 };
 
-// --- DINAMIČKA LOGIKA ZA KAMERE ---
-const getDynamicMeta = (text) => {
-  const low = text.toLowerCase();
-  if (low.includes('person') || low.includes('face') || low.includes('man') || low.includes('woman') || low.includes('portrait')) {
-    return 'Shot on Canon EOS R5, 85mm f/1.2L II USM, ultra-sharp eye focus, natural skin pore texture, fashion editorial lighting, EXIF:35mmEquiv=85mm';
-  }
-  if (low.includes('car') || low.includes('vehicle') || low.includes('motorcycle') || low.includes('bmw')) {
-    return 'Shot on Sony A7R V, 35mm f/1.4 GM, high-speed shutter 1/4000s, motion blur background, automotive commercial reflections, CPL filter';
-  }
-  if (low.includes('landscape') || low.includes('nature') || low.includes('mountain') || low.includes('forest')) {
-    return 'Shot on Hasselblad H6D-100c, 24mm wide angle, f/11 deep focus, National Geographic award-winning quality, volumetric atmospheric haze';
-  }
-  if (low.includes('watch') || low.includes('jewelry') || low.includes('macro') || low.includes('diamond')) {
-    return 'Shot on Nikon Z9, 105mm f/2.8 Macro, focus stacking, surgical precision lighting, micro-dust particles, industrial catalog aesthetic';
-  }
-  return 'Shot on Leica M11 + Summilux 50mm f/1.4, candid paparazzi outtake, IMG_1984.CR2, stills archive, EXIF:35mmEquiv=85mm';
-};
-
 // ============================================================================
 // ENHANCER PAGE
 // ============================================================================
@@ -234,48 +216,55 @@ function EnhancerPage() {
     if (e) e.preventDefault();
     const subject = (customerPrompt || demoInput || "").trim(); if(!subject) return; 
     
-    setIsScanning(true);
+    if (customerPrompt.trim() !== "") {
+      setIsScanning(true);
+    }
+    
     setIsEnhancing(true); 
     setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' });
     
     setTimeout(() => { 
       try { 
-        const std = data.generatePrompts(customerPrompt, demoInput, selectedQuality, selectedAR); 
+        const std = { single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' }; 
         
-        // BOX 2 LOGIKA SA ROAST I PHYSICS TOKENIMA
         if (customerPrompt.trim() !== "") {
           const low = customerPrompt.toLowerCase();
           let camera = "Shot on Leica M11 + Summilux 50mm f/1.4"; 
-          let lighting = "natural ambient lighting, golden hour rim light";
+          let lighting = "natural ambient lighting with soft shadow transitions";
           
           if (low.includes('car') || low.includes('bmw')) {
-            camera = "Shot on Sony A7R V, 35mm f/1.4 GM";
-            lighting = "automotive studio lighting, CPL filter reflections";
+            camera = "Shot on Sony A7R V, 35mm f/1.4 GM, high-speed shutter, CPL filter";
+            lighting = "automotive studio lighting, dynamic environmental reflections";
           } else if (low.includes('landscape') || low.includes('mountain')) {
-            camera = "Shot on Hasselblad H6D-100c, 24mm wide";
-            lighting = "volumetric atmospheric haze, deep focus f/11";
+            camera = "Shot on Hasselblad H6D-100c, 24mm wide angle, f/11 deep focus";
+            lighting = "golden hour volumetric lighting, rich atmospheric haze";
           } else if (low.includes('portrait') || low.includes('man') || low.includes('woman')) {
-            camera = "Shot on Canon EOS R5, 85mm f/1.2L II USM"; 
-            lighting = "soft-box studio lighting, sharp eye focus";
+            camera = "Shot on Canon EOS R5, 85mm f/1.2L II USM, ultra-sharp eye focus"; 
+            lighting = "soft-box studio lighting, perfectly balanced Rembrandt lighting";
           }
 
-          const realismTokens = "hyper-realistic 32k, zero digital artifacts, authentic micro-textures";
-          const physicsTokens = "physically based rendering (PBR), subsurface scattering, volumetric path-traced lighting";
-          const aiRenderTokens = "Unreal Engine 5.4, Octane Render, ray-traced reflections";
+          const realismTokens = data.getRandomTokens(data.REALISM_TOKENS, 4) || "hyper-realistic 32k, zero digital artifacts, authentic micro-textures";
+          const physicsTokens = data.getRandomTokens(data.PHYSICS_TOKENS, 4) || "physically based rendering (PBR), subsurface scattering, volumetric path-traced lighting";
+          const opticsTokens = data.getRandomTokens(data.OPTICS_TOKENS, 3) || "Ultra_optical_clarity, Precision_lens_render";
+          const aiRenderTokens = data.getRandomTokens(data.AI_RENDER_TOKENS, 4) || "Unreal Engine 5.4, Octane Render, ray-traced reflections";
+
           const hasDetails = customerPrompt.length > 40;
 
-          const roast = `[V8 ENGINE CORE ANALYSIS]\n\n# THE REPORT\n✅ Subject: ${customerPrompt.split(' ')[0].toUpperCase()}\n${hasDetails ? '✅ Detail density detected' : '❌ Low detail density'}\n❌ Missing Optics (EXIF Data)\n❌ Physics & AI_Render tokens missing\n\n# THE 10X SOLUTION\nDeploying high-end gear & physics protocols:\n- ${camera}\n- ${lighting}\n- ${physicsTokens}\n- ${aiRenderTokens}`;
+          const roast = `[V8 ENGINE CORE ANALYSIS]\n\n# THE REPORT\n✅ Subject: ${customerPrompt.split(' ')[0].toUpperCase()}\n${hasDetails ? '✅ Detail density detected' : '❌ Low detail density'}\n❌ Missing Optics & Camera Data\n❌ Physics & Render tokens missing\n\n# THE 10X SOLUTION\nDeploying high-end descriptive protocols:\n- ${camera}\n- ${lighting}\n- ${physicsTokens}\n- ${aiRenderTokens}`;
           
-          const enhanced = `${customerPrompt.trim()}, ${camera}, ${lighting}, ${realismTokens}, ${physicsTokens}, ${aiRenderTokens}, IMG_1984.CR2, stills archive --ar ${selectedAR.replace(':', '/')} --v 6.0`;
+          const enhanced = `A highly detailed, uncompromisingly realistic masterpiece of ${customerPrompt.trim()}. ${camera}. The atmosphere is crafted with ${lighting}. Optical and physical perfection is achieved through ${opticsTokens}, ${realismTokens}, and ${physicsTokens}. The final visual output is processed using ${aiRenderTokens}, ensuring zero artifacts and supreme fidelity. [Aspect Ratio: ${selectedAR}]`;
           
           std.single = `${roast}\n\n# 10X ENHANCED PROMPT\n${enhanced}`;
         }
 
-        const box1Meta = getDynamicMeta(demoInput || customerPrompt);
-        if (std.cinematic) std.cinematic += `, ${box1Meta}, cinematic movie still, 8k`;
-        if (std.abstract) std.abstract += `, surreal fluid art, vivid masterpiece`;
-        if (std.photoreal) std.photoreal += `, ${box1Meta}, raw photography, 16k`;
-        if (std.uniquePhoto) std.uniquePhoto += `, one-in-a-billion masterpiece, ${box1Meta}`;
+        const detailedPrompts = data.generateDetailedPrompts ? data.generateDetailedPrompts(customerPrompt || demoInput, selectedAR) : null;
+        
+        if (detailedPrompts) {
+          std.cinematic = detailedPrompts.cinematic;
+          std.abstract = detailedPrompts.abstract;
+          std.photoreal = detailedPrompts.photoreal;
+          std.uniquePhoto = detailedPrompts.uniquePhoto;
+        } 
 
         setGeneratedPrompts(std); 
       } catch (err) {} finally { 
@@ -309,16 +298,20 @@ function EnhancerPage() {
           left: 0;
           width: 100%;
           height: 3px;
-          background: #facc15;
-          box-shadow: 0 0 15px #facc15, 0 0 30px #facc15;
+          background: #ea580c;
+          box-shadow: 0 0 15px #ea580c, 0 0 30px #ea580c;
           z-index: 50;
           animation: scanLine 2s linear infinite;
         }
       `}</style>
-      <Helmet><title>10X ENHANCER | AI TOOLS PRO SMART</title></Helmet>
+      <Helmet>
+        <title>10X ENHANCER | AI TOOLS PRO SMART</title>
+        <meta name="description" content="Use our 10X Prompt Enhancer to transform basic AI prompts into cinematic masterpieces. Optimized for Midjourney, Sora, and DALL-E." />
+        <link rel="icon" type="image/png" href={data.logoUrl} />
+      </Helmet>
       <div className="mb-10"><Link to="/" className="text-zinc-400 hover:text-white flex items-center gap-2 uppercase text-[10px] font-black tracking-widest transition-all"><ChevronLeft className="w-4 h-4" /> System Registry</Link></div>
       <div className="bg-[#0a0a0a] border border-orange-500/20 rounded-[2.5rem] p-12 md:p-20 shadow-2xl relative overflow-hidden flex flex-col group hover:border-orange-500/40 transition-all">
-         <div className="mb-12 text-left w-full"><h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-orange-600 mb-4">10X PROMPT ENHANCER</h2><div className="text-[13px] md:text-[15px] font-black text-green-500 uppercase tracking-[0.2em]">Premium tool worth $100/month. Currently free.</div></div>
+         <div className="mb-12 text-left w-full"><h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-orange-600 mb-4 drop-shadow-[0_0_15px_rgba(234,88,12,0.4)]">10X PROMPT ENHANCER</h2><div className="text-[13px] md:text-[15px] font-black text-green-500 uppercase tracking-[0.2em]">Premium tool worth $100/month. Currently free.</div></div>
          <div className="flex flex-col lg:flex-row gap-12 w-full items-stretch">
            <div className="flex-1 w-full lg:max-w-md flex flex-col justify-start space-y-8 text-left">
              <div className="w-full">
@@ -330,7 +323,7 @@ function EnhancerPage() {
                </div>
                <label className="text-[12px] font-black uppercase text-orange-500 tracking-widest block mb-4 ml-2">2. Paste Customer Prompt</label>
                <div className="relative mb-8 overflow-hidden rounded-xl border border-white/10">
-                 {isScanning && <div className="animate-scan" />}
+                 {isScanning && customerPrompt.trim() !== "" && <div className="animate-scan" />}
                  <textarea value={customerPrompt} onChange={e => {setCustomerPrompt(e.target.value); setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' });}} placeholder="PASTE YOUR RAW PROMPT HERE" disabled={demoInput.length > 0} className="w-full bg-black p-5 text-white text-[11px] outline-none focus:border-blue-500/50 transition-all shadow-inner resize-none min-h-[160px]" />
                  {customerPrompt && (
                    <button type="button" onClick={handleClearAll} className="absolute right-3 top-4 bg-red-600/10 p-2 rounded-lg group hover:bg-red-600 transition-all cursor-pointer z-10">
@@ -396,7 +389,11 @@ function HomePage({ apps = [] }) {
   
   return (
     <>
-      <Helmet><title>AI TOOLS PRO SMART | PROMPT GENERATOR</title></Helmet>
+      <Helmet>
+        <title>AI TOOLS PRO SMART | PROMPT GENERATOR</title>
+        <meta name="description" content="Discover premium AI prompt generators, Midjourney architectures, and cinematic video protocols. Buy high-quality React source codes for your next AI SaaS by Goran Damnjanović." />
+        <link rel="icon" type="image/png" href={data.logoUrl} />
+      </Helmet>
       <div id="home-banner" className="relative w-full h-[85vh] flex items-end overflow-hidden bg-black text-white">
         <div className="absolute inset-0 z-0 bg-black">
           {(data.BANNER_DATA || []).map((item, idx) => (
@@ -455,7 +452,11 @@ function SingleProductPage({ apps = [] }) {
 
   return (
     <div className="bg-[#050505] pt-32 pb-32 px-6 font-sans text-white text-left relative">
-      <Helmet><title>{app.name} | AI TOOLS PRO SMART</title></Helmet>
+      <Helmet>
+        <title>{app.name} | AI TOOLS PRO SMART</title>
+        <meta name="description" content={app.headline || `Buy ${app.name} on AI TOOLS PRO SMART. Premium AI assets and React source codes.`} />
+        <link rel="icon" type="image/png" href={data.logoUrl} />
+      </Helmet>
       
       {fullScreenImage && (
         <div className="fixed inset-0 z-[6000] bg-black/95 flex items-center justify-center p-4" onClick={() => setFullScreenImage(null)}>
