@@ -124,19 +124,58 @@ const OptionButton = ({ label, selected, onClick, type }) => {
   return <button type="button" onClick={onClick} className={`px-4 py-2 rounded-lg text-[9px] font-black border transition-all ${selected ? activeClass : "bg-black border-white/10 text-zinc-500 hover:border-white/20"}`}>{label}</button>;
 };
 
+// --- SREĐENO: SVI BOKSOVI SADA IMAJU EPSKI I SVETLEĆI DIZAJN ---
 const PromptResultBox = ({ type, text, copiedBox, onCopy }) => {
   let title = type.toUpperCase();
-  if (type === 'uniquePhoto') title = 'THE MOST UNIQUE PHOTOREALISTIC IMAGE EVER';
-  let colorClass = "text-zinc-500 border-white/5"; 
-  if (type === 'abstract') colorClass = "text-purple-500 border-purple-500/20";
-  if (type === 'cinematic') colorClass = "text-blue-500 border-blue-500/20";
-  if (type === 'photoreal') colorClass = "text-emerald-500 border-emerald-500/20";
-  if (type === 'uniquePhoto') colorClass = "text-amber-400 border-amber-400/20 shadow-[0_0_15px_rgba(249,115,22,0.3)] bg-black/40";
+  let icon = null;
+  let containerClass = "w-full bg-black/40 border rounded-2xl p-6 pb-16 relative flex flex-col min-h-[300px] transition-all ";
+  let labelClass = "text-[10px] md:text-[11px] font-black uppercase tracking-widest mb-4 border-b pb-3 flex items-center ";
+  let buttonClass = "absolute bottom-4 right-4 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg ";
+
+  if (type === 'uniquePhoto') {
+    title = 'THE MOST UNIQUE PHOTOREALISTIC IMAGE EVER';
+    icon = <Zap className="w-4 h-4 mr-2 text-amber-500" />;
+    containerClass += "border-amber-400/30 shadow-[0_0_20px_rgba(249,115,22,0.2)]";
+    labelClass += "text-amber-400 border-amber-400/20";
+    buttonClass += "bg-gradient-to-r from-amber-600 to-orange-600 text-black hover:shadow-[0_0_15px_rgba(249,115,22,0.5)]";
+  } else if (type === 'abstract') {
+    title = 'ULTIMATE MIND-BENDING ABSTRACT MASTERPIECE';
+    icon = <Sparkles className="w-4 h-4 mr-2 text-purple-400" />;
+    containerClass += "border-purple-500/30 shadow-[0_0_20px_rgba(147,51,234,0.2)]";
+    labelClass += "text-purple-400 border-purple-500/20";
+    buttonClass += "bg-gradient-to-r from-purple-700 to-purple-500 text-white hover:shadow-[0_0_15px_rgba(147,51,234,0.5)]";
+  } else if (type === 'cinematic') {
+    title = 'EPIC HOLLYWOOD CINEMATIC BLOCKBUSTER SHOT';
+    icon = <PlayCircle className="w-4 h-4 mr-2 text-blue-400" />;
+    containerClass += "border-blue-500/30 shadow-[0_0_20px_rgba(37,99,235,0.2)]";
+    labelClass += "text-blue-400 border-blue-500/20";
+    buttonClass += "bg-gradient-to-r from-blue-700 to-blue-500 text-white hover:shadow-[0_0_15px_rgba(37,99,235,0.5)]";
+  } else if (type === 'photoreal') {
+    title = 'FLAWLESS NEXT-GEN PHOTOREALISTIC RENDER';
+    icon = <Eye className="w-4 h-4 mr-2 text-emerald-400" />;
+    containerClass += "border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.2)]";
+    labelClass += "text-emerald-400 border-emerald-500/20";
+    buttonClass += "bg-gradient-to-r from-emerald-700 to-emerald-500 text-white hover:shadow-[0_0_15px_rgba(16,185,129,0.5)]";
+  } else {
+    containerClass += "border-white/5 shadow-inner bg-black";
+    labelClass += "text-zinc-500 border-white/5";
+    buttonClass += "bg-white/10 text-white hover:bg-white/20";
+  }
+
   return (
-    <div className={`w-full bg-black border border-white/5 rounded-2xl p-6 pb-16 relative shadow-inner flex flex-col min-h-[300px] ${type === 'uniquePhoto' ? 'border-amber-400/30 shadow-[0_0_20px_rgba(249,115,22,0.2)]' : ''}`}>
-      <label className={`text-[10px] font-black uppercase tracking-widest mb-4 border-b pb-3 ${colorClass}`}>{type === 'uniquePhoto' && <Zap className="w-3.5 h-3.5 text-amber-500 mr-2 inline-block -mt-1" />}{title}</label>
-      <p className="w-full font-mono text-[10px] leading-relaxed text-left flex-1 text-zinc-200">{text ? <TypewriterText text={text} speed={10} /> : "AWAITING..."}</p>
-      {text && <button type="button" onClick={() => onCopy(text, type)} className={`absolute bottom-4 right-4 px-4 py-2 rounded-lg text-[9px] font-black uppercase transition-all bg-white/10 text-white hover:bg-white/20 ${type === 'uniquePhoto' ? 'bg-amber-600 text-black hover:bg-amber-500' : ''}`}>{copiedBox === type ? "Copied" : "Copy"}</button>}
+    <div className={containerClass}>
+      <label className={labelClass}>
+        {icon}
+        {title}
+      </label>
+      <p className="w-full font-mono text-[10px] md:text-[11px] leading-relaxed text-left flex-1 text-zinc-200">
+        {text ? <TypewriterText text={text} speed={10} /> : "AWAITING ENGINE CORE..."}
+      </p>
+      {text && (
+        <button type="button" onClick={() => onCopy(text, type)} className={buttonClass}>
+          {copiedBox === type ? "Copied! ✓" : "Copy Prompt"}
+        </button>
+      )}
     </div>
   );
 };
@@ -171,7 +210,31 @@ function EnhancerPage() {
     const subject = (customerPrompt || demoInput || "").trim(); if(!subject) return; 
     setIsEnhancing(true); 
     setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' });
-    setTimeout(() => { try { const std = data.generatePrompts(customerPrompt, demoInput, selectedQuality, selectedAR); setGeneratedPrompts(std); } catch (err) {} finally { setIsEnhancing(false); } }, 1200);
+    
+    setTimeout(() => { 
+      try { 
+        const std = data.generatePrompts(customerPrompt, demoInput, selectedQuality, selectedAR); 
+        
+        // ====================================================================
+        // INJEKCIJA NAJJAČIH TOKENA ZA STILOVE (STEROIDI)
+        // ====================================================================
+        if (std.cinematic) {
+          std.cinematic += ", epic cinematic movie still, cinematic lighting, shot on 35mm lens, anamorphic depth of field, volumetric lighting, god rays, dramatic shadows, teal and orange color grading, 8k resolution, photorealistic masterpiece";
+        }
+        if (std.abstract) {
+          std.abstract += ", abstract surrealism, fluid dynamics, sacred geometry, fractal patterns, vivid psychedelic colors, flowing organic forms, highly detailed 3D conceptual art, Octane Render, Unreal Engine 5, mind-bending masterpiece";
+        }
+        if (std.photoreal) {
+          std.photoreal += ", raw unedited photography, shot on Hasselblad H6D-100c medium format, 85mm f/1.2 lens, natural ambient lighting, authentic micro-details, subsurface scattering, ultra-sharp focus, 8k resolution, true-to-life physics, zero CGI artifacts, award-winning National Geographic photography";
+        }
+        if (std.uniquePhoto) {
+          std.uniquePhoto += ", a once-in-a-lifetime serendipitous masterpiece, the most unique and breathtaking photograph ever captured, shot on a custom gigapixel Phase One XF IQ4 150MP camera, Zeiss Master Prime optics, flawless hyper-tactile micro-textures, pore-level biological accuracy, absolute quantum-level physical lighting, infinite depth of field, 32k resolution uncompressed RAW, defying human imagination, National Geographic undisputed photograph of the century, mind-bending conceptual execution, flawlessly authentic, zero digital artifacts, hyper-maximalist visual perfection";
+        }
+        // ====================================================================
+
+        setGeneratedPrompts(std); 
+      } catch (err) {} finally { setIsEnhancing(false); } 
+    }, 1200);
   };
 
   const handleCopy = (text, boxName) => { navigator.clipboard.writeText(text); setCopiedBox(boxName); setTimeout(() => setCopiedBox(''), 2000); };
