@@ -469,7 +469,33 @@ function EnhancerPage() {
                <button type="button" onClick={(e) => handleEnhance(e, 'prompt')} disabled={isEnhancing || (!demoInput && !customerPrompt)} className="w-full lg:w-[30%] bg-gradient-to-r from-amber-600 to-amber-500 text-black py-6 rounded-2xl font-black uppercase text-[14px] shadow-lg cursor-pointer">{isEnhancing ? <Loader2 className="w-6 h-6 animate-spin mr-4" /> : "Enhance Unique Prompt"}</button>
             </div>
          </div>
+
+         {/* BOKS 3: REFERENCE GALERIJA */}
+         {gallery.length > 0 && (
+           <div className="bg-[#0a0a0a]/50 backdrop-blur-md border border-orange-500/30 rounded-[2.5rem] p-8 md:p-12 shadow-[0_0_30px_rgba(234,88,12,0.1)] relative flex flex-col gap-6 transition-all duration-500 hover:border-orange-500/60 mt-4 text-center items-center">
+             <div className="flex items-center justify-center gap-3 border-b border-orange-500/20 pb-4 mb-4 w-full">
+               <Zap className="w-6 h-6 text-orange-500 animate-pulse" />
+               <h2 className="text-xl md:text-2xl font-black text-orange-500 uppercase tracking-widest drop-shadow-[0_0_10px_rgba(234,88,12,0.4)]">Premium V8 Gallery</h2>
+             </div>
+             <div className="w-full max-w-4xl mx-auto aspect-video md:aspect-[21/9] rounded-3xl overflow-hidden border border-white/10 relative group bg-black shadow-inner">
+                <img src={gallery[activeGalleryIndex]?.url} alt="Main Enhancer Reference" className="w-full h-full object-cover transition-opacity duration-1000" />
+                <div className="absolute bottom-6 right-12 z-20 flex justify-center items-center group/tooltip">
+                    <span className="absolute bottom-full mb-3 px-4 py-2 bg-[#0a0a0a] border border-blue-500/50 rounded-xl text-[10px] font-black uppercase tracking-widest text-white whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 transition-all shadow-xl pointer-events-none">Use as Image Prompt</span>
+                    <button type="button" onClick={() => { if (uploadedImage) { setShowWarningModal(true); return; } const imgUrl = gallery[activeGalleryIndex]?.url; setUploadedImage(imgUrl); setDemoInput(prev => prev ? `${imgUrl} ${prev}` : imgUrl); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="p-3.5 bg-blue-600 rounded-xl text-white hover:bg-blue-500 transition-colors shadow-[0_0_15px_rgba(37,99,235,0.4)] hover:shadow-[0_0_20px_rgba(37,99,235,0.6)] hover:scale-110 cursor-pointer"><UploadCloud className="w-5 h-5" /></button>
+                </div>
+             </div>
+             <div className="flex flex-wrap justify-center gap-4 pb-4 pt-2 w-full max-w-5xl mx-auto">
+                {gallery.map((img, idx) => (
+                   <button key={img.id} type="button" onClick={() => setActiveGalleryIndex(idx)} className={`relative w-24 h-16 md:w-32 md:h-20 shrink-0 rounded-2xl overflow-hidden border-2 transition-all duration-300 ${activeGalleryIndex === idx ? 'border-orange-500 scale-105 shadow-[0_0_15px_rgba(234,88,12,0.5)] opacity-100' : 'border-white/5 opacity-40 hover:opacity-100 hover:border-white/20'}`}>
+                      <img src={img.url} className="w-full h-full object-cover" alt="Thumbnail" />
+                      {activeGalleryIndex === idx && <div className="absolute inset-0 border-4 border-orange-500 rounded-2xl pointer-events-none"></div>}
+                   </button>
+                ))}
+             </div>
+           </div>
+         )}
       </div>
+
       {showWarningModal && <div className="fixed inset-0 z-[7000] bg-black/80 backdrop-blur-md flex items-center justify-center p-4"><div className="bg-[#0a0a0a] border border-red-500/50 rounded-3xl p-8 max-w-md w-full relative text-center flex flex-col items-center"><button type="button" onClick={() => setShowWarningModal(false)} className="absolute top-5 right-5 text-zinc-500 hover:text-white bg-black/50 p-2 rounded-full"><X className="w-5 h-5" /></button><ShieldAlert className="w-16 h-16 text-red-500 mb-6" /><h3 className="text-white font-black text-xl md:text-2xl uppercase mb-3">Action Denied</h3><p className="text-zinc-400 text-sm leading-relaxed mb-8">Remove current image first.</p><button onClick={() => setShowWarningModal(false)} className="w-full bg-red-600 text-white font-black uppercase text-sm py-4 rounded-xl">Got it</button></div></div>}
       {exclusiveWarning && <div className="fixed inset-0 z-[7000] bg-black/80 backdrop-blur-md flex items-center justify-center p-4"><div className="bg-[#0a0a0a] border border-amber-500/50 rounded-3xl p-8 max-w-md w-full relative text-center flex flex-col items-center"><button type="button" onClick={() => setExclusiveWarning('')} className="absolute top-5 right-5 text-zinc-500 hover:text-white bg-black/50 p-2 rounded-full"><X className="w-5 h-5" /></button><ShieldAlert className="w-16 h-16 text-amber-500 mb-6" /><h3 className="text-white font-black text-xl uppercase mb-3">Action Denied</h3><p className="text-zinc-400 text-sm leading-relaxed mb-8">{exclusiveWarning}</p><button onClick={() => setExclusiveWarning('')} className="w-full bg-amber-600 text-black font-black uppercase text-sm py-4 rounded-xl">Got it</button></div></div>}
     </div>
@@ -567,7 +593,7 @@ function SingleProductPage({ apps = [] }) {
             </div>
           </div>
           <div className="w-full lg:w-[35%] lg:sticky lg:top-40">
-            <div className="bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl p-8">
+            <div className="bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] p-8 shadow-2xl">
               <img src={mojBaner} alt="" className="w-full h-40 object-cover rounded-2xl mb-8" />
               <div className="space-y-6 mb-8">
                 <div className="relative rounded-2xl bg-white/[0.02] border border-white/10 py-3.5 flex items-center justify-center"><div className="absolute -top-3 px-4 py-1 rounded-full bg-blue-600 text-[8px] font-black uppercase tracking-widest shadow-lg">Monthly</div><span className="text-2xl font-black">${app.price || '14.99'}</span></div>
