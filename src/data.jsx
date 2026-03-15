@@ -1,4 +1,6 @@
 import React from 'react';
+export const CLOUDINARY_CLOUD_NAME = "drllxycnh";
+export const CLOUDINARY_UPLOAD_PRESET = "uploads";
 
 // --- TVOJI ORIGINALNI IMAGE IMPORTS ---
 import zmajImg from './zmaj.jpg';

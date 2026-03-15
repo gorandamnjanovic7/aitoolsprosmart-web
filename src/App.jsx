@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 
 import { db } from './firebase';
-import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, limit, addDoc, deleteDoc, doc } from "firebase/firestore";
 
 import * as data from './data';
 import { 
@@ -192,12 +192,40 @@ function EnhancerPage() {
   const [selectedQuality, setSelectedQuality] = useState('4x'); 
   const [copiedBox, setCopiedBox] = useState(''); 
   const [isRolling, setIsRolling] = useState(false);
+  
+  const [uploadedImage, setUploadedImage] = useState(null);
+  const [isImageUploading, setIsImageUploading] = useState(false);
+  
+  const [gallery, setGallery] = useState([]);
+  const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
+
+  useEffect(() => {
+    const fetchGallery = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, "enhancer_gallery"));
+        const items = [];
+        snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+        items.sort((a, b) => b.createdAt - a.createdAt);
+        setGallery(items);
+      } catch (err) { console.error("Greška pri učitavanju galerije:", err); }
+    };
+    fetchGallery();
+  }, []);
+
+  useEffect(() => {
+    if (gallery.length <= 1) return;
+    const interval = setInterval(() => {
+      setActiveGalleryIndex((prev) => (prev + 1) % gallery.length);
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [gallery.length]);
 
   const handleClearAll = () => {
     setCustomerPrompt('');
     setDemoInput('');
     setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' });
     setIsScanning(false);
+    setUploadedImage(null);
   };
 
   const handleRollDice = (e) => { 
@@ -211,12 +239,33 @@ function EnhancerPage() {
       setTimeout(() => { setDemoInput(randomText); setIsRolling(false); }, 300);
     }
   };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setIsImageUploading(true);
+    
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', data.CLOUDINARY_UPLOAD_PRESET);
+    
+    try {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${data.CLOUDINARY_CLOUD_NAME}/upload`, { method: 'POST', body: fd });
+      const resData = await res.json();
+      setUploadedImage(resData.secure_url);
+      setDemoInput(prev => prev ? `${resData.secure_url} ${prev}` : resData.secure_url);
+    } catch (err) {
+      console.error("Upload failed", err);
+    } finally {
+      setIsImageUploading(false);
+    }
+  };
   
   const handleEnhance = (e, boxType) => {
     if (e) e.preventDefault();
-    const subject = (customerPrompt || demoInput || "").trim(); if(!subject) return; 
+    const rawInput = (customerPrompt || demoInput || "").trim(); 
+    if(!rawInput) return; 
     
-    // Skeniranje samo ako je unet Customer Prompt
     if (customerPrompt.trim() !== "" && boxType === 'prompt') {
       setIsScanning(true);
     }
@@ -228,57 +277,81 @@ function EnhancerPage() {
       try { 
         const std = { single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' }; 
         
-        if (customerPrompt.trim() !== "" && boxType === 'prompt') {
-          const low = customerPrompt.toLowerCase();
-          
-          let camera = "Shot on Leica M11 + Summilux 50mm f/1.4"; 
-          let lighting = "natural ambient lighting with soft shadow transitions";
-          
-          if (low.includes('car') || low.includes('bmw')) {
-            camera = "Shot on Sony A7R V, 35mm f/1.4 GM, high-speed shutter, CPL filter";
-            lighting = "automotive studio lighting, dynamic environmental reflections";
-          } else if (low.includes('landscape') || low.includes('mountain')) {
-            camera = "Shot on Hasselblad H6D-100c, 24mm wide angle, f/11 deep focus";
-            lighting = "golden hour volumetric lighting, rich atmospheric haze";
-          } else if (low.includes('portrait') || low.includes('man') || low.includes('woman')) {
-            camera = "Shot on Canon EOS R5, 85mm f/1.2L II USM, ultra-sharp eye focus"; 
-            lighting = "soft-box studio lighting, perfectly balanced Rembrandt lighting";
-          }
+        const lowerInput = rawInput.toLowerCase();
 
-          const realismTokens = data.getRandomTokens(data.REALISM_TOKENS, 4) || "hyper-realistic 32k, zero digital artifacts";
-          const physicsTokens = data.getRandomTokens(data.PHYSICS_TOKENS, 4) || "physically based rendering (PBR), subsurface scattering";
-          const aiRenderTokens = data.getRandomTokens(data.AI_RENDER_TOKENS, 4) || "Unreal Engine 5.4, Octane Render, ray-traced reflections";
+        // 1. PAMETNA LOGIKA ZA OPREMU I META-TOKENE (ODABIR NA OSNOVU KONTEKSTA)
+        const isPortrait = /(man|woman|face|portrait|person|girl|boy|people|human)/i.test(lowerInput);
+        const isLandscape = /(landscape|mountain|nature|forest|ocean|cityscape|valley|cliff|sky)/i.test(lowerInput);
+        const isMacro = /(macro|close up|insect|jewelry|watch|eye|tiny|detail)/i.test(lowerInput);
 
-          const enhanced = `A highly detailed, uncompromisingly realistic masterpiece of ${customerPrompt.trim()}. ${camera}. ${lighting}. ${realismTokens}, ${physicsTokens}, ${aiRenderTokens}. [Aspect Ratio: ${selectedAR}]`;
-          
-          const roast = `[V8 ENGINE CORE ANALYSIS]\n\n# THE REPORT\n✅ Subject: ${customerPrompt.split(' ')[0].toUpperCase()}\n❌ Missing Optics & Camera Data\n❌ Physics & Render tokens missing\n\n# THE 10X SOLUTION\nDeploying universal high-end descriptive protocols:\n- ${camera}\n- ${lighting}`;
-          
-          std.single = `${roast}\n\n# 10X ENHANCED PROMPT\n${enhanced}`;
+        const getRand = (arr, fallback) => (arr && arr.length > 0) ? arr[Math.floor(Math.random() * arr.length)] : fallback;
+        
+        let selCamera, selLens, selLight, metaTokens;
+
+        if (isPortrait) {
+            selCamera = getRand(["Canon EOS R5", "Sony A7R IV", "Leica M11", "Hasselblad X2D 100C"], "Canon EOS R5");
+            selLens = getRand(["85mm f/1.4", "50mm f/1.2", "Canon RF 85mm f/1.2L USM"], "85mm f/1.4");
+            selLight = getRand(["rembrandt lighting", "soft softbox lighting", "three-point studio lighting"], "soft softbox lighting");
+            metaTokens = getRand(["candid paparazzi outtake, IMG_1984.CR2", "fashion editorial, Vogue cover", "intimate portraiture, ultra-sharp eye focus"], "fashion editorial");
+        } else if (isLandscape) {
+            selCamera = getRand(["Phase One XF IQ4 150MP", "Fujifilm GFX 100", "Hasselblad H6D-100c"], "Phase One XF IQ4 150MP");
+            selLens = getRand(["14mm f/2.8", "24mm f/1.4", "16mm f/2.8"], "14mm f/2.8");
+            selLight = getRand(["golden hour volumetric lighting", "blue hour ambient", "dramatic key light"], "golden hour volumetric lighting");
+            metaTokens = getRand(["National Geographic award winner", "Ansel Adams wilderness archive", "f/11 deep focus, EXIF:35mmEquiv=24mm"], "National Geographic award winner");
+        } else if (isMacro) {
+            selCamera = getRand(["Nikon Z9", "Sony A7R V", "Canon EOS R5"], "Nikon Z9");
+            selLens = getRand(["100mm Macro", "Nikon Z 105mm f/2.8 Macro"], "100mm Macro");
+            selLight = getRand(["surgical precision lighting", "high micro-contrast ring light"], "surgical precision lighting");
+            metaTokens = getRand(["focus stacking technique", "extreme surface micro-details", "macro photography perfection"], "focus stacking technique");
+        } else {
+            selCamera = getRand(data.CAMERA_TOKENS, "ARRI Alexa 65");
+            selLens = getRand(data.LENS_TOKENS, "Zeiss Master Prime 50mm T1.3");
+            selLight = getRand(data.LIGHTING_TOKENS, "cinematic lighting");
+            metaTokens = getRand(["IMAX 70mm film scan", "still frame from an award-winning movie", "stills archive, disney.com"], "IMAX 70mm film scan");
         }
 
-        const detailedPrompts = data.generateDetailedPrompts ? data.generateDetailedPrompts(customerPrompt || demoInput, selectedAR) : null;
+        // 2. IZVLAČENJE DODATNIH PODATAKA IZ TVOG DATA.JSX
+        const tokRealism = data.getRandomTokens(data.REALISM_TOKENS, 3) || "Hyperreal_surface_microtexture, Nano_surface_detail";
+        const tokPhysics = data.getRandomTokens(data.PHYSICS_TOKENS, 3) || "Global_illumination_bounce";
+        const tokOptics = data.getRandomTokens(data.OPTICS_TOKENS, 2) || "Lens_signature_depth";
+        const tokRender = data.getRandomTokens(data.AI_RENDER_TOKENS, 3) || "NanoDetail_8K";
+        const uniqueMeta = data.getRandomTokens(data.THE_MOST_UNIQUE_PHOTOREALISTIC_TOKENS, 2) || "perfect optical physics";
+
+        // 3. STROGA ZABRANA TEKSTA NA SLICI (NEGATIVNI TOKENI I INSTRUKCIJE)
+        const noTextInstruction = "Absolutely NO text, NO letters, NO watermarks, NO signatures, NO symbols, NO fonts, NO captions on the image. Pure visual composition only.";
+
+        const imagePrefix = uploadedImage ? `${uploadedImage} ` : "";
         
+        // 4. FINALNI ČISTI PROMPT (DODATO: noTextInstruction)
+        const enhanced10x = `${imagePrefix}A breathtaking, award-winning capture of: ${rawInput}. Shot on ${selCamera} paired with ${selLens}. The scene features ${selLight}. Precision rendering protocols active: ${tokRealism}, ${tokPhysics}, ${tokOptics}, ${tokRender}. ${metaTokens}, ${uniqueMeta}. ${noTextInstruction}. Absolute photographic fidelity, zero CGI artifacts.`;
+
+        std.single = enhanced10x;
+
+        // Generisanje ostalih formata (uključena zabrana teksta i ovde)
+        const detailedPrompts = data.generateDetailedPrompts ? data.generateDetailedPrompts(rawInput + ". " + noTextInstruction, selectedAR) : null;
         if (detailedPrompts) {
           std.cinematic = detailedPrompts.cinematic;
           std.abstract = detailedPrompts.abstract;
           std.photoreal = detailedPrompts.photoreal;
           std.uniquePhoto = detailedPrompts.uniquePhoto;
-        } 
+        }
+
+        if (boxType === 'concept') {
+          std.uniquePhoto = enhanced10x;
+        }
 
         setGeneratedPrompts(std); 
-      } catch (err) {} finally { 
+      } catch (err) {
+        console.error(err);
+      } finally { 
         setIsEnhancing(false); 
         setIsScanning(false); 
       } 
-    }, 2000); 
+    }, 2500); 
   };
 
   const handleCopy = (text, boxName) => { 
-    let textToCopy = text;
-    if (boxName === 'single' && text.includes('# 10X ENHANCED PROMPT')) {
-      textToCopy = text.split('# 10X ENHANCED PROMPT')[1].trim();
-    }
-    navigator.clipboard.writeText(textToCopy); 
+    navigator.clipboard.writeText(text); 
     setCopiedBox(boxName); 
     setTimeout(() => setCopiedBox(''), 2000); 
   };
@@ -286,7 +359,6 @@ function EnhancerPage() {
   return (
     <div className="pt-32 pb-24 px-6 max-w-[1600px] mx-auto font-sans text-left text-white min-h-screen relative">
       <style>{`
-        /* Animirani laser visoke rezolucije - Amber varijanta za Boks 2 */
         @keyframes scanLineAmber {
           0% { top: 0%; opacity: 0; }
           10% { opacity: 1; }
@@ -303,7 +375,6 @@ function EnhancerPage() {
           z-index: 50;
           animation: scanLineAmber 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         }
-        /* Animirani gradijent za Premium naslov */
         @keyframes gradientMove {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
@@ -317,11 +388,10 @@ function EnhancerPage() {
       
       <Helmet>
         <title>10X ENHANCER | AI TOOLS PRO SMART</title>
-        <meta name="description" content="Use our 10X Prompt Enhancer to transform basic AI prompts into cinematic masterpieces. Optimized for Midjourney, Sora, and DALL-E." />
+        <meta name="description" content="Use our 10X Prompt Enhancer to transform basic AI prompts into cinematic masterpieces. Optimized for all premium AI Image and Video generators." />
         <link rel="icon" type="image/png" href={data.logoUrl} />
       </Helmet>
 
-      {/* Suptilna pozadinska mreža (Grid) za inženjerski osećaj */}
       <div className="absolute inset-0 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03] z-0"></div>
 
       <div className="mb-8 relative z-10">
@@ -330,26 +400,26 @@ function EnhancerPage() {
         </Link>
       </div>
 
-      {/* GLAVNI NASLOV */}
       <div className="mb-12 text-left lg:text-center w-full relative z-10 flex flex-col items-start lg:items-center">
-        <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-500 to-orange-400 text-gradient-animate drop-shadow-[0_0_15px_rgba(234,88,12,0.3)]">
+        {/* NASLOV JE SADA text-3xl md:text-5xl */}
+        <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-500 to-orange-400 text-gradient-animate drop-shadow-[0_0_15px_rgba(234,88,12,0.3)]">
           10X PROMPT ENHANCER
         </h1>
         <div className="text-[12px] md:text-[14px] font-black text-green-400 uppercase tracking-[0.2em] flex items-center gap-3">
           <span className="relative flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span>
-          Premium tool worth $100/month. Currently free.
+          Premium 3-in-1 tool worth $200/month. Currently FREE.
         </div>
+        {/* NOVI TEKST: POVEĆAN FONT I BOLD U BELO */}
+        <p className="text-white text-[12px] md:text-[14px] max-w-2xl font-bold uppercase tracking-[0.2em] leading-relaxed mt-6">
+          THE PREMIUM AI PROMPT ENGINEERING ENGINE. CONVERT SIMPLE IDEAS OR IMAGE INTO MASTERPIECES.
+        </p>
       </div>
       
       <div className="flex flex-col gap-12 w-full items-stretch relative z-10">
-           
-         {/* ============================================================================== */}
-         {/* BOKS 1: CONCEPT / SUBJECT + V8 OUTPUT + KONTROLE */}
-         {/* EFEKAT: EPIC HOLLYWOOD CINEMATIC (Plavi sjaj) */}
-         {/* ============================================================================== */}
+            
+         {/* BOKS 1 */}
          <div className="bg-[#0a0a0a]/50 backdrop-blur-md border border-blue-500/30 rounded-[2.5rem] p-8 md:p-12 shadow-[0_0_30px_rgba(37,99,235,0.3)] relative flex flex-col gap-10 transition-all duration-500 hover:border-blue-500/60 group">
             
-            {/* 1. INPUT */}
             <div className="w-full flex flex-col lg:flex-row gap-8 relative z-10">
                <div className="w-full lg:w-1/3 flex flex-col justify-start text-left">
                  <label className="text-[14px] md:text-[16px] font-black uppercase text-blue-500 tracking-widest flex items-center gap-2 mb-3 drop-shadow-[0_0_10px_rgba(37,99,235,0.6)]">
@@ -361,13 +431,28 @@ function EnhancerPage() {
                </div>
                
                <div className="w-full lg:w-2/3 relative flex flex-col rounded-2xl border border-white/10 shadow-inner bg-[#050505]/50 focus-within:border-blue-500/50 transition-all">
-                 <textarea value={demoInput} onChange={e => {setDemoInput(e.target.value); setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' });}} placeholder="e.g. 'a golden watch'" disabled={customerPrompt.length > 0} className="w-full flex-1 bg-transparent pl-6 pr-16 py-4 text-white text-[16px] md:text-[18px] font-medium leading-relaxed outline-none transition-all resize-none min-h-[100px]" />
+                 
+                 {uploadedImage && (
+                   <div className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-lg overflow-hidden border border-blue-500/50 z-20 shadow-lg group/img">
+                     <img src={uploadedImage} alt="Reference" className="w-full h-full object-cover opacity-80" />
+                     <button type="button" onClick={() => { setUploadedImage(null); setDemoInput(prev => prev.replace(uploadedImage, '').trim()); }} className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity"><X className="w-4 h-4 text-white" /></button>
+                   </div>
+                 )}
+
+                 <textarea value={demoInput} onChange={e => {setDemoInput(e.target.value); setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' });}} placeholder="e.g. 'a golden watch' or Upload Image" className={`w-full flex-1 bg-transparent pr-28 py-4 text-white text-[16px] md:text-[18px] font-medium leading-relaxed outline-none transition-all resize-none min-h-[100px] ${uploadedImage ? 'pl-20' : 'pl-6'}`} />
+                 
+                 {(!demoInput && customerPrompt.length === 0) && (
+                   <label className="absolute right-16 top-1/2 -translate-y-1/2 bg-blue-600/10 p-3 rounded-xl group hover:bg-blue-600 transition-all cursor-pointer z-10 hover:shadow-[0_0_15px_rgba(37,99,235,0.5)] hover:scale-105">
+                     {isImageUploading ? <Loader2 className="w-5 h-5 text-blue-500 animate-spin" /> : <UploadCloud className="w-5 h-5 text-blue-500 group-hover:text-white" />}
+                     <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                   </label>
+                 )}
+
                  {!demoInput && customerPrompt.length === 0 && (<button type="button" onClick={handleRollDice} disabled={isRolling} className="absolute right-4 top-1/2 -translate-y-1/2 bg-blue-600/10 p-3 rounded-xl group hover:bg-blue-600 transition-all cursor-pointer z-10 hover:shadow-[0_0_15px_rgba(37,99,235,0.5)] hover:scale-105"><Dices className={`w-5 h-5 text-blue-500 group-hover:text-white ${isRolling ? 'animate-spin' : ''}`} /></button>)}
                  {demoInput && (<button type="button" onClick={handleClearAll} className="absolute right-4 top-1/2 -translate-y-1/2 bg-red-600/10 p-3 rounded-xl group hover:bg-red-600 transition-all cursor-pointer z-10 hover:shadow-[0_0_15px_rgba(220,38,38,0.5)] hover:scale-105"><X className="w-5 h-5 text-red-500 group-hover:text-white" /></button>)}
                </div>
             </div>
 
-            {/* 2. V8 OUTPUT */}
             <div className="w-full flex flex-col border-t border-blue-500/20 pt-8 relative z-10">
                <label className="text-[10px] md:text-[12px] font-black uppercase text-blue-400 tracking-widest flex items-center gap-2 mb-6 drop-shadow-[0_0_10px_rgba(37,99,235,0.5)] border-b border-blue-500/20 pb-4">
                  <Sparkles className="w-4 h-4 mr-1 text-blue-400" /> V8 Cinematic Engine Output
@@ -379,7 +464,6 @@ function EnhancerPage() {
                </div>
             </div>
 
-            {/* 3. KONTROLE I ENHANCE DUGME */}
             <div className="w-full flex flex-col lg:flex-row justify-between items-center gap-8 mt-4 border-t border-blue-500/20 pt-8 relative z-10">
                <div className="flex flex-col sm:flex-row gap-8 w-full lg:w-auto text-left">
                   <div className="flex flex-col gap-4">
@@ -399,13 +483,9 @@ function EnhancerPage() {
             </div>
          </div>
              
-         {/* ============================================================================== */}
-         {/* BOKS 2: CUSTOMER PROMPT + V8 OUTPUT + KONTROLE */}
-         {/* EFEKAT: THE MOST UNIQUE PHOTOREALISTIC (Zlatni sjaj i laser skener) */}
-         {/* ============================================================================== */}
+         {/* BOKS 2 */}
          <div className="bg-[#0a0a0a]/50 backdrop-blur-md border border-amber-400/30 rounded-[2.5rem] p-8 md:p-12 shadow-[0_0_30px_rgba(251,191,36,0.3)] relative flex flex-col gap-10 transition-all duration-500 hover:border-amber-400/60 group">
             
-            {/* 1. INPUT */}
             <div className="w-full flex flex-col lg:flex-row gap-8 relative z-10">
                <div className="w-full lg:w-1/3 flex flex-col justify-start text-left">
                  <label className="text-[14px] md:text-[16px] font-black uppercase text-amber-400 tracking-widest flex items-center gap-2 mb-3 drop-shadow-[0_0_10px_rgba(251,191,36,0.6)]">
@@ -418,7 +498,9 @@ function EnhancerPage() {
 
                <div className="w-full lg:w-2/3 relative flex flex-col overflow-hidden rounded-2xl border border-white/10 shadow-inner bg-[#050505]/50 focus-within:border-amber-400/50 transition-all">
                  {isScanning && customerPrompt.trim() !== "" && <div className="animate-scan-amber" />}
-                 <textarea value={customerPrompt} onChange={e => {setCustomerPrompt(e.target.value); setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' });}} placeholder="PASTE YOUR RAW PROMPT HERE" disabled={demoInput.length > 0} className="w-full flex-1 bg-transparent p-6 md:p-8 text-white text-[12px] md:text-[14px] outline-none resize-none min-h-[160px]" />
+                 
+                 <textarea value={customerPrompt} onChange={e => {setCustomerPrompt(e.target.value); setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' });}} placeholder="PASTE YOUR RAW PROMPT HERE" className="w-full flex-1 bg-transparent p-6 md:p-8 text-white text-[12px] md:text-[14px] outline-none resize-none min-h-[160px]" />
+                 
                  {customerPrompt && (
                    <button type="button" onClick={handleClearAll} className="absolute right-4 top-4 bg-red-600/10 p-3 rounded-xl group hover:bg-red-600 transition-all cursor-pointer z-10 hover:shadow-[0_0_15px_rgba(220,38,38,0.5)] hover:scale-105 relative z-20">
                      <X className="w-5 h-5 text-red-500 group-hover:text-white" />
@@ -427,7 +509,6 @@ function EnhancerPage() {
                </div>
             </div>
 
-            {/* 2. V8 OUTPUT */}
             <div className="w-full flex flex-col border-t border-amber-400/20 pt-8 relative z-10">
                <label className="text-[10px] md:text-[12px] font-black uppercase text-amber-400 tracking-widest flex items-center gap-2 mb-6 drop-shadow-[0_0_10px_rgba(251,191,36,0.5)] border-b border-amber-400/20 pb-4">
                  <Eye className="w-4 h-4 mr-1 text-amber-400" /> V8 Unique Photorealistic Matrix Output
@@ -443,7 +524,6 @@ function EnhancerPage() {
                </div>
             </div>
 
-            {/* 3. KONTROLE I ENHANCE DUGME */}
             <div className="w-full flex flex-col lg:flex-row justify-between items-center gap-8 mt-4 border-t border-amber-400/20 pt-8 relative z-10">
                <div className="flex flex-col sm:flex-row gap-8 w-full lg:w-auto text-left">
                   <div className="flex flex-col gap-4">
@@ -456,14 +536,59 @@ function EnhancerPage() {
                   </div>
                </div>
                <div className="w-full lg:w-[40%] xl:w-[30%] shrink-0">
-                 {/* Amber gradijent za Unique Photo */}
                  <button type="button" onClick={(e) => handleEnhance(e, 'prompt')} disabled={isEnhancing || (!demoInput && !customerPrompt)} className="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-black px-8 py-6 rounded-2xl font-black text-[14px] uppercase tracking-widest transition-all duration-300 disabled:opacity-50 flex items-center justify-center shadow-[0_0_20px_rgba(251,191,36,0.4)] hover:shadow-[0_0_40px_rgba(251,191,36,0.8)] hover:-translate-y-1 cursor-pointer">
                    {isEnhancing ? <><Loader2 className="w-6 h-6 animate-spin mr-4" /> ENHANCING...</> : "Enhance Unique Prompt"}
                  </button>
                </div>
             </div>
-
          </div>
+
+         {/* BOKS 3: REFERENCE GALERIJA */}
+         {gallery.length > 0 && (
+           <div className="bg-[#0a0a0a]/50 backdrop-blur-md border border-orange-500/30 rounded-[2.5rem] p-8 md:p-12 shadow-[0_0_30px_rgba(234,88,12,0.1)] relative flex flex-col gap-6 transition-all duration-500 hover:border-orange-500/60 mt-4 text-center items-center">
+             
+             <div className="flex items-center justify-center gap-3 border-b border-orange-500/20 pb-4 mb-4 w-full">
+               <Zap className="w-6 h-6 text-orange-500 animate-pulse" />
+               <h2 className="text-xl md:text-2xl font-black text-orange-500 uppercase tracking-widest drop-shadow-[0_0_10px_rgba(234,88,12,0.4)]">
+                 Premium V8 Gallery
+               </h2>
+             </div>
+
+             <div className="w-full max-w-4xl mx-auto aspect-video md:aspect-[21/9] rounded-3xl overflow-hidden border border-white/10 relative group bg-black shadow-inner">
+                <img 
+                   src={gallery[activeGalleryIndex]?.url} 
+                   alt="Main Enhancer Reference" 
+                   className="w-full h-full object-cover transition-opacity duration-1000"
+                />
+                <button 
+                  type="button"
+                  onClick={() => {
+                    const imgUrl = gallery[activeGalleryIndex]?.url;
+                    setUploadedImage(imgUrl);
+                    setDemoInput(prev => prev ? `${imgUrl} ${prev}` : imgUrl);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="absolute bottom-6 right-6 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white px-6 py-4 rounded-xl text-[12px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all shadow-[0_0_20px_rgba(234,88,12,0.6)] hover:scale-105"
+                >
+                  Use as Image Prompt
+                </button>
+             </div>
+
+             <div className="flex justify-center gap-4 overflow-x-auto custom-scrollbar pb-4 pt-2 w-full max-w-5xl mx-auto">
+                {gallery.map((img, idx) => (
+                   <button 
+                     key={img.id}
+                     type="button"
+                     onClick={() => setActiveGalleryIndex(idx)}
+                     className={`relative w-24 h-16 md:w-32 md:h-20 shrink-0 rounded-2xl overflow-hidden border-2 transition-all duration-300 ${activeGalleryIndex === idx ? 'border-orange-500 scale-105 shadow-[0_0_15px_rgba(234,88,12,0.5)] opacity-100' : 'border-white/5 opacity-40 hover:opacity-100 hover:border-white/20'}`}
+                   >
+                      <img src={img.url} className="w-full h-full object-cover" alt="Thumbnail" />
+                      {activeGalleryIndex === idx && <div className="absolute inset-0 border-4 border-orange-500 rounded-2xl pointer-events-none"></div>}
+                   </button>
+                ))}
+             </div>
+           </div>
+         )}
 
       </div>
     </div>
@@ -499,7 +624,7 @@ function HomePage({ apps = [] }) {
     <>
       <Helmet>
         <title>AI TOOLS PRO SMART | PROMPT GENERATOR</title>
-        <meta name="description" content="Discover premium AI prompt generators, Midjourney architectures, and cinematic video protocols. Buy high-quality React source codes for your next AI SaaS by Goran Damnjanović." />
+        <meta name="description" content="Discover premium AI prompt generators, cinematic video protocols, and highly detailed visual architectures. Buy high-quality React source codes for your next AI SaaS by Goran Damnjanović." />
         <link rel="icon" type="image/png" href={data.logoUrl} />
       </Helmet>
       <div id="home-banner" className="relative w-full h-[85vh] flex items-end overflow-hidden bg-black text-white">
@@ -529,8 +654,8 @@ function HomePage({ apps = [] }) {
         <div id="enhancer" className="mb-24 flex flex-col items-center justify-center text-center py-20 border-y border-orange-500/30 scroll-mt-32">
           <div className="bg-orange-600/10 p-4 rounded-full mb-6"><Zap className="w-12 h-12 text-orange-500 drop-shadow-[0_0_15px_rgba(249,115,22,0.6)]" strokeWidth={1.5} /></div>
           <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-orange-600 mb-4 drop-shadow-[0_0_15px_rgba(234,88,12,0.4)]">10X PROMPT ENHANCER</h2>
-          <div className="text-[13px] md:text-[15px] font-black text-green-500 uppercase tracking-[0.2em] mb-8">Premium tool worth $100/month. Currently free.</div>
-          <p className="text-zinc-400 text-[10px] md:text-[12px] max-w-2xl font-medium uppercase tracking-[0.2em] leading-relaxed mb-10 mx-auto">ACCESS THE PREMIUM AI PROMPT ENGINEERING ENGINE. CONVERT SIMPLE IDEAS INTO MASTERPIECES.<br /><br /><span className="text-orange-500 font-black uppercase">ENTER YOUR PROMPT; WE WILL ANALYZE IT IN DETAIL AND ENHANCE IT TO BE 10X BETTER.</span></p>
+          <div className="text-[13px] md:text-[15px] font-black text-green-500 uppercase tracking-[0.2em] mb-8">Premium 3-in-1 tool worth $200/month. Currently FREE.</div>
+          <p className="text-zinc-400 text-[10px] md:text-[12px] max-w-2xl font-medium uppercase tracking-[0.2em] leading-relaxed mb-10 mx-auto">ACCESS THE PREMIUM AI PROMPT ENGINEERING ENGINE. CONVERT SIMPLE IDEAS OR IMAGE INTO MASTERPIECES.<br /><br /><span className="text-orange-500 font-black uppercase">ENTER YOUR PROMPT; WE WILL ANALYZE IT IN DETAIL AND ENHANCE IT TO BE 10X BETTER.</span></p>
           <Link to="/enxance" className="bg-[#ea580c] hover:bg-orange-500 text-white px-10 py-4 rounded-xl font-black text-[12px] uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(234,88,12,0.4)] transition-all">LAUNCH ENGINE</Link>
         </div>
         <div id="marketplace" className="flex items-center gap-4 mb-10 text-left"><div className="flex items-center gap-2.5 shrink-0"><Sparkles className="text-blue-500 w-6 h-6" /><h3 className="text-white font-black uppercase text-[20px] tracking-widest italic text-left">Premium AI Asset Store</h3></div><div className="h-[1px] w-32 bg-gradient-to-r from-blue-500/80 to-transparent"></div></div>
@@ -666,6 +791,87 @@ function SingleProductPage({ apps = [] }) {
   );
 }
 
+const EnhancerAdminGallery = () => {
+  const [gallery, setGallery] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    loadGallery();
+  }, []);
+
+  const loadGallery = async () => {
+    try {
+      const snapshot = await getDocs(collection(db, "enhancer_gallery"));
+      const items = [];
+      snapshot.forEach(document => items.push({ id: document.id, ...document.data() }));
+      setGallery(items.sort((a, b) => b.createdAt - a.createdAt));
+    } catch (err) { console.error("Greška pri učitavanju galerije:", err); }
+  };
+
+  const handleUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setIsUploading(true);
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', data.CLOUDINARY_UPLOAD_PRESET);
+    try {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${data.CLOUDINARY_CLOUD_NAME}/upload`, { method: 'POST', body: fd });
+      const resData = await res.json();
+      
+      await addDoc(collection(db, "enhancer_gallery"), { 
+        url: resData.secure_url, 
+        createdAt: Date.now() 
+      });
+      loadGallery();
+    } catch (err) { console.error("Upload failed", err); }
+    finally { setIsUploading(false); }
+  };
+
+  const handleDelete = async (id) => {
+    if(window.confirm("Da li si siguran da želiš da obrišeš ovu sliku iz Enhancer galerije?")) {
+      await deleteDoc(doc(db, "enhancer_gallery", id));
+      loadGallery();
+    }
+  };
+
+  return (
+    <div className="bg-[#0a0a0a] border border-orange-500/30 rounded-[2.5rem] p-8 shadow-[0_0_30px_rgba(234,88,12,0.1)] mt-12 mb-12">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
+        <div>
+          <h2 className="text-xl md:text-2xl font-black text-orange-500 uppercase tracking-widest flex items-center gap-3">
+            <Zap className="w-6 h-6" /> 10X Enhancer Reference Gallery
+          </h2>
+          <p className="text-zinc-500 text-[10px] uppercase tracking-widest mt-2 font-bold">
+            Slike dodate ovde će biti dostupne korisnicima na 10X Enhancer stranici.
+          </p>
+        </div>
+        <label className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white px-6 py-4 rounded-xl font-black text-[12px] uppercase tracking-widest cursor-pointer transition-all flex items-center gap-3 shadow-[0_0_20px_rgba(234,88,12,0.4)] hover:scale-105">
+          {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <UploadCloud className="w-5 h-5" />}
+          {isUploading ? "UPLOADING..." : "UPLOAD NEW IMAGE"}
+          <input type="file" accept="image/*" onChange={handleUpload} className="hidden" />
+        </label>
+      </div>
+      
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        {gallery.map(img => (
+          <div key={img.id} className="relative group rounded-2xl overflow-hidden border border-white/10 aspect-square bg-[#050505]">
+            <img src={img.url} className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-all duration-500 group-hover:scale-105" alt="Enhancer Ref" />
+            <button type="button" onClick={() => handleDelete(img.id)} className="absolute top-2 right-2 bg-red-600/80 hover:bg-red-600 p-2 rounded-xl text-white opacity-0 group-hover:opacity-100 transition-all hover:scale-110 shadow-lg">
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        ))}
+        {gallery.length === 0 && !isUploading && (
+          <div className="col-span-full py-16 text-center text-zinc-600 text-[12px] font-black uppercase tracking-widest border-2 border-dashed border-white/10 rounded-[2rem] bg-white/[0.02]">
+            NEMA SLIKA U ENHANCER GALERIJI
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 function AdminPage({ apps = [], refreshData }) {
   const [password, setPassword] = useState(''); const [isAuthenticated, setIsAuthenticated] = useState(false); const [editingId, setEditingId] = useState(null); const [isUploading, setIsUploading] = useState(false); 
   const initialForm = { name: '', category: 'AI ASSET', type: '', headline: '', price: '', priceLifetime: '', description: '', media: [], whopLink: '', reactSourceCode: '', faq: Array.from({ length: 7 }, () => ({ q: '', a: '' })) }; 
@@ -713,6 +919,9 @@ function AdminPage({ apps = [], refreshData }) {
            <div className="flex gap-4"><button type="submit" disabled={isUploading} className="flex-1 py-5 rounded-2xl font-black uppercase text-[12px] bg-orange-600 hover:bg-orange-500 transition-all">Execute Deploy</button>{editingId && <button type="button" onClick={() => {setFormData(initialForm); setEditingId(null);}} className="px-8 py-5 rounded-2xl bg-zinc-800 uppercase font-black text-[12px]">Cancel</button>}</div>
            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-10 border-t border-white/10">{sortedAppsAdmin.map(app => (<div key={app.id} className="p-5 bg-black border border-white/10 rounded-[1.5rem] flex flex-col gap-4 shadow-xl"><div className="aspect-video relative overflow-hidden rounded-2xl bg-zinc-900">{app.media?.[0]?.type === 'video' ? <video src={`${app.media[0].url}#t=0.001`} className="w-full h-full object-cover" muted /> : <img src={data.getMediaThumbnail(app.media?.[0]?.url)} className="w-full h-full object-cover" alt="" />}</div><div className="flex justify-between items-start gap-4"><div><span className="text-[13px] font-black uppercase text-white line-clamp-2">{app.name}</span><span className="text-[9px] text-zinc-500 block mt-1">ID: {app.id}</span></div><div className="flex gap-2"><button type="button" onClick={() => handleEditClick(app)} className="p-2.5 bg-blue-600/20 text-blue-400 rounded-xl hover:bg-blue-600 transition-all"><Edit className="w-4 h-4" /></button><button type="button" onClick={async () => { if(window.confirm("Delete?")) { await fetch(`${API_URL}/${app.id}`, { method: 'DELETE' }); refreshData(); } }} className="p-2.5 bg-red-600/20 text-red-400 rounded-xl hover:bg-red-600 transition-all"><Trash2 className="w-4 h-4" /></button></div></div></div>))}</div>
         </form>
+
+        <EnhancerAdminGallery />
+
     </div>
   );
 }
