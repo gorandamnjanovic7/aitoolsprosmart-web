@@ -338,24 +338,27 @@ function EnhancerPage() {
       try { 
         const std = { single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' }; 
 
-        // DETEKCIJA LOŠEG KODA (ROAST MEHANIKA IZ PDF-a)
+        // 1. DETEKCIJA LOŠEG KODA (PURGE) [cite: 15, 16]
         let cleanInput = rawInput;
         let detectedBadFormat = false;
 
-        // Ako korisnik unese [SUBJECT]: ili parametre kao --ar 16:9
+        // Provera i uklanjanje Midjourney-style parametara i zagrada 
         if (/\[.*?\]|--\w+/.test(rawInput)) {
             detectedBadFormat = true;
-            // Čišćenje prompta: brisanje zagrada i -- parametara
             cleanInput = rawInput
-                .replace(/\[.*?\]:?/g, '')       // Uklanja [NEŠTO] ili [NEŠTO]:
-                .replace(/--\w+(?:\s+[^\s]+)?/g, '') // Uklanja --ar 16:9, --v 6.0 itd.
+                .replace(/\[.*?\]:?/g, '')       // Uklanja [SUBJECT]: i slično 
+                .replace(/--\w+(?:\s+[^\s]+)?/g, '') // Uklanja --ar 16:9, --v 6.0 itd 
                 .replace(/\s{2,}/g, ' ')         // Čisti duple razmake
                 .trim();
         }
 
         const lowerInput = cleanInput.toLowerCase();
+        
+        // Analiza za Roast poruku [cite: 9, 10]
+        let missingLighting = !/(light|sun|glow|shadow|dark|illuminat|bright|ray|hour|overcast|moody)/i.test(lowerInput);
+        let missingCamera = !/(shot on|camera|lens|mm|f\/\d|canon|nikon|sony|arri|red|fujifilm|hasselblad|leica|optics)/i.test(lowerInput);
 
-        // 1. PAMETNA LOGIKA ZA OPREMU I META-TOKENE
+        // 2. PAMETNA V8 LOGIKA ZA OPREMU [cite: 20]
         const isPortrait = /(man|woman|face|portrait|person|girl|boy|people|human)/i.test(lowerInput);
         const isLandscape = /(landscape|mountain|nature|forest|ocean|cityscape|valley|cliff|sky)/i.test(lowerInput);
         const isMacro = /(macro|close up|insect|jewelry|watch|eye|tiny|detail)/i.test(lowerInput);
@@ -383,32 +386,39 @@ function EnhancerPage() {
             selCamera = getRand(data.CAMERA_TOKENS, "ARRI Alexa 65");
             selLens = getRand(data.LENS_TOKENS, "Zeiss Master Prime 50mm T1.3");
             selLight = getRand(data.LIGHTING_TOKENS, "cinematic lighting");
-            metaTokens = getRand(["IMAX 70mm film scan", "still frame from an award-winning movie", "stills archive, disney.com"], "IMAX 70mm film scan");
+            metaTokens = getRand(["IMAX 70mm film scan", "still frame from an award-winning movie", "stills archive, disney.com"], "IMAX 70mm film scan"); 
         }
 
-        // 2. IZVLAČENJE DODATNIH PODATAKA
+        // 3. IZVLAČENJE DODATNIH PODATAKA IZ DATA.JSX
         const tokRealism = data.getRandomTokens(data.REALISM_TOKENS, 3) || "Hyperreal_surface_microtexture, Nano_surface_detail";
         const tokPhysics = data.getRandomTokens(data.PHYSICS_TOKENS, 3) || "Global_illumination_bounce";
         const tokOptics = data.getRandomTokens(data.OPTICS_TOKENS, 2) || "Lens_signature_depth";
         const tokRender = data.getRandomTokens(data.AI_RENDER_TOKENS, 3) || "NanoDetail_8K";
         const uniqueMeta = data.getRandomTokens(data.THE_MOST_UNIQUE_PHOTOREALISTIC_TOKENS, 2) || "perfect optical physics";
 
-        // 3. STROGA ZABRANA TEKSTA
+        // STROGA ZABRANA TEKSTA
         const noTextInstruction = "Absolutely NO text, NO letters, NO watermarks, NO signatures, NO symbols, NO fonts, NO captions on the image. Pure visual composition only.";
         const imagePrefix = uploadedImage ? `${uploadedImage} ` : "";
         
-        // 4. FINALNI ČISTI PROMPT SA NOVIM ASPECT RATIO FORMATOM NA KRAJU
+        // 4. FINALNI ČISTI PROMPT (Koristi selektovani AR iz aplikacije) 
         const enhanced10x = `${imagePrefix}A breathtaking, award-winning capture of: ${cleanInput}. Shot on ${selCamera} paired with ${selLens}. The scene features ${selLight}. Precision rendering protocols active: ${tokRealism}, ${tokPhysics}, ${tokOptics}, ${tokRender}. ${metaTokens}, ${uniqueMeta}. ${noTextInstruction}. Absolute photographic fidelity, zero CGI artifacts. [Aspect Ratio: ${selectedAR}]`;
 
-        // 5. DODAVANJE ROAST PORUKE U IZLAZ (AKO JE OTKRIVENO LOŠE FORMATIRANJE)
+        // 5. KREIRANJE ANALIZE (THE ROAST) [cite: 15, 16]
         let finalSingleOutput = enhanced10x;
-        if (boxType === 'prompt' && detectedBadFormat) {
-            finalSingleOutput = `/// V8 AI EXPERT ANALYSIS ///\n\n🟢 WHAT'S GOOD:\nThe core vision and subject matter are solid. The engine successfully extracted your underlying intent.\n\n🔴 WHAT'S BAD (THE ROAST):\nYour formatting is disastrous. Using bracketed tags like [SUBJECT] and raw parameters like --v 6.0 or --ar 16:9 creates visual garbage that confuses modern diffusion models. We have purged this obsolete coding syntax so your prompt can actually breathe.\n\n🚀 V8 10X FINAL PROMPT:\n\n${enhanced10x}`;
+        if (boxType === 'prompt') {
+            let roastMsgs = [];
+            if (detectedBadFormat) roastMsgs.push("- Your formatting is disastrous. Diffusion models are designed for natural language, not obsolete bracketed coding syntax. I have purged that visual noise to let your prompt breathe."); 
+            if (missingLighting) roastMsgs.push("- You completely ignored lighting! It's the core of photorealism. Your original scene would look flat and synthetic, so I injected precise volumetric protocols."); 
+            if (missingCamera) roastMsgs.push("- No optical system defined. Without specific lenses and sensors, the AI fails to generate realistic depth of field, making it look like cheap CGI."); 
+
+            // Sastavljanje finalne ekspertske analize [cite: 15, 16]
+            const roastIntro = `/// V8 AI EXPERT ANALYSIS ///\n\n🟢 WHAT'S GOOD:\nThe core vision is solid. The subject matter has narrative potential.\n\n🔴 WHAT'S BAD (THE ROAST):\n${roastMsgs.length > 0 ? roastMsgs.join('\n') : "Your prompt lacked technical depth and professional cinematography standards."}\n\n🚀 V8 10X FINAL PROMPT:\n\n`;
+            finalSingleOutput = roastIntro + enhanced10x;
         }
 
         std.single = finalSingleOutput;
 
-        // Generisanje ostalih formata
+        // Generisanje ostalih formata (poboljšano sa automatskim AR)
         const detailedPrompts = data.generateDetailedPrompts ? data.generateDetailedPrompts(cleanInput + ". " + noTextInstruction, selectedAR) : null;
         if (detailedPrompts) {
           std.cinematic = detailedPrompts.cinematic + ` [Aspect Ratio: ${selectedAR}]`;
@@ -432,7 +442,7 @@ function EnhancerPage() {
   };
 
   const handleCopy = (text, boxName) => { 
-    // Ako kopiraju, izbaci "Roast" tekst da bi korisnik dobio samo čist prompt u Clipboard-u
+    // PAMETNO KOPIRANJE: Kopira samo deo PROMPT-a bez analize [cite: 17]
     let copyText = text;
     if (text.includes("🚀 V8 10X FINAL PROMPT:\n\n")) {
       copyText = text.split("🚀 V8 10X FINAL PROMPT:\n\n")[1];
@@ -734,7 +744,7 @@ function HomePage({ apps = [] }) {
       setIsLoadingVideos(true); 
       const RSS_URL = encodeURIComponent(`https://www.youtube.com/feeds/videos.xml?channel_id=UC6ilBUks_oFMSD8CE9qD6lQ`);
       try {
-        const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${RSS_URL}`);
+        const res = await fetch(`https://api.rss2json.com/v1_1/api.json?rss_url=${RSS_URL}`);
         const result = await res.json();
         if (isMounted && result?.items?.length > 0) { setLiveVideos(result.items.slice(0, 8).map(item => ({ title: item.title, url: item.link }))); setIsLoadingVideos(false); }
       } catch (err) { if (isMounted) setIsLoadingVideos(false); }
