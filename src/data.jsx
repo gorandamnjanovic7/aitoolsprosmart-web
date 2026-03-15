@@ -19,14 +19,43 @@ export const bannerUrl = zmajImg;
 export const logoUrl = mojLogo; 
 
 export const BANNER_DATA = [
-  { image: zmajImg, badge: "NEW PROTOCOL", title: "EPIC REVIVAL OF AN ANCIENT CIVILIZATION v8", subtitle: "Hyper-realistic temporal diffusion models are now active. Create 4K cinematic sequences from raw text inputs." },
-  { image: novaSlikaImg, badge: "CORE UPDATE", title: "QUANTUM PROMPT ENGINE", subtitle: "Leverage the new multi-modal prompt architecture. Achieve 99.8% prompt adherence." },
-  { image: hollywoodImg, badge: "PREMIUM ASSET", title: "HOLLYWOOD VSX CINEMATIC GRADE ", subtitle: "Access classified rendering algorithms used by top-tier visual architects." },
-  { image: slikaHubImg, badge: "SYSTEM UPGRADE", title: "WELCOME TO OUR HUB", subtitle: "Ultra-fast processing for maximum quality." },
-  { image: slikaVideoImg, badge: "CINEMATIC", title: "VIRAL CONTENT ON THE EDGE", subtitle: "Achieve the most unique photorealistic images ever." },
-  { image: slikaCopyImg, badge: "NEW FEATURE", title: "ADVANCED DATA PARSING", subtitle: "Extract and manipulate complex visual structures." }
+  { 
+    image: slikaHubImg, 
+    badge: "SYSTEM UPGRADE", 
+    title: "WELCOME TO OUR HUB", 
+    subtitle: "Ultra-fast processing for maximum quality." 
+  },
+  { 
+    image: zmajImg, 
+    badge: "NEW PROTOCOL", 
+    title: "EPIC REVIVAL OF AN ANCIENT CIVILIZATION v8", 
+    subtitle: "Hyper-realistic temporal diffusion models are now active. Create 4K cinematic sequences from raw text inputs." 
+  },
+  { 
+    image: novaSlikaImg, 
+    badge: "CORE UPDATE", 
+    title: "QUANTUM PROMPT ENGINE", 
+    subtitle: "Leverage the new multi-modal prompt architecture. Achieve 99.8% prompt adherence." 
+  },
+  { 
+    image: slikaVideoImg, 
+    badge: "CINEMATIC", 
+    title: "VIRAL CONTENT ON THE EDGE", 
+    subtitle: "Achieve the most unique photorealistic images ever." 
+  },
+  { 
+    image: slikaCopyImg, 
+    badge: "NEW FEATURE", 
+    title: "ADVANCED DATA PARSING", 
+    subtitle: "Extract and manipulate complex visual structures." 
+  },
+  { 
+    image: hollywoodImg, 
+    badge: "PREMIUM ASSET", 
+    title: "HOLLYWOOD VSX CINEMATIC GRADE ", 
+    subtitle: "Access classified rendering algorithms used by top-tier visual architects." 
+  }
 ];
-
 export const formatExternalLink = (url) => { if (!url) return '#'; if (!url.startsWith('http://') && !url.startsWith('https://')) return `https://${url}`; return url; };
 export const extractSys = (desc) => { if (!desc) return { d: '', s: {} }; const m = desc.match(/\[SYS\]([\s\S]*?)\[\/SYS\]/i); if (!m) return { d: desc, s: {} }; try { return { d: desc.replace(m[0], '').trim(), s: JSON.parse(m[1]) }; } catch { return { d: desc, s: {} }; } };
 export const renderDescription = (text) => { if (!text) return null; const { d } = extractSys(text); return <div className="w-full text-left"><p className="text-zinc-400 text-sm md:text-base leading-relaxed mb-6 whitespace-pre-wrap font-sans">{d}</p></div>; };

@@ -5,7 +5,7 @@ import {
   PlayCircle, Sparkles, Youtube, X, ChevronLeft, ChevronRight, Award, 
   ArrowRight, Maximize, Edit, Loader2, ShieldAlert, Trash2, UploadCloud,
   Dices, Eye, MousePointerClick, Clock, Users, Zap, HelpCircle, ChevronDown,
-  ChevronUp
+  ChevronUp, Activity, BarChart
 } from 'lucide-react';
 
 import { db } from './firebase';
@@ -13,7 +13,7 @@ import { collection, getDocs, query, orderBy, limit, addDoc, deleteDoc, doc } fr
 
 import * as data from './data';
 import { 
-  TypewriterText, UniversalVideoPlayer, FullScreenBoot, 
+  TypewriterText, UniversalVideoPlayer, 
   MatrixRain, TutorialCard, FormattedDescription 
 } from './data';
 import mojBaner from './moj-baner.png'; 
@@ -30,6 +30,33 @@ if (typeof window !== 'undefined') {
 
 const BASE_BACKEND_URL = "https://aitoolsprosmart-becend-production.up.railway.app"; 
 const API_URL = `${BASE_BACKEND_URL}/api/products`;
+
+// --- V8 ANALYTICS ENGINE CONFIG ---
+const MOJA_IP = "213.196.99.10"; 
+let globalUserIp = "";
+const currentSessionId = Math.random().toString(36).substring(2, 15);
+
+const fetchUserIp = async () => {
+  try {
+    const res = await fetch('https://api.ipify.org?format=json');
+    const data = await res.json();
+    globalUserIp = data.ip;
+  } catch (err) { console.warn("Ne mogu da preuzmem IP"); }
+};
+fetchUserIp();
+
+export const logAnalyticsEvent = async (type, details) => {
+  if (globalUserIp === MOJA_IP || globalUserIp === "") return; 
+  try {
+    await addDoc(collection(db, "analytics"), {
+      type,
+      ...details,
+      timestamp: Date.now(),
+      sessionId: currentSessionId
+    });
+  } catch (err) { /* silent fail */ }
+};
+// ----------------------------------
 
 const getRibbonStyle = (index) => {
   if (index === 0) return "bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.7)]";
@@ -159,6 +186,63 @@ const SmartScrollButton = () => {
   );
 };
 
+// ============================================================================
+// NOVI V8 FULL SCREEN BOOT (KRUŽNI LOADER OKO LOGOA)
+// ============================================================================
+const FullScreenBoot = ({ onComplete }) => {
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setProgress(p => {
+        if (p >= 100) {
+          clearInterval(interval);
+          setTimeout(onComplete, 800); 
+          return 100;
+        }
+        return p + Math.floor(Math.random() * 4) + 1; 
+      });
+    }, 50);
+    return () => clearInterval(interval);
+  }, [onComplete]);
+
+  const radius = 60;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (Math.min(progress, 100) / 100) * circumference;
+
+  return (
+    <div className="fixed inset-0 z-[9999] bg-[#050505] flex flex-col items-center justify-center">
+      <div className="relative flex items-center justify-center mb-8">
+        <svg className="w-48 h-48 transform -rotate-90 drop-shadow-[0_0_15px_rgba(249,115,22,0.4)]" viewBox="0 0 140 140">
+          <circle cx="70" cy="70" r={radius} fill="transparent" stroke="#18181b" strokeWidth="2" />
+          <circle 
+            cx="70" cy="70" r={radius} 
+            fill="transparent" stroke="#ea580c" strokeWidth="3" 
+            strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} 
+            className="transition-all duration-200 ease-out" strokeLinecap="round" 
+          />
+        </svg>
+        <img 
+          src={data.logoUrl} 
+          alt="System Logo" 
+          className={`absolute w-16 h-16 object-contain transition-all duration-700 ${progress >= 100 ? 'scale-125 drop-shadow-[0_0_25px_rgba(234,88,12,0.8)]' : 'animate-pulse'}`} 
+        />
+      </div>
+      <div className="flex flex-col items-center gap-3">
+        <div className="text-orange-600 font-black uppercase tracking-[0.5em] text-[12px] drop-shadow-[0_0_10px_rgba(234,88,12,0.5)]">
+          V8 Engine Booting
+        </div>
+        <div className="text-zinc-500 font-mono text-[10px] tracking-[0.3em] flex items-center gap-2">
+          <span>SYSTEM PROTOCOLS</span>
+          <span className="text-orange-500 w-8">{Math.min(progress, 100)}%</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+// ============================================================================
+
+
 const WelcomeBanner = ({ onClose }) => (
   <div className="fixed inset-0 z-[6000] bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
     <div className="bg-[#0a0a0a] border border-orange-500/50 rounded-[2rem] max-w-2xl w-full overflow-hidden shadow-2xl relative text-zinc-100 text-center font-sans">
@@ -251,6 +335,7 @@ function EnhancerPage() {
   const [uploadedImage, setUploadedImage] = useState(null);
   const [isImageUploading, setIsImageUploading] = useState(false);
   const [showWarningModal, setShowWarningModal] = useState(false);
+  const [exclusiveWarning, setExclusiveWarning] = useState('');
   
   const [gallery, setGallery] = useState([]);
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
@@ -286,6 +371,10 @@ function EnhancerPage() {
 
   const handleRollDice = (e) => { 
     if (e) e.preventDefault();
+    if (customerPrompt.trim() !== "") {
+      setExclusiveWarning("You must clear the 'Paste Customer Prompt' field first.");
+      return;
+    }
     setIsRolling(true);
     const prompts = data.DICE_PROMPTS || [];
     if (prompts.length > 0) {
@@ -297,6 +386,10 @@ function EnhancerPage() {
   };
 
   const handleImageUpload = async (e) => {
+    if (customerPrompt.trim() !== "") {
+      setExclusiveWarning("You must clear the 'Paste Customer Prompt' field first.");
+      return;
+    }
     if (uploadedImage) {
       setShowWarningModal(true);
       return;
@@ -334,31 +427,33 @@ function EnhancerPage() {
     setIsEnhancing(true); 
     setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' });
     
+    logAnalyticsEvent('enhancer_action', { 
+      input: rawInput, 
+      actionType: boxType,
+      aspectRatio: selectedAR
+    });
+    
     setTimeout(() => { 
       try { 
         const std = { single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' }; 
 
-        // 1. DETEKCIJA LOŠEG KODA (PURGE) [cite: 15, 16]
         let cleanInput = rawInput;
         let detectedBadFormat = false;
 
-        // Provera i uklanjanje Midjourney-style parametara i zagrada 
         if (/\[.*?\]|--\w+/.test(rawInput)) {
             detectedBadFormat = true;
             cleanInput = rawInput
-                .replace(/\[.*?\]:?/g, '')       // Uklanja [SUBJECT]: i slično 
-                .replace(/--\w+(?:\s+[^\s]+)?/g, '') // Uklanja --ar 16:9, --v 6.0 itd 
-                .replace(/\s{2,}/g, ' ')         // Čisti duple razmake
+                .replace(/\[.*?\]:?/g, '')       
+                .replace(/--\w+(?:\s+[^\s]+)?/g, '') 
+                .replace(/\s{2,}/g, ' ')         
                 .trim();
         }
 
         const lowerInput = cleanInput.toLowerCase();
         
-        // Analiza za Roast poruku [cite: 9, 10]
         let missingLighting = !/(light|sun|glow|shadow|dark|illuminat|bright|ray|hour|overcast|moody)/i.test(lowerInput);
         let missingCamera = !/(shot on|camera|lens|mm|f\/\d|canon|nikon|sony|arri|red|fujifilm|hasselblad|leica|optics)/i.test(lowerInput);
 
-        // 2. PAMETNA V8 LOGIKA ZA OPREMU [cite: 20]
         const isPortrait = /(man|woman|face|portrait|person|girl|boy|people|human)/i.test(lowerInput);
         const isLandscape = /(landscape|mountain|nature|forest|ocean|cityscape|valley|cliff|sky)/i.test(lowerInput);
         const isMacro = /(macro|close up|insect|jewelry|watch|eye|tiny|detail)/i.test(lowerInput);
@@ -386,39 +481,34 @@ function EnhancerPage() {
             selCamera = getRand(data.CAMERA_TOKENS, "ARRI Alexa 65");
             selLens = getRand(data.LENS_TOKENS, "Zeiss Master Prime 50mm T1.3");
             selLight = getRand(data.LIGHTING_TOKENS, "cinematic lighting");
-            metaTokens = getRand(["IMAX 70mm film scan", "still frame from an award-winning movie", "stills archive, disney.com"], "IMAX 70mm film scan"); 
+            metaTokens = getRand(["IMAX 70mm film scan", "still frame from an award-winning movie", "stills archive, disney.com"], "IMAX 70mm film scan");
         }
 
-        // 3. IZVLAČENJE DODATNIH PODATAKA IZ DATA.JSX
         const tokRealism = data.getRandomTokens(data.REALISM_TOKENS, 3) || "Hyperreal_surface_microtexture, Nano_surface_detail";
         const tokPhysics = data.getRandomTokens(data.PHYSICS_TOKENS, 3) || "Global_illumination_bounce";
         const tokOptics = data.getRandomTokens(data.OPTICS_TOKENS, 2) || "Lens_signature_depth";
         const tokRender = data.getRandomTokens(data.AI_RENDER_TOKENS, 3) || "NanoDetail_8K";
         const uniqueMeta = data.getRandomTokens(data.THE_MOST_UNIQUE_PHOTOREALISTIC_TOKENS, 2) || "perfect optical physics";
 
-        // STROGA ZABRANA TEKSTA
         const noTextInstruction = "Absolutely NO text, NO letters, NO watermarks, NO signatures, NO symbols, NO fonts, NO captions on the image. Pure visual composition only.";
         const imagePrefix = uploadedImage ? `${uploadedImage} ` : "";
         
-        // 4. FINALNI ČISTI PROMPT (Koristi selektovani AR iz aplikacije) 
         const enhanced10x = `${imagePrefix}A breathtaking, award-winning capture of: ${cleanInput}. Shot on ${selCamera} paired with ${selLens}. The scene features ${selLight}. Precision rendering protocols active: ${tokRealism}, ${tokPhysics}, ${tokOptics}, ${tokRender}. ${metaTokens}, ${uniqueMeta}. ${noTextInstruction}. Absolute photographic fidelity, zero CGI artifacts. [Aspect Ratio: ${selectedAR}]`;
 
-        // 5. KREIRANJE ANALIZE (THE ROAST) [cite: 15, 16]
-        let finalSingleOutput = enhanced10x;
         if (boxType === 'prompt') {
+            let finalSingleOutput = enhanced10x;
             let roastMsgs = [];
-            if (detectedBadFormat) roastMsgs.push("- Your formatting is disastrous. Diffusion models are designed for natural language, not obsolete bracketed coding syntax. I have purged that visual noise to let your prompt breathe."); 
-            if (missingLighting) roastMsgs.push("- You completely ignored lighting! It's the core of photorealism. Your original scene would look flat and synthetic, so I injected precise volumetric protocols."); 
-            if (missingCamera) roastMsgs.push("- No optical system defined. Without specific lenses and sensors, the AI fails to generate realistic depth of field, making it look like cheap CGI."); 
+            if (detectedBadFormat) roastMsgs.push("- Your formatting is disastrous. Diffusion models are designed for natural language, not obsolete bracketed coding syntax. I have purged that visual noise to let your prompt breathe.");
+            if (missingLighting) roastMsgs.push("- You completely ignored lighting! It's the core of photorealism. Your original scene would look flat and synthetic, so I injected precise volumetric protocols.");
+            if (missingCamera) roastMsgs.push("- No optical system defined. Without specific lenses and sensors, the AI fails to generate realistic depth of field, making it look like cheap CGI.");
 
-            // Sastavljanje finalne ekspertske analize [cite: 15, 16]
             const roastIntro = `/// V8 AI EXPERT ANALYSIS ///\n\n🟢 WHAT'S GOOD:\nThe core vision is solid. The subject matter has narrative potential.\n\n🔴 WHAT'S BAD (THE ROAST):\n${roastMsgs.length > 0 ? roastMsgs.join('\n') : "Your prompt lacked technical depth and professional cinematography standards."}\n\n🚀 V8 10X FINAL PROMPT:\n\n`;
             finalSingleOutput = roastIntro + enhanced10x;
+            std.single = finalSingleOutput;
+        } else {
+            std.single = ''; 
         }
 
-        std.single = finalSingleOutput;
-
-        // Generisanje ostalih formata (poboljšano sa automatskim AR)
         const detailedPrompts = data.generateDetailedPrompts ? data.generateDetailedPrompts(cleanInput + ". " + noTextInstruction, selectedAR) : null;
         if (detailedPrompts) {
           std.cinematic = detailedPrompts.cinematic + ` [Aspect Ratio: ${selectedAR}]`;
@@ -442,7 +532,6 @@ function EnhancerPage() {
   };
 
   const handleCopy = (text, boxName) => { 
-    // PAMETNO KOPIRANJE: Kopira samo deo PROMPT-a bez analize [cite: 17]
     let copyText = text;
     if (text.includes("🚀 V8 10X FINAL PROMPT:\n\n")) {
       copyText = text.split("🚀 V8 10X FINAL PROMPT:\n\n")[1];
@@ -539,7 +628,14 @@ function EnhancerPage() {
                    </div>
                  )}
 
-                 <textarea value={demoInput} onChange={e => {setDemoInput(e.target.value); setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' });}} placeholder="e.g. 'a golden watch' or Upload Image" className={`w-full flex-1 bg-transparent pr-28 py-4 text-white text-[16px] md:text-[18px] font-medium leading-relaxed outline-none transition-all resize-none min-h-[100px] ${uploadedImage ? 'pl-20' : 'pl-6'}`} />
+                 <textarea value={demoInput} onChange={e => {
+                     if (customerPrompt.trim() !== "") {
+                         setExclusiveWarning("You must clear the 'Paste Customer Prompt' field before entering a Concept/Subject.");
+                         return;
+                     }
+                     setDemoInput(e.target.value); 
+                     setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' });
+                 }} placeholder="e.g. 'a golden watch' or Upload Image" spellCheck="false" data-gramm="false" data-lt-active="false" className={`w-full flex-1 bg-transparent pr-28 py-4 text-white text-[16px] md:text-[18px] font-medium leading-relaxed outline-none transition-all resize-none min-h-[100px] ${uploadedImage ? 'pl-20' : 'pl-6'}`} />
                  
                  {(!demoInput && customerPrompt.length === 0) && (
                    <label className="absolute right-16 top-1/2 -translate-y-1/2 bg-blue-600/10 p-3 rounded-xl group hover:bg-blue-600 transition-all cursor-pointer z-10 hover:shadow-[0_0_15px_rgba(37,99,235,0.5)] hover:scale-105">
@@ -605,11 +701,18 @@ function EnhancerPage() {
                <div className="w-full lg:w-2/3 relative flex flex-col overflow-hidden rounded-2xl border border-white/10 shadow-inner bg-[#050505]/50 focus-within:border-amber-400/50 transition-all">
                  {isScanning && customerPrompt.trim() !== "" && <div className="animate-scan-amber" />}
                  
-                 <textarea value={customerPrompt} onChange={e => {setCustomerPrompt(e.target.value); setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' });}} placeholder="PASTE YOUR RAW PROMPT HERE" className="w-full flex-1 bg-transparent p-6 md:p-8 text-white text-[12px] md:text-[14px] outline-none resize-none min-h-[160px]" />
+                 <textarea value={customerPrompt} onChange={e => {
+                     if (demoInput.trim() !== "" || uploadedImage) {
+                         setExclusiveWarning("You must clear the 'Concept / Subject' field before pasting a new Customer Prompt.");
+                         return;
+                     }
+                     setCustomerPrompt(e.target.value); 
+                     setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' });
+                 }} placeholder="PASTE YOUR RAW PROMPT HERE" spellCheck="false" data-gramm="false" data-lt-active="false" className="w-full flex-1 bg-transparent p-6 md:p-8 text-white text-[12px] md:text-[14px] outline-none resize-none min-h-[160px]" />
                  
                  {customerPrompt && (
-                   <button type="button" onClick={handleClearAll} className="absolute right-4 top-4 bg-red-600/10 p-3 rounded-xl group hover:bg-red-600 transition-all cursor-pointer z-10 hover:shadow-[0_0_15px_rgba(220,38,38,0.5)] hover:scale-105 relative z-20">
-                     <X className="w-5 h-5 text-red-500 group-hover:text-white" />
+                   <button type="button" onClick={() => { setCustomerPrompt(''); setGeneratedPrompts({ single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' }); setIsScanning(false); }} className="absolute right-4 top-4 bg-red-600/10 p-2.5 rounded-xl group hover:bg-red-600 transition-all cursor-pointer z-20 hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] hover:scale-105">
+                     <Trash2 className="w-4 h-4 text-red-500 animate-pulse group-hover:text-white" />
                    </button>
                  )}
                </div>
@@ -632,10 +735,6 @@ function EnhancerPage() {
 
             <div className="w-full flex flex-col lg:flex-row justify-between items-center gap-8 mt-4 border-t border-amber-400/20 pt-8 relative z-10">
                <div className="flex flex-col sm:flex-row gap-8 w-full lg:w-auto text-left">
-                  <div className="flex flex-col gap-4">
-                    <span className="text-[12px] font-black uppercase text-amber-100 tracking-widest drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]">ASPECT RATIO</span>
-                    <div className="flex flex-wrap gap-2">{['1:1', '9:16', '16:9', '21:9'].map(ar => <OptionButton key={`box2-ar-${ar}`} label={ar} selected={selectedAR === ar} onClick={() => setSelectedAR(ar)} type="ar" />)}</div>
-                  </div>
                   <div className="flex flex-col gap-4">
                     <span className="text-[12px] font-black uppercase text-amber-100 tracking-widest drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]">QUALITY</span>
                     <div className="flex flex-wrap gap-2">{['1x', '2x', '4x'].map(q => <OptionButton key={`box2-q-${q}`} label={q} selected={selectedQuality === q} onClick={() => setSelectedQuality(q)} type="quality" />)}</div>
@@ -727,6 +826,25 @@ function EnhancerPage() {
         </div>
       )}
 
+      {/* EXCLUSIVE WARNING MODAL (BOKS 1 vs BOKS 2) */}
+      {exclusiveWarning && (
+        <div className="fixed inset-0 z-[7000] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#0a0a0a] border border-amber-500/50 rounded-3xl p-8 max-w-md w-full shadow-[0_0_40px_rgba(251,191,36,0.2)] relative text-center flex flex-col items-center">
+            <button type="button" onClick={() => setExclusiveWarning('')} className="absolute top-5 right-5 text-zinc-500 hover:text-white transition-colors bg-black/50 p-2 rounded-full">
+              <X className="w-5 h-5" />
+            </button>
+            <ShieldAlert className="w-16 h-16 text-amber-500 mb-6 drop-shadow-[0_0_15px_rgba(251,191,36,0.6)]" />
+            <h3 className="text-white font-black text-xl md:text-2xl uppercase tracking-widest mb-3">Action Denied</h3>
+            <p className="text-zinc-400 text-sm md:text-[15px] leading-relaxed mb-8 font-medium">
+              {exclusiveWarning}
+            </p>
+            <button type="button" onClick={() => setExclusiveWarning('')} className="w-full bg-amber-600 hover:bg-amber-500 text-black font-black uppercase text-sm tracking-[0.2em] py-4 rounded-xl shadow-[0_0_20px_rgba(251,191,36,0.4)] transition-all hover:scale-105">
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
@@ -744,7 +862,7 @@ function HomePage({ apps = [] }) {
       setIsLoadingVideos(true); 
       const RSS_URL = encodeURIComponent(`https://www.youtube.com/feeds/videos.xml?channel_id=UC6ilBUks_oFMSD8CE9qD6lQ`);
       try {
-        const res = await fetch(`https://api.rss2json.com/v1_1/api.json?rss_url=${RSS_URL}`);
+        const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${RSS_URL}`);
         const result = await res.json();
         if (isMounted && result?.items?.length > 0) { setLiveVideos(result.items.slice(0, 8).map(item => ({ title: item.title, url: item.link }))); setIsLoadingVideos(false); }
       } catch (err) { if (isMounted) setIsLoadingVideos(false); }
@@ -917,6 +1035,13 @@ function SingleProductPage({ apps = [] }) {
                   <a href={data.formatExternalLink(sysData.g || parts[1])} target="_blank" rel="noreferrer" className="w-full py-4 rounded-xl flex items-center justify-center gap-2 border border-blue-900 bg-[#0f172a] text-blue-300 font-black text-[11px] uppercase tracking-[0.15em] hover:bg-blue-900 hover:text-white transition-all shadow-lg text-center px-2">
                     UNLOCK REACT SOURCE CODE ON WHOP <ArrowRight className="w-4 h-4 shrink-0" />
                   </a>
+                  
+                  {app.gumroadLink && (
+                    <a href={data.formatExternalLink(app.gumroadLink)} target="_blank" rel="noreferrer" className="w-full py-4 rounded-xl flex items-center justify-center gap-2 border border-purple-800 bg-[#2e1065] text-purple-300 font-black text-[11px] uppercase tracking-[0.15em] hover:bg-purple-800 hover:text-white transition-all shadow-lg text-center px-2">
+                      UNLOCK REACT SOURCE CODE ON GUMROAD <ArrowRight className="w-4 h-4 shrink-0" />
+                    </a>
+                  )}
+                  
                 </div>
               </div>
             </div>
@@ -1008,19 +1133,127 @@ const EnhancerAdminGallery = () => {
   );
 };
 
+// ============================================================================
+// ADMIN ANALYTICS DASHBOARD COMPONENT
+// ============================================================================
+const AnalyticsDashboard = () => {
+  const [stats, setStats] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, "analytics"));
+        const items = [];
+        snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+        setStats(items.sort((a, b) => b.timestamp - a.timestamp));
+      } catch (err) { console.error("Greška pri učitavanju analitike", err); }
+      finally { setIsLoading(false); }
+    };
+    fetchAnalytics();
+  }, []);
+
+  if (isLoading) return <div className="py-20 text-center text-orange-500 animate-pulse font-black uppercase tracking-widest text-[12px]">SYNCING ANALYTICS...</div>;
+
+  const totalVisitors = new Set(stats.map(s => s.sessionId)).size;
+  const pageViews = stats.filter(s => s.type === 'page_view');
+  const clicks = stats.filter(s => s.type === 'click');
+  const enhancerActions = stats.filter(s => s.type === 'enhancer_action');
+
+  return (
+    <div className="space-y-8 animate-in fade-in duration-700">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-[#0a0a0a] border border-orange-500/20 p-6 rounded-[2rem] shadow-xl flex flex-col justify-center items-center text-center">
+          <Users className="w-8 h-8 text-orange-500 mb-3 opacity-80" />
+          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Total Visitors</span>
+          <span className="text-3xl font-black text-white">{totalVisitors}</span>
+        </div>
+        <div className="bg-[#0a0a0a] border border-blue-500/20 p-6 rounded-[2rem] shadow-xl flex flex-col justify-center items-center text-center">
+          <MousePointerClick className="w-8 h-8 text-blue-500 mb-3 opacity-80" />
+          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Total Button Clicks</span>
+          <span className="text-3xl font-black text-white">{clicks.length}</span>
+        </div>
+        <div className="bg-[#0a0a0a] border border-amber-500/20 p-6 rounded-[2rem] shadow-xl flex flex-col justify-center items-center text-center">
+          <Zap className="w-8 h-8 text-amber-500 mb-3 opacity-80" />
+          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Enhancer Actions</span>
+          <span className="text-3xl font-black text-white">{enhancerActions.length}</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+         {/* PAGE VIEWS */}
+         <div className="bg-[#0a0a0a] border border-white/5 p-6 md:p-8 rounded-[2rem] shadow-xl">
+           <h3 className="text-[12px] font-black uppercase text-zinc-400 tracking-widest mb-6 flex items-center gap-2"><Eye className="w-4 h-4 text-orange-500" /> Page Views (Traffic)</h3>
+           <div className="space-y-4">
+             {Object.entries(pageViews.reduce((acc, curr) => { acc[curr.path] = (acc[curr.path] || 0) + 1; return acc; }, {})).map(([path, count]) => (
+               <div key={path} className="flex justify-between items-center border-b border-white/5 pb-2">
+                 <span className="text-[11px] text-zinc-300 font-mono truncate mr-4">{path || '/'}</span>
+                 <span className="text-[13px] font-black text-orange-500 bg-orange-500/10 px-3 py-1 rounded-lg">{count}</span>
+               </div>
+             ))}
+           </div>
+         </div>
+
+         {/* CLICKS */}
+         <div className="bg-[#0a0a0a] border border-white/5 p-6 md:p-8 rounded-[2rem] shadow-xl">
+           <h3 className="text-[12px] font-black uppercase text-zinc-400 tracking-widest mb-6 flex items-center gap-2"><MousePointerClick className="w-4 h-4 text-blue-500" /> User Clicks</h3>
+           <div className="space-y-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+             {clicks.slice(0, 50).map((click, i) => (
+               <div key={i} className="flex flex-col border-b border-white/5 pb-3">
+                 <div className="flex justify-between items-start mb-1">
+                   <span className="text-[11px] text-zinc-100 font-bold capitalize">{click.elementText || 'Icon/Image'}</span>
+                   <span className="text-[9px] text-zinc-500">{new Date(click.timestamp).toLocaleTimeString()}</span>
+                 </div>
+                 <span className="text-[9px] font-mono text-blue-400">Path: {click.path}</span>
+               </div>
+             ))}
+           </div>
+         </div>
+      </div>
+
+      {/* ENHANCER LOG */}
+      <div className="bg-[#0a0a0a] border border-white/5 p-6 md:p-8 rounded-[2rem] shadow-xl">
+         <h3 className="text-[12px] font-black uppercase text-zinc-400 tracking-widest mb-6 flex items-center gap-2"><Zap className="w-4 h-4 text-amber-500" /> 10X Enhancer Prompt History</h3>
+         <div className="space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
+           {enhancerActions.length === 0 && <div className="text-zinc-600 text-[10px] font-black uppercase">No enhancer actions recorded yet.</div>}
+           {enhancerActions.map((action, i) => (
+             <div key={i} className="flex flex-col border border-white/5 bg-white/[0.02] p-4 rounded-xl">
+               <div className="flex justify-between items-start mb-3 border-b border-white/5 pb-2">
+                 <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest">{action.actionType === 'concept' ? 'Concept Form' : 'Raw Prompt Paste'}</span>
+                 <span className="text-[9px] text-zinc-500">{new Date(action.timestamp).toLocaleString()}</span>
+               </div>
+               <p className="text-[11px] text-zinc-300 font-mono leading-relaxed break-words">{action.input}</p>
+             </div>
+           ))}
+         </div>
+      </div>
+
+    </div>
+  );
+};
+// ============================================================================
+
+
 function AdminPage({ apps = [], refreshData }) {
-  const [password, setPassword] = useState(''); const [isAuthenticated, setIsAuthenticated] = useState(false); const [editingId, setEditingId] = useState(null); const [isUploading, setIsUploading] = useState(false); 
-  const initialForm = { name: '', category: 'AI ASSET', type: '', headline: '', price: '', priceLifetime: '', description: '', media: [], whopLink: '', reactSourceCode: '', faq: Array.from({ length: 7 }, () => ({ q: '', a: '' })) }; 
+  const [password, setPassword] = useState(''); 
+  const [isAuthenticated, setIsAuthenticated] = useState(false); 
+  const [editingId, setEditingId] = useState(null); 
+  const [isUploading, setIsUploading] = useState(false); 
+  const [adminTab, setAdminTab] = useState('assets'); 
+
+  const initialForm = { name: '', category: 'AI ASSET', type: '', headline: '', price: '', priceLifetime: '', description: '', media: [], whopLink: '', reactSourceCode: '', gumroadLink: '', faq: Array.from({ length: 7 }, () => ({ q: '', a: '' })) }; 
   const [formData, setFormData] = useState(initialForm); 
   const sortedAppsAdmin = [...apps].sort((a, b) => Number(b.id) - Number(a.id));
-  const handleLogin = (e) => { e.preventDefault(); if (password === "v8pro") setIsAuthenticated(true); else alert("DENIED"); };
+  
+  const handleLogin = (e) => { e.preventDefault(); const coreHash = password.split('').reduce((acc, char) => (((acc << 5) - acc) + char.charCodeAt(0)) | 0, 0); if (coreHash === 110755051) setIsAuthenticated(true); else alert("DENIED"); };
   
   const handleEditClick = (app) => { 
     const parts = (app.whopLink || "").split("[SPLIT]"); 
     const loadedFaq = app.faq || [];
     const paddedFaq = Array.from({ length: 7 }, (_, i) => loadedFaq[i] || { q: '', a: '' });
-    setFormData({ ...app, whopLink: parts[0] || '', reactSourceCode: parts[1] || '', faq: paddedFaq }); 
+    setFormData({ ...app, whopLink: parts[0] || '', reactSourceCode: parts[1] || '', gumroadLink: app.gumroadLink || '', faq: paddedFaq }); 
     setEditingId(app.id); 
+    setAdminTab('assets');
     window.scrollTo(0, 0); 
   };
   
@@ -1043,20 +1276,36 @@ function AdminPage({ apps = [], refreshData }) {
   );
 
   return (
-    <div className="pt-32 pb-24 px-6 max-w-7xl mx-auto font-sans text-left text-white">
-      <form onSubmit={handleSubmit} className="bg-[#0a0a0a] border border-white/5 rounded-[2.5rem] p-8 shadow-2xl space-y-6">
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-4"><input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Name" className="bg-black border border-white/10 p-3 rounded-xl text-[11px]" required /><input type="text" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} placeholder="Category" className="bg-black border border-white/10 p-3 rounded-xl text-[11px]" /><input type="text" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} placeholder="Ribbon" className="bg-black border border-white/10 p-3 rounded-xl text-[11px]" /></div>
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-4"><input type="text" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} placeholder="Standard Price" className="bg-black border border-white/10 p-3 rounded-xl text-[11px]" /><input type="text" value={formData.priceLifetime} onChange={e => setFormData({...formData, priceLifetime: e.target.value})} placeholder="Lifetime Price" className="bg-black border border-white/10 p-3 rounded-xl text-[11px]" /></div>
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-4"><input type="text" value={formData.headline} onChange={e => setFormData({...formData, headline: e.target.value})} placeholder="Headline" className="bg-black border border-white/10 p-3 rounded-xl text-[11px] md:col-span-3" /></div>
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-4"><input type="text" value={formData.whopLink} onChange={e => setFormData({...formData, whopLink: e.target.value})} placeholder="Whop Link" className="bg-black border border-white/10 p-3 rounded-xl text-[11px]" /><input type="text" value={formData.reactSourceCode} onChange={e => setFormData({...formData, reactSourceCode: e.target.value})} placeholder="React Code" className="bg-black border border-white/10 p-3 rounded-xl text-[11px]" /></div>
-           <div className="bg-black border border-white/10 p-4 rounded-xl"><label className="text-[10px] font-black uppercase text-zinc-500 block mb-3">Media</label><div className="flex flex-wrap gap-4">{formData.media.map((m, i) => (<div key={i} className="relative w-24 h-24 rounded-lg overflow-hidden group">{m.type === 'video' ? <video src={m.url} className="w-full h-full object-cover" /> : <img src={m.url} className="w-full h-full object-cover" />}<button type="button" onClick={() => setFormData({...formData, media: formData.media.filter((_, idx) => idx !== i)})} className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-all"><X className="w-3 h-3" /></button></div>))}<label className="w-24 h-24 rounded-lg border-2 border-dashed border-white/20 flex flex-col items-center justify-center cursor-pointer hover:border-orange-500 text-zinc-500">{isUploading ? <Loader2 className="w-6 h-6 animate-spin" /> : <><UploadCloud className="w-6 h-6 mb-2" /><span className="text-[8px] uppercase font-black">Upload</span></>}<input type="file" multiple accept="image/*,video/*" onChange={handleImageUpload} className="hidden" /></label></div></div>
-           <textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Description" className="bg-black border border-white/10 p-4 rounded-xl text-[11px] h-96 w-full outline-none font-mono leading-relaxed" />
-           <div className="bg-black border border-white/10 p-4 rounded-xl"><label className="text-[10px] font-black uppercase text-zinc-500 block mb-3">FAQ</label><div className="space-y-3">{formData.faq.map((f, i) => (<div key={i} className="flex gap-2"><input type="text" value={f.q} onChange={e => { const newFaq = [...formData.faq]; newFaq[i].q = e.target.value; setFormData({...formData, faq: newFaq}); }} placeholder="Question" className="flex-1 bg-black border border-white/5 p-2 rounded-lg text-[10px]" /><input type="text" value={f.a} onChange={e => { const newFaq = [...formData.faq]; newFaq[i].a = e.target.value; setFormData({...formData, faq: newFaq}); }} placeholder="Answer" className="flex-[2] bg-black border border-white/5 p-2 rounded-lg text-[10px]" /></div>))}</div></div>
-           <div className="flex gap-4"><button type="submit" disabled={isUploading} className="flex-1 py-5 rounded-2xl font-black uppercase text-[12px] bg-orange-600 hover:bg-orange-500 transition-all">Execute Deploy</button>{editingId && <button type="button" onClick={() => {setFormData(initialForm); setEditingId(null);}} className="px-8 py-5 rounded-2xl bg-zinc-800 uppercase font-black text-[12px]">Cancel</button>}</div>
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-10 border-t border-white/10">{sortedAppsAdmin.map(app => (<div key={app.id} className="p-5 bg-black border border-white/10 rounded-[1.5rem] flex flex-col gap-4 shadow-xl"><div className="aspect-video relative overflow-hidden rounded-2xl bg-zinc-900">{app.media?.[0]?.type === 'video' ? <video src={`${app.media[0].url}#t=0.001`} className="w-full h-full object-cover" muted /> : <img src={data.getMediaThumbnail(app.media?.[0]?.url)} className="w-full h-full object-cover" alt="" />}</div><div className="flex justify-between items-start gap-4"><div><span className="text-[13px] font-black uppercase text-white line-clamp-2">{app.name}</span><span className="text-[9px] text-zinc-500 block mt-1">ID: {app.id}</span></div><div className="flex gap-2"><button type="button" onClick={() => handleEditClick(app)} className="p-2.5 bg-blue-600/20 text-blue-400 rounded-xl hover:bg-blue-600 transition-all"><Edit className="w-4 h-4" /></button><button type="button" onClick={async () => { if(window.confirm("Delete?")) { await fetch(`${API_URL}/${app.id}`, { method: 'DELETE' }); refreshData(); } }} className="p-2.5 bg-red-600/20 text-red-400 rounded-xl hover:bg-red-600 transition-all"><Trash2 className="w-4 h-4" /></button></div></div></div>))}</div>
-        </form>
+    <div className="pt-32 pb-24 px-6 max-w-7xl mx-auto font-sans text-left text-white relative">
+      
+      {/* ADMIN TABS NAVIGACIJA */}
+      <div className="flex gap-4 mb-12 border-b border-white/5 pb-6">
+         <button type="button" onClick={() => setAdminTab('assets')} className={`px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${adminTab === 'assets' ? 'bg-orange-600 text-white shadow-[0_0_15px_rgba(234,88,12,0.5)]' : 'bg-white/5 text-zinc-500 hover:bg-white/10 hover:text-white'}`}>
+           <Award className="w-4 h-4 inline mr-2" /> Assets Manager
+         </button>
+         <button type="button" onClick={() => setAdminTab('analytics')} className={`px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${adminTab === 'analytics' ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.5)]' : 'bg-white/5 text-zinc-500 hover:bg-white/10 hover:text-white'}`}>
+           <BarChart className="w-4 h-4 inline mr-2" /> V8 Analytics
+         </button>
+      </div>
 
-        <EnhancerAdminGallery />
+      {adminTab === 'assets' ? (
+        <>
+          <form onSubmit={handleSubmit} className="bg-[#0a0a0a] border border-white/5 rounded-[2.5rem] p-8 shadow-2xl space-y-6">
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-4"><input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Name" className="bg-black border border-white/10 p-3 rounded-xl text-[11px]" required /><input type="text" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} placeholder="Category" className="bg-black border border-white/10 p-3 rounded-xl text-[11px]" /><input type="text" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} placeholder="Ribbon" className="bg-black border border-white/10 p-3 rounded-xl text-[11px]" /></div>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4"><input type="text" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} placeholder="Standard Price" className="bg-black border border-white/10 p-3 rounded-xl text-[11px]" /><input type="text" value={formData.priceLifetime} onChange={e => setFormData({...formData, priceLifetime: e.target.value})} placeholder="Lifetime Price" className="bg-black border border-white/10 p-3 rounded-xl text-[11px]" /></div>
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-4"><input type="text" value={formData.headline} onChange={e => setFormData({...formData, headline: e.target.value})} placeholder="Headline" className="bg-black border border-white/10 p-3 rounded-xl text-[11px] md:col-span-3" /></div>
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-4"><input type="text" value={formData.whopLink} onChange={e => setFormData({...formData, whopLink: e.target.value})} placeholder="Whop Link" className="bg-black border border-white/10 p-3 rounded-xl text-[11px]" /><input type="text" value={formData.reactSourceCode} onChange={e => setFormData({...formData, reactSourceCode: e.target.value})} placeholder="React Code (Whop)" className="bg-black border border-white/10 p-3 rounded-xl text-[11px]" /><input type="text" value={formData.gumroadLink} onChange={e => setFormData({...formData, gumroadLink: e.target.value})} placeholder="Gumroad React Code" className="bg-black border border-purple-500/50 text-purple-100 placeholder-purple-500/50 focus:border-purple-500 outline-none transition-all p-3 rounded-xl text-[11px]" /></div>
+               <div className="bg-black border border-white/10 p-4 rounded-xl"><label className="text-[10px] font-black uppercase text-zinc-500 block mb-3">Media</label><div className="flex flex-wrap gap-4">{formData.media.map((m, i) => (<div key={i} className="relative w-24 h-24 rounded-lg overflow-hidden group">{m.type === 'video' ? <video src={m.url} className="w-full h-full object-cover" /> : <img src={m.url} className="w-full h-full object-cover" />}<button type="button" onClick={() => setFormData({...formData, media: formData.media.filter((_, idx) => idx !== i)})} className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-all"><X className="w-3 h-3" /></button></div>))}<label className="w-24 h-24 rounded-lg border-2 border-dashed border-white/20 flex flex-col items-center justify-center cursor-pointer hover:border-orange-500 text-zinc-500">{isUploading ? <Loader2 className="w-6 h-6 animate-spin" /> : <><UploadCloud className="w-6 h-6 mb-2" /><span className="text-[8px] uppercase font-black">Upload</span></>}<input type="file" multiple accept="image/*,video/*" onChange={handleImageUpload} className="hidden" /></label></div></div>
+               <textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Description" className="bg-black border border-white/10 p-4 rounded-xl text-[11px] h-96 w-full outline-none font-mono leading-relaxed" />
+               <div className="bg-black border border-white/10 p-4 rounded-xl"><label className="text-[10px] font-black uppercase text-zinc-500 block mb-3">FAQ</label><div className="space-y-3">{formData.faq.map((f, i) => (<div key={i} className="flex gap-2"><input type="text" value={f.q} onChange={e => { const newFaq = [...formData.faq]; newFaq[i].q = e.target.value; setFormData({...formData, faq: newFaq}); }} placeholder="Question" className="flex-1 bg-black border border-white/5 p-2 rounded-lg text-[10px]" /><input type="text" value={f.a} onChange={e => { const newFaq = [...formData.faq]; newFaq[i].a = e.target.value; setFormData({...formData, faq: newFaq}); }} placeholder="Answer" className="flex-[2] bg-black border border-white/5 p-2 rounded-lg text-[10px]" /></div>))}</div></div>
+               <div className="flex gap-4"><button type="submit" disabled={isUploading} className="flex-1 py-5 rounded-2xl font-black uppercase text-[12px] bg-orange-600 hover:bg-orange-500 transition-all">Execute Deploy</button>{editingId && <button type="button" onClick={() => {setFormData(initialForm); setEditingId(null);}} className="px-8 py-5 rounded-2xl bg-zinc-800 uppercase font-black text-[12px]">Cancel</button>}</div>
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-10 border-t border-white/10">{sortedAppsAdmin.map(app => (<div key={app.id} className="p-5 bg-black border border-white/10 rounded-[1.5rem] flex flex-col gap-4 shadow-xl"><div className="aspect-video relative overflow-hidden rounded-2xl bg-zinc-900">{app.media?.[0]?.type === 'video' ? <video src={`${app.media[0].url}#t=0.001`} className="w-full h-full object-cover" muted /> : <img src={data.getMediaThumbnail(app.media?.[0]?.url)} className="w-full h-full object-cover" alt="" />}</div><div className="flex justify-between items-start gap-4"><div><span className="text-[13px] font-black uppercase text-white line-clamp-2">{app.name}</span><span className="text-[9px] text-zinc-500 block mt-1">ID: {app.id}</span></div><div className="flex gap-2"><button type="button" onClick={() => handleEditClick(app)} className="p-2.5 bg-blue-600/20 text-blue-400 rounded-xl hover:bg-blue-600 transition-all"><Edit className="w-4 h-4" /></button><button type="button" onClick={async () => { if(window.confirm("Delete?")) { await fetch(`${API_URL}/${app.id}`, { method: 'DELETE' }); refreshData(); } }} className="p-2.5 bg-red-600/20 text-red-400 rounded-xl hover:bg-red-600 transition-all"><Trash2 className="w-4 h-4" /></button></div></div></div>))}</div>
+          </form>
+          <EnhancerAdminGallery />
+        </>
+      ) : (
+        <AnalyticsDashboard />
+      )}
 
     </div>
   );
@@ -1064,7 +1313,40 @@ function AdminPage({ apps = [], refreshData }) {
 
 function AppContent({ appsData, refreshData }) {
   const [isBooting, setIsBooting] = useState(true); const [showBanner, setShowBanner] = useState(false); const location = useLocation();
+  const prevLocation = useRef(location.pathname);
+  const entryTime = useRef(Date.now());
+
+  // ANALITIKA TRACKING - PREGLEDI STRANICA I VREME
+  useEffect(() => {
+    if (prevLocation.current !== location.pathname) {
+       const timeSpent = Date.now() - entryTime.current;
+       logAnalyticsEvent('time_spent', { path: prevLocation.current, durationMS: timeSpent });
+       
+       prevLocation.current = location.pathname;
+       entryTime.current = Date.now();
+       logAnalyticsEvent('page_view', { path: location.pathname });
+    }
+  }, [location.pathname]);
+
+  useEffect(() => { logAnalyticsEvent('page_view', { path: location.pathname }); }, []);
+
+  // ANALITIKA TRACKING - KLIKOVI
+  useEffect(() => {
+    const handleGlobalClick = (e) => {
+       const target = e.target.closest('button, a');
+       if (target) {
+          logAnalyticsEvent('click', {
+             elementText: target.innerText || target.getAttribute('aria-label') || 'Icon',
+             path: window.location.pathname
+          });
+       }
+    };
+    document.addEventListener('click', handleGlobalClick);
+    return () => document.removeEventListener('click', handleGlobalClick);
+  }, []);
+
   const handleHomeClick = (e) => { if (location.pathname === '/') { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); window.history.replaceState(null, '', '/'); } };
+  
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-100 flex flex-col font-sans relative pb-20 lg:pb-0 text-left">
       {isBooting && <FullScreenBoot onComplete={() => { setIsBooting(false); setShowBanner(true); window.scrollTo(0,0); }} />}
@@ -1077,10 +1359,10 @@ function AppContent({ appsData, refreshData }) {
               <span className="text-[10px] md:text-[12px] font-black uppercase tracking-[0.4em] hidden sm:block"><span className="text-blue-500">AI TOOLS</span> <span className="text-orange-500">PRO SMART</span></span>
             </Link>
             <div className="flex items-center gap-3 md:gap-4 font-black uppercase text-[10px] md:text-[11px] tracking-widest">
+              <Link to="/" onClick={handleHomeClick} className="bg-emerald-900/60 px-4 md:px-5 py-1.5 md:py-2 rounded-full text-emerald-400 border border-emerald-800 shadow-xl hover:bg-emerald-800 transition-all">Home</Link>
               <Link to="/#marketplace" className="bg-blue-600 px-4 md:px-5 py-1.5 md:py-2 rounded-full text-white shadow-xl hover:bg-blue-500 transition-all">Marketplace</Link>
               {location.pathname !== '/enxance' && (<Link to="/enxance" className="bg-transparent border-2 border-orange-600 text-orange-600 px-4 md:px-5 py-1.5 md:py-2 rounded-full shadow-xl hover:bg-orange-600/10 transition-all flex items-center gap-1.5"><Zap className="w-3.5 h-3.5" /> 10X ENHANCER</Link>)}
-              <Link to="/" onClick={handleHomeClick} className="bg-emerald-900/60 px-4 md:px-5 py-1.5 md:py-2 rounded-full text-emerald-400 border border-emerald-800 shadow-xl">Home</Link>
-              <Link to="/admin" className="bg-orange-600 px-4 md:px-5 py-1.5 md:py-2 rounded-full text-white shadow-xl">Admin</Link>
+              <Link to="/admin" className="bg-orange-600 px-4 md:px-5 py-1.5 md:py-2 rounded-full text-white shadow-xl hover:bg-orange-500 transition-all">Admin</Link>
             </div>
           </div>
         </nav>
