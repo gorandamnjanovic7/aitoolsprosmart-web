@@ -93,8 +93,63 @@ const MarketplaceCard = ({ app, index }) => {
 
 const SmartScrollButton = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  useEffect(() => { const checkScroll = () => setIsScrolled(window.scrollY > 400); window.addEventListener('scroll', checkScroll); return () => window.removeEventListener('scroll', checkScroll); }, []);
-  const handleAction = () => { if (isScrolled) { window.scrollTo({ top: 0, behavior: 'smooth' }); } else { const target = document.getElementById('enhancer') || document.getElementById('marketplace'); if (target) target.scrollIntoView({ behavior: 'smooth' }); } };
+  
+  useEffect(() => { 
+    const checkScroll = () => setIsScrolled(window.scrollY > 400); 
+    window.addEventListener('scroll', checkScroll); 
+    return () => window.removeEventListener('scroll', checkScroll); 
+  }, []);
+
+  const smoothSlowScroll = (targetY) => {
+    if (window.isAutoScrolling) {
+      window.isAutoScrolling = false; 
+      return; 
+    }
+    window.isAutoScrolling = true;
+    
+    const startY = window.scrollY;
+    const difference = targetY - startY;
+    const duration = Math.max(Math.abs(difference) * 1.8, 1000); 
+    let startTime = null;
+
+    const abortScroll = () => {
+      window.isAutoScrolling = false;
+      window.removeEventListener('wheel', abortScroll);
+      window.removeEventListener('touchstart', abortScroll);
+    };
+
+    window.addEventListener('wheel', abortScroll, { passive: true });
+    window.addEventListener('touchstart', abortScroll, { passive: true });
+
+    const step = (currentTime) => {
+      if (!window.isAutoScrolling) return;
+
+      if (!startTime) startTime = currentTime;
+      const progress = currentTime - startTime;
+      const percent = Math.min(progress / duration, 1);
+      
+      const easeInOutSine = (t) => -(Math.cos(Math.PI * t) - 1) / 2;
+      
+      window.scrollTo(0, startY + difference * easeInOutSine(percent));
+
+      if (progress < duration) {
+        window.requestAnimationFrame(step);
+      } else {
+        abortScroll(); 
+      }
+    };
+    window.requestAnimationFrame(step);
+  };
+
+  const handleAction = () => { 
+    if (isScrolled) { 
+       smoothSlowScroll(0); 
+    } else { 
+       const target = document.body.scrollHeight - window.innerHeight;
+       smoothSlowScroll(target); 
+    } 
+  };
+
   return (
     <button onClick={handleAction} className="fixed bottom-10 right-6 z-[5000] flex flex-col items-center group transition-all duration-500">
       <div className={`w-1.5 rounded-full transition-all duration-700 flex items-center justify-center ${isScrolled ? 'bg-orange-500 shadow-[0_0_12px_rgba(249,115,22,0.8)] h-16' : 'bg-white/20 h-10 hover:bg-white/40'}`}>
@@ -195,6 +250,7 @@ function EnhancerPage() {
   
   const [uploadedImage, setUploadedImage] = useState(null);
   const [isImageUploading, setIsImageUploading] = useState(false);
+  const [showWarningModal, setShowWarningModal] = useState(false);
   
   const [gallery, setGallery] = useState([]);
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
@@ -241,6 +297,11 @@ function EnhancerPage() {
   };
 
   const handleImageUpload = async (e) => {
+    if (uploadedImage) {
+      setShowWarningModal(true);
+      return;
+    }
+
     const file = e.target.files[0];
     if (!file) return;
     setIsImageUploading(true);
@@ -276,10 +337,25 @@ function EnhancerPage() {
     setTimeout(() => { 
       try { 
         const std = { single: '', abstract: '', cinematic: '', photoreal: '', uniquePhoto: '' }; 
-        
-        const lowerInput = rawInput.toLowerCase();
 
-        // 1. PAMETNA LOGIKA ZA OPREMU I META-TOKENE (ODABIR NA OSNOVU KONTEKSTA)
+        // DETEKCIJA LOŠEG KODA (ROAST MEHANIKA IZ PDF-a)
+        let cleanInput = rawInput;
+        let detectedBadFormat = false;
+
+        // Ako korisnik unese [SUBJECT]: ili parametre kao --ar 16:9
+        if (/\[.*?\]|--\w+/.test(rawInput)) {
+            detectedBadFormat = true;
+            // Čišćenje prompta: brisanje zagrada i -- parametara
+            cleanInput = rawInput
+                .replace(/\[.*?\]:?/g, '')       // Uklanja [NEŠTO] ili [NEŠTO]:
+                .replace(/--\w+(?:\s+[^\s]+)?/g, '') // Uklanja --ar 16:9, --v 6.0 itd.
+                .replace(/\s{2,}/g, ' ')         // Čisti duple razmake
+                .trim();
+        }
+
+        const lowerInput = cleanInput.toLowerCase();
+
+        // 1. PAMETNA LOGIKA ZA OPREMU I META-TOKENE
         const isPortrait = /(man|woman|face|portrait|person|girl|boy|people|human)/i.test(lowerInput);
         const isLandscape = /(landscape|mountain|nature|forest|ocean|cityscape|valley|cliff|sky)/i.test(lowerInput);
         const isMacro = /(macro|close up|insect|jewelry|watch|eye|tiny|detail)/i.test(lowerInput);
@@ -310,30 +386,35 @@ function EnhancerPage() {
             metaTokens = getRand(["IMAX 70mm film scan", "still frame from an award-winning movie", "stills archive, disney.com"], "IMAX 70mm film scan");
         }
 
-        // 2. IZVLAČENJE DODATNIH PODATAKA IZ TVOG DATA.JSX
+        // 2. IZVLAČENJE DODATNIH PODATAKA
         const tokRealism = data.getRandomTokens(data.REALISM_TOKENS, 3) || "Hyperreal_surface_microtexture, Nano_surface_detail";
         const tokPhysics = data.getRandomTokens(data.PHYSICS_TOKENS, 3) || "Global_illumination_bounce";
         const tokOptics = data.getRandomTokens(data.OPTICS_TOKENS, 2) || "Lens_signature_depth";
         const tokRender = data.getRandomTokens(data.AI_RENDER_TOKENS, 3) || "NanoDetail_8K";
         const uniqueMeta = data.getRandomTokens(data.THE_MOST_UNIQUE_PHOTOREALISTIC_TOKENS, 2) || "perfect optical physics";
 
-        // 3. STROGA ZABRANA TEKSTA NA SLICI (NEGATIVNI TOKENI I INSTRUKCIJE)
+        // 3. STROGA ZABRANA TEKSTA
         const noTextInstruction = "Absolutely NO text, NO letters, NO watermarks, NO signatures, NO symbols, NO fonts, NO captions on the image. Pure visual composition only.";
-
         const imagePrefix = uploadedImage ? `${uploadedImage} ` : "";
         
-        // 4. FINALNI ČISTI PROMPT (DODATO: noTextInstruction)
-        const enhanced10x = `${imagePrefix}A breathtaking, award-winning capture of: ${rawInput}. Shot on ${selCamera} paired with ${selLens}. The scene features ${selLight}. Precision rendering protocols active: ${tokRealism}, ${tokPhysics}, ${tokOptics}, ${tokRender}. ${metaTokens}, ${uniqueMeta}. ${noTextInstruction}. Absolute photographic fidelity, zero CGI artifacts.`;
+        // 4. FINALNI ČISTI PROMPT SA NOVIM ASPECT RATIO FORMATOM NA KRAJU
+        const enhanced10x = `${imagePrefix}A breathtaking, award-winning capture of: ${cleanInput}. Shot on ${selCamera} paired with ${selLens}. The scene features ${selLight}. Precision rendering protocols active: ${tokRealism}, ${tokPhysics}, ${tokOptics}, ${tokRender}. ${metaTokens}, ${uniqueMeta}. ${noTextInstruction}. Absolute photographic fidelity, zero CGI artifacts. [Aspect Ratio: ${selectedAR}]`;
 
-        std.single = enhanced10x;
+        // 5. DODAVANJE ROAST PORUKE U IZLAZ (AKO JE OTKRIVENO LOŠE FORMATIRANJE)
+        let finalSingleOutput = enhanced10x;
+        if (boxType === 'prompt' && detectedBadFormat) {
+            finalSingleOutput = `/// V8 AI EXPERT ANALYSIS ///\n\n🟢 WHAT'S GOOD:\nThe core vision and subject matter are solid. The engine successfully extracted your underlying intent.\n\n🔴 WHAT'S BAD (THE ROAST):\nYour formatting is disastrous. Using bracketed tags like [SUBJECT] and raw parameters like --v 6.0 or --ar 16:9 creates visual garbage that confuses modern diffusion models. We have purged this obsolete coding syntax so your prompt can actually breathe.\n\n🚀 V8 10X FINAL PROMPT:\n\n${enhanced10x}`;
+        }
 
-        // Generisanje ostalih formata (uključena zabrana teksta i ovde)
-        const detailedPrompts = data.generateDetailedPrompts ? data.generateDetailedPrompts(rawInput + ". " + noTextInstruction, selectedAR) : null;
+        std.single = finalSingleOutput;
+
+        // Generisanje ostalih formata
+        const detailedPrompts = data.generateDetailedPrompts ? data.generateDetailedPrompts(cleanInput + ". " + noTextInstruction, selectedAR) : null;
         if (detailedPrompts) {
-          std.cinematic = detailedPrompts.cinematic;
-          std.abstract = detailedPrompts.abstract;
-          std.photoreal = detailedPrompts.photoreal;
-          std.uniquePhoto = detailedPrompts.uniquePhoto;
+          std.cinematic = detailedPrompts.cinematic + ` [Aspect Ratio: ${selectedAR}]`;
+          std.abstract = detailedPrompts.abstract + ` [Aspect Ratio: ${selectedAR}]`;
+          std.photoreal = detailedPrompts.photoreal + ` [Aspect Ratio: ${selectedAR}]`;
+          std.uniquePhoto = detailedPrompts.uniquePhoto + ` [Aspect Ratio: ${selectedAR}]`;
         }
 
         if (boxType === 'concept') {
@@ -351,7 +432,12 @@ function EnhancerPage() {
   };
 
   const handleCopy = (text, boxName) => { 
-    navigator.clipboard.writeText(text); 
+    // Ako kopiraju, izbaci "Roast" tekst da bi korisnik dobio samo čist prompt u Clipboard-u
+    let copyText = text;
+    if (text.includes("🚀 V8 10X FINAL PROMPT:\n\n")) {
+      copyText = text.split("🚀 V8 10X FINAL PROMPT:\n\n")[1];
+    }
+    navigator.clipboard.writeText(copyText); 
     setCopiedBox(boxName); 
     setTimeout(() => setCopiedBox(''), 2000); 
   };
@@ -401,7 +487,6 @@ function EnhancerPage() {
       </div>
 
       <div className="mb-12 text-left lg:text-center w-full relative z-10 flex flex-col items-start lg:items-center">
-        {/* NASLOV JE SADA text-3xl md:text-5xl */}
         <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-500 to-orange-400 text-gradient-animate drop-shadow-[0_0_15px_rgba(234,88,12,0.3)]">
           10X PROMPT ENHANCER
         </h1>
@@ -409,7 +494,6 @@ function EnhancerPage() {
           <span className="relative flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span>
           Premium 3-in-1 tool worth $200/month. Currently FREE.
         </div>
-        {/* NOVI TEKST: POVEĆAN FONT I BOLD U BELO */}
         <p className="text-white text-[12px] md:text-[14px] max-w-2xl font-bold uppercase tracking-[0.2em] leading-relaxed mt-6">
           THE PREMIUM AI PROMPT ENGINEERING ENGINE. CONVERT SIMPLE IDEAS OR IMAGE INTO MASTERPIECES.
         </p>
@@ -420,6 +504,12 @@ function EnhancerPage() {
          {/* BOKS 1 */}
          <div className="bg-[#0a0a0a]/50 backdrop-blur-md border border-blue-500/30 rounded-[2.5rem] p-8 md:p-12 shadow-[0_0_30px_rgba(37,99,235,0.3)] relative flex flex-col gap-10 transition-all duration-500 hover:border-blue-500/60 group">
             
+            <div className="w-full text-center border-b border-blue-500/20 pb-6 mb-2 overflow-hidden">
+              <h2 className="text-[8px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[15px] font-black uppercase text-blue-400 tracking-wider drop-shadow-[0_0_15px_rgba(59,130,246,0.9)] whitespace-nowrap text-ellipsis">
+                CONVERT YOUR IDEAS, ROLL THE DICE TO GET A STARTING IDEA, OR UPLOAD YOUR OR OUR IMAGE TO SEE WHAT MASTERPIECE AWAITS YOU
+              </h2>
+            </div>
+
             <div className="w-full flex flex-col lg:flex-row gap-8 relative z-10">
                <div className="w-full lg:w-1/3 flex flex-col justify-start text-left">
                  <label className="text-[14px] md:text-[16px] font-black uppercase text-blue-500 tracking-widest flex items-center gap-2 mb-3 drop-shadow-[0_0_10px_rgba(37,99,235,0.6)]">
@@ -486,6 +576,12 @@ function EnhancerPage() {
          {/* BOKS 2 */}
          <div className="bg-[#0a0a0a]/50 backdrop-blur-md border border-amber-400/30 rounded-[2.5rem] p-8 md:p-12 shadow-[0_0_30px_rgba(251,191,36,0.3)] relative flex flex-col gap-10 transition-all duration-500 hover:border-amber-400/60 group">
             
+            <div className="w-full text-center border-b border-amber-400/20 pb-6 mb-2 overflow-hidden">
+              <h2 className="text-[8px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[15px] font-black uppercase text-amber-400 tracking-wider drop-shadow-[0_0_15px_rgba(251,191,36,0.8)] whitespace-nowrap text-ellipsis">
+                DISCOVER WHAT WORKS AND WHAT DOESN'T IN YOUR PROMPT, BUT REGARDLESS, WE WILL MAKE YOUR PROMPT PERFECT
+              </h2>
+            </div>
+
             <div className="w-full flex flex-col lg:flex-row gap-8 relative z-10">
                <div className="w-full lg:w-1/3 flex flex-col justify-start text-left">
                  <label className="text-[14px] md:text-[16px] font-black uppercase text-amber-400 tracking-widest flex items-center gap-2 mb-3 drop-shadow-[0_0_10px_rgba(251,191,36,0.6)]">
@@ -560,21 +656,32 @@ function EnhancerPage() {
                    alt="Main Enhancer Reference" 
                    className="w-full h-full object-cover transition-opacity duration-1000"
                 />
-                <button 
-                  type="button"
-                  onClick={() => {
-                    const imgUrl = gallery[activeGalleryIndex]?.url;
-                    setUploadedImage(imgUrl);
-                    setDemoInput(prev => prev ? `${imgUrl} ${prev}` : imgUrl);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  className="absolute bottom-6 right-6 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white px-6 py-4 rounded-xl text-[12px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all shadow-[0_0_20px_rgba(234,88,12,0.6)] hover:scale-105"
-                >
-                  Use as Image Prompt
-                </button>
+                
+                <div className="absolute bottom-6 right-12 z-20 flex justify-center items-center group/tooltip">
+                    <span className="absolute bottom-full mb-3 px-4 py-2 bg-[#0a0a0a] border border-blue-500/50 rounded-xl text-[10px] font-black uppercase tracking-widest text-white whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 transition-all shadow-xl pointer-events-none">
+                      Use as Image Prompt
+                    </span>
+                    
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        if (uploadedImage) {
+                          setShowWarningModal(true);
+                          return;
+                        }
+                        const imgUrl = gallery[activeGalleryIndex]?.url;
+                        setUploadedImage(imgUrl);
+                        setDemoInput(prev => prev ? `${imgUrl} ${prev}` : imgUrl);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      className="p-3.5 bg-blue-600 rounded-xl text-white hover:bg-blue-500 transition-colors shadow-[0_0_15px_rgba(37,99,235,0.4)] hover:shadow-[0_0_20px_rgba(37,99,235,0.6)] hover:scale-110 cursor-pointer"
+                    >
+                      <UploadCloud className="w-5 h-5" />
+                    </button>
+                </div>
              </div>
 
-             <div className="flex justify-center gap-4 overflow-x-auto custom-scrollbar pb-4 pt-2 w-full max-w-5xl mx-auto">
+             <div className="flex flex-wrap justify-center gap-4 pb-4 pt-2 w-full max-w-5xl mx-auto">
                 {gallery.map((img, idx) => (
                    <button 
                      key={img.id}
@@ -591,6 +698,25 @@ function EnhancerPage() {
          )}
 
       </div>
+
+      {showWarningModal && (
+        <div className="fixed inset-0 z-[7000] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#0a0a0a] border border-red-500/50 rounded-3xl p-8 max-w-md w-full shadow-[0_0_40px_rgba(239,68,68,0.2)] relative text-center flex flex-col items-center">
+            <button type="button" onClick={() => setShowWarningModal(false)} className="absolute top-5 right-5 text-zinc-500 hover:text-white transition-colors bg-black/50 p-2 rounded-full">
+              <X className="w-5 h-5" />
+            </button>
+            <ShieldAlert className="w-16 h-16 text-red-500 mb-6 drop-shadow-[0_0_15px_rgba(239,68,68,0.6)]" />
+            <h3 className="text-white font-black text-xl md:text-2xl uppercase tracking-widest mb-3">Action Denied</h3>
+            <p className="text-zinc-400 text-sm md:text-[15px] leading-relaxed mb-8 font-medium">
+              Please remove the currently selected image from the input before adding a new one.
+            </p>
+            <button type="button" onClick={() => setShowWarningModal(false)} className="w-full bg-red-600 hover:bg-red-500 text-white font-black uppercase text-sm tracking-[0.2em] py-4 rounded-xl shadow-[0_0_20px_rgba(239,68,68,0.4)] transition-all hover:scale-105">
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

@@ -19,11 +19,11 @@ export const bannerUrl = zmajImg;
 export const logoUrl = mojLogo; 
 
 export const BANNER_DATA = [
-  { image: zmajImg, badge: "NEW PROTOCOL", title: "AI VIDEO GENERATION v8", subtitle: "Hyper-realistic temporal diffusion models are now active. Create 4K cinematic sequences from raw text inputs." },
+  { image: zmajImg, badge: "NEW PROTOCOL", title: "EPIC REVIVAL OF AN ANCIENT CIVILIZATION v8", subtitle: "Hyper-realistic temporal diffusion models are now active. Create 4K cinematic sequences from raw text inputs." },
   { image: novaSlikaImg, badge: "CORE UPDATE", title: "QUANTUM PROMPT ENGINE", subtitle: "Leverage the new multi-modal prompt architecture. Achieve 99.8% prompt adherence." },
-  { image: hollywoodImg, badge: "PREMIUM ASSET", title: "PHOTOREALISM MATRICES", subtitle: "Access classified rendering algorithms used by top-tier visual architects." },
-  { image: slikaHubImg, badge: "SYSTEM UPGRADE", title: "NEURAL NETWORK EXPANSION", subtitle: "Ultra-fast processing for maximum quality." },
-  { image: slikaVideoImg, badge: "CINEMATIC", title: "HOLLYWOOD LEVEL RENDERS", subtitle: "Achieve the most unique photorealistic images ever." },
+  { image: hollywoodImg, badge: "PREMIUM ASSET", title: "HOLLYWOOD VSX CINEMATIC GRADE ", subtitle: "Access classified rendering algorithms used by top-tier visual architects." },
+  { image: slikaHubImg, badge: "SYSTEM UPGRADE", title: "WELCOME TO OUR HUB", subtitle: "Ultra-fast processing for maximum quality." },
+  { image: slikaVideoImg, badge: "CINEMATIC", title: "VIRAL CONTENT ON THE EDGE", subtitle: "Achieve the most unique photorealistic images ever." },
   { image: slikaCopyImg, badge: "NEW FEATURE", title: "ADVANCED DATA PARSING", subtitle: "Extract and manipulate complex visual structures." }
 ];
 
