@@ -2623,3 +2623,12 @@ export const FormattedDescription = ({ text }) => {
 };
 
 export const getRandomDicePrompt = () => DICE_PROMPTS[Math.floor(Math.random() * DICE_PROMPTS.length)];
+// --- V8 STOCK BERZA FAILSAFE (Da ne puca import) ---
+export const OPISI_SABLONI = {
+  "AI SREDSTVO": "Premium AI asset ready for deployment.",
+  "PROMPT": "High-quality engineered prompt for maximum results.",
+  "UI/UX": "Modern and responsive UI/UX template.",
+  "KOD": "Clean, optimized, and ready-to-use source code.",
+  "OSTALO": "Exclusive digital product."
+};
+export const V8_SVE_KATEGORIJE = ["All", "AI ASSET", "PROMPT", "UI/UX", "CODE", "OTHER"];

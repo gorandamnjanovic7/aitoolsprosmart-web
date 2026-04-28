@@ -1,8 +1,10 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+// NOVO: Importujemo modul za logovanje
+import { getAuth, GoogleAuthProvider } from "firebase/auth"; 
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDKR7dyv4tlLUgZn8axQ4ObNV8qxTpFEBY",
+  apiKey: "AIzaSyDKR7dyv4tLlUgZn8axQ4ObNV8qxTpFEBY",
   authDomain: "ai-tools-pro-smart.firebaseapp.com",
   projectId: "ai-tools-pro-smart",
   storageBucket: "ai-tools-pro-smart.firebasestorage.app",
@@ -13,3 +15,9 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
+// NOVO: Izvozimo funkcije za logovanje kako bismo ih koristili u App.jsx
+export const auth = getAuth(app);
+export const provider = new GoogleAuthProvider();
+provider.setCustomParameters({
+  prompt: 'select_account'
+});
