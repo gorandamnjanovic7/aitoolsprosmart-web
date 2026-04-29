@@ -1,8 +1,8 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-// NOVO: Importujemo modul za logovanje
-import { getAuth, GoogleAuthProvider } from "firebase/auth"; 
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
+// Tvoj originalni V8 config
 const firebaseConfig = {
   apiKey: "AIzaSyDKR7dyv4tLlUgZn8axQ4ObNV8qxTpFEBY",
   authDomain: "ai-tools-pro-smart.firebaseapp.com",
@@ -10,12 +10,16 @@ const firebaseConfig = {
   storageBucket: "ai-tools-pro-smart.firebasestorage.app",
   messagingSenderId: "687827358510",
   appId: "1:687827358510:web:8e046b604005fac5b9e0bf",
-  measurementId: "G-B6XYNNT6HB"
+  measurementId: "G-86XYNNT6H8"
 };
 
+// Paljenje motora
 const app = initializeApp(firebaseConfig);
+
+// Povezivanje baze
 export const db = getFirestore(app);
-// NOVO: Izvozimo funkcije za logovanje kako bismo ih koristili u App.jsx
+
+// Premium Google Login podešavanja
 export const auth = getAuth(app);
 export const provider = new GoogleAuthProvider();
 provider.setCustomParameters({
