@@ -66,6 +66,8 @@ const V8StockBerza = () => {
       setNoviOpisEn("PACKAGE CONTENTS: 20 PREMIUM AI VISUALS IN ULTRA-WIDE 16:9. PERFECT FOR WEBSITES AND YT. VALUE OVER $250.");
     } else if (noviFormat === 'ALL FORMATS (80 IMAGES)') {
       setNoviOpisEn("PACKAGE CONTENTS: 80 PREMIUM AI VISUALS IN 4 RESOLUTIONS (16:9, 9:16, 1:1, 21:9). COMPLETE PACKAGE FOR ALL PLATFORMS. THE ULTIMATE V8 COLLECTION.");
+    } else if (noviFormat === '16:9 & 9:16 (33MP MASTERWORK)') {
+      setNoviOpisEn("V8 MASTERWORK BUNDLE: 33.2 MEGAPIXEL (8K UHD) PREMIUM VISUALS. INCLUDES BOTH 16:9 (LANDSCAPE) AND 9:16 (PORTRAIT) ASPECT RATIOS. FLAWLESS TEXTURES, ZERO BRANDING, IP-SAFE. DESIGNED EXCLUSIVELY FOR LUXURY BRANDS AND HIGH-END COMMERCIAL CAMPAIGNS.");
     }
   }, [noviFormat]);
 
@@ -227,13 +229,18 @@ const V8StockBerza = () => {
       <FullScreenLightbox imageUrl={fullScreenImageUrl} onClose={() => setFullScreenImageUrl(null)} />
 
       <div className="max-w-7xl mx-auto">
+        
+        {/* --- DYNAMIC HEADINGS --- */}
         <div className="text-center mb-16 mt-4">
-          <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500">
-            V8 PREMIUM STOCK MARKET
+          <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500 transition-all">
+            {showPremium ? "V8 33MP MASTERWORK ASSETS" : "V8 PREMIUM STOCK MARKET"}
           </h1>
-          <p className="text-zinc-500 font-bold uppercase tracking-[0.3em] text-[10px] md:text-[12px]">Elite AI Assets for Visionary Creators and Businesses</p>
+          <p className="text-zinc-500 font-bold uppercase tracking-[0.3em] text-[10px] md:text-[12px] transition-all">
+            {showPremium ? "ULTRA-HD 8K (33.2 MEGAPIXELS) FOR HIGH-END COMMERCIAL USE" : "Elite AI Assets for Visionary Creators and Businesses"}
+          </p>
         </div>
-{/* --- V8 PREMIUM PREKIDAČ --- */}
+
+        {/* --- V8 PREMIUM PREKIDAČ --- */}
         <div className="flex justify-center mb-16 relative z-10">
           <div className="bg-[#050505] border border-white/10 p-1.5 rounded-full inline-flex items-center shadow-xl">
             <button 
@@ -250,7 +257,7 @@ const V8StockBerza = () => {
             </button>
           </div>
         </div>
-{/* --- V8 PREMIUM PREKIDAČ --- */}  
+
         {/* --- ADMIN CONTROL DASHBOARD --- */}
         {isAdmin && (
             <div className="flex justify-center mb-8">
@@ -314,19 +321,26 @@ const V8StockBerza = () => {
               <Zap className="w-6 h-6" /> {editingPaketId ? 'EDIT PACKAGE' : 'ADD NEW ZIP PACKAGE'}
             </h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div className="flex flex-col gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div className="flex flex-col gap-2 md:col-span-1">
                     <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
                         <Type size={14} /> PACKAGE TITLE
                     </label>
                     <input type="text" value={noviNazivEn} onChange={(e)=>setNoviNazivEn(e.target.value)} placeholder="E.g. Nature & Landscapes" className="bg-black border border-[#FF8C00]/50 p-4 rounded-xl text-[14px] font-black text-white w-full outline-none focus:border-[#FF8C00] transition-all" required />
                 </div>
                 
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 md:col-span-1">
                     <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
                         <Layers size={14} /> CATEGORY
                     </label>
                     <input type="text" value={novaKategorijaEn} onChange={(e)=>setNovaKategorijaEn(e.target.value)} placeholder="E.g. Abstract" className="bg-black border border-[#FF8C00]/50 p-4 rounded-xl text-[14px] font-black text-white w-full outline-none focus:border-[#FF8C00] transition-all" required />
+                </div>
+
+                <div className="flex flex-col gap-2 md:col-span-1">
+                    <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
+                        <FolderArchive size={14} /> COLLECTION (VOLUME)
+                    </label>
+                    <input type="text" placeholder="E.g. VOL 1 (Optional)" value={noviVolume} onChange={(e) => setNoviVolume(e.target.value)} className="bg-black text-white border border-white/10 p-4 rounded-xl text-[13px] font-black outline-none focus:border-[#FF8C00] transition-all" />
                 </div>
             </div>
 
@@ -352,24 +366,19 @@ const V8StockBerza = () => {
                               <MonitorPlay size={14} /> FORMAT
                           </label>
                           <div className="flex flex-col sm:flex-row gap-2">
-                              <label className={`cursor-pointer flex-1 p-3 rounded-xl border-2 transition-all text-center font-black text-[10px] uppercase ${noviFormat === '16:9 (20 IMAGES)' ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]' : 'bg-black border-white/10 text-zinc-500'}`}>
+                              <label className={`cursor-pointer flex-1 p-3 rounded-xl border-2 transition-all text-center font-black text-[9px] uppercase ${noviFormat === '16:9 (20 IMAGES)' ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]' : 'bg-black border-white/10 text-zinc-500'}`}>
                                   <input type="radio" name="format" value="16:9 (20 IMAGES)" checked={noviFormat === '16:9 (20 IMAGES)'} onChange={(e) => setNoviFormat(e.target.value)} className="hidden" />
                                   16:9 (20 IMAGES)
                               </label>
-                              <label className={`cursor-pointer flex-1 p-3 rounded-xl border-2 transition-all text-center font-black text-[10px] uppercase ${noviFormat === 'ALL FORMATS (80 IMAGES)' ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]' : 'bg-black border-white/10 text-zinc-500'}`}>
+                              <label className={`cursor-pointer flex-1 p-3 rounded-xl border-2 transition-all text-center font-black text-[9px] uppercase ${noviFormat === 'ALL FORMATS (80 IMAGES)' ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]' : 'bg-black border-white/10 text-zinc-500'}`}>
                                   <input type="radio" name="format" value="ALL FORMATS (80 IMAGES)" checked={noviFormat === 'ALL FORMATS (80 IMAGES)'} onChange={(e) => setNoviFormat(e.target.value)} className="hidden" />
-                                  All Formats
+                                  ALL FORMATS
+                              </label>
+                              <label className={`cursor-pointer flex-1 p-3 rounded-xl border-2 transition-all text-center font-black text-[9px] uppercase ${noviFormat === '16:9 & 9:16 (33MP MASTERWORK)' ? 'bg-gradient-to-r from-orange-600 to-amber-500 border-[#FF8C00] text-white shadow-[0_0_15px_rgba(234,88,12,0.4)]' : 'bg-black border-white/10 text-zinc-500 hover:border-orange-500/50'}`}>
+                                  <input type="radio" name="format" value="16:9 & 9:16 (33MP MASTERWORK)" checked={noviFormat === '16:9 & 9:16 (33MP MASTERWORK)'} onChange={(e) => setNoviFormat(e.target.value)} className="hidden" />
+                                  33MP MASTERWORK
                               </label>
                           </div>
-                      </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      <div className="flex flex-col gap-2">
-                        <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
-                            <FolderArchive size={14} /> COLLECTION (VOLUME)
-                        </label>
-                        <input type="text" placeholder="E.g. VOL 1 (Optional)" value={noviVolume} onChange={(e) => setNoviVolume(e.target.value)} className="bg-black text-white border border-white/10 p-3.5 rounded-xl text-[13px] font-black outline-none focus:border-[#FF8C00] transition-all" />
                       </div>
                   </div>
               </div>
@@ -431,36 +440,14 @@ const V8StockBerza = () => {
           </form>
         )}
 
-{/* --- V8 PREMIUM PREKIDAČ --- */}
-        <div className="flex justify-center mb-16 relative z-10 mt-8">
-          <div className="bg-[#050505] border border-white/10 p-1.5 rounded-full inline-flex items-center shadow-xl">
-            <button 
-              onClick={() => setShowPremium(false)}
-              className={`px-8 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 ${!showPremium ? 'bg-zinc-800 text-white shadow-md' : 'text-zinc-500 hover:text-white'}`}
-            >
-              Standard Assets
-            </button>
-            <button 
-              onClick={() => setShowPremium(true)}
-              className={`px-8 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${showPremium ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-white shadow-[0_0_15px_rgba(234,88,12,0.4)]' : 'text-zinc-500 hover:text-orange-500'}`}
-            >
-              <Zap className="w-4 h-4" /> V8 Premium
-            </button>
-          </div>
-        </div>
-{/* --- V8 PREMIUM PREKIDAČ KRAJ --- */}
-       
         {/* --- PACKAGE CARDS DISPLAY --- */}
         <div className="flex flex-wrap justify-center gap-12 max-w-5xl mx-auto">
           {paketi
             .filter(paket => {
               const cenaNum = parseFloat(paket.cena || 0);
-              // Ako je 'Standard', prikaži pakete jeftinije od 80$
-              // Ako je 'V8 Premium', prikaži pakete skuplje od 80$
               return showPremium ? cenaNum >= 80 : cenaNum < 80;
             })
             .map(paket => (
-         
             <div key={paket.id} className="w-full md:w-[calc(50%-1.5rem)] v8-premium-card group transition-all duration-500 hover:scale-[1.02] shadow-[0_0_30px_rgba(255,140,0,0.15)] flex flex-col">
               <div className="v8-card-content p-5 md:p-6">
                 
