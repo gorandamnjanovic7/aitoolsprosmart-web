@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { V8_SVE_KATEGORIJE, OPISI_SABLONI, CLOUDINARY_UPLOAD_PRESET, CLOUDINARY_CLOUD_NAME, } from './data';
-import { Download, Zap, ShieldCheck, X, Image as ImageIcon, Video, FolderArchive, Layers, Pencil, Users, CheckCircle, Type, FileText, Wallet, MonitorPlay, Link as LinkIcon, Images } from 'lucide-react';
+import { V8_SVE_KATEGORIJE, OPISI_SABLONI, CLOUDINARY_UPLOAD_PRESET, CLOUDINARY_CLOUD_NAME } from './data';
+import { Sparkles, Download, Zap, ShieldCheck, X, Image as ImageIcon, Video, FolderArchive, Layers, Pencil, Users, CheckCircle, Globe, Type, FileText, Wallet, MonitorPlay, Link as LinkIcon, Images } from 'lucide-react';
 import { db, auth } from './firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
@@ -28,8 +28,10 @@ const V8StockBerza = () => {
   const [primeriUrls, setPrimeriUrls] = useState([]); 
   const [editingPaketId, setEditingPaketId] = useState(null); 
   const [fullScreenImageUrl, setFullScreenImageUrl] = useState(null);
+  const [showPremium, setShowPremium] = useState(false);
+  const [showPremium, setShowPremium] = useState(false);
 
-  // V8 ADMIN FORMA
+  // V8 ADMIN FORM FIELDS
   const [noviNazivEn, setNoviNazivEn] = useState('');
   const [noviVolume, setNoviVolume] = useState('');
   const [noviFormat, setNoviFormat] = useState('16:9 (20 IMAGES)');
@@ -47,7 +49,7 @@ const V8StockBerza = () => {
     const unsub = onAuthStateChanged(auth, (user) => {
       if (user) {
           setCurrentUser(user);
-          if (user.email === "damnjanovicgoran7@gmail.com") setIsAdmin(true);
+          if (user.email === "damnjanovicgoran7@gmail.com" || user.email === "aitoolsprosmart@gmail.com") setIsAdmin(true);
           else setIsAdmin(false);
       } else {
           setCurrentUser(null);
@@ -58,7 +60,7 @@ const V8StockBerza = () => {
     return () => unsub();
   }, []);
 
-  // AUTOMATSKI OPIS ($)
+  // AUTOMATIC DESCRIPTION ($)
   useEffect(() => {
     if (noviFormat === '16:9 (20 IMAGES)') {
       setNoviOpisEn("PACKAGE CONTENTS: 20 PREMIUM AI VISUALS IN ULTRA-WIDE 16:9. PERFECT FOR WEBSITES AND YT. VALUE OVER $250.");
@@ -109,7 +111,7 @@ const V8StockBerza = () => {
 
   const snimiKupcaUBazu = async (user, paket) => {
       try {
-          const imePaketa = paket.nazivEn || paket.naziv || "Premium Package";
+          const imePaketa = paket.nazivEn || "Premium Package";
           await addDoc(collection(db, "v8_kupci"), {
               ime: user.displayName || "Client", email: user.email, uid: user.uid,
               zeliPaket: imePaketa, cenaPaketa: paket.cena, vreme: serverTimestamp(), isPaid: false
@@ -150,12 +152,19 @@ const V8StockBerza = () => {
   const dodajPaket = async (e) => {
     e.preventDefault();
     if (!previewUrl || !zipLink) { v8Toast.error("Preview image and ZIP link are required!"); return; }
-    if (!noviNazivEn.trim() || !novaKategorijaEn.trim()) { v8Toast.error("English Title and Category are required!"); return; }
+    if (!noviNazivEn.trim() || !novaKategorijaEn.trim()) { v8Toast.error("Package Title and Category are required!"); return; }
     
     const paketData = {
-        nazivEn: noviNazivEn.trim(), volume: noviVolume, format: noviFormat, 
-        kategorijaEn: novaKategorijaEn.trim(), cena: novaCena, tip: noviTip, 
-        opisEn: noviOpisEn, previewUrl, zipLink, primeri: primeriUrls, 
+        nazivEn: noviNazivEn.trim(), 
+        volume: noviVolume, 
+        format: noviFormat, 
+        kategorijaEn: novaKategorijaEn.trim(), 
+        cena: novaCena, 
+        tip: noviTip, 
+        opisEn: noviOpisEn, 
+        previewUrl, 
+        zipLink, 
+        primeri: primeriUrls, 
         updatedAt: serverTimestamp() 
     };
     
@@ -171,17 +180,16 @@ const V8StockBerza = () => {
     } catch (error) { v8Toast.error(error.message); }
   };
 
-  // POPRAVLJENO: startEditPaket sada gasi klijentski panel
   const startEditPaket = (paket) => {
     setEditingPaketId(paket.id); 
     setShowKlijentiPanel(false); 
-    setNoviNazivEn(paket.nazivEn || paket.naziv || ''); 
+    setNoviNazivEn(paket.nazivEn || ''); 
     setNoviVolume(paket.volume || '');
     setNoviFormat(paket.format || '16:9 (20 IMAGES)'); 
-    setNovaKategorijaEn(paket.kategorijaEn || paket.kategorija || ''); 
+    setNovaKategorijaEn(paket.kategorijaEn || ''); 
     setNovaCena(paket.cena || '19.99'); 
     setNoviTip(paket.tip || 'Image');
-    setNoviOpisEn(paket.opisEn || paket.opis || ''); 
+    setNoviOpisEn(paket.opisEn || ''); 
     setPreviewUrl(paket.previewUrl || ''); 
     setZipLink(paket.zipLink || '');
     setPrimeriUrls(paket.primeri || []); 
@@ -198,7 +206,6 @@ const V8StockBerza = () => {
     if (window.confirm("Are you sure?")) { await deleteDoc(doc(db, "v8_stock_paketi", id)); fetchPaketi(); }
   };
 
-  // MATEMATIKA ZA DINAMIČKU CENU ($)
   const getGlobalCena = (cena) => {
       const numCena = parseFloat(cena);
       if (numCena > 500) { 
@@ -226,86 +233,287 @@ const V8StockBerza = () => {
           </h1>
           <p className="text-zinc-500 font-bold uppercase tracking-[0.3em] text-[10px] md:text-[12px]">Elite AI Assets for Visionary Creators and Businesses</p>
         </div>
-
-        {/* ADMIN PANEL DUGME */}
+{/* --- V8 PREMIUM PREKIDAČ --- */}
+        <div className="flex justify-center mb-16 relative z-10">
+          <div className="bg-[#050505] border border-white/10 p-1.5 rounded-full inline-flex items-center shadow-xl">
+            <button 
+              onClick={() => setShowPremium(false)}
+              className={`px-8 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 ${!showPremium ? 'bg-zinc-800 text-white shadow-md' : 'text-zinc-500 hover:text-white'}`}
+            >
+              Standard Assets
+            </button>
+            <button 
+              onClick={() => setShowPremium(true)}
+              className={`px-8 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${showPremium ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-white shadow-[0_0_15px_rgba(234,88,12,0.4)]' : 'text-zinc-500 hover:text-orange-500'}`}
+            >
+              <Zap className="w-4 h-4" /> V8 Premium
+            </button>
+          </div>
+        </div>
+{/* --- V8 PREMIUM PREKIDAČ --- */}  
+        {/* --- ADMIN CONTROL DASHBOARD --- */}
         {isAdmin && (
-            <div className="flex justify-center mb-10">
-                <button onClick={() => { setShowKlijentiPanel(!showKlijentiPanel); if (!showKlijentiPanel) fetchKlijenti(); }} className="bg-zinc-900 border border-[#FF8C00]/50 hover:bg-[#FF8C00] text-[#FF8C00] hover:text-black transition-all px-8 py-3.5 rounded-xl font-black text-[12px] uppercase tracking-widest flex items-center gap-2 shadow-[0_0_20px_rgba(255,140,0,0.2)]">
-                    <Users size={18} /> {showKlijentiPanel ? "CLOSE APPROVALS" : "CLIENTS & APPROVALS"}
+            <div className="flex justify-center mb-8">
+                <button
+                    onClick={() => {
+                        setShowKlijentiPanel(!showKlijentiPanel);
+                        if (!showKlijentiPanel) fetchKlijenti();
+                    }}
+                    className="bg-zinc-900 border border-[#FF8C00]/50 hover:bg-[#FF8C00] text-[#FF8C00] hover:text-black transition-all px-8 py-3.5 rounded-xl font-black text-[12px] uppercase tracking-widest flex items-center gap-2 shadow-[0_0_20px_rgba(255,140,0,0.2)]"
+                >
+                    <Users size={18} />
+                    {showKlijentiPanel ? "CLOSE APPROVALS (BACK TO FORM)" : "CLIENTS & APPROVALS"}
                 </button>
             </div>
         )}
 
-        {/* KLIJENTSKI PANEL */}
         {isAdmin && showKlijentiPanel && (
             <div className="bg-[#0a0a0a] border-2 border-[#FF8C00] rounded-[2.5rem] p-8 mb-16 shadow-[0_0_40px_rgba(255,140,0,0.15)] max-w-4xl mx-auto">
-                <h2 className="text-xl font-black text-[#FF8C00] uppercase tracking-widest mb-6 flex items-center gap-2"> <ShieldCheck className="w-6 h-6" /> PAYMENT CONTROL ROOM </h2>
+                <h2 className="text-xl font-black text-[#FF8C00] uppercase tracking-widest mb-6 flex items-center gap-2">
+                    <ShieldCheck className="w-6 h-6" /> PAYMENT CONTROL ROOM
+                </h2>
+                
                 <div className="flex flex-col gap-3">
-                    {klijenti.map(klijent => (
-                        <div key={klijent.id} className="bg-black border border-white/10 p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                            <div>
-                                <p className="text-white font-black text-[15px]">{klijent.email}</p>
-                                <p className="text-zinc-400 text-[11px] uppercase font-bold tracking-wider mt-1"> Package: <span className="text-[#FF8C00]">{klijent.zeliPaket}</span> </p>
-                            </div>
-                            {klijent.isPaid ? <div className="text-green-500 font-black text-[11px] uppercase tracking-widest">APPROVED</div> : <button onClick={() => otkljucajPaketDirektno(klijent.id)} className="bg-[#FF8C00] text-black px-6 py-2.5 rounded-xl font-black text-[11px] uppercase">UNLOCK</button>}
+                    {klijenti.length === 0 ? (
+                        <div className="text-center py-10 bg-black rounded-2xl border border-white/5">
+                            <p className="text-zinc-500 font-bold uppercase text-sm tracking-widest">No orders currently in queue.</p>
                         </div>
-                    ))}
+                    ) : (
+                        klijenti.map(klijent => (
+                            <div key={klijent.id} className="bg-black border border-white/10 p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all hover:border-[#FF8C00]/50 hover:shadow-[0_0_15px_rgba(255,140,0,0.2)]">
+                                <div>
+                                    <p className="text-white font-black text-[15px]">{klijent.email}</p>
+                                    <p className="text-zinc-400 text-[11px] uppercase font-bold tracking-wider mt-1">
+                                        Package: <span className="text-[#FF8C00] ml-1">{klijent.zeliPaket}</span>
+                                    </p>
+                                    <p className="text-zinc-600 text-[10px] font-mono mt-2 font-bold uppercase tracking-widest">
+                                        Date: {klijent.vreme?.toDate().toLocaleString("en-US")}
+                                    </p>
+                                </div>
+                                <div>
+                                    {klijent.isPaid ? (
+                                        <div className="bg-green-900/20 border border-green-500/30 text-green-500 px-6 py-3 rounded-xl font-black text-[11px] uppercase flex items-center gap-2">
+                                            <CheckCircle size={16} /> APPROVED
+                                        </div>
+                                    ) : (
+                                        <button onClick={() => otkljucajPaketDirektno(klijent.id)} className="bg-[#FF8C00] hover:bg-orange-500 text-black px-8 py-3 rounded-xl font-black text-[11px] uppercase shadow-[0_0_20px_rgba(255,140,0,0.4)] transition-all flex items-center gap-2 hover:scale-105">
+                                            <Zap size={16} /> CLICK TO APPROVE
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
         )}
 
-        {/* FORMA ZA DODAVANJE (VIDLJIVA SAMO AKO PANEL NIJE OTVOREN) */}
         {isAdmin && !showKlijentiPanel && (
-          <form onSubmit={dodajPaket} className="bg-[#0a0a0a] border-2 border-[#FF8C00]/50 rounded-[2.5rem] p-8 mb-16 shadow-[0_0_30px_rgba(255,140,0,0.1)]">
+          <form onSubmit={dodajPaket} className="bg-[#0a0a0a] border-2 border-[#FF8C00]/50 rounded-[2.5rem] p-8 mb-16 shadow-[0_0_30px_rgba(255,140,0,0.1)] max-w-4xl mx-auto">
             <h2 className="text-xl font-black text-[#FF8C00] uppercase tracking-widest mb-8 flex items-center gap-2 border-b border-[#FF8C00]/20 pb-4">
               <Zap className="w-6 h-6" /> {editingPaketId ? 'EDIT PACKAGE' : 'ADD NEW ZIP PACKAGE'}
             </h2>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <input type="text" value={noviNazivEn} onChange={(e)=>setNoviNazivEn(e.target.value)} placeholder="PACKAGE TITLE (ENG)" className="bg-black border border-blue-500/50 p-4 rounded-xl text-[14px] font-black text-white w-full outline-none" required />
-                <input type="text" value={novaKategorijaEn} onChange={(e)=>setNovaKategorijaEn(e.target.value)} placeholder="CATEGORY (ENG)" className="bg-black border border-blue-500/50 p-4 rounded-xl text-[14px] font-black text-white w-full outline-none" required />
+                <div className="flex flex-col gap-2">
+                    <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
+                        <Type size={14} /> PACKAGE TITLE
+                    </label>
+                    <input type="text" value={noviNazivEn} onChange={(e)=>setNoviNazivEn(e.target.value)} placeholder="E.g. Nature & Landscapes" className="bg-black border border-[#FF8C00]/50 p-4 rounded-xl text-[14px] font-black text-white w-full outline-none focus:border-[#FF8C00] transition-all" required />
+                </div>
+                
+                <div className="flex flex-col gap-2">
+                    <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
+                        <Layers size={14} /> CATEGORY
+                    </label>
+                    <input type="text" value={novaKategorijaEn} onChange={(e)=>setNovaKategorijaEn(e.target.value)} placeholder="E.g. Abstract" className="bg-black border border-[#FF8C00]/50 p-4 rounded-xl text-[14px] font-black text-white w-full outline-none focus:border-[#FF8C00] transition-all" required />
+                </div>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-              <textarea value={noviOpisEn} onChange={(e)=>setNoviOpisEn(e.target.value)} placeholder="DESCRIPTION..." rows={4} className="bg-black border border-white/10 p-4 rounded-xl text-[12px] font-bold text-white w-full outline-none resize-none md:col-span-1" required />
-              <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="flex flex-col gap-2">
-                      <label className="text-[#FF8C00] font-black text-[10px] uppercase">BASE PRICE ($)</label>
-                      <input type="text" value={novaCena} onChange={(e)=>setNovaCena(e.target.value)} className="bg-black border border-white/10 p-4 rounded-xl text-white font-bold" />
+              <div className="flex flex-col gap-2 md:col-span-1">
+                  <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
+                      <FileText size={14} /> DESCRIPTION
+                  </label>
+                  <textarea value={noviOpisEn} onChange={(e)=>setNoviOpisEn(e.target.value)} placeholder="Package contents..." rows={3} className="bg-black border border-white/10 p-4 rounded-xl text-[12px] font-bold text-white w-full outline-none resize-none focus:border-[#FF8C00] transition-all h-full" required />
+              </div>
+
+              <div className="flex flex-col gap-6 md:col-span-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <div className="flex flex-col gap-2">
+                          <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
+                              <Wallet size={14} /> PRICE (USD)
+                          </label>
+                          <input type="text" value={novaCena} onChange={(e)=>setNovaCena(e.target.value)} placeholder="E.g. 19.99" className="bg-black border border-white/10 p-4 rounded-xl text-[13px] font-bold text-white outline-none focus:border-[#FF8C00] transition-all" />
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                          <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
+                              <MonitorPlay size={14} /> FORMAT
+                          </label>
+                          <div className="flex flex-col sm:flex-row gap-2">
+                              <label className={`cursor-pointer flex-1 p-3 rounded-xl border-2 transition-all text-center font-black text-[10px] uppercase ${noviFormat === '16:9 (20 IMAGES)' ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]' : 'bg-black border-white/10 text-zinc-500'}`}>
+                                  <input type="radio" name="format" value="16:9 (20 IMAGES)" checked={noviFormat === '16:9 (20 IMAGES)'} onChange={(e) => setNoviFormat(e.target.value)} className="hidden" />
+                                  16:9 (20 IMAGES)
+                              </label>
+                              <label className={`cursor-pointer flex-1 p-3 rounded-xl border-2 transition-all text-center font-black text-[10px] uppercase ${noviFormat === 'ALL FORMATS (80 IMAGES)' ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]' : 'bg-black border-white/10 text-zinc-500'}`}>
+                                  <input type="radio" name="format" value="ALL FORMATS (80 IMAGES)" checked={noviFormat === 'ALL FORMATS (80 IMAGES)'} onChange={(e) => setNoviFormat(e.target.value)} className="hidden" />
+                                  All Formats
+                              </label>
+                          </div>
+                      </div>
                   </div>
-                  <div className="flex flex-col gap-2">
-                      <label className="text-[#FF8C00] font-black text-[10px] uppercase">FORMAT</label>
-                      <select value={noviFormat} onChange={(e)=>setNoviFormat(e.target.value)} className="bg-black border border-white/10 p-4 rounded-xl text-white font-bold">
-                          <option value="16:9 (20 IMAGES)">16:9 (20 IMAGES)</option>
-                          <option value="ALL FORMATS (80 IMAGES)">ALL FORMATS (80 IMAGES)</option>
-                      </select>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <div className="flex flex-col gap-2">
+                        <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
+                            <FolderArchive size={14} /> COLLECTION (VOLUME)
+                        </label>
+                        <input type="text" placeholder="E.g. VOL 1 (Optional)" value={noviVolume} onChange={(e) => setNoviVolume(e.target.value)} className="bg-black text-white border border-white/10 p-3.5 rounded-xl text-[13px] font-black outline-none focus:border-[#FF8C00] transition-all" />
+                      </div>
                   </div>
               </div>
             </div>
-            <div className="flex flex-wrap gap-4 items-center border-t border-white/10 pt-6">
-                <input type="url" value={zipLink} onChange={(e)=>setZipLink(e.target.value)} placeholder="GOOGLE DRIVE ZIP LINK" className="bg-black border border-blue-500/50 p-4 rounded-xl text-[13px] text-white flex-1 outline-none font-bold" required />
-                <label className="bg-zinc-900 hover:bg-[#FF8C00] px-6 py-4 rounded-xl font-black text-[11px] uppercase cursor-pointer transition-all"> {isUploading ? 'UPLOADING...' : 'ADD PREVIEW'} <input type="file" onChange={handleUploadPreview} className="hidden" /> </label>
-                <button type="submit" className="px-8 py-4 bg-[#FF8C00] hover:bg-orange-500 text-black rounded-xl font-black text-[13px] tracking-widest uppercase"> {editingPaketId ? 'SAVE CHANGES' : 'SAVE PACKAGE'} </button>
+
+            <div className="border-t border-white/10 pt-6 mt-2">
+                <div className="flex flex-col gap-2 mb-6">
+                    <label className="flex items-center gap-2 text-blue-400 font-black text-[11px] tracking-widest uppercase">
+                        <LinkIcon size={14} /> GOOGLE DRIVE ZIP LINK (DELIVERY)
+                    </label>
+                    <input type="url" value={zipLink} onChange={(e)=>setZipLink(e.target.value)} placeholder="https://drive.google.com/..." className="bg-black border border-blue-500/50 p-4 rounded-xl text-[13px] text-white w-full outline-none font-bold focus:border-blue-400 transition-all" required />
+                </div>
+
+                <div className="flex flex-col gap-4">
+                  {(previewUrl || primeriUrls.length > 0) && (
+                    <div className="flex gap-4 p-4 bg-white/5 rounded-xl border border-white/10">
+                      {previewUrl && (
+                        <div className="relative w-20 h-20 rounded-lg overflow-hidden border-2 border-[#FF8C00] shadow-[0_0_15px_rgba(255,140,0,0.4)]">
+                          <span className="absolute top-0 left-0 bg-[#FF8C00] text-black text-[9px] font-black px-2 py-0.5 z-10">MAIN</span>
+                          <img src={previewUrl} alt="Main" className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                      {primeriUrls.map((url, idx) => (
+                        <div key={idx} className="w-20 h-20 rounded-lg overflow-hidden border border-white/20 relative">
+                          <span className="absolute bottom-0 right-0 bg-black/80 text-white text-[8px] font-black px-1.5 py-0.5 z-10">PREVIEW</span>
+                          <img src={url} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap gap-4 items-end">
+                    <div className="flex flex-col gap-2">
+                        <label className="flex items-center gap-2 text-zinc-400 font-black text-[10px] tracking-widest uppercase">
+                            <ImageIcon size={12} /> MAIN IMAGE
+                        </label>
+                        <label className="bg-zinc-900 hover:bg-[#FF8C00] text-white hover:text-black border border-white/10 hover:border-[#FF8C00] px-6 py-4 rounded-xl font-black text-[11px] uppercase cursor-pointer transition-all flex items-center gap-2"> 
+                          <ImageIcon size={16} /> {isUploading ? 'UPLOADING...' : 'ADD PREVIEW'} 
+                          <input type="file" onChange={handleUploadPreview} className="hidden" /> 
+                        </label>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <label className="flex items-center gap-2 text-zinc-400 font-black text-[10px] tracking-widest uppercase">
+                            <Images size={12} /> GALLERY IMAGES
+                        </label>
+                        <label className="bg-zinc-900 hover:bg-[#FF8C00] text-white hover:text-black border border-white/10 hover:border-[#FF8C00] px-6 py-4 rounded-xl font-black text-[11px] uppercase cursor-pointer transition-all flex items-center gap-2"> 
+                          <Images size={16} /> {isUploadingPrimer ? 'UPLOADING...' : `ADD THUMBNAILS (${primeriUrls.length}/4)`} 
+                          <input type="file" multiple onChange={handleUploadPrimeri} className="hidden" /> 
+                        </label>
+                    </div>
+
+                    <button type="submit" className="ml-auto px-8 py-4 rounded-xl font-black text-[13px] tracking-widest uppercase bg-[#FF8C00] hover:bg-orange-500 text-black transition-all shadow-[0_0_20px_rgba(255,140,0,0.5)] flex items-center gap-2 hover:scale-105"> 
+                      <Zap size={18} /> {editingPaketId ? 'SAVE CHANGES' : 'SAVE PACKAGE'} 
+                    </button>
+                  </div>
+                </div>
             </div>
           </form>
         )}
 
-        {/* LISTA PAKETA */}
+{/* --- V8 PREMIUM PREKIDAČ --- */}
+        <div className="flex justify-center mb-16 relative z-10 mt-8">
+          <div className="bg-[#050505] border border-white/10 p-1.5 rounded-full inline-flex items-center shadow-xl">
+            <button 
+              onClick={() => setShowPremium(false)}
+              className={`px-8 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 ${!showPremium ? 'bg-zinc-800 text-white shadow-md' : 'text-zinc-500 hover:text-white'}`}
+            >
+              Standard Assets
+            </button>
+            <button 
+              onClick={() => setShowPremium(true)}
+              className={`px-8 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${showPremium ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-white shadow-[0_0_15px_rgba(234,88,12,0.4)]' : 'text-zinc-500 hover:text-orange-500'}`}
+            >
+              <Zap className="w-4 h-4" /> V8 Premium
+            </button>
+          </div>
+        </div>
+{/* --- V8 PREMIUM PREKIDAČ KRAJ --- */}
+       
+        {/* --- PACKAGE CARDS DISPLAY --- */}
         <div className="flex flex-wrap justify-center gap-12 max-w-5xl mx-auto">
-          {paketi.map(paket => (
-            <div key={paket.id} className="w-full md:w-[calc(50%-1.5rem)] v8-premium-card group transition-all duration-500 hover:scale-[1.02] flex flex-col">
+          {paketi
+            .filter(paket => {
+              const cenaNum = parseFloat(paket.cena || 0);
+              // Ako je 'Standard', prikaži pakete jeftinije od 80$
+              // Ako je 'V8 Premium', prikaži pakete skuplje od 80$
+              return showPremium ? cenaNum >= 80 : cenaNum < 80;
+            })
+            .map(paket => (
+         
+            <div key={paket.id} className="w-full md:w-[calc(50%-1.5rem)] v8-premium-card group transition-all duration-500 hover:scale-[1.02] shadow-[0_0_30px_rgba(255,140,0,0.15)] flex flex-col">
               <div className="v8-card-content p-5 md:p-6">
-                <div className="aspect-video relative rounded-2xl overflow-hidden mb-4 bg-black border border-white/5">
-                  <img loading="lazy" src={paket.previewUrl} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-500" alt={paket.nazivEn} />
-                  {paket.format && <div className="absolute top-2 right-2 bg-black/80 border border-[#FF8C00]/50 text-[#FF8C00] px-3 py-1 rounded-lg font-black text-[9px] uppercase tracking-wider">{paket.format}</div>}
+                
+                <div className="aspect-video relative rounded-2xl overflow-hidden mb-4 bg-black border border-white/5 shadow-inner">
+                  {paket.volume && (
+                      <div className="absolute top-0 left-0 bg-[#FF8C00] text-black px-3 py-1.5 rounded-br-xl rounded-tl-2xl font-black text-[10px] uppercase tracking-widest z-20 shadow-lg border-b border-r border-[#FF8C00]/50">
+                          {paket.volume}
+                      </div>
+                  )}
+                  {paket.format && (
+                      <div className="absolute top-2 right-2 bg-black/80 backdrop-blur-md border border-[#FF8C00]/50 text-[#FF8C00] px-3 py-1 rounded-lg font-black text-[9px] uppercase tracking-wider z-20">
+                          {paket.format}
+                      </div>
+                  )}
+                  {paket.previewUrl && paket.previewUrl.match(/\.(mp4|webm|mov)$/i) ? (
+                    <video preload="none" src={`${paket.previewUrl}#t=0.001`} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-500" muted loop playsInline onMouseOver={e => e.target.play()} onMouseOut={e => e.target.pause()} />
+                  ) : (
+                    <img loading="lazy" src={paket.previewUrl} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-500" alt={paket.nazivEn} />
+                  )}
                 </div>
+                
+                {paket.primeri && paket.primeri.length > 0 && (
+                    <div className="grid grid-cols-4 gap-3 mb-6">
+                        {paket.primeri.map((imgUrl, idx) => (
+                            <div key={idx} className="aspect-square rounded-xl overflow-hidden border border-white/10 bg-zinc-900 shadow-xl relative cursor-pointer" onClick={() => setFullScreenImageUrl(imgUrl)}>
+                                <img loading="lazy" src={imgUrl} className="w-full h-full object-cover opacity-70 hover:opacity-100 transition-all duration-300" alt="V8 Preview" />
+                            </div>
+                        ))}
+                    </div>
+                )}
+                
                 <div className="flex items-center gap-3 mb-3">
-                  <ImageIcon className="w-5 h-5 text-[#FF8C00]" />
-                  <h3 className="text-[18px] md:text-[20px] font-black uppercase text-white tracking-widest">{paket.nazivEn || "PREMIUM ASSETS"}</h3>
+                  {paket.tip === 'Video' ? <Video className="w-5 h-5 text-[#FF8C00]" /> : <ImageIcon className="w-5 h-5 text-[#FF8C00]" />}
+                  <h3 className="text-[18px] md:text-[20px] font-black uppercase text-white tracking-widest">
+                    {paket.nazivEn || "PREMIUM ASSETS"}
+                  </h3>
                 </div>
-                <p className="text-zinc-400 text-[11px] uppercase font-black mb-6 flex-1 leading-relaxed tracking-wider">{paket.opisEn}</p>
+                
+                <p className="text-zinc-400 text-[11px] uppercase font-black mb-6 flex-1 leading-relaxed tracking-wider whitespace-pre-wrap">
+                    {paket.opisEn}
+                </p>
+                
                 <div className="flex items-center justify-between mt-auto pt-5 border-t border-[#FF8C00]/30">
                   <span className="text-2xl font-black text-white">${getGlobalCena(paket.cena)}</span>
-                  {isAdmin ? <a href={paket.zipLink} target="_blank" rel="noopener noreferrer" className="bg-green-600 px-6 py-3.5 rounded-xl font-black text-[11px] uppercase flex items-center gap-2">DOWNLOAD <Download size={14}/></a> : <button onClick={() => prijavaIKupovina(paket)} className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3.5 rounded-xl font-black text-[11px] uppercase tracking-widest flex items-center gap-2">BUY NOW <Zap className="w-4 h-4" /></button>}
+                  {isAdmin ? (
+                    <a href={paket.zipLink} target="_blank" rel="noopener noreferrer" className="bg-green-600 hover:bg-green-500 text-white px-6 py-3.5 rounded-xl font-black text-[11px] uppercase tracking-widest flex items-center gap-2">
+                        DOWNLOAD <Download className="w-4 h-4" />
+                    </a>
+                  ) : (
+                      <button onClick={() => prijavaIKupovina(paket)} className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3.5 rounded-xl font-black text-[11px] uppercase tracking-widest flex items-center gap-2">BUY NOW <Zap className="w-4 h-4" /></button>
+                  )}
                 </div>
+                
                 {isAdmin && (
                   <div className="mt-5 pt-4 border-t border-red-900/30 flex items-center gap-3">
                     <button onClick={() => startEditPaket(paket)} className="w-full py-3 bg-zinc-800 text-zinc-300 rounded-xl text-[10px] font-black uppercase hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center gap-2">Edit <Pencil size={14} /></button>
@@ -318,16 +526,34 @@ const V8StockBerza = () => {
         </div>
       </div>
 
-      {/* MODAL ZA PLAĆANJE (INSTALIRAN TVOJ DEVIZNI RAČUN) */}
+      {/* --- INTERNATIONAL PAYMENT MODAL --- */}
       {showPaymentModal && (
         <div className="fixed inset-0 z-[9000] bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-[#050505] rounded-3xl max-w-[420px] w-full relative pt-8 pb-10 px-8 border-2 border-[#FF8C00] shadow-[0_0_50px_rgba(255,140,0,0.2)] flex flex-col items-center">
-            <h2 className="text-2xl font-black uppercase tracking-widest mb-2 text-[#FF8C00]">INTERNATIONAL WIRE</h2>
-            <p className="text-[11px] text-zinc-400 font-black uppercase tracking-widest mb-6 text-center">{showPaymentModal.nazivEn}</p>
             
-            {/* FULL BANK DETAILS BLOCK */}
+            <h2 className="text-2xl font-black uppercase tracking-widest mb-2 text-[#FF8C00]">
+              INTERNATIONAL WIRE
+            </h2>
+            
+            <p className="text-[11px] text-zinc-400 font-black uppercase tracking-widest mb-6 text-center">
+              {showPaymentModal.nazivEn} {showPaymentModal.volume ? showPaymentModal.volume : ''}
+            </p>
+            
+            <div className="w-full mb-6 p-4 bg-[#FF8C00]/10 border border-[#FF8C00]/50 rounded-xl text-center">
+                <p className="text-[10px] text-zinc-300 font-black uppercase tracking-widest mb-1">
+                    ⚠️ IMPORTANT
+                </p>
+                <p className="text-[12px] text-white font-bold mb-1">
+                    Send proof of payment to:
+                </p>
+                <p className="text-[16px] text-[#FF8C00] font-black uppercase tracking-wider">
+                    aitoolsprosmart@gmail.com
+                </p>
+            </div>
+            
             <div className="w-full border border-white/10 rounded-2xl p-6 mb-6 bg-[#0a0a0a] flex flex-col items-center shadow-inner relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#FF8C00] to-transparent opacity-50"></div>
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#FF8C00] to-transparent opacity-50"></div>
+              
                 <div className="w-full text-left text-[11px] uppercase tracking-wider text-zinc-300 space-y-3 font-mono">
                     <div className="pb-2 border-b border-white/5">
                         <span className="text-zinc-600 block text-[9px] mb-1 font-sans font-black">BENEFICIARY</span>
@@ -360,9 +586,11 @@ const V8StockBerza = () => {
                     </div>
                 </div>
             </div>
-
-            <p className="text-[10px] text-zinc-500 font-bold uppercase text-center mb-6">Send proof of payment to:<br/><span className="text-[#FF8C00]">aitoolsprosmart@gmail.com</span></p>
-            <button onClick={() => setShowPaymentModal(null)} className="absolute top-4 right-4 text-zinc-500 hover:text-[#FF8C00]"><X size={20} /></button>
+            
+            <button onClick={() => setShowPaymentModal(null)} className="absolute top-4 right-4 bg-white/5 p-2 rounded-full text-zinc-500 hover:text-[#FF8C00] hover:bg-[#FF8C00]/10 transition-all">
+              <X size={20} strokeWidth={3} />
+            </button>
+            
           </div>
         </div>
       )}

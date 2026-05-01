@@ -1078,7 +1078,7 @@ function AppContent({ appsData, refreshData }) {
     </div>
   );
 }
-
+// --- APP CONTENT COMPONENT KRAJ ---
 // 🚀 V8 FIREBASE MAIN
 export default function App() {
   const [appsData, setAppsData] = useState([]);
