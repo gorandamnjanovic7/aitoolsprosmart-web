@@ -235,8 +235,10 @@ const V8StockBerza = () => {
           <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500 transition-all">
             {showPremium ? "V8 33MP MASTERWORK ASSETS" : "V8 PREMIUM STOCK MARKET"}
           </h1>
-          <p className="text-zinc-500 font-bold uppercase tracking-[0.3em] text-[10px] md:text-[12px] transition-all">
-            {showPremium ? "ULTRA-HD 8K (33.2 MEGAPIXELS) FOR HIGH-END COMMERCIAL USE" : "Elite AI Assets for Visionary Creators and Businesses"}
+          <p className="text-zinc-500 font-bold uppercase tracking-[0.3em] text-[10px] md:text-[12px] transition-all max-w-3xl mx-auto leading-relaxed">
+            {showPremium 
+              ? "PURE UNADULTERATED PIXELS. 33.2 MEGAPIXELS OF MASTERWORK RESOLUTION. ZERO COMPROMISE FOR LUXURY BRANDS." 
+              : "THE ULTIMATE ARSENAL OF ROYALTY-FREE AI ASSETS FOR HIGH-END PRODUCTION AND VISIONARY CREATORS."}
           </p>
         </div>
 
@@ -444,8 +446,12 @@ const V8StockBerza = () => {
         <div className="flex flex-wrap justify-center gap-12 max-w-5xl mx-auto">
           {paketi
             .filter(paket => {
-              const cenaNum = parseFloat(paket.cena || 0);
-              return showPremium ? cenaNum >= 80 : cenaNum < 80;
+              // Proveravamo da li je paket snimljen sa novim 33MP formatom
+              const isPremium = paket.format === '16:9 & 9:16 (33MP MASTERWORK)';
+              
+              // Ako je stisnut Premium prekidač -> prikaži SAMO 33MP pakete
+              // Ako je stisnut Standard prekidač -> prikaži SVE OSTALE pakete
+              return showPremium ? isPremium : !isPremium;
             })
             .map(paket => (
             <div key={paket.id} className="w-full md:w-[calc(50%-1.5rem)] v8-premium-card group transition-all duration-500 hover:scale-[1.02] shadow-[0_0_30px_rgba(255,140,0,0.15)] flex flex-col">
