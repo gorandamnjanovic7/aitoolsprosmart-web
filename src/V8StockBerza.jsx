@@ -41,6 +41,7 @@ const V8StockBerza = () => {
   const [noviOpisEn, setNoviOpisEn] = useState(''); 
   const [previewUrl, setPreviewUrl] = useState('');
   const [zipLink, setZipLink] = useState('');
+  const [lemonLink, setLemonLink] = useState(''); // <-- DODATO ZA LEMON SQUEEZY
 
   const [showKlijentiPanel, setShowKlijentiPanel] = useState(false);
   const [klijenti, setKlijenti] = useState([]);
@@ -96,15 +97,29 @@ const V8StockBerza = () => {
   };
 
   const prijavaIKupovina = async (paket) => {
+    // 1. Ako je korisnik VEĆ ulogovan
     if (currentUser) {
         snimiKupcaUBazu(currentUser, paket);
-        setShowPaymentModal(paket);
-    } else {
+        // Da li ovaj paket ima Lemon Squeezy link?
+        if (paket.lemonLink) {
+            window.location.href = paket.lemonLink; // Puca ga direktno na Lemon Checkout
+        } else {
+            setShowPaymentModal(paket); // Ako nema, otvara tvoj stari IPS/Wire modal
+        }
+    } 
+    // 2. Ako korisnik NIJE ulogovan (Traži mu Gmail login prvo)
+    else {
         const provider = new GoogleAuthProvider();
         try {
             const result = await signInWithPopup(auth, provider);
             await snimiKupcaUBazu(result.user, paket);
-            setShowPaymentModal(paket); 
+            
+            // Posle uspešnog logina, opet ista provera:
+            if (paket.lemonLink) {
+                window.location.href = paket.lemonLink;
+            } else {
+                setShowPaymentModal(paket); 
+            }
         } catch (error) { 
             v8Toast.error("Login via Google is required to proceed with the purchase."); 
         }
@@ -166,6 +181,7 @@ const V8StockBerza = () => {
         opisEn: noviOpisEn, 
         previewUrl, 
         zipLink, 
+        lemonLink, // <-- DODATO OVDE
         primeri: primeriUrls, 
         updatedAt: serverTimestamp() 
     };
@@ -194,13 +210,14 @@ const V8StockBerza = () => {
     setNoviOpisEn(paket.opisEn || ''); 
     setPreviewUrl(paket.previewUrl || ''); 
     setZipLink(paket.zipLink || '');
+    setLemonLink(paket.lemonLink || '');
     setPrimeriUrls(paket.primeri || []); 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const stoziEdit = () => {
     setEditingPaketId(null); 
-    setNoviNazivEn(''); setNoviVolume(''); setNoviFormat('16:9 (20 IMAGES)'); 
+    setNovaKategorijaEn(''); setPreviewUrl(''); setZipLink(''); setLemonLink(''); setPrimeriUrls([]); 
     setNovaKategorijaEn(''); setPreviewUrl(''); setZipLink(''); setPrimeriUrls([]);
   };
 
@@ -387,11 +404,20 @@ const V8StockBerza = () => {
             </div>
 
             <div className="border-t border-white/10 pt-6 mt-2">
-                <div className="flex flex-col gap-2 mb-6">
-                    <label className="flex items-center gap-2 text-blue-400 font-black text-[11px] tracking-widest uppercase">
-                        <LinkIcon size={14} /> GOOGLE DRIVE ZIP LINK (DELIVERY)
-                    </label>
-                    <input type="url" value={zipLink} onChange={(e)=>setZipLink(e.target.value)} placeholder="https://drive.google.com/..." className="bg-black border border-blue-500/50 p-4 rounded-xl text-[13px] text-white w-full outline-none font-bold focus:border-blue-400 transition-all" required />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div className="flex flex-col gap-2">
+                        <label className="flex items-center gap-2 text-blue-400 font-black text-[11px] tracking-widest uppercase">
+                            <LinkIcon size={14} /> GOOGLE DRIVE (DELIVERY)
+                        </label>
+                        <input type="url" value={zipLink} onChange={(e)=>setZipLink(e.target.value)} placeholder="https://drive.google.com/..." className="bg-black border border-blue-500/50 p-4 rounded-xl text-[13px] text-white w-full outline-none font-bold focus:border-blue-400 transition-all" required />
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <label className="flex items-center gap-2 text-yellow-400 font-black text-[11px] tracking-widest uppercase">
+                            <Zap size={14} /> LEMON SQUEEZY CHECKOUT LINK
+                        </label>
+                        <input type="url" value={lemonLink} onChange={(e)=>setLemonLink(e.target.value)} placeholder="https://store.lemonsqueezy.com/checkout/..." className="bg-black border border-yellow-500/50 p-4 rounded-xl text-[13px] text-white w-full outline-none font-bold focus:border-yellow-400 transition-all" />
+                    </div>
                 </div>
 
                 <div className="flex flex-col gap-4">
