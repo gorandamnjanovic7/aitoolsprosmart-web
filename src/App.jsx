@@ -72,7 +72,6 @@ const V8RadarCursor = () => {
     };
 
     const handleMouseOver = (e) => {
-      // Ako pređe preko dugmeta, linka, ili slike koja može da se klikne
       if (e.target.closest('button, a, summary, .cursor-pointer')) {
         setIsHovering(true);
       } else {
@@ -93,14 +92,13 @@ const V8RadarCursor = () => {
     <motion.div
       className="fixed top-0 left-0 w-8 h-8 border-2 border-[#FF8C00] rounded-full pointer-events-none z-[100000] flex items-center justify-center shadow-[0_0_15px_rgba(255,140,0,0.5)]"
       animate={{
-        x: mousePosition.x - 16, // Centriranje (pola od 32px)
+        x: mousePosition.x - 16,
         y: mousePosition.y - 16,
         scale: isHovering ? 1.8 : 1,
         backgroundColor: isHovering ? 'rgba(255, 140, 0, 0.15)' : 'transparent',
       }}
       transition={{ type: 'tween', ease: 'backOut', duration: 0.1 }}
     >
-      {/* Mala tačkica u sredini radara */}
       <div className={`w-1 h-1 bg-[#FF8C00] rounded-full transition-opacity duration-300 ${isHovering ? 'opacity-0' : 'opacity-100'}`} />
     </motion.div>
   );
@@ -296,6 +294,7 @@ const VisitorCounter = () => {
     </div>
   );
 };
+
 // --- SINGLE PRODUCT PAGE ---
 function SingleProductPage({ apps = [] }) {
   const { id } = useParams(); 
@@ -314,10 +313,12 @@ function SingleProductPage({ apps = [] }) {
     if (!app) return;
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        if (user.email === "damnjanovicgoran7@gmail.com") { setHasAccess(true); } 
-        else {
+        const email = user.email ? user.email.toLowerCase() : "";
+        if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") { 
+          setHasAccess(true); 
+        } else {
           try {
-            const docRef = doc(db, "vip_users", user.email.toLowerCase());
+            const docRef = doc(db, "vip_users", email);
             const docSnap = await getDoc(docRef);
             if (docSnap.exists() && docSnap.data().unlockedApps) {
               const unlocked = docSnap.data().unlockedApps;
@@ -350,9 +351,10 @@ function SingleProductPage({ apps = [] }) {
       try {
         const result = await signInWithPopup(auth, provider);
         const user = result.user;
+        const email = user.email ? user.email.toLowerCase() : "";
         await setDoc(doc(db, "posetioci", user.uid), { ime: user.displayName, email: user.email, vremePrijave: serverTimestamp(), zainteresovanZa: tip, identitet: "V8-Client-Global" }, { merge: true });
         
-        const docRef = doc(db, "vip_users", user.email.toLowerCase());
+        const docRef = doc(db, "vip_users", email);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists() && docSnap.data().unlockedApps && (docSnap.data().unlockedApps.includes(app.id) || docSnap.data().unlockedApps.includes('FULL_ACCESS'))) {
             setHasAccess(true); v8Toast.success("Welcome back! Access is already unlocked.");
@@ -476,10 +478,12 @@ function TrezorPage({ apps = [] }) {
     window.scrollTo(0, 0);
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        if (user.email === "damnjanovicgoran7@gmail.com") { setUnlockedApps(['FULL_ACCESS']); } 
-        else {
+        const email = user.email ? user.email.toLowerCase() : "";
+        if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") { 
+          setUnlockedApps(['FULL_ACCESS']); 
+        } else {
           try {
-            const docRef = doc(db, "vip_users", user.email.toLowerCase());
+            const docRef = doc(db, "vip_users", email);
             const docSnap = await getDoc(docRef);
             if (docSnap.exists() && docSnap.data().unlockedApps) { setUnlockedApps(docSnap.data().unlockedApps); } 
             else { setUnlockedApps([]); }
@@ -564,10 +568,12 @@ function HomePage({ apps = [] }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        if (user.email === "damnjanovicgoran7@gmail.com") { setHasEnhancerAccess(true); } 
-        else {
+        const email = user.email ? user.email.toLowerCase() : "";
+        if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") { 
+          setHasEnhancerAccess(true); 
+        } else {
           try {
-            const docRef = doc(db, "vip_users", user.email.toLowerCase());
+            const docRef = doc(db, "vip_users", email);
             const docSnap = await getDoc(docRef);
             if (docSnap.exists() && docSnap.data().unlockedApps && (docSnap.data().unlockedApps.includes('FULL_ACCESS') || docSnap.data().unlockedApps.includes('10X_ENHANCER'))) { setHasEnhancerAccess(true); } 
             else { setHasEnhancerAccess(false); }
@@ -739,8 +745,16 @@ const AdminPage = ({ apps = [], refreshData }) => {
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
-      if (user && user.email === "damnjanovicgoran7@gmail.com") { setIsAuthenticated(true); } 
-      else { setIsAuthenticated(false); }
+      if (user) {
+        const email = user.email ? user.email.toLowerCase() : "";
+        if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+        }
+      } else {
+        setIsAuthenticated(false);
+      }
       setAuthChecking(false); 
     });
     return () => unsub();
@@ -766,7 +780,8 @@ const AdminPage = ({ apps = [], refreshData }) => {
       await setPersistence(auth, browserLocalPersistence); 
       
       const result = await signInWithPopup(auth, provider); 
-      if (result.user.email === "damnjanovicgoran7@gmail.com") { 
+      const email = result.user.email ? result.user.email.toLowerCase() : "";
+      if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") { 
         setIsAuthenticated(true); 
         v8Toast.success("Admin login successful!"); 
       } else { 
@@ -1005,13 +1020,31 @@ function AppContent({ appsData, refreshData }) {
   const datumPrikaz = `${daniUSedmici[trenutnoVreme.getDay()]} , ${trenutnoVreme.getDate().toString().padStart(2, '0')}/${(trenutnoVreme.getMonth() + 1).toString().padStart(2, '0')}/${trenutnoVreme.getFullYear()}`;
   const vremePrikaz = `${trenutnoVreme.getHours().toString().padStart(2, '0')}:${trenutnoVreme.getMinutes().toString().padStart(2, '0')}:${trenutnoVreme.getSeconds().toString().padStart(2, '0')}`;
 
+  // OVDE JE SADA BLINDIRANA PROVERA ZA ADMINA I VIP!
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
-       if(user) {
-          if (user.email === "damnjanovicgoran7@gmail.com") { setIsAdmin(true); setIsVIPLoggedIn(true); }
-          else { setIsAdmin(false); if((await getDoc(doc(db, "vip_users", user.email.toLowerCase()))).exists()) { setIsVIPLoggedIn(true); } else { setIsVIPLoggedIn(false); } }
-       } else { setIsVIPLoggedIn(false); setIsAdmin(false); }
-    }); return () => unsub();
+        if(user) {
+          const email = user.email ? user.email.toLowerCase() : "";
+          const isMe = email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com";
+          
+          if (isMe) {
+            setIsAdmin(true);
+            setIsVIPLoggedIn(true);
+          } else {
+            setIsAdmin(false); 
+            try {
+              const docSnap = await getDoc(doc(db, "vip_users", email));
+              setIsVIPLoggedIn(docSnap.exists());
+            } catch(e) {
+              setIsVIPLoggedIn(false);
+            }
+          }
+        } else {
+          setIsVIPLoggedIn(false);
+          setIsAdmin(false);
+        }
+    }); 
+    return () => unsub();
   }, []);
 
   useEffect(() => {
