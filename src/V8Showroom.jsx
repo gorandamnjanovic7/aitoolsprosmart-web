@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Play, Maximize2, Zap, Layers, MonitorSmartphone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion'; // DODAT FRAMER MOTION ZA ANIMACIJE
-import { v8Toast } from './App';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // FULL SCREEN LIGHTBOX (sa glatkim učitavanjem)
 const FullScreenLightbox = ({ item, onClose }) => {
@@ -44,7 +43,6 @@ const FullScreenLightbox = ({ item, onClose }) => {
 const V8Showroom = () => {
     const [activeFilter, setActiveFilter] = useState('ALL');
     const [lightboxItem, setLightboxItem] = useState(null);
-    const navigate = useNavigate();
 
     const showcaseItems = [
         { id: 1, type: 'image', category: 'LUXURY CULINARY', format: '16:9', title: 'Michelin Star Seafood', url: 'LINK_JASTOG' },
@@ -71,6 +69,7 @@ const V8Showroom = () => {
 
     const filteredItems = activeFilter === 'ALL' ? showcaseItems : showcaseItems.filter(item => item.category === activeFilter);
 
+    // DIREKTAN LINK KA V8 PREMIUM BUNDLE-ovima
     const handleOpenStore = () => {
         window.location.href = "https://aitoolsprosmart.com/stock";
     };
@@ -87,25 +86,46 @@ const V8Showroom = () => {
                 {lightboxItem && <FullScreenLightbox item={lightboxItem} onClose={() => setLightboxItem(null)} />}
             </AnimatePresence>
 
-            {/* HERO SEKCIJA (Glatko uplivavanje nagore) */}
+            {/* HERO SEKCIJA SA TVOJOM NOVOM SLIKOM */}
             <motion.div 
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.2 }}
-                className="max-w-7xl mx-auto text-center mb-20 relative"
+                className="relative w-full max-w-7xl mx-auto mb-24 rounded-[3rem] overflow-hidden border border-white/10 shadow-[0_0_60px_rgba(255,140,0,0.15)]"
             >
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-32 bg-[#FF8C00] opacity-20 blur-[120px] rounded-full pointer-events-none animate-pulse"></div>
+                {/* Tvoja tečna V8 pozadina */}
+                <div 
+                    className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-70"
+                    style={{ backgroundImage: "url('/v8-showroom/v8-hero.png')" }} 
+                ></div>
                 
-                <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-6 text-transparent bg-clip-text bg-gradient-to-b from-white to-zinc-600 relative z-10">
-                    BEYOND <span className="text-[#FF8C00]">PIXELS</span>
-                </h1>
-                <p className="text-zinc-400 font-bold uppercase tracking-[0.4em] text-[11px] md:text-[13px] max-w-3xl mx-auto leading-relaxed mb-10">
-                    Step into the V8 Masterwork Showroom. Experience 33.2 Megapixel resolution and hyper-realistic cinematic motion. Designed exclusively for top-tier agencies and visionary brands.
-                </p>
-                
-                <button onClick={handleOpenStore} className="bg-gradient-to-r from-orange-600 to-amber-500 text-white px-10 py-5 rounded-full font-black text-[13px] uppercase tracking-widest shadow-[0_0_30px_rgba(234,88,12,0.4)] hover:scale-105 hover:shadow-[0_0_50px_rgba(234,88,12,0.6)] transition-all flex items-center gap-3 mx-auto">
-                    <Zap size={20} /> UNLOCK FULL BUNDLES NOW
-                </button>
+                {/* Profesionalni prelaz: Zatamnjenje sa donje i bočnih strana da tekst "iskače" */}
+                <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050505]/20 via-[#050505]/60 to-[#050505]"></div>
+                <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#050505] via-transparent to-[#050505]"></div>
+
+                {/* Sadržaj iznad slike */}
+                <div className="relative z-10 text-center py-32 px-6">
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.5, duration: 0.5 }}
+                        className="inline-block px-5 py-2 rounded-full bg-black/60 backdrop-blur-md border border-[#FF8C00]/30 text-[#FF8C00] font-black uppercase text-[10px] tracking-widest mb-8 shadow-[0_0_20px_rgba(255,140,0,0.2)]"
+                    >
+                        V8 Masterwork Edition
+                    </motion.div>
+
+                    <h1 className="text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter mb-6 text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)]">
+                        BEYOND <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FF8C00] to-amber-600 drop-shadow-none">PIXELS</span>
+                    </h1>
+                    
+                    <p className="text-zinc-200 font-bold uppercase tracking-[0.4em] text-[11px] md:text-[13px] max-w-3xl mx-auto leading-relaxed mb-12 drop-shadow-lg bg-black/20 p-4 rounded-xl backdrop-blur-sm">
+                        Step into the V8 Masterwork Showroom. Experience 33.2 Megapixel resolution and hyper-realistic cinematic motion. Designed exclusively for top-tier agencies and visionary brands.
+                    </p>
+                    
+                    <button onClick={handleOpenStore} className="bg-gradient-to-r from-orange-600 to-amber-500 text-white px-12 py-5 rounded-full font-black text-[13px] uppercase tracking-widest shadow-[0_0_30px_rgba(234,88,12,0.5)] hover:scale-105 hover:shadow-[0_0_50px_rgba(234,88,12,0.8)] transition-all flex items-center gap-3 mx-auto border border-orange-400/50 relative z-50">
+                        <Zap size={20} fill="currentColor" /> UNLOCK FULL BUNDLES NOW
+                    </button>
+                </div>
             </motion.div>
 
             {/* FILTERI (Animirani jedan po jedan) */}
@@ -121,7 +141,7 @@ const V8Showroom = () => {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setActiveFilter(filter)}
-                        className={`px-8 py-3.5 rounded-xl font-black text-[11px] uppercase tracking-widest transition-colors duration-300 border ${activeFilter === filter ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00] shadow-[0_0_20px_rgba(255,140,0,0.2)]' : 'bg-[#0a0a0a] border-white/10 text-zinc-500 hover:border-[#FF8C00]/50 hover:text-white'}`}
+                        className={`px-8 py-3.5 rounded-xl font-black text-[11px] uppercase tracking-widest transition-colors duration-300 border relative z-50 ${activeFilter === filter ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00] shadow-[0_0_20px_rgba(255,140,0,0.2)]' : 'bg-[#0a0a0a] border-white/10 text-zinc-500 hover:border-[#FF8C00]/50 hover:text-white'}`}
                     >
                         {filter}
                     </motion.button>
@@ -140,7 +160,7 @@ const V8Showroom = () => {
                             viewport={{ once: true, margin: "-50px" }}
                             transition={{ duration: 0.6, delay: index * 0.05 }} // Stagger efekat
                             onClick={() => setLightboxItem(item)}
-                            className="relative group rounded-3xl overflow-hidden bg-[#0a0a0a] border border-white/5 cursor-pointer break-inside-avoid transform transition-transform duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(255,140,0,0.15)]"
+                            className="relative group rounded-3xl overflow-hidden bg-[#0a0a0a] border border-white/5 cursor-pointer break-inside-avoid transform transition-transform duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(255,140,0,0.15)] z-50"
                         >
                             {/* SPOTLIGHT GLOW EFEKAT (Sjaj po ivicama na Hover) */}
                             <div className="absolute inset-0 bg-gradient-to-tr from-[#FF8C00]/0 via-[#FF8C00]/0 to-[#FF8C00]/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-30"></div>
@@ -195,7 +215,7 @@ const V8Showroom = () => {
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1 bg-gradient-to-r from-transparent via-[#FF8C00] to-transparent opacity-50"></div>
                 <h2 className="text-3xl font-black uppercase text-white tracking-widest mb-4">READY TO UPGRADE YOUR VISUALS?</h2>
                 <p className="text-zinc-500 font-bold uppercase text-[11px] tracking-widest mb-10">Stop using generic stock. Dominate your market with V8.</p>
-                <button onClick={handleOpenStore} className="bg-[#FF8C00] text-black px-12 py-5 rounded-full font-black text-[13px] uppercase tracking-widest shadow-[0_0_40px_rgba(255,140,0,0.3)] hover:scale-105 hover:bg-white transition-all flex items-center gap-3 mx-auto">
+                <button onClick={handleOpenStore} className="bg-[#FF8C00] text-black px-12 py-5 rounded-full font-black text-[13px] uppercase tracking-widest shadow-[0_0_40px_rgba(255,140,0,0.3)] hover:scale-105 hover:bg-white transition-all flex items-center gap-3 mx-auto relative z-50">
                     <Layers size={20} /> BROWSE V8 STORE
                 </button>
             </motion.div>
