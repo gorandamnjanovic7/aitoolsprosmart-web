@@ -85,10 +85,15 @@ const V8Showroom = () => {
         ? showcaseItems 
         : showcaseItems.filter(item => item.category === activeFilter);
 
-    // POČETAK: handleOpenStore (SADA RADI PREBACIVANJE)
+    // POČETAK: handleOpenStore (DIREKTAN LINK KA V8 PREMIUM)
     const handleOpenStore = () => {
-        window.scrollTo(0, 0); // Vraća korisnika na vrh ekrana
-        navigate('/stock');    // Lansira ga na Stock Berzu
+        v8Toast.success("Redirecting to V8 Premium...");
+        
+        // Ovde stavi svoj stvarni link ka V8 Premium paketu
+        window.location.href = "https://aitoolsprosmart.com/stock"; 
+        
+        // AKO ŽELIŠ DA OTVORI U NOVOM TABU, ONDA STAVI OVO UMESTO LINIJE IZNAD:
+        // window.open("https://tvoj-link-ka-v8-premium-naplati.com", "_blank");
     };
     // KRAJ: handleOpenStore
 
