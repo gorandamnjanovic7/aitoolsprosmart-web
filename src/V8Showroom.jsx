@@ -41,6 +41,7 @@ const FullScreenLightbox = ({ item, onClose }) => {
 
 // GLAVNA SHOWROOM KOMPONENTA
 const V8Showroom = () => {
+    const navigate = useNavigate(); // <-- OVO JE FALILO, SADA JE TU!
     const [activeFilter, setActiveFilter] = useState('ALL');
     const [lightboxItem, setLightboxItem] = useState(null);
 
@@ -71,10 +72,10 @@ const V8Showroom = () => {
 
     // DIREKTAN PRELAZ BEZ UČITAVANJA (NO LOADER)
     const handleOpenStore = () => {
-        window.scrollTo(0, 0); // Vraća na vrh ekrana
-        navigate('/stock');    // Prebacuje te trenutačno, kao munja!
+        window.scrollTo(0, 0); 
+        navigate('/stock');    
     };
- // DIREKTAN PRELAZ BEZ UČITAVANJA (NO LOADER)-KRAJ
+    
     return (
         // CINEMATIC PAGE TRANSITION: Stranica izranja iz crnila
         <motion.div 
@@ -155,18 +156,15 @@ const V8Showroom = () => {
                     {filteredItems.map((item, index) => (
                         <motion.div 
                             key={item.id} 
-                            // OVO JE SCROLL REVEAL (Kad dođeš do slike, ona se pojavi odozdo)
                             initial={{ opacity: 0, y: 80 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true, margin: "-50px" }}
-                            transition={{ duration: 0.6, delay: index * 0.05 }} // Stagger efekat
+                            transition={{ duration: 0.6, delay: index * 0.05 }}
                             onClick={() => setLightboxItem(item)}
                             className="relative group rounded-3xl overflow-hidden bg-[#0a0a0a] border border-white/5 cursor-pointer break-inside-avoid transform transition-transform duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(255,140,0,0.15)] z-50"
                         >
-                            {/* SPOTLIGHT GLOW EFEKAT (Sjaj po ivicama na Hover) */}
                             <div className="absolute inset-0 bg-gradient-to-tr from-[#FF8C00]/0 via-[#FF8C00]/0 to-[#FF8C00]/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-30"></div>
 
-                            {/* Bedževi */}
                             <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
                                 <span className="bg-black/80 backdrop-blur-md border border-white/10 text-white px-3 py-1.5 rounded-lg font-black text-[9px] uppercase tracking-wider flex items-center gap-1.5">
                                     <MonitorSmartphone size={12} className="text-[#FF8C00]" /> {item.format}
@@ -178,7 +176,6 @@ const V8Showroom = () => {
                                 </span>
                             </div>
 
-                            {/* Slika/Video */}
                             <div className="relative w-full h-full overflow-hidden">
                                 {item.type === 'video' ? (
                                     <>
@@ -195,7 +192,6 @@ const V8Showroom = () => {
                                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10"></div>
                             </div>
 
-                            {/* Tekst na Hover */}
                             <div className="absolute bottom-0 left-0 w-full p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 z-20">
                                 <h3 className="text-xl font-black text-white uppercase tracking-widest mb-1">{item.title}</h3>
                                 <p className="text-[#FF8C00] font-bold text-[10px] uppercase tracking-[0.2em]">{item.category}</p>
@@ -205,7 +201,6 @@ const V8Showroom = () => {
                 </AnimatePresence>
             </div>
 
-            {/* CALL TO ACTION SA SCROLL REVEAL */}
             <motion.div 
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
