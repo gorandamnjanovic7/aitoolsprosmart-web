@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Sparkles, Play, Maximize2, Zap, LayoutGrid, Layers, MonitorSmartphone } from 'lucide-react';
-import { v8Toast } from './App'; // Pretpostavljam da imaš ovo za notifikacije
+import { useNavigate } from 'react-router-dom'; // DODATO: Za prebacivanje na druge stranice
+import { v8Toast } from './App'; 
 
 // POČETAK: FullScreenLightbox
 const FullScreenLightbox = ({ item, onClose }) => {
@@ -31,6 +32,7 @@ const FullScreenLightbox = ({ item, onClose }) => {
 const V8Showroom = () => {
     const [activeFilter, setActiveFilter] = useState('ALL');
     const [lightboxItem, setLightboxItem] = useState(null);
+    const navigate = useNavigate(); // DODATO: Hook za navigaciju
 
     // TVOJA NOVA BAZA VIZUALA (Zameni 'LINK_...' sa svojim pravim linkovima)
     const showcaseItems = [
@@ -58,6 +60,9 @@ const V8Showroom = () => {
 
         // --- ROMAN REALISM ---
         { id: 15, type: 'image', category: 'ROMAN REALISM', format: '16:9', title: 'Legionary Armament', url: 'LINK_GLADIJATOR_OPREMA' },
+        
+        // --- NIGHTLIFE & LUXURY ---
+        { id: 18, type: 'image', category: 'NIGHTLIFE & LUXURY', format: '16:9', title: 'Premium Craft Cocktails', url: 'LINK_KOKTELI' },
 
         // --- CINEMATIC MOTION (Tvoji videi) ---
         { id: 16, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Smartwatch Hologram', url: 'LINK_SAT_VIDEO' },
@@ -72,17 +77,18 @@ const V8Showroom = () => {
         'CINEMATIC MOTION', 
         'ROMAN REALISM', 
         'SPACES & ARCHITECTURE', 
-        'PRODUCT & MACRO'
+        'PRODUCT & MACRO',
+        'NIGHTLIFE & LUXURY'
     ];
 
     const filteredItems = activeFilter === 'ALL' 
         ? showcaseItems 
         : showcaseItems.filter(item => item.category === activeFilter);
 
-    // POČETAK: handleOpenStore
+    // POČETAK: handleOpenStore (SADA RADI PREBACIVANJE)
     const handleOpenStore = () => {
-        // Ovde logiku da ga baciš na V8StockBerza komponentu
-        v8Toast.success("Redirecting to V8 Premium Market...");
+        window.scrollTo(0, 0); // Vraća korisnika na vrh ekrana
+        navigate('/stock');    // Lansira ga na Stock Berzu
     };
     // KRAJ: handleOpenStore
 
@@ -149,7 +155,6 @@ const V8Showroom = () => {
                                             <Play size={24} fill="currentColor" />
                                         </div>
                                     </div>
-                                    {/* Ovde stavi pravi video kad ubaciš url */}
                                     <div className="w-full h-80 bg-zinc-900 flex items-center justify-center text-zinc-700">VIDEO PLACEHOLDER</div>
                                 </>
                             ) : (
