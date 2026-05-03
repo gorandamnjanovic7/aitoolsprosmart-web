@@ -218,6 +218,18 @@ const V8StockBerza = () => {
     } catch (err) { v8Toast.error("Error uploading previews!"); } finally { setIsUploadingPrimer(false); e.target.value = null; }
   };
 
+  // POČETAK: removeMainImage
+  const removeMainImage = () => {
+    setPreviewUrl('');
+  };
+  // KRAJ: removeMainImage
+
+  // POČETAK: removeThumbnail
+  const removeThumbnail = (indexToRemove) => {
+    setPrimeriUrls(prev => prev.filter((_, idx) => idx !== indexToRemove));
+  };
+  // KRAJ: removeThumbnail
+
   const dodajPaket = async (e) => {
     e.preventDefault();
     if (!previewUrl || !zipLink) { v8Toast.error("Preview image and ZIP link are required!"); return; }
@@ -491,14 +503,20 @@ const V8StockBerza = () => {
                   {(previewUrl || primeriUrls.length > 0) && (
                     <div className="flex gap-4 p-4 bg-white/5 rounded-xl border border-white/10">
                       {previewUrl && (
-                        <div className="relative w-20 h-20 rounded-lg overflow-hidden border-2 border-[#FF8C00] shadow-[0_0_15px_rgba(255,140,0,0.4)]">
+                        <div className="relative w-20 h-20 rounded-lg overflow-hidden border-2 border-[#FF8C00] shadow-[0_0_15px_rgba(255,140,0,0.4)] group">
                           <span className="absolute top-0 left-0 bg-[#FF8C00] text-black text-[9px] font-black px-2 py-0.5 z-10">MAIN</span>
+                          <button type="button" onClick={removeMainImage} className="absolute top-1 right-1 bg-red-600/90 hover:bg-red-500 text-white rounded-full p-1 z-20 transition-all opacity-0 group-hover:opacity-100 shadow-md">
+                            <X size={12} strokeWidth={3} />
+                          </button>
                           <img src={previewUrl} alt="Main" className="w-full h-full object-cover" />
                         </div>
                       )}
                       {primeriUrls.map((url, idx) => (
-                        <div key={idx} className="w-20 h-20 rounded-lg overflow-hidden border border-white/20 relative">
+                        <div key={idx} className="w-20 h-20 rounded-lg overflow-hidden border border-white/20 relative group">
                           <span className="absolute bottom-0 right-0 bg-black/80 text-white text-[8px] font-black px-1.5 py-0.5 z-10">PREVIEW</span>
+                          <button type="button" onClick={() => removeThumbnail(idx)} className="absolute top-1 right-1 bg-red-600/90 hover:bg-red-500 text-white rounded-full p-1 z-20 transition-all opacity-0 group-hover:opacity-100 shadow-md">
+                            <X size={12} strokeWidth={3} />
+                          </button>
                           <img src={url} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
                         </div>
                       ))}
