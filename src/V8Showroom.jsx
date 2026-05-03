@@ -69,11 +69,12 @@ const V8Showroom = () => {
 
     const filteredItems = activeFilter === 'ALL' ? showcaseItems : showcaseItems.filter(item => item.category === activeFilter);
 
-    // DIREKTAN LINK KA V8 PREMIUM BUNDLE-ovima
+    // DIREKTAN PRELAZ BEZ UČITAVANJA (NO LOADER)
     const handleOpenStore = () => {
-        window.location.href = "https://aitoolsprosmart.com/stock";
+        window.scrollTo(0, 0); // Vraća na vrh ekrana
+        navigate('/stock');    // Prebacuje te trenutačno, kao munja!
     };
-
+ // DIREKTAN PRELAZ BEZ UČITAVANJA (NO LOADER)-KRAJ
     return (
         // CINEMATIC PAGE TRANSITION: Stranica izranja iz crnila
         <motion.div 

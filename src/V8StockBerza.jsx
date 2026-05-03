@@ -5,6 +5,7 @@ import { db, auth } from './firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { v8Toast } from './App';
+import { motion } from 'framer-motion';
 
 const FullScreenLightbox = ({ imageUrl, onClose }) => {
     if (!imageUrl) return null;
@@ -68,7 +69,7 @@ const V8StockBerza = () => {
     } else if (noviFormat === 'ALL FORMATS (80 IMAGES)') {
       setNoviOpisEn("PACKAGE CONTENTS: 80 PREMIUM AI VISUALS IN 4 RESOLUTIONS (16:9, 9:16, 1:1, 21:9). COMPLETE PACKAGE FOR ALL PLATFORMS. THE ULTIMATE V8 COLLECTION.");
     } else if (noviFormat === '16:9 & 9:16 (33MP MASTERWORK)') {
-      setNoviOpisEn("V8 MASTERWORK BUNDLE: COMPLETE COLLECTION OF 20 PREMIUM VISUALS IN 33.2 MEGAPIXEL (8K UHD) RESOLUTION. INCLUDES BOTH 16:9 (LANDSCAPE) AND 9:16 (PORTRAIT) ASPECT RATIOS. FLAWLESS TEXTURES, ZERO BRANDING, IP-SAFE. DESIGNED EXCLUSIVELY FOR LUXURY BRANDS AND HIGH-END COMMERCIAL CAMPAIGNS.");
+      setNoviOpisEn("V8 MASTERWORK BUNDLE: COMPLETE COLLECTION OF 20 PREMIUM VISUALS IN 33.2 MEGAPIXELS (8K UHD) RESOLUTION. INCLUDES BOTH 16:9 (LANDSCAPE) AND 9:16 (PORTRAIT) ASPECT RATIOS. FLAWLESS TEXTURES, ZERO BRANDING, IP-SAFE. DESIGNED EXCLUSIVELY FOR LUXURY BRANDS AND HIGH-END COMMERCIAL CAMPAIGNS.");
     }
   }, [noviFormat]);
 
@@ -312,7 +313,12 @@ const prijavaIKupovina = async (paket) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] pt-32 pb-24 px-6 font-sans text-white text-left">
+    <motion.div 
+        initial={{ y: "-100vh", opacity: 0 }} 
+        animate={{ y: 0, opacity: 1 }}        
+        transition={{ type: "spring", stiffness: 60, damping: 15 }} 
+        className="min-h-screen bg-[#050505] font-sans text-white pt-32 pb-24 px-6"
+    >
       <style>{`
         @keyframes spin-gradient { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .v8-premium-card { position: relative; border-radius: 2rem; padding: 2px; overflow: hidden; background: #0a0a0a; }
@@ -711,7 +717,7 @@ const prijavaIKupovina = async (paket) => {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 };
 
