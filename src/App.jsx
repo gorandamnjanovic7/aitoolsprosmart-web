@@ -61,6 +61,52 @@ export const v8Toast = {
   subscribe: (l) => { v8Toast.listeners.push(l); return () => v8Toast.listeners = v8Toast.listeners.filter(cb => cb !== l); }
 };
 
+// POČETAK: V8 Radar Kursor
+const V8RadarCursor = () => {
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isHovering, setIsHovering] = useState(false);
+
+  useEffect(() => {
+    const updateMousePosition = (e) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+
+    const handleMouseOver = (e) => {
+      // Ako pređe preko dugmeta, linka, ili slike koja može da se klikne
+      if (e.target.closest('button, a, summary, .cursor-pointer')) {
+        setIsHovering(true);
+      } else {
+        setIsHovering(false);
+      }
+    };
+
+    window.addEventListener('mousemove', updateMousePosition);
+    window.addEventListener('mouseover', handleMouseOver);
+
+    return () => {
+      window.removeEventListener('mousemove', updateMousePosition);
+      window.removeEventListener('mouseover', handleMouseOver);
+    };
+  }, []);
+
+  return (
+    <motion.div
+      className="fixed top-0 left-0 w-8 h-8 border-2 border-[#FF8C00] rounded-full pointer-events-none z-[100000] flex items-center justify-center shadow-[0_0_15px_rgba(255,140,0,0.5)]"
+      animate={{
+        x: mousePosition.x - 16, // Centriranje (pola od 32px)
+        y: mousePosition.y - 16,
+        scale: isHovering ? 1.8 : 1,
+        backgroundColor: isHovering ? 'rgba(255, 140, 0, 0.15)' : 'transparent',
+      }}
+      transition={{ type: 'tween', ease: 'backOut', duration: 0.1 }}
+    >
+      {/* Mala tačkica u sredini radara */}
+      <div className={`w-1 h-1 bg-[#FF8C00] rounded-full transition-opacity duration-300 ${isHovering ? 'opacity-0' : 'opacity-100'}`} />
+    </motion.div>
+  );
+};
+// KRAJ: V8 Radar Kursor
+
 const V8ToastContainer = () => {
   const [toasts, setToasts] = useState([]);
   useEffect(() => {
@@ -998,6 +1044,7 @@ function AppContent({ appsData, refreshData }) {
 
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-100 flex flex-col font-sans relative pb-20 lg:pb-0 text-left">
+      <V8RadarCursor />
       <V8ToastContainer />
       <AnimatePresence>
         {isBooting && <FullScreenBoot key="boot" onComplete={() => { setIsBooting(false); window.scrollTo(0,0); }} />}

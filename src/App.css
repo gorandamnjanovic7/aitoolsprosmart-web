@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* V8 PREMIUM CURSOR HIDE */
+body, a, button, img, video {
+  cursor: none !important;
+}
+input, textarea {
+  cursor: text !important;
+}
+
 /* =========================================
    🏎️ V8 GLOBALNI PREMIUM SCROLLBAR
    ========================================= */
