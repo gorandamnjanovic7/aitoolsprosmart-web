@@ -22,7 +22,8 @@ import './App.css';
 import V8Enhancer10x from './V8Enhancer10x';
 import V8Promo10xPage from './V8Promo10xPage'; 
 import V8ContactWidget from './V8ContactWidget';
-import V8StockBerza from './V8StockBerza'; 
+import V8StockBerza from './V8StockBerza';
+import V8Showroom from './V8Showroom'; 
 
 if (typeof window !== 'undefined') {
   if ('scrollRestoration' in window.history) { window.history.scrollRestoration = 'manual'; }
@@ -1017,6 +1018,9 @@ function AppContent({ appsData, refreshData }) {
             <Link to="/" onClick={handleHomeClick} className="hidden lg:flex items-center gap-2 px-5 py-2 md:py-2.5 rounded-full bg-emerald-900/30 border border-emerald-500/40 text-emerald-400 hover:text-white hover:bg-emerald-800/50 hover:border-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] hover:shadow-[0_0_25px_rgba(16,185,129,0.4)] cursor-pointer"><Globe className="w-4 h-4 text-emerald-500" /> Home</Link>
             <Link to="/#marketplace" className="hidden lg:flex items-center gap-2 px-5 py-2 md:py-2.5 rounded-full bg-blue-900/20 border border-blue-500/30 text-blue-300 hover:text-white hover:bg-blue-800/40 hover:border-blue-400 transition-all shadow-[0_0_15px_rgba(59,130,246,0.15)] hover:shadow-[0_0_25px_rgba(59,130,246,0.3)] cursor-pointer"><Award className="w-4 h-4 text-blue-400" /> AI Store</Link>
             <Link to="/stock" className="hidden lg:flex items-center gap-2 px-5 py-2 md:py-2.5 rounded-full bg-purple-900/20 border border-purple-500/30 text-purple-300 hover:text-white hover:bg-purple-800/40 hover:border-purple-400 transition-all shadow-[0_0_15px_rgba(168,85,247,0.15)] cursor-pointer"><Layers className="w-4 h-4 text-purple-400" /> Stock</Link>
+            <Link to="/showroom" className="hidden lg:flex items-center gap-2 px-5 py-2 md:py-2.5 rounded-full bg-amber-900/20 border border-amber-500/30 text-amber-300 hover:text-white hover:bg-amber-800/40 hover:border-amber-400 transition-all shadow-[0_0_15px_rgba(245,158,11,0.15)] cursor-pointer">
+   <ImageIcon className="w-4 h-4 text-amber-400" /> SHOWROOM
+</Link>
 
             {location.pathname !== '/enxance' && (
               <Link to="/enxance" className="bg-transparent border-2 border-orange-600 text-orange-600 px-4 md:px-6 py-2 md:py-2.5 rounded-full shadow-[0_0_15px_rgba(234,88,12,0.3)] hover:bg-orange-600 hover:text-white hover:shadow-[0_0_25px_rgba(234,88,12,0.6)] transition-all flex items-center gap-2 hidden sm:flex cursor-pointer"><Zap className="w-4 h-4" /> 10X ENHANCER</Link>
@@ -1053,6 +1057,7 @@ function AppContent({ appsData, refreshData }) {
           <Route path="/trezor" element={<TrezorPage apps={appsData} />} />
           <Route path="/admin" element={<AdminPage apps={appsData} refreshData={refreshData} />} />
           <Route path="/stock" element={<V8StockBerza />} />
+          <Route path="/showroom" element={<V8Showroom />} />
         </Routes>
       </div>
       <SmartScrollButton />
