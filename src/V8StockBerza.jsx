@@ -96,30 +96,36 @@ const V8StockBerza = () => {
       } catch (err) { console.error(err); }
   };
 
-  const prijavaIKupovina = async (paket) => {
-    if (currentUser) {
-        snimiKupcaUBazu(currentUser, paket);
-        if (paket.lemonLink) {
-            window.location.href = paket.lemonLink; 
-        } else {
-            setShowPaymentModal(paket); 
-        }
-    } else {
-        const provider = new GoogleAuthProvider();
-        try {
-            const result = await signInWithPopup(auth, provider);
-            await snimiKupcaUBazu(result.user, paket);
-            
-            if (paket.lemonLink) {
-                window.location.href = paket.lemonLink;
-            } else {
-                setShowPaymentModal(paket); 
-            }
-        } catch (error) { 
-            v8Toast.error("Login via Google is required to proceed with the purchase."); 
-        }
-    }
-  };
+  // POČETAK: prijavaIKupovina
+const prijavaIKupovina = async (paket) => {
+  if (currentUser) {
+      snimiKupcaUBazu(currentUser, paket);
+      if (paket.lemonLink) {
+          window.location.href = paket.lemonLink; 
+      } else {
+          setShowPaymentModal(paket); 
+      }
+  } else {
+      const provider = new GoogleAuthProvider();
+      
+      // OVO JE V8 TURBO LINIJA KOJA FORSIRA IZBOR NALOGA:
+      provider.setCustomParameters({ prompt: 'select_account' });
+      
+      try {
+          const result = await signInWithPopup(auth, provider);
+          await snimiKupcaUBazu(result.user, paket);
+          
+          if (paket.lemonLink) {
+              window.location.href = paket.lemonLink;
+          } else {
+              setShowPaymentModal(paket); 
+          }
+      } catch (error) { 
+          v8Toast.error("Login via Google is required to proceed with the purchase."); 
+      }
+  }
+};
+// KRAJ: prijavaIKupovina
 
   const snimiKupcaUBazu = async (user, paket) => {
       try {
