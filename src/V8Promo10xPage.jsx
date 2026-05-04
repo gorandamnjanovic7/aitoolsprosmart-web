@@ -73,40 +73,58 @@ const V8Promo10xPage = () => {
   return (
     <div className="min-h-screen bg-[#050505] text-white pt-24 pb-20 font-sans selection:bg-orange-500 selection:text-white">
       
-      {/* GLAVNI NASLOVI */}
-      <div className="max-w-5xl mx-auto px-6 text-center mb-16 mt-10">
-        <div className="inline-flex items-center justify-center gap-2 bg-orange-500/10 border border-orange-500/30 px-5 py-2.5 rounded-full text-orange-500 text-[11px] font-black uppercase tracking-[0.2em] mb-8">
-          <Crown className="w-4 h-4" /> EXCLUSIVE V8 PREMIERE
+      {/* --- V8 PREMIUM HERO KARTICA (Showroom Stil) --- */}
+      <div className="relative w-full max-w-5xl mx-auto rounded-[2.5rem] border border-orange-500/20 shadow-[0_0_40px_rgba(234,88,12,0.1)] overflow-hidden flex flex-col items-center justify-center p-10 md:p-16 text-center mt-6 mb-16 group">
+
+        {/* 1. ANIMIRANA POZADINA (Cinematic Zoom Effect) */}
+        <div className="absolute inset-0 z-0 bg-[#050505]">
+          <img
+            src="/promo-bg.webp"  /* OVO SMO PROMENILI: Dodata kosa crta / i ime fajla pod navodnicima */
+            alt="V8 Engine Power"
+            className="w-full h-full object-cover opacity-30 scale-100 group-hover:scale-110 transition-transform duration-[15000ms] ease-out"
+          />
+          {/* Zatamnjenje preko slike da bi tvoj tekst ostao 100% čitljiv */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/95 via-[#050505]/50 to-[#050505]/95"></div>
         </div>
 
-        <h1 className="text-3xl md:text-5xl font-serif italic tracking-wide leading-[1.2] mb-6 text-zinc-100">
-          Turn average ideas into <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 font-black not-italic drop-shadow-md tracking-tighter uppercase">
-            Masterpieces in 3 Seconds.
-          </span>
-        </h1>
+        {/* 2. SADRŽAJ KARTICE */}
+        <div className="relative z-10 flex flex-col items-center w-full px-2">
+          
+          <div className="inline-flex items-center justify-center gap-2 bg-orange-500/10 border border-orange-500/30 px-5 py-2.5 rounded-full text-orange-500 text-[11px] font-black uppercase tracking-[0.2em] mb-8 shadow-[0_0_15px_rgba(234,88,12,0.2)]">
+            <Crown className="w-4 h-4" /> EXCLUSIVE V8 PREMIERE
+          </div>
 
-        <div className="max-w-4xl mx-auto font-light leading-relaxed mb-14 flex flex-col gap-5 text-center">
-          <p className="text-zinc-300 text-[15px] md:text-[17px]">
-            Forget amateur mistakes and hours lost in trial and error. The <strong className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500 font-black drop-shadow-sm text-[16px] md:text-[18px]">V8 Master Engine</strong> directly takes your raw vision and generates mesmerizing 4K visuals.
-          </p>
+          <h1 className="text-3xl md:text-5xl font-serif italic tracking-wide leading-[1.2] mb-6 text-zinc-100">
+            Turn average ideas into <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 font-black not-italic drop-shadow-md tracking-tighter uppercase">
+              Masterpieces in 3 Seconds.
+            </span>
+          </h1>
+
+          <div className="max-w-4xl mx-auto font-light leading-relaxed flex flex-col gap-6 text-center">
+            <p className="text-zinc-300 text-[15px] md:text-[17px]">
+              Forget amateur mistakes and hours lost in trial and error. The <strong className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500 font-black drop-shadow-sm text-[16px] md:text-[18px]">V8 Master Engine</strong> directly takes your raw vision and generates mesmerizing 4K visuals.
+            </p>
+
+            <p className="text-zinc-300 text-[15px] md:text-[17px] leading-relaxed">
+              Forget amateur mistakes, overpaid designers, and hours lost in endless tweaking. Your time is your most expensive asset. The 
+              <strong className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500 font-black drop-shadow-[0_0_12px_rgba(255,69,0,0.4)] text-[17px] md:text-[20px] mx-2 tracking-wide uppercase inline-block hover:scale-105 transition-transform cursor-default">
+                V8 Master Engine
+              </strong> 
+              doesn't ask for explanations – it directly takes your raw vision, shifts into the highest gear, and generates mesmerizing 4K visuals in real-time that dominate the market.
+            </p>
+
+            <p className="text-zinc-500 text-[13px] md:text-[15px] font-medium tracking-wide mt-2">
+              No compromises. No hidden fees. Just pure, raw power at your click.
+            </p>
+          </div>
+
         </div>
+      </div>
+      {/* --- KRAJ V8 KARTICE --- */}
 
-        {/* --- POČETAK NAFILOVANOG TEKSTA --- */}
-        <div className="max-w-4xl mx-auto font-light leading-relaxed mb-12 flex flex-col gap-6 text-center px-4">
-          <p className="text-zinc-300 text-[16px] md:text-[19px] leading-relaxed">
-            Forget amateur mistakes, overpaid designers, and hours lost in endless tweaking. Your time is your most expensive asset. The 
-            <strong className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500 font-black drop-shadow-[0_0_12px_rgba(255,69,0,0.4)] text-[18px] md:text-[22px] mx-2 tracking-wide uppercase inline-block hover:scale-105 transition-transform cursor-default">
-              V8 Master Engine
-            </strong> 
-            doesn't ask for explanations – it directly takes your raw vision, shifts into the highest gear, and generates mesmerizing 4K visuals in real-time that dominate the market.
-          </p>
-          <p className="text-zinc-500 text-[14px] md:text-[16px] font-medium tracking-wide">
-            No compromises. No hidden fees. Just pure, raw power at your click.
-          </p>
-        </div>
-
-        {/* --- PREMIUM ANIMIRANI BEDŽEVI --- */}
+      {/* --- PREMIUM ANIMIRANI BEDŽEVI --- */}
+      <div className="max-w-5xl mx-auto px-6">
         <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-[11px] md:text-[13px] font-black tracking-[0.15em] uppercase mb-20">
           
           <div className="group flex items-center gap-3 bg-[#0a0a0a] border border-zinc-800 hover:border-green-500/50 px-5 py-3 rounded-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(34,197,94,0.15)] cursor-default">
