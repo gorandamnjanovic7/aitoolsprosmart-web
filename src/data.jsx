@@ -3,60 +3,62 @@ export const CLOUDINARY_CLOUD_NAME = "drllxycnh";
 export const CLOUDINARY_UPLOAD_PRESET = "uploads";
 
 // --- TVOJI ORIGINALNI IMAGE IMPORTS ---
-import zmajImg from './zmaj.jpg';
-import novaSlikaImg from './nova-slika.png';
-import slikaHubImg from './slika-hub.jpeg';
-import slikaCopyImg from './slika-copy.jpeg';
-import hollywoodImg from './hollywood.png';
-import slikaVideoImg from './slika-video.jpeg';
+// V8 ELITE CAROUSEL IMAGES
+import sl1Img from './sl1.webp';
+import sl2Img from './sl2.webp';
+import sl3Img from './sl3.webp';
+import sl4Img from './sl4.webp';
+import sl5Img from './sl5.webp';
+import sl6Img from './sl6.webp';
 import mojLogo from './logo.png';
 
+// Napomena: Ako si slike stavio direktno u 'src' a ne u 'assets' folder, 
+// onda izbriši '/assets' iz putanje (npr. import sl1Img from './sl1.jpg';)
 // ============================================================================
 // OSNOVNI PODACI I POMOĆNE KOMPONENTE
 // ============================================================================
 
-export const bannerUrl = zmajImg; 
-export const logoUrl = mojLogo; 
+export const bannerUrl = sl1Img; // Koristimo novu Obsidian sliku umesto starog zmaja
+export const logoUrl = mojLogo; // NAPOMENA: Proveri da li negde na samom vrhu fajla imaš import za mojLogo! 
 
 export const BANNER_DATA = [
   { 
-    image: slikaHubImg, 
-    badge: "SYSTEM UPGRADE", 
-    title: "WELCOME TO OUR HUB", 
-    subtitle: "Ultra-fast processing for maximum quality." 
+    image: sl1Img, // Fluid Obsidian
+    badge: "V8 CORE ARCHITECTURE", 
+    title: "OBSIDIAN & GOLD: THE V8 STANDARD", 
+    subtitle: "Uncompromising aesthetic precision. Fluid dynamic rendering designed for ultra-luxury brand positioning." 
   },
   { 
-    image: zmajImg, 
-    badge: "NEW PROTOCOL", 
-    title: "EPIC REVIVAL OF AN ANCIENT CIVILIZATION v8", 
-    subtitle: "Hyper-realistic temporal diffusion models are now active. Create 4K cinematic sequences from raw text inputs." 
+    image: sl2Img, // Roman Helmet
+    badge: "HISTORICAL MASTERWORK", 
+    title: "CINEMATIC 33.2MP REALISM", 
+    subtitle: "Unleash Hollywood-grade historical textures. Perfect lighting and material accuracy for elite visual storytelling." 
   },
   { 
-    image: novaSlikaImg, 
-    badge: "CORE UPDATE", 
-    title: "QUANTUM PROMPT ENGINE", 
-    subtitle: "Leverage the new multi-modal prompt architecture. Achieve 99.8% prompt adherence." 
+    image: sl3Img, // Futuristic Boardroom
+    badge: "VISIONARY ENVIRONMENTS", 
+    title: "ARCHITECTURAL SUPREMACY", 
+    subtitle: "Design the future of business. Hyper-realistic interior generation for visionary agencies and real estate titans." 
   },
   { 
-    image: slikaVideoImg, 
-    badge: "CINEMATIC", 
-    title: "VIRAL CONTENT ON THE EDGE", 
-    subtitle: "Achieve the most unique photorealistic images ever." 
+    image: sl4Img, // Neon Protocol
+    badge: "CREATIVE PROTOCOL", 
+    title: "NEON INTELLIGENCE MATRIX", 
+    subtitle: "Harness raw AI processing power. Generate unparalleled macro textures and elemental forces for disruptive campaigns." 
   },
   { 
-    image: slikaCopyImg, 
-    badge: "NEW FEATURE", 
-    title: "ADVANCED DATA PARSING", 
-    subtitle: "Extract and manipulate complex visual structures." 
+    image: sl5Img, // V8 Hypercar
+    badge: "VELOCITY & POWER", 
+    title: "ENGINEERED FOR DOMINANCE", 
+    subtitle: "The ultimate fusion of aerodynamic carbon and V8 energy. Supreme automotive rendering capabilities." 
   },
   { 
-    image: hollywoodImg, 
-    badge: "PREMIUM ASSET", 
-    title: "HOLLYWOOD VSX CINEMATIC GRADE ", 
-    subtitle: "Access classified rendering algorithms used by top-tier visual architects." 
+    image: sl6Img, // Strawberry Splash
+    badge: "COMMERCIAL PRECISION", 
+    title: "GOURMET KINETICS", 
+    subtitle: "Microsecond macro capture simulations. Absolute perfection for high-end Food & Beverage commercial assets." 
   }
-];
-export const formatExternalLink = (url) => { if (!url) return '#'; if (!url.startsWith('http://') && !url.startsWith('https://')) return `https://${url}`; return url; };
+];export const formatExternalLink = (url) => { if (!url) return '#'; if (!url.startsWith('http://') && !url.startsWith('https://')) return `https://${url}`; return url; };
 export const extractSys = (desc) => { if (!desc) return { d: '', s: {} }; const m = desc.match(/\[SYS\]([\s\S]*?)\[\/SYS\]/i); if (!m) return { d: desc, s: {} }; try { return { d: desc.replace(m[0], '').trim(), s: JSON.parse(m[1]) }; } catch { return { d: desc, s: {} }; } };
 export const renderDescription = (text) => { if (!text) return null; const { d } = extractSys(text); return <div className="w-full text-left"><p className="text-zinc-400 text-sm md:text-base leading-relaxed mb-6 whitespace-pre-wrap font-sans">{d}</p></div>; };
 export const getMediaThumbnail = (url) => { if (!url) return ''; if (url.match(/\.(mp4|webm|ogg|mov)$/i)) return `${url}#t=0.001`; return url; };
