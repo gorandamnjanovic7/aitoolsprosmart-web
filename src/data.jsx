@@ -57,8 +57,15 @@ export const BANNER_DATA = [
     badge: "COMMERCIAL PRECISION", 
     title: "GOURMET KINETICS", 
     subtitle: "Microsecond macro capture simulations. Absolute perfection for high-end Food & Beverage commercial assets." 
+  },
+{
+    image: "/banner-v8-fluid.webp",
+    badge: "V8 MASTERWORK EDITION",
+    title: "BEYOND PIXELS",
+    subtitle: "Experience 33.2 Megapixel resolution and hyper-realistic cinematic motion. Designed exclusively for top-tier agencies."
   }
-];export const formatExternalLink = (url) => { if (!url) return '#'; if (!url.startsWith('http://') && !url.startsWith('https://')) return `https://${url}`; return url; };
+];
+export const formatExternalLink = (url) => { if (!url) return '#'; if (!url.startsWith('http://') && !url.startsWith('https://')) return `https://${url}`; return url; };
 export const extractSys = (desc) => { if (!desc) return { d: '', s: {} }; const m = desc.match(/\[SYS\]([\s\S]*?)\[\/SYS\]/i); if (!m) return { d: desc, s: {} }; try { return { d: desc.replace(m[0], '').trim(), s: JSON.parse(m[1]) }; } catch { return { d: desc, s: {} }; } };
 export const renderDescription = (text) => { if (!text) return null; const { d } = extractSys(text); return <div className="w-full text-left"><p className="text-zinc-400 text-sm md:text-base leading-relaxed mb-6 whitespace-pre-wrap font-sans">{d}</p></div>; };
 export const getMediaThumbnail = (url) => { if (!url) return ''; if (url.match(/\.(mp4|webm|ogg|mov)$/i)) return `${url}#t=0.001`; return url; };
