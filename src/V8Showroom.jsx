@@ -75,10 +75,18 @@ const V8Showroom = () => {
         { id: 23, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Epic Landscape Pan', url: 'LINK_CINE_1' },
         { id: 24, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Slow Motion Culinary', url: 'LINK_CINE_2' },
         { id: 25, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Abstract Fluid Dynamics', url: 'LINK_CINE_3' },
-        { id: 26, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Roman Legion March', url: 'LINK_CINE_4' }
+        { id: 26, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Roman Legion March', url: 'LINK_CINE_4' },
+        // ... tvoji prethodni itemi (id: 26, itd.)
+        
+        // --- ICE FRUIT FUSION (Novi dodaci) ---
+        { id: 27, type: 'image', category: 'ICE FRUIT FUSION', format: '16:9', title: 'Mango Ice Explosion', url: 'LINK_MANGO_ICE' },
+        { id: 28, type: 'video', category: 'ICE FRUIT FUSION', format: '9:16', title: 'Frozen Citrus Splash', url: 'LINK_CITRUS_VERT' },
+        { id: 29, type: 'image', category: 'ICE FRUIT FUSION', format: '16:9', title: 'Arctic Berry Fusion', url: 'LINK_BERRY_ICE' },
+        { id: 30, type: 'video', category: 'ICE FRUIT FUSION', format: '16:9', title: 'Tropical Frost Dynamics', url: 'LINK_TROPICAL_CINE' }
     ];
+    
 
-    const filters = ['ALL', 'LUXURY CULINARY', 'ABSTRACT TECH', 'CINEMATIC MOTION', 'ROMAN REALISM', 'SPACES & ARCHITECTURE', 'PRODUCT & MACRO', 'NIGHTLIFE & LUXURY'];
+    const filters = ['ALL', 'LUXURY CULINARY', 'ICE FRUIT FUSION', 'ABSTRACT TECH', 'CINEMATIC MOTION', 'ROMAN REALISM', 'SPACES & ARCHITECTURE', 'PRODUCT & MACRO', 'NIGHTLIFE & LUXURY'];
 
     const filteredItems = activeFilter === 'ALL' ? showcaseItems : showcaseItems.filter(item => item.category === activeFilter);
 
