@@ -488,6 +488,7 @@ function TrezorPage({ apps = [] }) {
 // --- HOME PAGE (ENGLISH VERSION) ---
 function HomePage({ apps = [] }) {
   const [activeSlide, setActiveSlide] = useState(0); 
+  const [isBannerHovered, setIsBannerHovered] = useState(false); // V8 Kočnica
   const [liveVideos, setLiveVideos] = useState([]); 
   const [isLoadingVideos, setIsLoadingVideos] = useState(true); 
   const location = useLocation();
@@ -548,13 +549,22 @@ function HomePage({ apps = [] }) {
   useEffect(() => { if (location.hash === '#marketplace') { const el = document.getElementById('marketplace'); if (el) el.scrollIntoView({ behavior: 'smooth' }); } }, [location]);
   const nextSlide = useCallback(() => setActiveSlide(s => (s + 1) % (data.BANNER_DATA?.length || 1)), []);
   const prevSlide = () => setActiveSlide(s => (s - 1 + (data.BANNER_DATA?.length || 1)) % (data.BANNER_DATA?.length || 1));
-  useEffect(() => { const t = setInterval(nextSlide, 7000); return () => clearInterval(t); }, [nextSlide]);
+  useEffect(() => { 
+    if (isBannerHovered) return;
+    const t = setInterval(nextSlide, 7000); 
+    return () => clearInterval(t); 
+  }, [nextSlide, isBannerHovered]);
   
   return (
     <>
       <Helmet><title>AI TOOLS PRO SMART | GLOBAL</title></Helmet>
       
-      <div id="home-banner" className="relative w-full h-[85vh] flex items-end overflow-hidden bg-black text-white border-b border-orange-500/20">
+      <div 
+        id="home-banner" 
+        className="relative w-full h-[85vh] flex items-end overflow-hidden bg-black text-white border-b border-orange-500/20"
+        onMouseEnter={() => setIsBannerHovered(true)}
+        onMouseLeave={() => setIsBannerHovered(false)}
+      >
         <div className="absolute inset-0 z-0 bg-black">{(data.BANNER_DATA || []).map((item, idx) => (<div key={idx} className={`absolute inset-0 transition-opacity duration-1000 ${idx === activeSlide ? 'opacity-100' : 'opacity-0'} z-0`}><img src={item.image} loading={idx === 0 ? "eager" : "lazy"} className="w-full h-full object-cover opacity-80" alt="banner" /></div>))}</div>
         <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#050505] to-transparent z-10" />
         <div className="absolute inset-0 z-20 w-full h-full pointer-events-none opacity-40"><MatrixRain /></div>
