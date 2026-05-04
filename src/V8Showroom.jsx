@@ -78,11 +78,13 @@ const V8Showroom = () => {
         { id: 26, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Roman Legion March', url: 'LINK_CINE_4' },
         // ... tvoji prethodni itemi (id: 26, itd.)
         
-        // --- ICE FRUIT FUSION (Novi dodaci) ---
-        { id: 27, type: 'image', category: 'ICE FRUIT FUSION', format: '16:9', title: 'Mango Ice Explosion', url: 'LINK_MANGO_ICE' },
-        { id: 28, type: 'video', category: 'ICE FRUIT FUSION', format: '9:16', title: 'Frozen Citrus Splash', url: 'LINK_CITRUS_VERT' },
-        { id: 29, type: 'image', category: 'ICE FRUIT FUSION', format: '16:9', title: 'Arctic Berry Fusion', url: 'LINK_BERRY_ICE' },
-        { id: 30, type: 'video', category: 'ICE FRUIT FUSION', format: '16:9', title: 'Tropical Frost Dynamics', url: 'LINK_TROPICAL_CINE' }
+       { id: 27, type: 'image', category: 'ICE FRUIT FUSION', format: '16:9', title: 'Mango Pulse Frost', url: '/ifs_3.webp' }, 
+        
+        // 2. Tvoj pravi svetli Kivi (ifs_1)
+        { id: 29, type: 'image', category: 'ICE FRUIT FUSION', format: '16:9', title: 'Kiwi Frost Dynamics', url: '/ifs_1.webp' }, 
+        
+        // 3. Tvoj pravi tamni Kivi na crnom staklu (ifs_2)
+        { id: 31, type: 'image', category: 'ICE FRUIT FUSION', format: '16:9', title: 'Obsidian Kiwi Splash', url: '/ifs_2.webp' },
     ];
     
 
