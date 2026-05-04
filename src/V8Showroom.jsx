@@ -41,7 +41,7 @@ const FullScreenLightbox = ({ item, onClose }) => {
 
 // GLAVNA SHOWROOM KOMPONENTA
 const V8Showroom = () => {
-    const navigate = useNavigate(); // <-- OVO JE FALILO, SADA JE TU!
+    const navigate = useNavigate();
     const [activeFilter, setActiveFilter] = useState('ALL');
     const [lightboxItem, setLightboxItem] = useState(null);
 
@@ -63,7 +63,19 @@ const V8Showroom = () => {
         { id: 15, type: 'image', category: 'ROMAN REALISM', format: '16:9', title: 'Legionary Armament', url: 'LINK_GLADIJATOR_OPREMA' },
         { id: 18, type: 'image', category: 'NIGHTLIFE & LUXURY', format: '16:9', title: 'Premium Craft Cocktails', url: 'LINK_KOKTELI' },
         { id: 16, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Smartwatch Hologram', url: 'LINK_SAT_VIDEO' },
-        { id: 17, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'VR Paradise Transition', url: 'LINK_VR_VIDEO' }
+        { id: 17, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'VR Paradise Transition', url: 'LINK_VR_VIDEO' },
+        
+        // --- 4x NOVI 9:16 VERTIKALNI VIDEI (Vidljivi na ALL) ---
+        { id: 19, type: 'video', category: 'ABSTRACT TECH', format: '9:16', title: 'Cyberpunk Vertical Flow', url: 'LINK_VERT_1' },
+        { id: 20, type: 'video', category: 'NIGHTLIFE & LUXURY', format: '9:16', title: 'Neon Nights Reel', url: 'LINK_VERT_2' },
+        { id: 21, type: 'video', category: 'PRODUCT & MACRO', format: '9:16', title: 'Macro Watch Vertical', url: 'LINK_VERT_3' },
+        { id: 22, type: 'video', category: 'SPACES & ARCHITECTURE', format: '9:16', title: 'Skyscraper Drone Vert', url: 'LINK_VERT_4' },
+
+        // --- 4x NOVI 16:9 CINEMATIC VIDEI ---
+        { id: 23, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Epic Landscape Pan', url: 'LINK_CINE_1' },
+        { id: 24, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Slow Motion Culinary', url: 'LINK_CINE_2' },
+        { id: 25, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Abstract Fluid Dynamics', url: 'LINK_CINE_3' },
+        { id: 26, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Roman Legion March', url: 'LINK_CINE_4' }
     ];
 
     const filters = ['ALL', 'LUXURY CULINARY', 'ABSTRACT TECH', 'CINEMATIC MOTION', 'ROMAN REALISM', 'SPACES & ARCHITECTURE', 'PRODUCT & MACRO', 'NIGHTLIFE & LUXURY'];
@@ -184,7 +196,10 @@ const V8Showroom = () => {
                                                 <Play size={24} fill="currentColor" />
                                             </div>
                                         </div>
-                                        <div className="w-full h-80 bg-zinc-900 flex items-center justify-center text-zinc-700">VIDEO PLACEHOLDER</div>
+                                        {/* V8 DINAMIČKI PLACEHOLDER KOJI PRATI 9:16 ili 16:9 FORMAT */}
+                                        <div className={`w-full bg-zinc-900 flex items-center justify-center text-zinc-700 font-black tracking-widest ${item.format === '9:16' ? 'aspect-[9/16]' : 'aspect-video'}`}>
+                                            {item.format} VIDEO PLACEHOLDER
+                                        </div>
                                     </>
                                 ) : (
                                     <img src={item.url} alt={item.title} loading="lazy" className="w-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out" />
