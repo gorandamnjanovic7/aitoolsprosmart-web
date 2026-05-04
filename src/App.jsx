@@ -6,7 +6,7 @@ import {
   MousePointerClick, Briefcase, X, ChevronRight, Clock, Users, Zap, Image as ImageIcon, HelpCircle, ChevronDown, ChevronUp, BarChart, Layers, Settings, Lock, LogOut, User, Timer, CheckCircle, Globe
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import navBg from './navbar-bg.webp';
 // FIREBASE
 import { db, auth, provider } from './firebase';
 import { signInWithPopup, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "firebase/auth";
@@ -1083,7 +1083,15 @@ function AppContent({ appsData, refreshData }) {
         {isBooting && <FullScreenBoot key="boot" onComplete={() => { setIsBooting(false); window.scrollTo(0,0); }} />}
       </AnimatePresence>
       <div className="fixed top-0 left-0 w-full z-[1000]">
-      <nav className="w-full px-4 md:px-8 py-4 md:py-6 bg-[#050505]/80 backdrop-blur-xl border-b border-orange-500/20 shadow-[0_10px_30px_rgba(255,140,0,0.05)] relative z-[9000]">
+      <nav 
+        className="w-full px-4 md:px-8 py-4 md:py-6 border-b border-orange-500/20 shadow-[0_10px_30px_rgba(255,140,0,0.05)] relative z-[9000]"
+        style={{
+          backgroundImage: `url(${navBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'left center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
         <div className="max-w-7xl mx-auto flex justify-between items-center px-2">
 
           <Link to="/" onClick={handleHomeClick} className="flex items-center gap-3 group shrink-0 mr-4">
