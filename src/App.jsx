@@ -1053,7 +1053,7 @@ function AppContent({ appsData, refreshData }) {
       </AnimatePresence>
       <div className="fixed top-0 left-0 w-full z-[1000]">
       <nav 
-        className="w-full px-4 md:px-8 py-4 md:py-6 border-b border-orange-500/20 shadow-[0_10px_30px_rgba(255,140,0,0.05)] relative z-[9000]"
+        className="w-full px-4 md:px-8 py-4 md:py-6 border-b-2 border-orange-500/60 shadow-[0_10px_40px_rgba(234,88,12,0.2)] relative z-[9000]"
         style={{
           backgroundImage: `url(${navBg})`,
           backgroundSize: 'cover',
