@@ -559,7 +559,7 @@ function HomePage({ apps = [] }) {
     <>
       <Helmet><title>AI TOOLS PRO SMART | GLOBAL</title></Helmet>
       
-      <<div 
+      <div 
         id="home-banner" 
         className="relative w-full h-[85vh] flex items-end overflow-hidden bg-black text-white border-b-2 border-orange-500/60 shadow-[0_20px_50px_rgba(234,88,12,0.15)]"
         onMouseEnter={() => setIsBannerHovered(true)}
