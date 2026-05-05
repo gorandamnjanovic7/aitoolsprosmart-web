@@ -226,7 +226,7 @@ const V8Promo10xPage = () => {
             }} 
           >
             <Crown className="w-5 h-5 text-black" />
-            BUY NOW
+            GET LIFETIME LICENSE ($199.99)
           </button>
         </div>
         
