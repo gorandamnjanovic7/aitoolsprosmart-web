@@ -44,9 +44,6 @@ const V8StockBerza = () => {
   const [zipLink, setZipLink] = useState('');
   const [lemonLink, setLemonLink] = useState('');
 
-  const [showKlijentiPanel, setShowKlijentiPanel] = useState(false);
-  const [klijenti, setKlijenti] = useState([]);
-
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -79,22 +76,6 @@ const V8StockBerza = () => {
       const snap = await getDocs(q);
       setPaketi(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     } catch (err) { console.error(err); }
-  };
-
-  const fetchKlijenti = async () => {
-      try {
-          const q = query(collection(db, "v8_kupci"), orderBy("vreme", "desc"));
-          const snap = await getDocs(q);
-          setKlijenti(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-      } catch (err) { console.error(err); }
-  };
-
-  const otkljucajPaketDirektno = async (id) => {
-      try {
-          await updateDoc(doc(db, "v8_kupci", id), { isPaid: true, vremeOdobrenja: serverTimestamp() });
-          v8Toast.success("V8 Turbo: Package successfully unlocked!");
-          fetchKlijenti(); 
-      } catch (err) { console.error(err); }
   };
 
   // POČETAK: prijavaIKupovina
@@ -136,63 +117,6 @@ const prijavaIKupovina = async (paket) => {
               zeliPaket: imePaketa, cenaPaketa: paket.cena, vreme: serverTimestamp(), isPaid: false
           });
       } catch (error) { console.error(error); }
-  };
-
-  // V8 TURBO CLEAN DB
-  const v8TurboCleanDB = async () => {
-      if (!window.confirm("V8 WARNING: This will automatically clean the database to English formats and calculate USD prices. Proceed?")) return;
-      
-      try {
-          const snap = await getDocs(query(collection(db, "v8_stock_paketi")));
-          let count = 0;
-
-          for (const docSnap of snap.docs) {
-              const data = docSnap.data();
-              const updates = {};
-              let needsUpdate = false;
-
-              if (data.naziv && !data.nazivEn) { updates.nazivEn = data.naziv; needsUpdate = true; }
-              if (data.kategorija && !data.kategorijaEn) { updates.kategorijaEn = data.kategorija; needsUpdate = true; }
-
-              if (data.cena && parseFloat(data.cena) > 500) {
-                  const osnova = parseFloat(data.cena) / 110;
-                  updates.cena = (Math.ceil(osnova * 1.2) + 0.99).toFixed(2).toString();
-                  needsUpdate = true;
-              }
-
-              let newFormat = data.format;
-              if (data.format === "16:9 (20 SLIKA)") {
-                  newFormat = "16:9 (20 IMAGES)";
-                  updates.format = newFormat;
-                  needsUpdate = true;
-              } else if (data.format === "SVI FORMATI (80 SLIKA)") { 
-                  newFormat = "ALL FORMATS (80 IMAGES)";
-                  updates.format = newFormat;
-                  needsUpdate = true;
-              }
-
-              if (!data.opisEn || data.opisEn.trim() === "") {
-                  if (newFormat === '16:9 (20 IMAGES)') {
-                      updates.opisEn = "PACKAGE CONTENTS: 20 PREMIUM AI VISUALS IN ULTRA-WIDE 16:9. PERFECT FOR WEBSITES AND YT. VALUE OVER $250.";
-                      needsUpdate = true;
-                  } else if (newFormat === 'ALL FORMATS (80 IMAGES)') {
-                      updates.opisEn = "PACKAGE CONTENTS: 80 PREMIUM AI VISUALS IN 4 RESOLUTIONS (16:9, 9:16, 1:1, 21:9). COMPLETE PACKAGE FOR ALL PLATFORMS. THE ULTIMATE V8 COLLECTION.";
-                      needsUpdate = true;
-                  }
-              }
-
-              if (needsUpdate) {
-                  await updateDoc(doc(db, "v8_stock_paketi", docSnap.id), updates);
-                  count++;
-              }
-          }
-          
-          v8Toast.success(`V8 Turbo Clean complete! ${count} packages updated.`);
-          fetchPaketi(); 
-      } catch (error) {
-          console.error("Clean error: ", error);
-          v8Toast.error("Error during DB clean: " + error.message);
-      }
   };
 
   const handleUploadPreview = async (e) => {
@@ -271,7 +195,6 @@ const prijavaIKupovina = async (paket) => {
 
   const startEditPaket = (paket) => {
     setEditingPaketId(paket.id); 
-    setShowKlijentiPanel(false); 
     setNoviNazivEn(paket.nazivEn || ''); 
     setNoviVolume(paket.volume || '');
     setNoviFormat(paket.format || '16:9 (20 IMAGES)'); 
@@ -360,72 +283,7 @@ const prijavaIKupovina = async (paket) => {
           </div>
         </div>
 
-        {/* --- ADMIN CONTROL DASHBOARD --- */}
         {isAdmin && (
-            <div className="flex justify-center gap-4 mb-8 flex-wrap">
-                <button
-                    onClick={() => {
-                        setShowKlijentiPanel(!showKlijentiPanel);
-                        if (!showKlijentiPanel) fetchKlijenti();
-                    }}
-                    className="bg-zinc-900 border border-[#FF8C00]/50 hover:bg-[#FF8C00] text-[#FF8C00] hover:text-black transition-all px-8 py-3.5 rounded-xl font-black text-[12px] uppercase tracking-widest flex items-center gap-2 shadow-[0_0_20px_rgba(255,140,0,0.2)]"
-                >
-                    <Users size={18} />
-                    {showKlijentiPanel ? "CLOSE APPROVALS (BACK TO FORM)" : "CLIENTS & APPROVALS"}
-                </button>
-                
-                {/* V8 TURBO BUTTON ZA BAZU */}
-                <button
-                    onClick={v8TurboCleanDB}
-                    className="bg-red-900/20 border border-red-500/50 hover:bg-red-600 text-red-500 hover:text-white transition-all px-6 py-3.5 rounded-xl font-black text-[12px] uppercase tracking-widest flex items-center gap-2 shadow-[0_0_20px_rgba(220,38,38,0.2)]"
-                >
-                    <Zap size={18} /> V8 TURBO CLEAN DB
-                </button>
-            </div>
-        )}
-
-        {isAdmin && showKlijentiPanel && (
-            <div className="bg-[#0a0a0a] border-2 border-[#FF8C00] rounded-[2.5rem] p-8 mb-16 shadow-[0_0_40px_rgba(255,140,0,0.15)] max-w-4xl mx-auto">
-                <h2 className="text-xl font-black text-[#FF8C00] uppercase tracking-widest mb-6 flex items-center gap-2">
-                    <ShieldCheck className="w-6 h-6" /> PAYMENT CONTROL ROOM
-                </h2>
-                
-                <div className="flex flex-col gap-3">
-                    {klijenti.length === 0 ? (
-                        <div className="text-center py-10 bg-black rounded-2xl border border-white/5">
-                            <p className="text-zinc-500 font-bold uppercase text-sm tracking-widest">No orders currently in queue.</p>
-                        </div>
-                    ) : (
-                        klijenti.map(klijent => (
-                            <div key={klijent.id} className="bg-black border border-white/10 p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all hover:border-[#FF8C00]/50 hover:shadow-[0_0_15px_rgba(255,140,0,0.2)]">
-                                <div>
-                                    <p className="text-white font-black text-[15px]">{klijent.email}</p>
-                                    <p className="text-zinc-400 text-[11px] uppercase font-bold tracking-wider mt-1">
-                                        Package: <span className="text-[#FF8C00] ml-1">{klijent.zeliPaket}</span>
-                                    </p>
-                                    <p className="text-zinc-600 text-[10px] font-mono mt-2 font-bold uppercase tracking-widest">
-                                        Date: {klijent.vreme?.toDate().toLocaleString("en-US")}
-                                    </p>
-                                </div>
-                                <div>
-                                    {klijent.isPaid ? (
-                                        <div className="bg-green-900/20 border border-green-500/30 text-green-500 px-6 py-3 rounded-xl font-black text-[11px] uppercase flex items-center gap-2">
-                                            <CheckCircle size={16} /> APPROVED
-                                        </div>
-                                    ) : (
-                                        <button onClick={() => otkljucajPaketDirektno(klijent.id)} className="bg-[#FF8C00] hover:bg-orange-500 text-black px-8 py-3 rounded-xl font-black text-[11px] uppercase shadow-[0_0_20px_rgba(255,140,0,0.4)] transition-all flex items-center gap-2 hover:scale-105">
-                                            <Zap size={16} /> CLICK TO APPROVE
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                        ))
-                    )}
-                </div>
-            </div>
-        )}
-
-        {isAdmin && !showKlijentiPanel && (
           <form onSubmit={dodajPaket} className="bg-[#0a0a0a] border-2 border-[#FF8C00]/50 rounded-[2.5rem] p-8 mb-16 shadow-[0_0_30px_rgba(255,140,0,0.1)] max-w-4xl mx-auto">
             <h2 className="text-xl font-black text-[#FF8C00] uppercase tracking-widest mb-8 flex items-center gap-2 border-b border-[#FF8C00]/20 pb-4">
               <Zap className="w-6 h-6" /> {editingPaketId ? 'EDIT PACKAGE' : 'ADD NEW ZIP PACKAGE'}
