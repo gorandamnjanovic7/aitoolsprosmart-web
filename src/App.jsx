@@ -1131,10 +1131,14 @@ function AppContent({ appsData, refreshData }) {
         <div className="w-full px-6 flex flex-col items-center gap-3">
            <div className="w-full max-w-5xl flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="text-zinc-400 font-mono font-black tracking-widest text-[11px] md:text-[13px]">{datumPrikaz}</div>
-              <div className="text-[9px] md:text-[10px]">© 2026 <span className="text-blue-500 font-black">AI TOOLS</span> <span className="text-orange-500 font-black">PRO SMART</span> <span className="mx-1 text-white font-black">|</span> ALL RIGHTS RESERVED</div>
+              <div className="text-[9px] md:text-[10px]">© 2026 <span className="text-blue-500 font-black">AI TOOLS PRO</span> <span className="text-orange-500 font-black">SMART</span> <span className="mx-1 text-white font-black">|</span> ALL RIGHTS RESERVED</div>
               <div className="text-orange-500 font-mono font-black tracking-widest flex items-center justify-center gap-2 text-[12px] md:text-[15px]"><Clock className="w-4 h-4 md:w-5 md:h-5" /> {vremePrikaz}</div>
            </div>
-           <div className="text-orange-500/60 font-bold normal-case tracking-[0.2em] text-[11px] mt-2">Premium Solutions for Premium Clients.</div>
+           {/* V8 PREMIUM COPY & COMPLIANCE NOTICE */}
+           <div className="text-orange-500/60 font-bold normal-case tracking-[0.2em] text-[11px] mt-2">Premium Digital Assets & Software Solutions.</div>
+           <div className="text-zinc-500/60 font-medium text-[9px] mt-4 max-w-4xl text-center leading-relaxed border-t border-white/5 pt-4 px-4">
+              <strong>COMPLIANCE NOTICE:</strong> AI TOOLS PRO SMART exclusively develops and sells ready-made digital products (software templates, AI prompt libraries, and premium stock assets). We do not offer custom client services, consulting, or agency work. All purchases are instant digital downloads.
+           </div>
         </div>
       </footer>
     </div>
