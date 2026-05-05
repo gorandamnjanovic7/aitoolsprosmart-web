@@ -367,13 +367,13 @@ const V8Enhancer10x = () => {
      <div className="flex-1 flex flex-col w-full">
         <div className="mb-12 text-center w-full relative z-10 flex flex-col items-center mt-4">
           <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-500 to-orange-400 drop-shadow-[0_0_15px_rgba(234,88,12,0.3)]">10X PROMPT ENHANCER</h1>
-          <div className="text-[12px] md:text-[14px] font-black text-green-400 uppercase tracking-[0.2em] flex items-center gap-3">Premium 3-in-1 Tool. $199 LIFETIME ACCESS.</div>
+          <div className="text-[12px] md:text-[14px] font-black text-green-400 uppercase tracking-[0.2em] flex items-center gap-3">Premium 3-in-1 Tool. $199.99 LIFETIME LICENSE.</div>
           {!isVIP && (
              <div className="mt-8 p-6 bg-[#050505] border border-red-500/30 rounded-3xl flex flex-col items-center max-w-4xl mx-auto z-20 shadow-2xl">
                 <Lock className="w-10 h-10 text-red-500 mb-4" />
                 <h3 className="text-2xl font-black text-white uppercase tracking-widest mb-2">SYSTEM IS LOCKED</h3>
                 <div className="flex gap-4 w-full justify-center mb-6">
-                   <RippleButton onClick={() => handlePaymentV8('10X Enhancer - Lifetime', 20000)} className="bg-green-600 hover:bg-green-500 text-white px-8 py-4 rounded-xl font-black text-[13px] uppercase tracking-widest shadow-[0_0_20px_rgba(22,163,74,0.4)]">BUY LIFETIME ACCESS (€169)</RippleButton>
+                   <RippleButton onClick={() => handlePaymentV8('10X Enhancer - Lifetime', 199.99)} className="bg-green-600 hover:bg-green-500 text-white px-8 py-4 rounded-xl font-black text-[13px] uppercase tracking-widest shadow-[0_0_20px_rgba(22,163,74,0.4)]">GET LIFETIME LICENSE ($199.99)</RippleButton>
                    <button onClick={handlePremiumLogin} className="text-[10px] uppercase font-black tracking-widest text-zinc-500 hover:text-white border-b border-zinc-700">ALREADY HAVE ACCESS - LOG IN</button>
                 </div>
              </div>
@@ -622,7 +622,7 @@ const V8Enhancer10x = () => {
                     </div>
                     <div className="pt-2 flex justify-between items-end">
                         <span className="text-zinc-600 font-sans font-black text-[10px]">TOTAL:</span>
-                        <strong className="text-white text-[24px] leading-none">€169</strong>
+                        <strong className="text-white text-[24px] leading-none">${showPaymentModal.cena}</strong>
                     </div>
                 </div>
               </div>
