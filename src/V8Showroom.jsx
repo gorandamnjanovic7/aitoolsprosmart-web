@@ -193,9 +193,9 @@ const V8Showroom = () => {
                                 </span>
                             </div>
                             <div className="absolute top-4 right-4 z-20">
-                                <span className={`px-3 py-1.5 rounded-lg font-black text-[9px] uppercase tracking-wider backdrop-blur-md border ${item.type === 'video' ? 'bg-red-900/80 border-red-500/50 text-red-400' : 'bg-blue-900/80 border-blue-500/50 text-blue-400'}`}>
-                                    {item.type === 'video' ? 'CINEMATIC VIDEO' : '33MP IMAGE'}
-                                </span>
+                                <span className="bg-blue-900/90 backdrop-blur-md border border-red-600 text-red-500 px-3 py-1.5 rounded-lg font-black text-[9px] uppercase tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.8)]">
+    {item.type === 'video' ? 'CINEMATIC VIDEO' : '33MP IMAGE'}
+</span>
                             </div>
 
                             <div className="relative w-full h-full overflow-hidden">
