@@ -8,6 +8,11 @@ import { motion } from 'framer-motion'; // V8: Dodali smo Framer Motion za premi
 const V8Promo10xPage = () => {
   const [promoData, setPromoData] = useState({ images: [], promoText: "" });
 
+  // V8 FIX: Forsira skrol na vrh stranice pri učitavanju!
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "v8_settings", "promo10x"), (doc) => {
       if (doc.exists()) {
