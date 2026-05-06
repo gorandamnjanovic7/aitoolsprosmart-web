@@ -43,7 +43,7 @@ const FullScreenLightbox = ({ item, onClose }) => {
 const V8Showroom = () => {
     const navigate = useNavigate();
     const [activeFilter, setActiveFilter] = useState('ALL');
-    const [lightboxItem, setLightboxItem] = useState(null); // ISPRAVLJENO: Sada je samo jedan!
+    const [lightboxItem, setLightboxItem] = useState(null);
 
     // V8 FIX: Zamrzava skrol pozadinske stranice dok je slika u fullscreen-u
     useEffect(() => {
@@ -103,148 +103,151 @@ const V8Showroom = () => {
     };
     
     return (
-        // CINEMATIC PAGE TRANSITION: Stranica izranja iz crnila
-        <motion.div 
-            initial={{ opacity: 0, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, filter: 'blur(0px)' }}
-            transition={{ duration: 0.8 }}
-            className="min-h-screen bg-[#050505] pt-32 pb-24 px-6 font-sans text-white overflow-hidden"
-        >
+        // V8 FIX: React Fragment prazni tagovi omogućavaju da Lightbox bude nezavisan od filter animacije stranice
+        <>
             <AnimatePresence>
                 {lightboxItem && <FullScreenLightbox item={lightboxItem} onClose={() => setLightboxItem(null)} />}
             </AnimatePresence>
 
-            {/* HERO SEKCIJA SA TVOJOM NOVOM SLIKOM */}
+            {/* CINEMATIC PAGE TRANSITION: Stranica izranja iz crnila */}
             <motion.div 
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 0.2 }}
-                className="relative w-full max-w-7xl mx-auto mb-24 rounded-[3rem] overflow-hidden border border-white/10 shadow-[0_0_60px_rgba(255,140,0,0.15)]"
-            >
-                {/* Tvoja tečna V8 pozadina */}
-                <div 
-                    className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-70"
-                    style={{ backgroundImage: "url('/v8-showroom/v8-hero.png')" }} 
-                ></div>
-                
-                {/* Profesionalni prelaz: Zatamnjenje sa donje i bočnih strana da tekst "iskače" */}
-                <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050505]/20 via-[#050505]/60 to-[#050505]"></div>
-                <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#050505] via-transparent to-[#050505]"></div>
-
-                {/* Sadržaj iznad slike */}
-                <div className="relative z-10 text-center py-32 px-6">
-                    <motion.div 
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.5, duration: 0.5 }}
-                        className="inline-block px-5 py-2 rounded-full bg-black/60 backdrop-blur-md border border-[#FF8C00]/30 text-[#FF8C00] font-black uppercase text-[10px] tracking-widest mb-8 shadow-[0_0_20px_rgba(255,140,0,0.2)]"
-                    >
-                        V8 Masterwork Edition
-                    </motion.div>
-
-                    <h1 className="text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter mb-6 text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)]">
-                        BEYOND <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FF8C00] to-amber-600 drop-shadow-none">PIXELS</span>
-                    </h1>
-                    
-                    <p className="text-zinc-200 font-bold uppercase tracking-[0.4em] text-[11px] md:text-[13px] max-w-3xl mx-auto leading-relaxed mb-12 drop-shadow-lg bg-black/20 p-4 rounded-xl backdrop-blur-sm">
-                        Step into the V8 Masterwork Showroom. Experience 33.2 Megapixel resolution and hyper-realistic cinematic motion. Designed exclusively for top-tier agencies and visionary brands.
-                    </p>
-                    
-                    <button onClick={handleOpenStore} className="bg-gradient-to-r from-orange-600 to-amber-500 text-white px-12 py-5 rounded-full font-black text-[13px] uppercase tracking-widest shadow-[0_0_30px_rgba(234,88,12,0.5)] hover:scale-105 hover:shadow-[0_0_50px_rgba(234,88,12,0.8)] transition-all flex items-center gap-3 mx-auto border border-orange-400/50 relative z-50">
-                        <Zap size={20} fill="currentColor" /> UNLOCK FULL BUNDLES NOW
-                    </button>
-                </div>
-            </motion.div>
-
-            {/* FILTERI (Animirani jedan po jedan) */}
-            <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1, delay: 0.5 }}
-                className="flex flex-wrap justify-center gap-4 mb-16 max-w-5xl mx-auto relative z-10"
-            >
-                {filters.map((filter, idx) => (
-                    <motion.button 
-                        key={filter}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setActiveFilter(filter)}
-                        className={`px-8 py-3.5 rounded-xl font-black text-[11px] uppercase tracking-widest transition-colors duration-300 border relative z-50 ${activeFilter === filter ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00] shadow-[0_0_20px_rgba(255,140,0,0.2)]' : 'bg-[#0a0a0a] border-white/10 text-zinc-500 hover:border-[#FF8C00]/50 hover:text-white'}`}
-                    >
-                        {filter}
-                    </motion.button>
-                ))}
-            </motion.div>
-
-            {/* MASONRY GALERIJA - SCROLL REVEAL EFEKAT */}
-            <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6 max-w-7xl mx-auto">
-                <AnimatePresence>
-                    {filteredItems.map((item, index) => (
-                        <motion.div 
-                            key={item.id} 
-                            initial={{ opacity: 0, y: 80 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true, margin: "-50px" }}
-                            transition={{ duration: 0.6, delay: index * 0.05 }}
-                            onClick={() => setLightboxItem(item)}
-                            className="relative group rounded-3xl overflow-hidden bg-[#0a0a0a] border border-white/5 cursor-pointer break-inside-avoid transform transition-transform duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(255,140,0,0.15)] z-50"
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-tr from-[#FF8C00]/0 via-[#FF8C00]/0 to-[#FF8C00]/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-30"></div>
-
-                            <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
-                                <span className="bg-black/80 backdrop-blur-md border border-white/10 text-white px-3 py-1.5 rounded-lg font-black text-[9px] uppercase tracking-wider flex items-center gap-1.5">
-                                    <MonitorSmartphone size={12} className="text-[#FF8C00]" /> {item.format}
-                                </span>
-                            </div>
-                            <div className="absolute top-4 right-4 z-20">
-                                <span className="bg-blue-900/90 backdrop-blur-md border border-red-600 text-red-500 px-3 py-1.5 rounded-lg font-black text-[9px] uppercase tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.8)]">
-    {item.type === 'video' ? 'CINEMATIC VIDEO' : '33MP IMAGE'}
-</span>
-                            </div>
-
-                            <div className="relative w-full h-full overflow-hidden">
-                                {item.type === 'video' ? (
-                                    <>
-                                        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40 group-hover:bg-transparent transition-all">
-                                            <div className="w-16 h-16 bg-[#FF8C00] rounded-full flex items-center justify-center text-black pl-1 shadow-[0_0_30px_rgba(255,140,0,0.5)] group-hover:scale-110 transition-transform">
-                                                <Play size={24} fill="currentColor" />
-                                            </div>
-                                        </div>
-                                        {/* V8 DINAMIČKI PLACEHOLDER KOJI PRATI 9:16 ili 16:9 FORMAT */}
-                                        <div className={`w-full bg-zinc-900 flex items-center justify-center text-zinc-700 font-black tracking-widest ${item.format === '9:16' ? 'aspect-[9/16]' : 'aspect-video'}`}>
-                                            {item.format} VIDEO PLACEHOLDER
-                                        </div>
-                                    </>
-                                ) : (
-                                    <img src={item.url} alt={item.title} loading="lazy" className="w-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out" />
-                                )}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10"></div>
-                            </div>
-
-                            <div className="absolute bottom-0 left-0 w-full p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 z-20">
-                                <h3 className="text-xl font-black text-white uppercase tracking-widest mb-1">{item.title}</h3>
-                                <p className="text-[#FF8C00] font-bold text-[10px] uppercase tracking-[0.2em]">{item.category}</p>
-                            </div>
-                        </motion.div>
-                    ))}
-                </AnimatePresence>
-            </div>
-
-            <motion.div 
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
+                initial={{ opacity: 0, filter: 'blur(10px)' }}
+                animate={{ opacity: 1, filter: 'blur(0px)' }}
                 transition={{ duration: 0.8 }}
-                className="max-w-4xl mx-auto mt-32 text-center bg-gradient-to-b from-[#0a0a0a] to-[#050505] border border-white/5 rounded-[3rem] p-12 relative overflow-hidden"
+                className="min-h-screen bg-[#050505] pt-32 pb-24 px-6 font-sans text-white overflow-hidden"
             >
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1 bg-gradient-to-r from-transparent via-[#FF8C00] to-transparent opacity-50"></div>
-                <h2 className="text-3xl font-black uppercase text-white tracking-widest mb-4">READY TO UPGRADE YOUR VISUALS?</h2>
-                <p className="text-zinc-500 font-bold uppercase text-[11px] tracking-widest mb-10">Stop using generic stock. Dominate your market with V8.</p>
-                <button onClick={handleOpenStore} className="bg-[#FF8C00] text-black px-12 py-5 rounded-full font-black text-[13px] uppercase tracking-widest shadow-[0_0_40px_rgba(255,140,0,0.3)] hover:scale-105 hover:bg-white transition-all flex items-center gap-3 mx-auto relative z-50">
-                    <Layers size={20} /> BROWSE V8 STORE
-                </button>
+                {/* HERO SEKCIJA SA TVOJOM NOVOM SLIKOM */}
+                <motion.div 
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1, delay: 0.2 }}
+                    className="relative w-full max-w-7xl mx-auto mb-24 rounded-[3rem] overflow-hidden border border-white/10 shadow-[0_0_60px_rgba(255,140,0,0.15)]"
+                >
+                    {/* Tvoja tečna V8 pozadina */}
+                    <div 
+                        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-70"
+                        style={{ backgroundImage: "url('/v8-showroom/v8-hero.png')" }} 
+                    ></div>
+                    
+                    {/* Profesionalni prelaz: Zatamnjenje sa donje i bočnih strana da tekst "iskače" */}
+                    <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050505]/20 via-[#050505]/60 to-[#050505]"></div>
+                    <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#050505] via-transparent to-[#050505]"></div>
+
+                    {/* Sadržaj iznad slike */}
+                    <div className="relative z-10 text-center py-32 px-6">
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.5, duration: 0.5 }}
+                            className="inline-block px-5 py-2 rounded-full bg-black/60 backdrop-blur-md border border-[#FF8C00]/30 text-[#FF8C00] font-black uppercase text-[10px] tracking-widest mb-8 shadow-[0_0_20px_rgba(255,140,0,0.2)]"
+                        >
+                            V8 Masterwork Edition
+                        </motion.div>
+
+                        <h1 className="text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter mb-6 text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)]">
+                            BEYOND <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FF8C00] to-amber-600 drop-shadow-none">PIXELS</span>
+                        </h1>
+                        
+                        <p className="text-zinc-200 font-bold uppercase tracking-[0.4em] text-[11px] md:text-[13px] max-w-3xl mx-auto leading-relaxed mb-12 drop-shadow-lg bg-black/20 p-4 rounded-xl backdrop-blur-sm">
+                            Step into the V8 Masterwork Showroom. Experience 33.2 Megapixel resolution and hyper-realistic cinematic motion. Designed exclusively for top-tier agencies and visionary brands.
+                        </p>
+                        
+                        <button onClick={handleOpenStore} className="bg-gradient-to-r from-orange-600 to-amber-500 text-white px-12 py-5 rounded-full font-black text-[13px] uppercase tracking-widest shadow-[0_0_30px_rgba(234,88,12,0.5)] hover:scale-105 hover:shadow-[0_0_50px_rgba(234,88,12,0.8)] transition-all flex items-center gap-3 mx-auto border border-orange-400/50 relative z-50">
+                            <Zap size={20} fill="currentColor" /> UNLOCK FULL BUNDLES NOW
+                        </button>
+                    </div>
+                </motion.div>
+
+                {/* FILTERI (Animirani jedan po jedan) */}
+                <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1, delay: 0.5 }}
+                    className="flex flex-wrap justify-center gap-4 mb-16 max-w-5xl mx-auto relative z-10"
+                >
+                    {filters.map((filter, idx) => (
+                        <motion.button 
+                            key={filter}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setActiveFilter(filter)}
+                            className={`px-8 py-3.5 rounded-xl font-black text-[11px] uppercase tracking-widest transition-colors duration-300 border relative z-50 ${activeFilter === filter ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00] shadow-[0_0_20px_rgba(255,140,0,0.2)]' : 'bg-[#0a0a0a] border-white/10 text-zinc-500 hover:border-[#FF8C00]/50 hover:text-white'}`}
+                        >
+                            {filter}
+                        </motion.button>
+                    ))}
+                </motion.div>
+
+                {/* MASONRY GALERIJA - SCROLL REVEAL EFEKAT */}
+                <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6 max-w-7xl mx-auto">
+                    <AnimatePresence>
+                        {filteredItems.map((item, index) => (
+                            <motion.div 
+                                key={item.id} 
+                                initial={{ opacity: 0, y: 80 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true, margin: "-50px" }}
+                                transition={{ duration: 0.6, delay: index * 0.05 }}
+                                onClick={() => setLightboxItem(item)}
+                                className="relative group rounded-3xl overflow-hidden bg-[#0a0a0a] border border-white/5 cursor-pointer break-inside-avoid transform transition-transform duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(255,140,0,0.15)] z-50"
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-tr from-[#FF8C00]/0 via-[#FF8C00]/0 to-[#FF8C00]/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-30"></div>
+
+                                <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
+                                    <span className="bg-black/80 backdrop-blur-md border border-white/10 text-white px-3 py-1.5 rounded-lg font-black text-[9px] uppercase tracking-wider flex items-center gap-1.5">
+                                        <MonitorSmartphone size={12} className="text-[#FF8C00]" /> {item.format}
+                                    </span>
+                                </div>
+                                <div className="absolute top-4 right-4 z-20">
+                                    <span className="bg-blue-900/90 backdrop-blur-md border border-red-600 text-red-500 px-3 py-1.5 rounded-lg font-black text-[9px] uppercase tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.8)]">
+        {item.type === 'video' ? 'CINEMATIC VIDEO' : '33MP IMAGE'}
+    </span>
+                                </div>
+
+                                <div className="relative w-full h-full overflow-hidden">
+                                    {item.type === 'video' ? (
+                                        <>
+                                            <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40 group-hover:bg-transparent transition-all">
+                                                <div className="w-16 h-16 bg-[#FF8C00] rounded-full flex items-center justify-center text-black pl-1 shadow-[0_0_30px_rgba(255,140,0,0.5)] group-hover:scale-110 transition-transform">
+                                                    <Play size={24} fill="currentColor" />
+                                                </div>
+                                            </div>
+                                            {/* V8 DINAMIČKI PLACEHOLDER KOJI PRATI 9:16 ili 16:9 FORMAT */}
+                                            <div className={`w-full bg-zinc-900 flex items-center justify-center text-zinc-700 font-black tracking-widest ${item.format === '9:16' ? 'aspect-[9/16]' : 'aspect-video'}`}>
+                                                {item.format} VIDEO PLACEHOLDER
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <img src={item.url} alt={item.title} loading="lazy" className="w-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out" />
+                                    )}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10"></div>
+                                </div>
+
+                                <div className="absolute bottom-0 left-0 w-full p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 z-20">
+                                    <h3 className="text-xl font-black text-white uppercase tracking-widest mb-1">{item.title}</h3>
+                                    <p className="text-[#FF8C00] font-bold text-[10px] uppercase tracking-[0.2em]">{item.category}</p>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
+                </div>
+
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.8 }}
+                    className="max-w-4xl mx-auto mt-32 text-center bg-gradient-to-b from-[#0a0a0a] to-[#050505] border border-white/5 rounded-[3rem] p-12 relative overflow-hidden"
+                >
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1 bg-gradient-to-r from-transparent via-[#FF8C00] to-transparent opacity-50"></div>
+                    <h2 className="text-3xl font-black uppercase text-white tracking-widest mb-4">READY TO UPGRADE YOUR VISUALS?</h2>
+                    <p className="text-zinc-500 font-bold uppercase text-[11px] tracking-widest mb-10">Stop using generic stock. Dominate your market with V8.</p>
+                    <button onClick={handleOpenStore} className="bg-[#FF8C00] text-black px-12 py-5 rounded-full font-black text-[13px] uppercase tracking-widest shadow-[0_0_40px_rgba(255,140,0,0.3)] hover:scale-105 hover:bg-white transition-all flex items-center gap-3 mx-auto relative z-50">
+                        <Layers size={20} /> BROWSE V8 STORE
+                    </button>
+                </motion.div>
             </motion.div>
-        </motion.div>
+        </>
     );
 };
 
