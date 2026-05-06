@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Play, Maximize2, Zap, Layers, MonitorSmartphone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -43,8 +43,17 @@ const FullScreenLightbox = ({ item, onClose }) => {
 const V8Showroom = () => {
     const navigate = useNavigate();
     const [activeFilter, setActiveFilter] = useState('ALL');
-    const [lightboxItem, setLightboxItem] = useState(null);
-    const [lightboxItem, setLightboxItem] = useState(null);
+    const [lightboxItem, setLightboxItem] = useState(null); // ISPRAVLJENO: Sada je samo jedan!
+
+    // V8 FIX: Zamrzava skrol pozadinske stranice dok je slika u fullscreen-u
+    useEffect(() => {
+        if (lightboxItem) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => { document.body.style.overflow = 'unset'; };
+    }, [lightboxItem]);
 
     const showcaseItems = [
         { id: 1, type: 'image', category: 'LUXURY CULINARY', format: '16:9', title: 'Michelin Star Seafood', url: 'LINK_JASTOG' },
@@ -77,18 +86,12 @@ const V8Showroom = () => {
         { id: 24, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Slow Motion Culinary', url: 'LINK_CINE_2' },
         { id: 25, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Abstract Fluid Dynamics', url: 'LINK_CINE_3' },
         { id: 26, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Roman Legion March', url: 'LINK_CINE_4' },
-        // ... tvoji prethodni itemi (id: 26, itd.)
         
-       { id: 27, type: 'image', category: 'ICE FRUIT FUSION', format: '16:9', title: 'Mango Pulse Frost', url: '/ice-fruit/ifs_3.webp' },
-
-// 2. Tvoj pravi svetli Kivi (ifs_1)
-{ id: 28, type: 'image', category: 'ICE FRUIT FUSION', format: '16:9', title: 'Kiwi Frost Dynamics', url: '/ice-fruit/ifs_1.webp' },
-
-// 3. Tvoj pravi tamni Kivi na crnom staklu (ifs_2)
-{ id: 29, type: 'image', category: 'ICE FRUIT FUSION', format: '16:9', title: 'Obsidian Kiwi Splash', url: '/ice-fruit/ifs_2.webp' },
+        { id: 27, type: 'image', category: 'ICE FRUIT FUSION', format: '16:9', title: 'Mango Pulse Frost', url: '/ice-fruit/ifs_3.webp' },
+        { id: 28, type: 'image', category: 'ICE FRUIT FUSION', format: '16:9', title: 'Kiwi Frost Dynamics', url: '/ice-fruit/ifs_1.webp' },
+        { id: 29, type: 'image', category: 'ICE FRUIT FUSION', format: '16:9', title: 'Obsidian Kiwi Splash', url: '/ice-fruit/ifs_2.webp' },
     ];
     
-
     const filters = ['ALL', 'LUXURY CULINARY', 'ICE FRUIT FUSION', 'ABSTRACT TECH', 'CINEMATIC MOTION', 'ROMAN REALISM', 'SPACES & ARCHITECTURE', 'PRODUCT & MACRO', 'NIGHTLIFE & LUXURY'];
 
     const filteredItems = activeFilter === 'ALL' ? showcaseItems : showcaseItems.filter(item => item.category === activeFilter);
