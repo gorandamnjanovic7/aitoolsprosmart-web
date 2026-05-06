@@ -44,6 +44,7 @@ const V8Showroom = () => {
     const navigate = useNavigate();
     const [activeFilter, setActiveFilter] = useState('ALL');
     const [lightboxItem, setLightboxItem] = useState(null);
+    const [lightboxItem, setLightboxItem] = useState(null);
 
     const showcaseItems = [
         { id: 1, type: 'image', category: 'LUXURY CULINARY', format: '16:9', title: 'Michelin Star Seafood', url: 'LINK_JASTOG' },
