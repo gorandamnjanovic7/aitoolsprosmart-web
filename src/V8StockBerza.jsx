@@ -30,7 +30,8 @@ const V8StockBerza = () => {
   const [editingPaketId, setEditingPaketId] = useState(null); 
   const [fullScreenImageUrl, setFullScreenImageUrl] = useState(null);
  
-  const [showPremium, setShowPremium] = useState(false);
+  // V8 FIX: Po defaultu stavljeno na TRUE da Premium grmi odmah!
+  const [showPremium, setShowPremium] = useState(true);
 
   // V8 PURE ENGLISH ADMIN FORM FIELDS
   const [noviNazivEn, setNoviNazivEn] = useState('');
@@ -253,35 +254,58 @@ const prijavaIKupovina = async (paket) => {
 
       <div className="max-w-7xl mx-auto">
         
-        {/* --- DYNAMIC HEADINGS --- */}
-        <div className="text-center mb-16 mt-4">
-          <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500 transition-all">
-            {showPremium ? "V8 33MP MASTERWORK ASSETS" : "V8 PREMIUM STOCK MARKET"}
-          </h1>
-          <p className="text-zinc-500 font-bold uppercase tracking-[0.3em] text-[10px] md:text-[12px] transition-all max-w-3xl mx-auto leading-relaxed">
-            {showPremium 
-              ? "PURE UNADULTERATED PIXELS. 33.2 MEGAPIXELS OF MASTERWORK RESOLUTION. ZERO COMPROMISE FOR LUXURY BRANDS." 
-              : "THE ULTIMATE ARSENAL OF ROYALTY-FREE AI ASSETS FOR HIGH-END PRODUCTION AND VISIONARY CREATORS."}
-          </p>
-        </div>
+        {/* --- V8 PREMIUM HERO KONTEJNER SA DINAMIČKIM TEKSTOM I PREKIDAČEM --- */}
+        <motion.div 
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.2 }}
+            className="relative w-full max-w-7xl mx-auto mb-16 rounded-[3rem] overflow-hidden border border-white/10 shadow-[0_0_60px_rgba(255,140,0,0.15)]"
+        >
+            {/* Tečna V8 pozadina (Putanja tačno sa tvog diska) */}
+            <div 
+                className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-70"
+                style={{ backgroundImage: "url('/v8-stok/v8-stock-hero.jpg.webp')" }} 
+            ></div>
+            
+            {/* Profesionalni prelaz: Zatamnjenje */}
+            <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050505]/20 via-[#050505]/70 to-[#050505]"></div>
+            <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#050505] via-transparent to-[#050505]"></div>
 
-        {/* --- V8 PREMIUM PREKIDAČ --- */}
-        <div className="flex justify-center mb-16 relative z-10">
-          <div className="bg-[#050505] border border-white/10 p-1.5 rounded-full inline-flex items-center shadow-xl">
-            <button 
-              onClick={() => setShowPremium(false)}
-              className={`px-8 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 ${!showPremium ? 'bg-zinc-800 text-white shadow-md' : 'text-zinc-500 hover:text-white'}`}
-            >
-              Standard Assets
-            </button>
-            <button 
-              onClick={() => setShowPremium(true)}
-              className={`px-8 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${showPremium ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-white shadow-[0_0_15px_rgba(234,88,12,0.4)]' : 'text-zinc-500 hover:text-orange-500'}`}
-            >
-              <Zap className="w-4 h-4" /> V8 Premium
-            </button>
-          </div>
-        </div>
+            {/* Sadržaj iznad slike */}
+            <div className="relative z-10 text-center py-20 px-6">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter mb-4 text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)] transition-all">
+                    {showPremium ? (
+                        <>V8 33MP <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500 drop-shadow-none">MASTERWORK ASSETS</span></>
+                    ) : (
+                        <>V8 PREMIUM <span className="text-[#FF8C00]">STOCK MARKET</span></>
+                    )}
+                </h1>
+                
+                <p className="text-zinc-200 font-bold uppercase tracking-[0.3em] text-[10px] md:text-[12px] max-w-3xl mx-auto leading-relaxed mb-10 drop-shadow-lg bg-black/30 p-3 rounded-lg backdrop-blur-sm transition-all">
+                    {showPremium 
+                        ? "PURE UNADULTERATED PIXELS. 33.2 MEGAPIXELS OF MASTERWORK RESOLUTION. ZERO COMPROMISE FOR LUXURY BRANDS." 
+                        : "THE ULTIMATE ARSENAL OF ROYALTY-FREE AI ASSETS FOR HIGH-END PRODUCTION AND VISIONARY CREATORS."}
+                </p>
+                
+                {/* --- V8 PREMIUM PREKIDAČ (Sada je integrisan unutar slike) --- */}
+                <div className="flex justify-center relative z-10">
+                    <div className="bg-[#050505]/80 backdrop-blur-md border border-white/10 p-1.5 rounded-full inline-flex items-center shadow-xl">
+                        <button 
+                            onClick={() => setShowPremium(false)}
+                            className={`px-8 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 ${!showPremium ? 'bg-zinc-800 text-white shadow-md' : 'text-zinc-400 hover:text-white'}`}
+                        >
+                            Standard Assets
+                        </button>
+                        <button 
+                            onClick={() => setShowPremium(true)}
+                            className={`px-8 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${showPremium ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-white shadow-[0_0_15px_rgba(234,88,12,0.4)]' : 'text-zinc-400 hover:text-orange-500'}`}
+                        >
+                            <Zap className="w-4 h-4" /> V8 Premium
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </motion.div>
 
         {isAdmin && (
           <form onSubmit={dodajPaket} className="bg-[#0a0a0a] border-2 border-[#FF8C00]/50 rounded-[2.5rem] p-8 mb-16 shadow-[0_0_30px_rgba(255,140,0,0.1)] max-w-4xl mx-auto">
