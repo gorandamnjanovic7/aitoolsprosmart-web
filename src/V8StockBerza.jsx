@@ -38,7 +38,8 @@ const V8StockBerza = () => {
   const [noviVolume, setNoviVolume] = useState('');
   const [noviFormat, setNoviFormat] = useState('16:9 (20 IMAGES)');
   const [novaKategorijaEn, setNovaKategorijaEn] = useState('');
-  const [novaCena, setNovaCena] = useState('19.99'); 
+  // V8 FIX: Default cena podignuta na premium nivo $49.99
+  const [novaCena, setNovaCena] = useState('49.99'); 
   const [noviTip, setNoviTip] = useState('Image'); 
   const [noviOpisEn, setNoviOpisEn] = useState(''); 
   const [previewUrl, setPreviewUrl] = useState('');
@@ -60,14 +61,14 @@ const V8StockBerza = () => {
     return () => unsub();
   }, []);
 
-  // AUTOMATIC DESCRIPTION ($)
+  // AUTOMATIC DESCRIPTION ($) - V8 FIX: Ubačen 9:16 i $1,500 vrednost!
   useEffect(() => {
     if (noviFormat === '16:9 (20 IMAGES)') {
-      setNoviOpisEn("PACKAGE CONTENTS: 20 PREMIUM AI VISUALS IN ULTRA-WIDE 16:9. PERFECT FOR WEBSITES AND YT. VALUE OVER $250.");
+      setNoviOpisEn("PACKAGE CONTENTS: 20 PREMIUM AI VISUALS IN ULTRA-WIDE 16:9 & 9:16 (VERTICAL). PERFECT FOR WEBSITES, YT, REELS AND TIKTOK. COMMERCIAL VALUE OVER $1,500.");
     } else if (noviFormat === 'ALL FORMATS (80 IMAGES)') {
-      setNoviOpisEn("PACKAGE CONTENTS: 80 PREMIUM AI VISUALS IN 4 RESOLUTIONS (16:9, 9:16, 1:1, 21:9). COMPLETE PACKAGE FOR ALL PLATFORMS. THE ULTIMATE V8 COLLECTION.");
+      setNoviOpisEn("PACKAGE CONTENTS: 80 PREMIUM AI VISUALS IN 4 RESOLUTIONS (16:9, 9:16, 1:1, 21:9). COMPLETE PACKAGE FOR ALL PLATFORMS. THE ULTIMATE V8 COLLECTION. COMMERCIAL VALUE OVER $3,000.");
     } else if (noviFormat === '16:9 & 9:16 (33MP MASTERWORK)') {
-      setNoviOpisEn("V8 MASTERWORK BUNDLE: COMPLETE COLLECTION OF 20 PREMIUM VISUALS IN 33.2 MEGAPIXELS (8K UHD) RESOLUTION. INCLUDES BOTH 16:9 (LANDSCAPE) AND 9:16 (PORTRAIT) ASPECT RATIOS. FLAWLESS TEXTURES, ZERO BRANDING, IP-SAFE. DESIGNED EXCLUSIVELY FOR LUXURY BRANDS AND HIGH-END COMMERCIAL CAMPAIGNS.");
+      setNoviOpisEn("V8 MASTERWORK BUNDLE: COMPLETE COLLECTION OF 20 PREMIUM VISUALS IN 33.2 MEGAPIXELS (8K UHD) RESOLUTION. INCLUDES BOTH 16:9 (LANDSCAPE) AND 9:16 (PORTRAIT) ASPECT RATIOS. FLAWLESS TEXTURES, ZERO BRANDING, IP-SAFE. DESIGNED EXCLUSIVELY FOR LUXURY BRANDS AND HIGH-END COMMERCIAL CAMPAIGNS. COMMERCIAL VALUE OVER $1,500.");
     }
   }, [noviFormat]);
 
@@ -200,7 +201,7 @@ const prijavaIKupovina = async (paket) => {
     setNoviVolume(paket.volume || '');
     setNoviFormat(paket.format || '16:9 (20 IMAGES)'); 
     setNovaKategorijaEn(paket.kategorijaEn || ''); 
-    setNovaCena(paket.cena || '19.99'); 
+    setNovaCena(paket.cena || '49.99'); // V8 FIX 
     setNoviTip(paket.tip || 'Image');
     setNoviOpisEn(paket.opisEn || ''); 
     setPreviewUrl(paket.previewUrl || ''); 
@@ -216,7 +217,7 @@ const prijavaIKupovina = async (paket) => {
     setNoviVolume(''); 
     setNoviFormat('16:9 (20 IMAGES)'); 
     setNovaKategorijaEn(''); 
-    setNovaCena('19.99');
+    setNovaCena('49.99'); // V8 FIX
     setPreviewUrl(''); 
     setZipLink(''); 
     setLemonLink(''); 
@@ -350,7 +351,7 @@ const prijavaIKupovina = async (paket) => {
                           <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
                               <Wallet size={14} /> PRICE (USD)
                           </label>
-                          <input type="text" value={novaCena} onChange={(e)=>setNovaCena(e.target.value)} placeholder="E.g. 19.99" className="bg-black border border-white/10 p-4 rounded-xl text-[13px] font-bold text-white outline-none focus:border-[#FF8C00] transition-all" />
+                          <input type="text" value={novaCena} onChange={(e)=>setNovaCena(e.target.value)} placeholder="E.g. 49.99" className="bg-black border border-white/10 p-4 rounded-xl text-[13px] font-bold text-white outline-none focus:border-[#FF8C00] transition-all" />
                       </div>
 
                       <div className="flex flex-col gap-2">
