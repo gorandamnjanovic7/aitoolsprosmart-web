@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import navBg from './navbar-bg.webp';
+import V8Reveal from './V8Reveal'; // <-- DODAT V8 REVEAL
+
 // FIREBASE
 import { db, auth, provider } from './firebase';
 import { signInWithPopup, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "firebase/auth";
@@ -253,9 +255,6 @@ const SmartScrollButton = () => {
   );
 };
 
-
-
-
 // --- TREZOR PAGE ---
 function TrezorPage({ apps = [] }) {
   const [unlockedApps, setUnlockedApps] = useState([]);
@@ -317,7 +316,7 @@ function TrezorPage({ apps = [] }) {
 // --- HOME PAGE (ENGLISH VERSION) ---
 function HomePage({ apps = [] }) {
   const [activeSlide, setActiveSlide] = useState(0); 
-  const [isBannerHovered, setIsBannerHovered] = useState(false); // V8 Kočnica
+  const [isBannerHovered, setIsBannerHovered] = useState(false);
   const [liveVideos, setLiveVideos] = useState([]); 
   const [isLoadingVideos, setIsLoadingVideos] = useState(true); 
   const location = useLocation();
@@ -408,120 +407,211 @@ function HomePage({ apps = [] }) {
       </div>
       
       <div className="max-w-7xl mx-auto px-6 py-12 text-left">
-        <div id="protocols" className="flex items-center gap-4 mb-10"><div className="flex items-center gap-2.5 shrink-0"><Youtube className="text-red-600 w-6 h-6" /><h3 className="text-white font-black uppercase text-[20px] tracking-widest italic">LATEST INTEL PROTOCOLS</h3></div><div className="h-[1px] w-32 bg-gradient-to-r from-red-600/80 to-transparent"></div></div>
-        {isLoadingVideos ? <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24">{[...Array(4)].map((_, i) => <div className="animate-pulse bg-[#0a0a0a] rounded-[2.4rem] p-6 h-48" key={i} />)}</div> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24">{liveVideos.map((vid, i) => <TutorialCard key={i} vid={vid} />)}</div>}
+        <V8Reveal delay={0.1} direction="left">
+          <div id="protocols" className="flex items-center gap-4 mb-10"><div className="flex items-center gap-2.5 shrink-0"><Youtube className="text-red-600 w-6 h-6" /><h3 className="text-white font-black uppercase text-[20px] tracking-widest italic">LATEST INTEL PROTOCOLS</h3></div><div className="h-[1px] w-32 bg-gradient-to-r from-red-600/80 to-transparent"></div></div>
+        </V8Reveal>
         
-        {/* --- 10X ENHANCER --- */}
-        <div id="enhancer" className="mb-24 flex flex-col items-center justify-center text-center py-20 border-t border-orange-500/30 scroll-mt-32">
-          <div className="bg-orange-600/10 p-4 rounded-full mb-6"><Zap className="w-12 h-12 text-orange-500 drop-shadow-[0_0_15px_rgba(249,115,22,0.6)]" strokeWidth={1.5} /></div>
-          <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-orange-600 mb-4 drop-shadow-[0_0_15px_rgba(234,88,12,0.4)]">10X PROMPT ENHANCER</h2>
-          <div className="text-[13px] md:text-[15px] font-black text-green-500 uppercase tracking-[0.2em] mb-4">Premium 3-in-1 tool worth $200/month. ONLY $199.99 LIFETIME.</div>
-          <CountdownTimer />
-          <p className="text-zinc-400 text-[10px] md:text-[12px] max-w-2xl font-medium uppercase tracking-[0.2em] leading-relaxed mt-10 mb-10 mx-auto px-4">
-            <span className="font-black text-white">ACCESS THE PREMIUM AI PROMPT ENGINEERING SYSTEM. CONVERT SIMPLE IDEAS OR AN IMAGE INTO MASTERPIECES.</span><br /><br />
-            <span className="text-orange-500 font-black uppercase">ENTER YOUR PROMPT; WE WILL ANALYZE IT IN DETAIL AND ENHANCE IT TO BE 10X BETTER.</span>
-          </p>
+        <V8Reveal delay={0.3} direction="up">
+          {isLoadingVideos ? <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24">{[...Array(4)].map((_, i) => <div className="animate-pulse bg-[#0a0a0a] rounded-[2.4rem] p-6 h-48" key={i} />)}</div> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24">{liveVideos.map((vid, i) => <TutorialCard key={i} vid={vid} />)}</div>}
+        </V8Reveal>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-2 w-full px-6 relative z-10">
-            {hasEnhancerAccess ? (
-              <Link to="/enxance" className="bg-gradient-to-r from-green-600 to-emerald-500 text-white px-12 py-4 rounded-xl font-black text-[14px] uppercase tracking-widest shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:scale-105 transition-all flex items-center justify-center gap-3 w-full sm:w-auto cursor-pointer">🚀 LAUNCH ENGINE</Link>
-            ) : (
-              <>
-                <button type="button" onClick={() => handlePaymentV8()} className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white px-8 py-4 rounded-xl font-black text-[14px] uppercase tracking-widest shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:scale-105 transition-all flex items-center gap-3 w-full sm:w-auto justify-center cursor-pointer"><Zap className="w-5 h-5 fill-white" /> GET LIFETIME LICENSE ($199.99)</button>
-                <Link to="/promo" className="bg-transparent border border-orange-500/50 text-orange-500 hover:bg-orange-500 hover:text-white px-8 py-4 rounded-xl font-black text-[14px] uppercase tracking-widest shadow-[0_0_15px_rgba(249,115,22,0.1)] hover:shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:scale-105 transition-all flex items-center gap-3 w-full sm:w-auto justify-center cursor-pointer"><PlayCircle className="w-5 h-5" /> SEE DEMO</Link>
-              </>
-            )}
+        {/* --- 10X ENHANCER --- */}
+        {/* --- 10X ENHANCER --- */}
+        <div id="enhancer" className="relative mb-24 flex flex-col items-center justify-center text-center py-24 scroll-mt-32 overflow-hidden rounded-[3rem] mx-4 lg:mx-0 border border-orange-500/20 shadow-[0_0_40px_rgba(234,88,12,0.15)] group">
+          
+          {/* POZADINSKA SLIKA SA OVERLAYOM */}
+          <div className="absolute inset-0 z-0">
+            <img src="https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=1600&q=80" alt="10x Background" className="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-1000" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-orange-950/40 to-[#050505]"></div>
+            <div className="absolute inset-0 bg-black/60"></div> {/* Dodatno zatamnjenje za citljivost teksta */}
           </div>
+
+          <V8Reveal delay={0.1} direction="down">
+            <div className="bg-orange-600/10 p-4 rounded-full mb-6 relative z-10 inline-block backdrop-blur-sm"><Zap className="w-12 h-12 text-orange-500 drop-shadow-[0_0_15px_rgba(249,115,22,0.6)]" strokeWidth={1.5} /></div>
+          </V8Reveal>
+          
+          <V8Reveal delay={0.2} direction="up">
+            <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-orange-500 mb-4 drop-shadow-[0_0_20px_rgba(234,88,12,0.8)] relative z-10">10X PROMPT ENHANCER</h2>
+          </V8Reveal>
+          
+          <V8Reveal delay={0.3} direction="up">
+            <div className="text-[13px] md:text-[15px] font-black text-green-400 uppercase tracking-[0.2em] mb-4 relative z-10 drop-shadow-md">Premium 3-in-1 tool worth $200/month. ONLY $199.99 LIFETIME.</div>
+          </V8Reveal>
+          
+          <V8Reveal delay={0.4} direction="up">
+            <div className="relative z-10"><CountdownTimer /></div>
+          </V8Reveal>
+          
+          <V8Reveal delay={0.5} direction="up">
+            <p className="text-zinc-200 text-[10px] md:text-[12px] max-w-2xl font-medium uppercase tracking-[0.2em] leading-relaxed mt-10 mb-10 mx-auto px-4 relative z-10 drop-shadow-lg">
+              <span className="font-black text-white">ACCESS THE PREMIUM AI PROMPT ENGINEERING SYSTEM. CONVERT SIMPLE IDEAS OR AN IMAGE INTO MASTERPIECES.</span><br /><br />
+              <span className="text-orange-400 font-black uppercase">ENTER YOUR PROMPT; WE WILL ANALYZE IT IN DETAIL AND ENHANCE IT TO BE 10X BETTER.</span>
+            </p>
+          </V8Reveal>
+
+          <V8Reveal delay={0.6} direction="up">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-2 w-full px-6 relative z-10">
+              {hasEnhancerAccess ? (
+                <Link to="/enxance" className="bg-gradient-to-r from-green-600 to-emerald-500 text-white px-12 py-4 rounded-xl font-black text-[14px] uppercase tracking-widest shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:scale-105 transition-all flex items-center justify-center gap-3 w-full sm:w-auto cursor-pointer backdrop-blur-md">🚀 LAUNCH ENGINE</Link>
+              ) : (
+                <>
+                  <button type="button" onClick={() => handlePaymentV8()} className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white px-8 py-4 rounded-xl font-black text-[14px] uppercase tracking-widest shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:scale-105 transition-all flex items-center gap-3 w-full sm:w-auto justify-center cursor-pointer backdrop-blur-md"><Zap className="w-5 h-5 fill-white" /> GET LIFETIME LICENSE ($199.99)</button>
+                  <Link to="/promo" className="bg-black/50 backdrop-blur-md border border-orange-500/50 text-orange-400 hover:bg-orange-500 hover:text-white px-8 py-4 rounded-xl font-black text-[14px] uppercase tracking-widest shadow-[0_0_15px_rgba(249,115,22,0.1)] hover:shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:scale-105 transition-all flex items-center gap-3 w-full sm:w-auto justify-center cursor-pointer"><PlayCircle className="w-5 h-5" /> SEE DEMO</Link>
+                </>
+              )}
+            </div>
+          </V8Reveal>
         </div>
 
         {/* --- NOVA SEKCIJA: V8 STOCK BUNDLES --- */}
-        <div id="stock-bundles" className="mb-24 flex flex-col items-center justify-center text-center py-20 border-t border-blue-500/30 relative overflow-hidden scroll-mt-32">
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-900/5 to-transparent pointer-events-none"></div>
-            <div className="bg-blue-600/10 p-4 rounded-full mb-6 relative z-10"><ImageIcon className="w-12 h-12 text-blue-500 drop-shadow-[0_0_15px_rgba(59,130,246,0.6)]" strokeWidth={1.5} /></div>
-            <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-blue-500 mb-4 drop-shadow-[0_0_15px_rgba(59,130,246,0.4)] relative z-10">PREMIUM STOCK BUNDLES</h2>
-            <div className="text-[13px] md:text-[15px] font-black text-white uppercase tracking-[0.2em] mb-4 relative z-10">Unmatched Optical Authority. For Visionary Brands.</div>
-            <p className="text-zinc-400 text-[10px] md:text-[12px] max-w-2xl font-medium uppercase tracking-[0.2em] leading-relaxed mt-6 mb-12 mx-auto px-4 relative z-10">
-              <span className="font-black text-white">SKIP THE STOCK SITES AND GET 100% ROYALTY-FREE PREMIUM AI ASSETS DIRECTLY FROM THE SOURCE.</span><br /><br />
-              <span className="text-blue-400 font-black uppercase">LUXURY REAL ESTATE, GOURMET FOOD, AND TECH GADGET BUNDLES READY FOR YOUR COMMERCIAL CAMPAIGNS.</span>
-            </p>
+        {/* --- NOVA SEKCIJA: V8 STOCK BUNDLES --- */}
+        <div id="stock-bundles" className="mb-24 flex flex-col items-center justify-center text-center pt-10 pb-20 relative overflow-hidden scroll-mt-32">
+            
+            {/* NOVI HERO BOX SA TVOJOM BRUTALNOM SLIKOM */}
+            <V8Reveal delay={0.2} direction="up">
+              <div className="relative w-full max-w-6xl mx-auto rounded-[3rem] overflow-hidden py-16 px-6 mb-16 border border-blue-500/20 shadow-[0_0_40px_rgba(59,130,246,0.15)] group">
+                 {/* TVOJA OPTIMIZOVANA WEBP SLIKA */}
+                 <div className="absolute inset-0 z-0">
+                   <img src="/v8-stock/v8_stock.webp" alt="V8 Premium Stock Background" className="w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform duration-1000" />
+                   <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-blue-900/30 to-[#050505]"></div>
+                   <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"></div>
+                 </div>
+                 
+                 {/* SADRŽAJ IZNAD SLIKE */}
+                 <div className="relative z-10 flex flex-col items-center">
+                    <div className="bg-blue-600/20 p-4 rounded-full mb-6 relative z-10 inline-block backdrop-blur-md border border-blue-500/30">
+                       <ImageIcon className="w-10 h-10 text-blue-400 drop-shadow-[0_0_15px_rgba(59,130,246,0.8)]" strokeWidth={1.5} />
+                    </div>
+                    
+                    <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-blue-400 mb-4 drop-shadow-[0_0_15px_rgba(59,130,246,0.6)]">PREMIUM STOCK BUNDLES</h2>
+                    
+                    <div className="text-[13px] md:text-[15px] font-black text-white uppercase tracking-[0.2em] mb-4 drop-shadow-md">Unmatched Optical Authority. For Visionary Brands.</div>
+                    
+                    <p className="text-zinc-200 text-[10px] md:text-[12px] max-w-3xl font-medium uppercase tracking-[0.2em] leading-relaxed mt-6 mx-auto px-4 drop-shadow-lg">
+                      <span className="font-black text-white">SKIP THE STOCK SITES AND GET 100% ROYALTY-FREE PREMIUM AI ASSETS DIRECTLY FROM THE SOURCE.</span><br /><br />
+                      <span className="text-blue-300 font-black uppercase">LUXURY REAL ESTATE, GOURMET FOOD, AND TECH GADGET BUNDLES READY FOR YOUR COMMERCIAL CAMPAIGNS.</span>
+                    </p>
+                 </div>
+              </div>
+            </V8Reveal>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full px-6 relative z-10 max-w-6xl mx-auto">
-                {/* Bundle 1: Real Estate */}
-                <div className="bg-[#0a0a0a] border border-white/10 rounded-[2rem] p-5 hover:border-blue-500/50 transition-all group shadow-2xl flex flex-col items-start text-left">
-                    <div className="w-full aspect-video rounded-xl bg-black mb-4 overflow-hidden relative border border-white/5">
-                        <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80" alt="Real Estate" className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
-                        <div className="absolute top-3 right-3 bg-blue-600 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg">50 ASSETS</div>
-                    </div>
-                    <h3 className="text-[16px] font-black uppercase text-white tracking-widest mb-2">Luxury Real Estate</h3>
-                    <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-6">Penthouses, Modern Villas, Interiors</p>
-                    <div className="mt-auto w-full flex items-center justify-between">
-                        <span className="text-2xl font-black text-white">$49</span>
-                        <Link to="/stock" className="px-6 py-3 bg-white/5 hover:bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all border border-white/10 hover:border-blue-500">VIEW BUNDLE</Link>
-                    </div>
-                </div>
+            <V8Reveal delay={0.5} direction="up">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full px-6 relative z-10 max-w-6xl mx-auto">
+                  {/* Bundle 1: Real Estate */}
+                  <div className="bg-[#0a0a0a] border border-white/10 rounded-[2rem] p-5 hover:border-blue-500/50 transition-all group shadow-2xl flex flex-col items-start text-left">
+                      <div className="w-full aspect-video rounded-xl bg-black mb-4 overflow-hidden relative border border-white/5">
+                          <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80" alt="Real Estate" className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
+                          <div className="absolute top-3 right-3 bg-blue-600 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg">50 ASSETS</div>
+                      </div>
+                      <h3 className="text-[16px] font-black uppercase text-white tracking-widest mb-2">Luxury Real Estate</h3>
+                      <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-6">Penthouses, Modern Villas, Interiors</p>
+                      <div className="mt-auto w-full flex items-center justify-between">
+                          <span className="text-2xl font-black text-white">$49</span>
+                          <Link to="/stock" className="px-6 py-3 bg-white/5 hover:bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all border border-white/10 hover:border-blue-500">VIEW BUNDLE</Link>
+                      </div>
+                  </div>
 
-                {/* Bundle 2: Gourmet Food */}
-                <div className="bg-[#0a0a0a] border border-orange-500/30 rounded-[2rem] p-5 hover:border-orange-500 transition-all group shadow-[0_0_30px_rgba(234,88,12,0.1)] flex flex-col items-start text-left relative transform md:-translate-y-4">
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-orange-600 text-white text-[8px] font-black uppercase tracking-widest px-4 py-1.5 rounded-b-xl z-20 shadow-lg">BEST SELLER</div>
-                    <div className="w-full aspect-video rounded-xl bg-black mb-4 overflow-hidden relative border border-white/5 mt-2">
-                        <img src="https://images.unsplash.com/photo-1544025162-d76694265947?w=800&q=80" alt="Gourmet" className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
-                        <div className="absolute top-3 right-3 bg-orange-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg">40 ASSETS</div>
-                    </div>
-                    <h3 className="text-[16px] font-black uppercase text-white tracking-widest mb-2">Premium Gourmet</h3>
-                    <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-6">Steaks, Luxury Desserts, Plating</p>
-                    <div className="mt-auto w-full flex items-center justify-between">
-                        <span className="text-2xl font-black text-orange-400 drop-shadow-[0_0_10px_rgba(234,88,12,0.5)]">$39</span>
-                        <Link to="/stock" className="px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-[0_0_15px_rgba(234,88,12,0.4)] hover:scale-105">VIEW BUNDLE</Link>
-                    </div>
-                </div>
+                  {/* Bundle 2: Gourmet Food */}
+                  <div className="bg-[#0a0a0a] border border-orange-500/30 rounded-[2rem] p-5 hover:border-orange-500 transition-all group shadow-[0_0_30px_rgba(234,88,12,0.1)] flex flex-col items-start text-left relative transform md:-translate-y-4">
+                      <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-orange-600 text-white text-[8px] font-black uppercase tracking-widest px-4 py-1.5 rounded-b-xl z-20 shadow-lg">BEST SELLER</div>
+                      <div className="w-full aspect-video rounded-xl bg-black mb-4 overflow-hidden relative border border-white/5 mt-2">
+                          <img src="https://images.unsplash.com/photo-1544025162-d76694265947?w=800&q=80" alt="Gourmet" className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
+                          <div className="absolute top-3 right-3 bg-orange-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg">40 ASSETS</div>
+                      </div>
+                      <h3 className="text-[16px] font-black uppercase text-white tracking-widest mb-2">Premium Gourmet</h3>
+                      <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-6">Steaks, Luxury Desserts, Plating</p>
+                      <div className="mt-auto w-full flex items-center justify-between">
+                          <span className="text-2xl font-black text-orange-400 drop-shadow-[0_0_10px_rgba(234,88,12,0.5)]">$39</span>
+                          <Link to="/stock" className="px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-[0_0_15px_rgba(234,88,12,0.4)] hover:scale-105">VIEW BUNDLE</Link>
+                      </div>
+                  </div>
 
-                {/* Bundle 3: Tech Gadgets */}
-                <div className="bg-[#0a0a0a] border border-white/10 rounded-[2rem] p-5 hover:border-blue-500/50 transition-all group shadow-2xl flex flex-col items-start text-left">
-                    <div className="w-full aspect-video rounded-xl bg-black mb-4 overflow-hidden relative border border-white/5">
-                        <img src="https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=800&q=80" alt="Tech Gadgets" className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
-                        <div className="absolute top-3 right-3 bg-blue-600 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg">50 ASSETS</div>
-                    </div>
-                    <h3 className="text-[16px] font-black uppercase text-white tracking-widest mb-2">V8 Tech & Gadgets</h3>
-                    <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-6">Microphones, VR, Smart Devices</p>
-                    <div className="mt-auto w-full flex items-center justify-between">
-                        <span className="text-2xl font-black text-white">$49</span>
-                        <Link to="/stock" className="px-6 py-3 bg-white/5 hover:bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all border border-white/10 hover:border-blue-500">VIEW BUNDLE</Link>
-                    </div>
-                </div>
-            </div>
+                  {/* Bundle 3: Tech Gadgets */}
+                  <div className="bg-[#0a0a0a] border border-white/10 rounded-[2rem] p-5 hover:border-blue-500/50 transition-all group shadow-2xl flex flex-col items-start text-left">
+                      <div className="w-full aspect-video rounded-xl bg-black mb-4 overflow-hidden relative border border-white/5">
+                          <img src="https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=800&q=80" alt="Tech Gadgets" className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
+                          <div className="absolute top-3 right-3 bg-blue-600 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg">50 ASSETS</div>
+                      </div>
+                      <h3 className="text-[16px] font-black uppercase text-white tracking-widest mb-2">V8 Tech & Gadgets</h3>
+                      <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-6">Microphones, VR, Smart Devices</p>
+                      <div className="mt-auto w-full flex items-center justify-between">
+                          <span className="text-2xl font-black text-white">$49</span>
+                          <Link to="/stock" className="px-6 py-3 bg-white/5 hover:bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all border border-white/10 hover:border-blue-500">VIEW BUNDLE</Link>
+                      </div>
+                  </div>
+              </div>
+            </V8Reveal>
 
-            <div className="mt-14 relative z-10">
-                <Link to="/stock" className="inline-flex items-center gap-3 text-zinc-400 hover:text-white text-[12px] font-black uppercase tracking-widest transition-all group">
-                    EXPLORE ALL STOCK BUNDLES <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform text-blue-500" />
-                </Link>
-            </div>
+            <V8Reveal delay={0.6} direction="up">
+              <div className="mt-14 relative z-10">
+                  <Link to="/stock" className="inline-flex items-center gap-3 text-zinc-400 hover:text-white text-[12px] font-black uppercase tracking-widest transition-all group">
+                      EXPLORE ALL STOCK BUNDLES <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform text-blue-500" />
+                  </Link>
+              </div>
+            </V8Reveal>
         </div>
 
         {/* --- PREMIUM AI ASSETS STORE (Marketplace) --- */}
-        <div id="marketplace" className="flex items-center gap-4 mb-6 text-left border-t border-orange-500/30 pt-20">
-          <div className="flex items-center gap-2.5 shrink-0"><Sparkles className="text-blue-500 w-6 h-6" /><h3 className="text-white font-black uppercase text-[20px] tracking-widest italic text-left">PREMIUM AI ASSETS STORE</h3></div>
-          <div className="h-[1px] w-32 bg-gradient-to-r from-blue-500/80 to-transparent"></div>
-        </div>
-        <motion.div initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="bg-blue-900/10 border border-blue-500/30 rounded-2xl p-5 mb-10 shadow-[0_0_15px_rgba(37,99,235,0.1)] flex items-start gap-4">
-          <HelpCircle className="w-6 h-6 text-blue-500 shrink-0 mt-1 animate-pulse" />
-          <p className="text-[11px] md:text-[13px] text-zinc-300 font-medium uppercase tracking-[0.1em] leading-relaxed text-left"><span className="text-blue-400 font-black">IMPORTANT NOTE:</span> All products in the Premium AI Assets Store are designed to generate prompts <span className="text-white font-bold">exclusively in English</span> for the best possible results.</p>
-        </motion.div>
+        <V8Reveal delay={0.1} direction="left">
+          <div id="marketplace" className="flex items-center gap-4 mb-6 text-left border-t border-orange-500/30 pt-20">
+            <div className="flex items-center gap-2.5 shrink-0"><Sparkles className="text-blue-500 w-6 h-6" /><h3 className="text-white font-black uppercase text-[20px] tracking-widest italic text-left">PREMIUM AI ASSETS STORE</h3></div>
+            <div className="h-[1px] w-32 bg-gradient-to-r from-blue-500/80 to-transparent"></div>
+          </div>
+        </V8Reveal>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 pb-10"> 
-          {sortedApps.map((app, index) => (
-            <div key={app.id} className="relative p-[2px] rounded-[2.1rem] overflow-hidden group transition-all duration-500 hover:scale-[1.02]">
-              <div className="absolute inset-[-100%] animate-[spin_4s_linear_infinite] v8-ai-aura opacity-70 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative h-full w-full rounded-[2rem] overflow-hidden bg-[#050505] z-10 flex flex-col">
-                <MarketplaceCard app={app} index={index} />
+        <V8Reveal delay={0.2} direction="up">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 pb-6"> 
+            {sortedApps.map((app, index) => (
+              <div key={app.id} className="relative p-[2px] rounded-[2.1rem] overflow-hidden group transition-all duration-500 hover:scale-[1.02]">
+                <div className="absolute inset-[-100%] animate-[spin_4s_linear_infinite] v8-ai-aura opacity-70 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative h-full w-full rounded-[2rem] overflow-hidden bg-[#050505] z-10 flex flex-col">
+                  <MarketplaceCard app={app} index={index} />
+                </div>
+                <div className="absolute -inset-4 animate-[spin_4s_linear_infinite] v8-ai-aura opacity-20 group-hover:opacity-50 blur-2xl transition-opacity duration-700 pointer-events-none z-0"></div>
               </div>
-              <div className="absolute -inset-4 animate-[spin_4s_linear_infinite] v8-ai-aura opacity-20 group-hover:opacity-50 blur-2xl transition-opacity duration-700 pointer-events-none z-0"></div>
+            ))}
+          </div>
+        </V8Reveal>
+
+        {/* --- NOVI PREMIUM BOX (ZAMENA ZA ONU NAPOMENU) --- */}
+        <V8Reveal delay={0.4} direction="up">
+          <div className="relative overflow-hidden rounded-[2.5rem] bg-[#0a0a0a] border border-orange-500/30 p-10 md:p-14 text-center mt-6 mb-10 group hover:border-orange-500 transition-all duration-700 shadow-[0_0_30px_rgba(234,88,12,0.1)] hover:shadow-[0_0_50px_rgba(234,88,12,0.3)]">
+            {/* Suptilni hover gradijent unutar kutije */}
+            <div className="absolute inset-0 bg-gradient-to-r from-orange-900/10 via-transparent to-blue-900/10 opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
+            
+            {/* Animacija ikonice (Framer Motion lebdenje) */}
+            <motion.div 
+              animate={{ y: [0, -10, 0] }} 
+              transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+              className="inline-flex items-center justify-center bg-gradient-to-br from-orange-500/20 to-orange-600/5 p-5 rounded-full mb-6 relative z-10 border border-orange-500/20 shadow-[0_0_15px_rgba(234,88,12,0.5)]"
+            >
+              <Award className="w-12 h-12 text-orange-400 drop-shadow-[0_0_15px_rgba(249,115,22,0.8)]" strokeWidth={1.5} />
+            </motion.div>
+            
+            <h3 className="text-xl md:text-3xl font-black text-white uppercase tracking-widest mb-4 relative z-10 drop-shadow-lg">
+              CONSTANTLY <span className="text-orange-500">EXPANDING</span> ARSENAL
+            </h3>
+            
+            <p className="text-zinc-400 text-[12px] md:text-[14px] font-medium uppercase tracking-[0.2em] leading-relaxed max-w-3xl mx-auto relative z-10">
+              THE DATABASE OF GENERATORS AND APPLICATIONS IS CONSTANTLY BEING UPDATED. <br className="hidden md:block" />
+              <span className="text-white font-black drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">BE READY FOR NEW SURPRISES.</span>
+            </p>
+            
+            <div className="mt-8 pt-8 border-t border-white/5 relative z-10">
+              <span className="text-[10px] md:text-[12px] font-black uppercase tracking-[0.4em] text-zinc-500">
+                YOUR <span className="text-blue-500">AI TOOLS PRO</span> <span className="text-orange-500">SMART</span>
+              </span>
             </div>
-          ))}
-        </div>
+            
+            {/* Dodatni V8 glow efekat kad se predje misem */}
+            <div className="absolute -inset-10 bg-gradient-to-r from-orange-500/0 via-orange-500/10 to-blue-500/0 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000 -z-0 pointer-events-none animate-pulse"></div>
+          </div>
+        </V8Reveal>
       </div> 
     </>
   );
 }
+
 // --- ADMIN PAGE ---
 const AdminPage = ({ apps = [], refreshData }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false); 
@@ -903,10 +993,39 @@ function AppContent({ appsData, refreshData }) {
           <div className="flex-1 flex items-center justify-end gap-3 font-black uppercase text-[10px] md:text-[11px] tracking-widest whitespace-nowrap">
             <Link to="/" onClick={handleHomeClick} className="hidden lg:flex items-center gap-2 px-5 py-2 md:py-2.5 rounded-full bg-emerald-900/30 border border-emerald-500/40 text-emerald-400 hover:text-white hover:bg-emerald-800/50 hover:border-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] hover:shadow-[0_0_25px_rgba(16,185,129,0.4)] cursor-pointer"><Globe className="w-4 h-4 text-emerald-500" /> Home</Link>
             <Link to="/#marketplace" className="hidden lg:flex items-center gap-2 px-5 py-2 md:py-2.5 rounded-full bg-blue-900/20 border border-blue-500/30 text-blue-300 hover:text-white hover:bg-blue-800/40 hover:border-blue-400 transition-all shadow-[0_0_15px_rgba(59,130,246,0.15)] hover:shadow-[0_0_25px_rgba(59,130,246,0.3)] cursor-pointer"><Award className="w-4 h-4 text-blue-400" /> AI Store</Link>
-            <Link to="/stock" className="hidden lg:flex items-center gap-2 px-5 py-2 md:py-2.5 rounded-full bg-purple-900/20 border border-purple-500/30 text-purple-300 hover:text-white hover:bg-purple-800/40 hover:border-purple-400 transition-all shadow-[0_0_15px_rgba(168,85,247,0.15)] cursor-pointer"><Layers className="w-4 h-4 text-purple-400" /> Stock</Link>
-            <Link to="/showroom" className="hidden lg:flex items-center gap-2 px-5 py-2 md:py-2.5 rounded-full bg-amber-900/20 border border-amber-500/30 text-amber-300 hover:text-white hover:bg-amber-800/40 hover:border-amber-400 transition-all shadow-[0_0_15px_rgba(245,158,11,0.15)] cursor-pointer">
-   <ImageIcon className="w-4 h-4 text-amber-400" /> SHOWROOM
-</Link>
+            {/* --- V8 PREMIUM HUB DROPDOWN --- */}
+            <div className="relative group hidden lg:block">
+              <button className="flex items-center gap-2 px-5 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-orange-600/10 to-amber-500/10 border border-orange-500/50 text-orange-300 hover:text-white hover:border-orange-400 transition-all shadow-[0_0_15px_rgba(234,88,12,0.15)] hover:shadow-[0_0_25px_rgba(234,88,12,0.4)] cursor-pointer">
+                <Award className="w-4 h-4 text-orange-400 drop-shadow-[0_0_8px_rgba(234,88,12,0.8)]" /> 
+                <span className="font-black uppercase tracking-widest text-[10px] md:text-[11px]">PREMIUM HUB</span>
+                <ChevronDown className="w-3 h-3 text-orange-400 group-hover:rotate-180 transition-transform duration-300" />
+              </button>
+              
+              {/* Padajući meni (Prikazuje se na hover) */}
+              <div className="absolute top-full right-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-300 z-[9999]">
+                <div className="bg-[#0a0a0a] border border-orange-500/30 rounded-2xl p-2 w-56 shadow-[0_20px_50px_rgba(234,88,12,0.3)] flex flex-col gap-1 relative overflow-hidden backdrop-blur-xl">
+                  {/* Suptilni V8 odsjaj unutar menija */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-orange-500/5 to-transparent pointer-events-none"></div>
+                  
+                  <Link to="/stock" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-orange-500/10 text-zinc-400 hover:text-orange-400 transition-all group/item relative z-10">
+                    <Layers className="w-5 h-5 group-hover/item:scale-110 group-hover/item:text-orange-400 text-zinc-500 transition-all" />
+                    <div className="flex flex-col text-left">
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white">Stock Bundles</span>
+                      <span className="text-[9px] font-bold text-zinc-600 tracking-wider">Premium AI Assets</span>
+                    </div>
+                  </Link>
+                  
+                  <Link to="/showroom" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-500/10 text-zinc-400 hover:text-amber-400 transition-all group/item relative z-10">
+                    <ImageIcon className="w-5 h-5 group-hover/item:scale-110 group-hover/item:text-amber-400 text-zinc-500 transition-all" />
+                    <div className="flex flex-col text-left">
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white">Showroom</span>
+                      <span className="text-[9px] font-bold text-zinc-600 tracking-wider">Visual Gallery</span>
+                    </div>
+                  </Link>
+                </div>
+              </div>
+            </div>
+            {/* --- KRAJ V8 PREMIUM HUB DROPDOWN --- */}
 
             {location.pathname !== '/enxance' && (
               <Link to="/enxance" className="bg-transparent border-2 border-orange-600 text-orange-600 px-4 md:px-6 py-2 md:py-2.5 rounded-full shadow-[0_0_15px_rgba(234,88,12,0.3)] hover:bg-orange-600 hover:text-white hover:shadow-[0_0_25px_rgba(234,88,12,0.6)] transition-all flex items-center gap-2 hidden sm:flex cursor-pointer"><Zap className="w-4 h-4" /> 10X ENHANCER</Link>
