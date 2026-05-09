@@ -8,7 +8,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import navBg from './navbar-bg.webp';
 import V8Reveal from './V8Reveal'; // <-- DODAT V8 REVEAL
-import Lenis from 'lenis';
+
 
 // FIREBASE
 import { db, auth, provider } from './firebase';
@@ -1231,31 +1231,7 @@ useEffect(() => {
 }, []);
 // KRAJ: Logika za praćenje skrola
 
-// POČETAK: V8 Fluid Smooth Scroll (Lenis)
-  useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.2, // Koliko dugo traje klizanje (veći broj = masnije)
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Apple-like usporavanje
-      direction: 'vertical',
-      gestureDirection: 'vertical',
-      smooth: true,
-      mouseMultiplier: 1,
-      smoothTouch: false, // Telefoni već imaju svoj smooth scroll
-    });
 
-    function raf(time) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-
-    requestAnimationFrame(raf);
-
-    // Gašenje motora kad se menja stranica da ne troši memoriju
-    return () => {
-      lenis.destroy();
-    };
-  }, []);
-  // KRAJ: V8 Fluid Smooth Scroll
 
   const [trenutnoVreme, setTrenutnoVreme] = useState(new Date());
 
