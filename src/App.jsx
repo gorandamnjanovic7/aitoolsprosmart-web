@@ -8,6 +8,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import navBg from './navbar-bg.webp';
 import V8Reveal from './V8Reveal'; // <-- DODAT V8 REVEAL
+import Lenis from '@studio-freight/lenis';
 
 // FIREBASE
 import { db, auth, provider } from './firebase';
@@ -28,6 +29,7 @@ import V8StockBerza from './V8StockBerza';
 import V8Showroom from './V8Showroom'; 
 import VisitorCounter from './VisitorCounter';
 import SingleProductPage from './SingleProductPage';
+import V8MediaViewer from './V8MediaViewer';
 
 if (typeof window !== 'undefined') {
   if ('scrollRestoration' in window.history) { window.history.scrollRestoration = 'manual'; }
@@ -109,6 +111,232 @@ const V8RadarCursor = () => {
 };
 // KRAJ: V8 Radar Kursor
 
+// POČETAK: V8 Magnetic Button Wrapper
+const MagneticButton = ({ children, className = "" }) => {
+  const ref = useRef(null);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  const handleMouse = (e) => {
+    const { clientX, clientY } = e;
+    const { height, width, left, top } = ref.current.getBoundingClientRect();
+    
+    const middleX = clientX - (left + width / 2);
+    const middleY = clientY - (top + height / 2);
+    
+    setPosition({ x: middleX * 0.2, y: middleY * 0.2 });
+  };
+
+  const reset = () => {
+    setPosition({ x: 0, y: 0 });
+  };
+
+  const { x, y } = position;
+
+  return (
+    <motion.div
+      ref={ref}
+      onMouseMove={handleMouse}
+      onMouseLeave={reset}
+      animate={{ x, y }}
+      transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
+      className={`inline-block cursor-pointer ${className}`}
+    >
+      {children}
+    </motion.div>
+  );
+};
+// KRAJ: V8 Magnetic Button Wrapper
+
+// POČETAK: V8 Tilt Card (3D Hologram Efekat)
+const V8TiltCard = ({ children, className = "" }) => {
+  const cardRef = useRef(null);
+  const [tilt, setTilt] = useState({ x: 0, y: 0, glareX: 50, glareY: 50, isHovered: false });
+
+  const handleMouseMove = (e) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    
+    // Rotacija (maksimalno naginjanje je 10 stepeni)
+    const rotateX = ((y - centerY) / centerY) * -10;
+    const rotateY = ((x - centerX) / centerX) * 10;
+
+    // Pozicija odsjaja svetlosti
+    const glareX = (x / rect.width) * 100;
+    const glareY = (y / rect.height) * 100;
+
+    setTilt({ x: rotateX, y: rotateY, glareX, glareY, isHovered: true });
+  };
+
+  const handleMouseLeave = () => {
+    setTilt({ ...tilt, x: 0, y: 0, isHovered: false });
+  };
+
+  return (
+    <motion.div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      animate={{
+        rotateX: tilt.x,
+        rotateY: tilt.y,
+        scale: tilt.isHovered ? 1.02 : 1, // Blago uvećanje
+      }}
+      transition={{ type: "spring", stiffness: 400, damping: 30, mass: 0.5 }}
+      style={{ transformStyle: "preserve-3d", perspective: "1000px" }}
+      className={`relative ${className}`}
+    >
+      {/* Sadržaj kartice koji će dobiti 3D efekat */}
+      <div style={{ transform: "translateZ(30px)" }} className="h-full w-full">
+         {children}
+      </div>
+      
+      {/* Svetlosni odsjaj koji prati miša */}
+      <AnimatePresence>
+        {tilt.isHovered && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 pointer-events-none rounded-[inherit]"
+            style={{
+              background: `radial-gradient(circle at ${tilt.glareX}% ${tilt.glareY}%, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 60%)`,
+            }}
+          />
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+};
+// KRAJ: V8 Tilt Card
+
+// POČETAK: V8 Cinematic Text Reveal
+const V8CinematicText = ({ text, className = "", delay = 0 }) => {
+  // Razdvajamo tekst na slova da bismo animirali svako zasebno
+  const letters = Array.from(text);
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05, // Brzina kucanja (razmak između slova)
+        delayChildren: delay,
+      },
+    },
+  };
+
+  const letterVariants = {
+    hidden: { opacity: 0, x: -20, filter: "blur(10px)" }, // Slova dolaze iz mraka i magle
+    visible: { 
+      opacity: 1, 
+      x: 0, 
+      filter: "blur(0px)",
+      transition: { type: "spring", damping: 12, stiffness: 200 }
+    },
+  };
+
+  return (
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-50px" }} // Pali se kad klijent doskrola do njega
+      className={`inline-block ${className}`}
+    >
+      {letters.map((letter, index) => (
+        <motion.span
+          key={index}
+          variants={letterVariants}
+          className="inline-block"
+          style={{ whiteSpace: letter === " " ? "pre" : "normal" }} // Čuva razmake između reči
+        >
+          {letter}
+        </motion.span>
+      ))}
+    </motion.div>
+  );
+};
+// KRAJ: V8 Cinematic Text Reveal
+
+
+// POČETAK: V8 Page Transition Wrapper
+const V8PageWrapper = ({ children }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, filter: "blur(15px)", y: 20 }}
+      animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
+      exit={{ opacity: 0, filter: "blur(15px)", y: -20 }}
+      transition={{ duration: 0.6, ease: "easeInOut" }}
+      className="w-full h-full"
+    >
+      {children}
+    </motion.div>
+  );
+};
+// KRAJ: V8 Page Transition Wrapper
+
+
+<V8Reveal delay={0.5} direction="up">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full px-6 relative z-10 max-w-6xl mx-auto">
+                 
+                 {/* Bundle 1: Real Estate */}
+                 <V8TiltCard className="rounded-[2rem]">
+                   <div className="bg-[#0a0a0a] border border-white/10 rounded-[2rem] p-5 hover:border-blue-500/50 transition-all shadow-2xl flex flex-col items-start text-left h-full">
+                       <div className="w-full aspect-video rounded-xl bg-black mb-4 overflow-hidden relative border border-white/5">
+                           <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80" alt="Real Estate" className="w-full h-full object-cover opacity-70 transition-all duration-700" />
+                           <div className="absolute top-3 right-3 bg-blue-600 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg">50 ASSETS</div>
+                       </div>
+                       <h3 className="text-[16px] font-black uppercase text-white tracking-widest mb-2">Luxury Real Estate</h3>
+                       <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-6">Penthouses, Modern Villas, Interiors</p>
+                       <div className="mt-auto w-full flex items-center justify-between">
+                           <span className="text-2xl font-black text-white">$49</span>
+                           <Link to="/stock" className="px-6 py-3 bg-white/5 hover:bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all border border-white/10 hover:border-blue-500">VIEW BUNDLE</Link>
+                       </div>
+                   </div>
+                 </V8TiltCard>
+
+                 {/* Bundle 2: Gourmet Food */}
+                 <V8TiltCard className="rounded-[2rem] md:-translate-y-4">
+                   <div className="bg-[#0a0a0a] border border-orange-500/30 rounded-[2rem] p-5 hover:border-orange-500 transition-all shadow-[0_0_30px_rgba(234,88,12,0.1)] flex flex-col items-start text-left h-full relative">
+                       <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-orange-600 text-white text-[8px] font-black uppercase tracking-widest px-4 py-1.5 rounded-b-xl z-20 shadow-lg">BEST SELLER</div>
+                       <div className="w-full aspect-video rounded-xl bg-black mb-4 overflow-hidden relative border border-white/5 mt-2">
+                           <img src="https://images.unsplash.com/photo-1544025162-d76694265947?w=800&q=80" alt="Gourmet" className="w-full h-full object-cover opacity-70 transition-all duration-700" />
+                           <div className="absolute top-3 right-3 bg-orange-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg">40 ASSETS</div>
+                       </div>
+                       <h3 className="text-[16px] font-black uppercase text-white tracking-widest mb-2">Premium Gourmet</h3>
+                       <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-6">Steaks, Luxury Desserts, Plating</p>
+                       <div className="mt-auto w-full flex items-center justify-between">
+                           <span className="text-2xl font-black text-orange-400 drop-shadow-[0_0_10px_rgba(234,88,12,0.5)]">$39</span>
+                           <Link to="/stock" className="px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-[0_0_15px_rgba(234,88,12,0.4)]">VIEW BUNDLE</Link>
+                       </div>
+                   </div>
+                 </V8TiltCard>
+
+                 {/* Bundle 3: Tech Gadgets */}
+                 <V8TiltCard className="rounded-[2rem]">
+                   <div className="bg-[#0a0a0a] border border-white/10 rounded-[2rem] p-5 hover:border-blue-500/50 transition-all shadow-2xl flex flex-col items-start text-left h-full">
+                       <div className="w-full aspect-video rounded-xl bg-black mb-4 overflow-hidden relative border border-white/5">
+                           <img src="https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=800&q=80" alt="Tech Gadgets" className="w-full h-full object-cover opacity-70 transition-all duration-700" />
+                           <div className="absolute top-3 right-3 bg-blue-600 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg">50 ASSETS</div>
+                       </div>
+                       <h3 className="text-[16px] font-black uppercase text-white tracking-widest mb-2">V8 Tech & Gadgets</h3>
+                       <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-6">Microphones, VR, Smart Devices</p>
+                       <div className="mt-auto w-full flex items-center justify-between">
+                           <span className="text-2xl font-black text-white">$49</span>
+                           <Link to="/stock" className="px-6 py-3 bg-white/5 hover:bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all border border-white/10 hover:border-blue-500">VIEW BUNDLE</Link>
+                       </div>
+                   </div>
+                 </V8TiltCard>
+
+              </div>
+            </V8Reveal>
+
+
 const V8ToastContainer = () => {
   const [toasts, setToasts] = useState([]);
   useEffect(() => {
@@ -152,40 +380,114 @@ const CountdownTimer = () => {
   );
 };
 
+// POČETAK: FullScreenBoot - V8 Ignition Preloader
 const FullScreenBoot = ({ onComplete }) => {
   const [progress, setProgress] = useState(0);
+  const [isIgniting, setIsIgniting] = useState(false);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setProgress(p => {
-        if (p >= 100) { clearInterval(interval); setTimeout(onComplete, 800); return 100; }
-        return p + Math.floor(Math.random() * 5) + 1; 
+        if (p >= 100) { 
+          clearInterval(interval); 
+          setIsIgniting(true); // Aktivira finalni V8 blesak
+          setTimeout(onComplete, 1200); // Čekamo da se završi animacija
+          return 100; 
+        }
+        return p + Math.floor(Math.random() * 4) + 1; // Brže i dinamičnije punjenje
       });
-    }, 60);
+    }, 40); 
     return () => clearInterval(interval);
   }, [onComplete]);
 
-  const radius = 60; const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (Math.min(progress, 100) / 100) * circumference;
-
   return (
-    <div className="fixed inset-0 z-[9999] bg-[#050505] flex flex-col items-center justify-center">
-      <div className="relative flex items-center justify-center mb-8">
-        <svg className="w-56 h-56 transform -rotate-90 drop-shadow-[0_0_20px_rgba(249,115,22,0.3)]" viewBox="0 0 140 140">
-          <circle cx="70" cy="70" r={radius} fill="transparent" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-          <circle cx="70" cy="70" r={radius} fill="transparent" stroke="#ea580c" strokeWidth="3" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" className="transition-all duration-300 ease-out" />
-        </svg>
-        <img src={data.logoUrl} alt="Logo" className={`absolute w-16 h-16 object-contain transition-all duration-1000 ${progress >= 100 ? 'scale-125 drop-shadow-[0_0_30px_rgba(234,88,12,1)]' : 'animate-pulse'}`} />
+    <motion.div 
+      className="fixed inset-0 z-[9999] bg-[#050505] flex flex-col items-center justify-center overflow-hidden"
+      exit={{ opacity: 0, scale: 1.05, filter: "blur(15px)" }} // Brutalan "melt" izlaz!
+      transition={{ duration: 0.8, ease: "easeInOut" }}
+    >
+      {/* Ambijentalni Glow iza svega */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <motion.div 
+          animate={{ 
+            scale: isIgniting ? 4 : [1, 1.2, 1],
+            opacity: isIgniting ? 0 : [0.05, 0.15, 0.05]
+          }}
+          transition={{ duration: isIgniting ? 0.8 : 2, repeat: isIgniting ? 0 : Infinity }}
+          className="w-96 h-96 bg-orange-600 rounded-full blur-[100px]"
+        />
       </div>
-      <div className="flex flex-col items-center gap-3">
-        <div className="text-orange-600 font-black uppercase tracking-[0.6em] text-[13px] drop-shadow-[0_0_10px_rgba(234,88,12,0.5)]">V8 System Booting</div>
-        <div className="text-zinc-500 font-mono text-[10px] tracking-[0.4em] flex items-center gap-3">
-          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-ping" /><span>ESTABLISHING CONNECTION</span>
-          <span className="text-orange-500 font-black min-w-[30px]">{progress}%</span>
+
+      <div className="relative z-10 flex flex-col items-center">
+        {/* V8 Core Logo sekcija sa rotirajućim HUD prstenovima */}
+        <div className="relative w-48 h-48 flex items-center justify-center mb-12">
+          {/* Spoljni prsten */}
+          <motion.div 
+            animate={{ rotate: 360 }} 
+            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-0 border-[1px] border-orange-500/20 rounded-full border-t-orange-500 shadow-[0_0_15px_rgba(234,88,12,0.2)]"
+          />
+          {/* Unutrašnji prsten */}
+          <motion.div 
+            animate={{ rotate: -360 }} 
+            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-6 border-[1px] border-blue-500/20 rounded-full border-b-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.2)]"
+          />
+          
+          {/* Glavni Logo */}
+          <motion.img 
+            src={data.logoUrl} 
+            alt="V8 Logo" 
+            animate={{ 
+              scale: isIgniting ? 1.5 : [0.95, 1.05, 0.95],
+              filter: isIgniting ? "drop-shadow(0 0 40px rgba(234,88,12,1))" : "drop-shadow(0 0 10px rgba(234,88,12,0.5))"
+            }}
+            transition={{ duration: isIgniting ? 0.5 : 2, repeat: isIgniting ? 0 : Infinity }}
+            className="w-20 h-20 object-contain relative z-10"
+          />
+        </div>
+
+        {/* Terminal tekst i Progress Bar */}
+        <div className="w-64 md:w-80">
+          <div className="flex justify-between items-end mb-3 font-mono">
+            <motion.span 
+              animate={{ opacity: [1, 0.4, 1] }} 
+              transition={{ duration: 0.8, repeat: Infinity }}
+              className="text-orange-500 text-[10px] md:text-[11px] font-black uppercase tracking-[0.3em]"
+            >
+              {isIgniting ? "SYSTEM READY // V8 ONLINE" : "BOOTING V8 CORE..."}
+            </motion.span>
+            <span className="text-white text-[12px] md:text-[14px] font-black tracking-widest">{progress}%</span>
+          </div>
+          
+          {/* Premium Progress Bar umesto kruga */}
+          <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden relative shadow-inner">
+            <motion.div 
+              className="absolute top-0 left-0 h-full bg-gradient-to-r from-orange-600 via-orange-400 to-amber-300 shadow-[0_0_15px_rgba(234,88,12,0.8)]"
+              style={{ width: `${progress}%` }}
+              layout
+            />
+          </div>
         </div>
       </div>
-    </div>
+      
+      {/* Ekstremni V8 blesak na kraju (Flash) */}
+      <AnimatePresence>
+        {isIgniting && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 bg-orange-500/20 z-50 pointer-events-none mix-blend-overlay"
+          />
+        )}
+      </AnimatePresence>
+
+    </motion.div>
   );
 };
+// KRAJ: FullScreenBoot
 
 const getRibbonStyle = (index) => {
   if (index === 0) return "bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.7)]";
@@ -431,7 +733,11 @@ function HomePage({ apps = [] }) {
           </V8Reveal>
           
           <V8Reveal delay={0.2} direction="up">
-            <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-orange-500 mb-4 drop-shadow-[0_0_20px_rgba(234,88,12,0.8)] relative z-10">10X PROMPT ENHANCER</h2>
+            <V8CinematicText 
+  text="10X PROMPT ENHANCER" 
+  className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-orange-500 mb-4 drop-shadow-[0_0_20px_rgba(234,88,12,0.8)] relative z-10" 
+  delay={0.2} 
+/>
           </V8Reveal>
           
           <V8Reveal delay={0.3} direction="up">
@@ -483,7 +789,11 @@ function HomePage({ apps = [] }) {
                        <ImageIcon className="w-10 h-10 text-blue-400 drop-shadow-[0_0_15px_rgba(59,130,246,0.8)]" strokeWidth={1.5} />
                     </div>
                     
-                    <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-blue-400 mb-4 drop-shadow-[0_0_15px_rgba(59,130,246,0.6)]">PREMIUM STOCK BUNDLES</h2>
+                   <V8CinematicText 
+  text="PREMIUM STOCK BUNDLES" 
+  className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-blue-400 mb-4 drop-shadow-[0_0_15px_rgba(59,130,246,0.6)]" 
+  delay={0.2} 
+/>
                     
                     <div className="text-[13px] md:text-[15px] font-black text-white uppercase tracking-[0.2em] mb-4 drop-shadow-md">Unmatched Optical Authority. For Visionary Brands.</div>
                     
@@ -497,48 +807,56 @@ function HomePage({ apps = [] }) {
 
             <V8Reveal delay={0.5} direction="up">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full px-6 relative z-10 max-w-6xl mx-auto">
-                  {/* Bundle 1: Real Estate */}
-                  <div className="bg-[#0a0a0a] border border-white/10 rounded-[2rem] p-5 hover:border-blue-500/50 transition-all group shadow-2xl flex flex-col items-start text-left">
-                      <div className="w-full aspect-video rounded-xl bg-black mb-4 overflow-hidden relative border border-white/5">
-                          <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80" alt="Real Estate" className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
-                          <div className="absolute top-3 right-3 bg-blue-600 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg">50 ASSETS</div>
-                      </div>
-                      <h3 className="text-[16px] font-black uppercase text-white tracking-widest mb-2">Luxury Real Estate</h3>
-                      <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-6">Penthouses, Modern Villas, Interiors</p>
-                      <div className="mt-auto w-full flex items-center justify-between">
-                          <span className="text-2xl font-black text-white">$49</span>
-                          <Link to="/stock" className="px-6 py-3 bg-white/5 hover:bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all border border-white/10 hover:border-blue-500">VIEW BUNDLE</Link>
-                      </div>
-                  </div>
+                 
+                 {/* Bundle 1: Real Estate */}
+                 <V8TiltCard className="rounded-[2rem]">
+                   <div className="bg-[#0a0a0a] border border-white/10 rounded-[2rem] p-5 hover:border-blue-500/50 transition-all shadow-2xl flex flex-col items-start text-left h-full">
+                       <div className="w-full aspect-video rounded-xl bg-black mb-4 overflow-hidden relative border border-white/5">
+                           <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80" alt="Real Estate" className="w-full h-full object-cover opacity-70 transition-all duration-700" />
+                           <div className="absolute top-3 right-3 bg-blue-600 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg">50 ASSETS</div>
+                       </div>
+                       <h3 className="text-[16px] font-black uppercase text-white tracking-widest mb-2">Luxury Real Estate</h3>
+                       <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-6">Penthouses, Modern Villas, Interiors</p>
+                       <div className="mt-auto w-full flex items-center justify-between">
+                           <span className="text-2xl font-black text-white">$49</span>
+                           <Link to="/stock" className="px-6 py-3 bg-white/5 hover:bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all border border-white/10 hover:border-blue-500">VIEW BUNDLE</Link>
+                       </div>
+                   </div>
+                 </V8TiltCard>
 
-                  {/* Bundle 2: Gourmet Food */}
-                  <div className="bg-[#0a0a0a] border border-orange-500/30 rounded-[2rem] p-5 hover:border-orange-500 transition-all group shadow-[0_0_30px_rgba(234,88,12,0.1)] flex flex-col items-start text-left relative transform md:-translate-y-4">
-                      <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-orange-600 text-white text-[8px] font-black uppercase tracking-widest px-4 py-1.5 rounded-b-xl z-20 shadow-lg">BEST SELLER</div>
-                      <div className="w-full aspect-video rounded-xl bg-black mb-4 overflow-hidden relative border border-white/5 mt-2">
-                          <img src="https://images.unsplash.com/photo-1544025162-d76694265947?w=800&q=80" alt="Gourmet" className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
-                          <div className="absolute top-3 right-3 bg-orange-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg">40 ASSETS</div>
-                      </div>
-                      <h3 className="text-[16px] font-black uppercase text-white tracking-widest mb-2">Premium Gourmet</h3>
-                      <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-6">Steaks, Luxury Desserts, Plating</p>
-                      <div className="mt-auto w-full flex items-center justify-between">
-                          <span className="text-2xl font-black text-orange-400 drop-shadow-[0_0_10px_rgba(234,88,12,0.5)]">$39</span>
-                          <Link to="/stock" className="px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-[0_0_15px_rgba(234,88,12,0.4)] hover:scale-105">VIEW BUNDLE</Link>
-                      </div>
-                  </div>
+                 {/* Bundle 2: Gourmet Food */}
+                 <V8TiltCard className="rounded-[2rem] md:-translate-y-4">
+                   <div className="bg-[#0a0a0a] border border-orange-500/30 rounded-[2rem] p-5 hover:border-orange-500 transition-all shadow-[0_0_30px_rgba(234,88,12,0.1)] flex flex-col items-start text-left h-full relative">
+                       <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-orange-600 text-white text-[8px] font-black uppercase tracking-widest px-4 py-1.5 rounded-b-xl z-20 shadow-lg">BEST SELLER</div>
+                       <div className="w-full aspect-video rounded-xl bg-black mb-4 overflow-hidden relative border border-white/5 mt-2">
+                           <img src="https://images.unsplash.com/photo-1544025162-d76694265947?w=800&q=80" alt="Gourmet" className="w-full h-full object-cover opacity-70 transition-all duration-700" />
+                           <div className="absolute top-3 right-3 bg-orange-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg">40 ASSETS</div>
+                       </div>
+                       <h3 className="text-[16px] font-black uppercase text-white tracking-widest mb-2">Premium Gourmet</h3>
+                       <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-6">Steaks, Luxury Desserts, Plating</p>
+                       <div className="mt-auto w-full flex items-center justify-between">
+                           <span className="text-2xl font-black text-orange-400 drop-shadow-[0_0_10px_rgba(234,88,12,0.5)]">$39</span>
+                           <Link to="/stock" className="px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-[0_0_15px_rgba(234,88,12,0.4)]">VIEW BUNDLE</Link>
+                       </div>
+                   </div>
+                 </V8TiltCard>
 
-                  {/* Bundle 3: Tech Gadgets */}
-                  <div className="bg-[#0a0a0a] border border-white/10 rounded-[2rem] p-5 hover:border-blue-500/50 transition-all group shadow-2xl flex flex-col items-start text-left">
-                      <div className="w-full aspect-video rounded-xl bg-black mb-4 overflow-hidden relative border border-white/5">
-                          <img src="https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=800&q=80" alt="Tech Gadgets" className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
-                          <div className="absolute top-3 right-3 bg-blue-600 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg">50 ASSETS</div>
-                      </div>
-                      <h3 className="text-[16px] font-black uppercase text-white tracking-widest mb-2">V8 Tech & Gadgets</h3>
-                      <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-6">Microphones, VR, Smart Devices</p>
-                      <div className="mt-auto w-full flex items-center justify-between">
-                          <span className="text-2xl font-black text-white">$49</span>
-                          <Link to="/stock" className="px-6 py-3 bg-white/5 hover:bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all border border-white/10 hover:border-blue-500">VIEW BUNDLE</Link>
-                      </div>
-                  </div>
+                 {/* Bundle 3: Tech Gadgets */}
+                 <V8TiltCard className="rounded-[2rem]">
+                   <div className="bg-[#0a0a0a] border border-white/10 rounded-[2rem] p-5 hover:border-blue-500/50 transition-all shadow-2xl flex flex-col items-start text-left h-full">
+                       <div className="w-full aspect-video rounded-xl bg-black mb-4 overflow-hidden relative border border-white/5">
+                           <img src="https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=800&q=80" alt="Tech Gadgets" className="w-full h-full object-cover opacity-70 transition-all duration-700" />
+                           <div className="absolute top-3 right-3 bg-blue-600 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg">50 ASSETS</div>
+                       </div>
+                       <h3 className="text-[16px] font-black uppercase text-white tracking-widest mb-2">V8 Tech & Gadgets</h3>
+                       <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-6">Microphones, VR, Smart Devices</p>
+                       <div className="mt-auto w-full flex items-center justify-between">
+                           <span className="text-2xl font-black text-white">$49</span>
+                           <Link to="/stock" className="px-6 py-3 bg-white/5 hover:bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all border border-white/10 hover:border-blue-500">VIEW BUNDLE</Link>
+                       </div>
+                   </div>
+                 </V8TiltCard>
+
               </div>
             </V8Reveal>
 
@@ -896,6 +1214,48 @@ function AppContent({ appsData, refreshData }) {
   const entryTime = useRef(Date.now());
   const [isVIPLoggedIn, setIsVIPLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  // POČETAK: Logika za praćenje skrola (Navbar animacija)
+const [scrolled, setScrolled] = useState(false);
+
+useEffect(() => {
+  const handleScroll = () => {
+    if (window.scrollY > 50) {
+      setScrolled(true);
+    } else {
+      setScrolled(false);
+    }
+  };
+
+  window.addEventListener('scroll', handleScroll);
+  return () => window.removeEventListener('scroll', handleScroll);
+}, []);
+// KRAJ: Logika za praćenje skrola
+
+// POČETAK: V8 Fluid Smooth Scroll (Lenis)
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.2, // Koliko dugo traje klizanje (veći broj = masnije)
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Apple-like usporavanje
+      direction: 'vertical',
+      gestureDirection: 'vertical',
+      smooth: true,
+      mouseMultiplier: 1,
+      smoothTouch: false, // Telefoni već imaju svoj smooth scroll
+    });
+
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+
+    requestAnimationFrame(raf);
+
+    // Gašenje motora kad se menja stranica da ne troši memoriju
+    return () => {
+      lenis.destroy();
+    };
+  }, []);
+  // KRAJ: V8 Fluid Smooth Scroll
 
   const [trenutnoVreme, setTrenutnoVreme] = useState(new Date());
 
@@ -971,100 +1331,144 @@ function AppContent({ appsData, refreshData }) {
         {isBooting && <FullScreenBoot key="boot" onComplete={() => { setIsBooting(false); window.scrollTo(0,0); }} />}
       </AnimatePresence>
       <div className="fixed top-0 left-0 w-full z-[1000]">
+      {/* POČETAK: V8 Dynamic Glassmorphism Navbar */}
       <nav 
-        className="w-full px-4 md:px-8 py-4 md:py-6 border-b-2 border-orange-500/60 shadow-[0_10px_40px_rgba(234,88,12,0.2)] relative z-[9000]"
+        className={`w-full transition-all duration-500 border-b-2 ${
+          scrolled 
+          ? 'py-3 md:py-4 bg-black/60 backdrop-blur-xl border-orange-500/60 shadow-[0_10px_40px_rgba(234,88,12,0.3)]' 
+          : 'py-5 md:py-7 bg-transparent border-transparent shadow-none'
+        }`}
         style={{
-          backgroundImage: `url(${navBg})`,
+          backgroundImage: scrolled 
+            ? `linear-gradient(rgba(5, 5, 5, 0.8), rgba(5, 5, 5, 0.8)), url(${navBg})`
+            : `url(${navBg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'left center',
           backgroundRepeat: 'no-repeat'
         }}
       >
-        <div className="max-w-7xl mx-auto flex justify-between items-center px-2">
-
+        <div className="max-w-7xl mx-auto flex justify-between items-center px-4 md:px-8">
+          
           <Link to="/" onClick={handleHomeClick} className="flex items-center gap-3 group shrink-0 mr-4">
-            <img src={data.logoUrl} className="h-10 md:h-12 object-contain animate-pulse group-hover:scale-105 transition-transform" alt="logo" />
+            <img src={data.logoUrl} className={`object-contain transition-all duration-500 ${scrolled ? 'h-8 md:h-10' : 'h-10 md:h-12'} animate-pulse group-hover:scale-105`} alt="logo" />
             <div className="flex items-center gap-1.5 whitespace-nowrap">
-              <span className="text-[11px] md:text-[14px] font-black uppercase tracking-[0.1em] text-blue-500 italic group-hover:text-orange-500 transition-colors">AI TOOLS</span>
-              <span className="text-[11px] md:text-[14px] font-black uppercase tracking-[0.1em] text-orange-500 italic group-hover:text-blue-500 transition-colors">PRO SMART</span>
+              <span className={`font-black uppercase tracking-[0.1em] text-blue-500 italic group-hover:text-orange-500 transition-all duration-500 ${scrolled ? 'text-[10px] md:text-[12px]' : 'text-[11px] md:text-[14px]'}`}>AI TOOLS</span>
+              <span className={`font-black uppercase tracking-[0.1em] text-orange-500 italic group-hover:text-blue-500 transition-all duration-500 ${scrolled ? 'text-[10px] md:text-[12px]' : 'text-[11px] md:text-[14px]'}`}>PRO SMART</span>
             </div>
           </Link>
 
           <div className="flex-1 flex items-center justify-end gap-3 font-black uppercase text-[10px] md:text-[11px] tracking-widest whitespace-nowrap">
-            <Link to="/" onClick={handleHomeClick} className="hidden lg:flex items-center gap-2 px-5 py-2 md:py-2.5 rounded-full bg-emerald-900/30 border border-emerald-500/40 text-emerald-400 hover:text-white hover:bg-emerald-800/50 hover:border-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] hover:shadow-[0_0_25px_rgba(16,185,129,0.4)] cursor-pointer"><Globe className="w-4 h-4 text-emerald-500" /> Home</Link>
-            <Link to="/#marketplace" className="hidden lg:flex items-center gap-2 px-5 py-2 md:py-2.5 rounded-full bg-blue-900/20 border border-blue-500/30 text-blue-300 hover:text-white hover:bg-blue-800/40 hover:border-blue-400 transition-all shadow-[0_0_15px_rgba(59,130,246,0.15)] hover:shadow-[0_0_25px_rgba(59,130,246,0.3)] cursor-pointer"><Award className="w-4 h-4 text-blue-400" /> AI Store</Link>
+            <MagneticButton>
+               <Link to="/" onClick={handleHomeClick} className="hidden lg:flex items-center gap-2 px-5 py-2 md:py-2.5 rounded-full bg-emerald-900/30 border border-emerald-500/40 text-emerald-400 hover:text-white hover:bg-emerald-800/50 hover:border-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] cursor-pointer"><Globe className="w-4 h-4" /> Home</Link>
+            </MagneticButton>
+
+            <MagneticButton>
+               <Link to="/#marketplace" className="hidden lg:flex items-center gap-2 px-5 py-2 md:py-2.5 rounded-full bg-blue-900/20 border border-blue-500/30 text-blue-300 hover:text-white hover:bg-blue-800/40 hover:border-blue-400 transition-all shadow-[0_0_15px_rgba(59,130,246,0.15)] cursor-pointer"><Award className="w-4 h-4" /> AI Store</Link>
+            </MagneticButton>
+
             {/* --- V8 PREMIUM HUB DROPDOWN --- */}
             <div className="relative group hidden lg:block">
-              <button className="flex items-center gap-2 px-5 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-orange-600/10 to-amber-500/10 border border-orange-500/50 text-orange-300 hover:text-white hover:border-orange-400 transition-all shadow-[0_0_15px_rgba(234,88,12,0.15)] hover:shadow-[0_0_25px_rgba(234,88,12,0.4)] cursor-pointer">
-                <Award className="w-4 h-4 text-orange-400 drop-shadow-[0_0_8px_rgba(234,88,12,0.8)]" /> 
-                <span className="font-black uppercase tracking-widest text-[10px] md:text-[11px]">PREMIUM HUB</span>
-                <ChevronDown className="w-3 h-3 text-orange-400 group-hover:rotate-180 transition-transform duration-300" />
-              </button>
+              <MagneticButton>
+                <button className="flex items-center gap-2 px-5 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-orange-600/10 to-amber-500/10 border border-orange-500/50 text-orange-300 hover:text-white hover:border-orange-400 transition-all shadow-[0_0_15px_rgba(234,88,12,0.15)] cursor-pointer">
+                  <Award className="w-4 h-4 text-orange-400 drop-shadow-[0_0_8px_rgba(234,88,12,0.8)]" /> 
+                  <span className="font-black uppercase tracking-widest text-[10px] md:text-[11px]">PREMIUM HUB</span>
+                  <ChevronDown className="w-3 h-3 text-orange-400 group-hover:rotate-180 transition-transform duration-300" />
+                </button>
+              </MagneticButton>
               
-              {/* Padajući meni (Prikazuje se na hover) */}
-              <div className="absolute top-full right-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-300 z-[9999]">
-                <div className="bg-[#0a0a0a] border border-orange-500/30 rounded-2xl p-2 w-56 shadow-[0_20px_50px_rgba(234,88,12,0.3)] flex flex-col gap-1 relative overflow-hidden backdrop-blur-xl">
-                  {/* Suptilni V8 odsjaj unutar menija */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-orange-500/5 to-transparent pointer-events-none"></div>
+              {/* POČETAK: Novi V8 Dropdown Meni sa brutalnom pozadinom */}
+              <div className="absolute top-full right-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-400 z-[9999]">
+                <div className="bg-black/70 backdrop-blur-2xl border border-white/10 border-t-orange-500/60 border-b-blue-500/30 rounded-2xl p-2 w-64 shadow-[0_30px_60px_rgba(0,0,0,0.8)] flex flex-col gap-1 relative overflow-hidden">
                   
-                  <Link to="/stock" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-orange-500/10 text-zinc-400 hover:text-orange-400 transition-all group/item relative z-10">
-                    <Layers className="w-5 h-5 group-hover/item:scale-110 group-hover/item:text-orange-400 text-zinc-500 transition-all" />
+                  {/* Ambijentalna svetla unutar samog dropdowna (V8 Glow) */}
+                  <div className="absolute -top-12 -right-12 w-32 h-32 bg-orange-600/30 rounded-full blur-[40px] pointer-events-none z-0"></div>
+                  <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-blue-600/20 rounded-full blur-[40px] pointer-events-none z-0"></div>
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/[0.05] to-transparent pointer-events-none z-0"></div>
+                  
+                  {/* Stavka 1: Stock Bundles */}
+                  <Link to="/stock" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-400 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-white/10">
+                    <div className="bg-orange-500/10 p-2 rounded-lg group-hover/item:bg-orange-500/20 transition-colors">
+                      <Layers className="w-5 h-5 text-orange-400 transition-transform group-hover/item:scale-110" />
+                    </div>
                     <div className="flex flex-col text-left">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white">Stock Bundles</span>
-                      <span className="text-[9px] font-bold text-zinc-600 tracking-wider">Premium AI Assets</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] transition-all">Stock Bundles</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Premium AI Assets</span>
                     </div>
                   </Link>
                   
-                  <Link to="/showroom" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-500/10 text-zinc-400 hover:text-amber-400 transition-all group/item relative z-10">
-                    <ImageIcon className="w-5 h-5 group-hover/item:scale-110 group-hover/item:text-amber-400 text-zinc-500 transition-all" />
+                  {/* Stavka 2: Showroom */}
+                  <Link to="/showroom" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-400 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-white/10">
+                    <div className="bg-blue-500/10 p-2 rounded-lg group-hover/item:bg-blue-500/20 transition-colors">
+                      <ImageIcon className="w-5 h-5 text-blue-400 transition-transform group-hover/item:scale-110" />
+                    </div>
                     <div className="flex flex-col text-left">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white">Showroom</span>
-                      <span className="text-[9px] font-bold text-zinc-600 tracking-wider">Visual Gallery</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] transition-all">Showroom</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Visual Gallery</span>
                     </div>
                   </Link>
+
                 </div>
               </div>
+              {/* KRAJ: Novi V8 Dropdown Meni sa brutalnom pozadinom */}
             </div>
             {/* --- KRAJ V8 PREMIUM HUB DROPDOWN --- */}
 
             {location.pathname !== '/enxance' && (
-              <Link to="/enxance" className="bg-transparent border-2 border-orange-600 text-orange-600 px-4 md:px-6 py-2 md:py-2.5 rounded-full shadow-[0_0_15px_rgba(234,88,12,0.3)] hover:bg-orange-600 hover:text-white hover:shadow-[0_0_25px_rgba(234,88,12,0.6)] transition-all flex items-center gap-2 hidden sm:flex cursor-pointer"><Zap className="w-4 h-4" /> 10X ENHANCER</Link>
+              <MagneticButton>
+                 <Link to="/enxance" className="bg-transparent border-2 border-orange-600 text-orange-600 px-4 md:px-6 py-2 md:py-2.5 rounded-full shadow-[0_0_15px_rgba(234,88,12,0.3)] hover:bg-orange-600 hover:text-white hover:shadow-[0_0_25px_rgba(234,88,12,0.6)] transition-all hidden sm:flex items-center gap-2 cursor-pointer"><Zap className="w-4 h-4" /> 10X ENHANCER</Link>
+              </MagneticButton>
             )}
 
             {isVIPLoggedIn ? (
                <div className="flex items-center gap-2">
-                  {isAdmin && (<Link to="/admin" className="bg-red-600/20 border border-red-500/50 text-red-400 px-4 py-2 rounded-full flex items-center gap-2 hover:bg-red-600 hover:text-white transition-all shadow-[0_0_10px_rgba(220,38,38,0.2)] hidden md:flex"><Settings className="w-4 h-4" /> ADMIN</Link>)}
-                  <Link to="/trezor" className="bg-orange-600/20 border border-orange-500/50 text-orange-400 px-4 py-2 rounded-full flex items-center gap-2 hover:bg-orange-600 hover:text-white transition-all shadow-[0_0_10px_rgba(234,88,12,0.2)]"><Lock className="w-4 h-4" /> VAULT</Link>
+                  {isAdmin && (
+                    <MagneticButton>
+                      <Link to="/admin" className="bg-red-600/20 border border-red-500/50 text-red-400 px-4 py-2 rounded-full flex items-center gap-2 hover:bg-red-600 hover:text-white transition-all shadow-[0_0_10px_rgba(220,38,38,0.2)] hidden md:flex"><Settings className="w-4 h-4" /> ADMIN</Link>
+                    </MagneticButton>
+                  )}
+                  <MagneticButton>
+                    <Link to="/trezor" className="bg-orange-600/20 border border-orange-500/50 text-orange-400 px-4 py-2 rounded-full flex items-center gap-2 hover:bg-orange-600 hover:text-white transition-all shadow-[0_0_10px_rgba(234,88,12,0.2)]"><Lock className="w-4 h-4" /> VAULT</Link>
+                  </MagneticButton>
                   <button onClick={() => { signOut(auth); if(typeof v8Toast !== 'undefined') v8Toast.success("Successfully logged out."); }} className="text-zinc-500 hover:text-red-500 transition-colors p-2 bg-white/5 rounded-full hover:bg-white/10 cursor-pointer" title="Log out"><LogOut className="w-4 h-4" /></button>
                </div>
             ) : (
-<button onClick={async () => { 
-  try { 
-    await signInWithPopup(auth, provider); 
-    v8Toast.success("Login successful!"); 
-  } catch (err) { 
-    console.error("Firebase Login Error:", err);
-    v8Toast.error("Error: " + err.message); 
-  } 
-}} className="bg-zinc-800 px-5 py-2.5 rounded-full text-zinc-400 shadow-xl hover:bg-zinc-700 hover:text-white transition-all hidden sm:block border border-white/5 cursor-pointer">
-  <User className="w-4 h-4 inline mr-2" /> LOGIN
-</button>            )}
+               <MagneticButton>
+                 <button onClick={async () => { 
+                   try { 
+                     await signInWithPopup(auth, provider); 
+                     v8Toast.success("Login successful!"); 
+                   } catch (err) { 
+                     console.error("Firebase Login Error:", err);
+                     v8Toast.error("Error: " + err.message); 
+                   } 
+                 }} className="bg-zinc-800 px-5 py-2.5 rounded-full text-zinc-400 shadow-xl hover:bg-zinc-700 hover:text-white transition-all hidden sm:block border border-white/5 cursor-pointer">
+                   <User className="w-4 h-4 inline mr-2" /> LOGIN
+                 </button>
+               </MagneticButton>
+            )}
           </div>
         </div>
       </nav>
+      {/* KRAJ: V8 Dynamic Glassmorphism Navbar */}
       </div>
+      {/* POČETAK: V8 Animirani Ruter */}
       <div className="flex-1 text-left pt-20">
-       <Routes>
-          <Route path="/" element={<HomePage apps={appsData} />} />
-          <Route path="/enxance" element={<V8Enhancer10x />} />
-          <Route path="/promo" element={<V8Promo10xPage />} />
-          <Route path="/app/:id" element={<SingleProductPage apps={appsData} />} />
-          <Route path="/trezor" element={<TrezorPage apps={appsData} />} />
-          <Route path="/admin" element={<AdminPage apps={appsData} refreshData={refreshData} />} />
-          <Route path="/stock" element={<V8StockBerza />} />
-          <Route path="/showroom" element={<V8Showroom />} />
-        </Routes>
+        <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
+          <Routes location={location} key={location.pathname}>
+            <Route path="/" element={<V8PageWrapper><HomePage apps={appsData} /></V8PageWrapper>} />
+            <Route path="/enxance" element={<V8PageWrapper><V8Enhancer10x /></V8PageWrapper>} />
+            <Route path="/promo" element={<V8PageWrapper><V8Promo10xPage /></V8PageWrapper>} />
+            <Route path="/app/:id" element={<V8PageWrapper><SingleProductPage apps={appsData} /></V8PageWrapper>} />
+            <Route path="/trezor" element={<V8PageWrapper><TrezorPage apps={appsData} /></V8PageWrapper>} />
+            <Route path="/admin" element={<V8PageWrapper><AdminPage apps={appsData} refreshData={refreshData} /></V8PageWrapper>} />
+            <Route path="/stock" element={<V8PageWrapper><V8StockBerza /></V8PageWrapper>} />
+            <Route path="/showroom" element={<V8PageWrapper><V8Showroom /></V8PageWrapper>} />
+            {/* V8 KONAČNI FIX: Nova ruta za brutalni video prikaz */}
+    <Route path="/media" element={<V8PageWrapper><V8MediaViewer /></V8PageWrapper>} />
+          </Routes>
+        </AnimatePresence>
       </div>
+      {/* KRAJ: V8 Animirani Ruter */}
       <SmartScrollButton />
       <VisitorCounter />
       <V8ContactWidget />

@@ -1,60 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Maximize2, Zap, Layers, MonitorSmartphone } from 'lucide-react';
+import { Play, Zap, Layers, MonitorSmartphone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// FULL SCREEN LIGHTBOX (sa glatkim učitavanjem)
-const FullScreenLightbox = ({ item, onClose }) => {
-    if (!item) return null;
-    return (
-        <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[10000] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-4 cursor-pointer" 
-            onClick={onClose}
-        >
-            <div className="absolute top-10 right-10 bg-white/10 hover:bg-[#FF8C00] p-3 rounded-full text-white transition-all z-10 shadow-lg">
-                <Maximize2 size={24} />
-            </div>
-            
-            <motion.div 
-                initial={{ scale: 0.8, opacity: 0, y: 50 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                className="relative max-w-7xl w-full flex flex-col items-center" 
-                onClick={(e) => e.stopPropagation()}
-            >
-                {item.type === 'video' ? (
-                    <video src={item.url} autoPlay loop controls className="max-w-full max-h-[85vh] rounded-2xl shadow-[0_0_80px_rgba(255,140,0,0.3)] border border-[#FF8C00]/50" />
-                ) : (
-                    <img src={item.url} alt={item.title} className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-[0_0_80px_rgba(255,140,0,0.3)] border border-white/10" />
-                )}
-                <div className="mt-6 text-center">
-                    <h3 className="text-[#FF8C00] font-black text-2xl uppercase tracking-widest drop-shadow-[0_0_15px_rgba(255,140,0,0.5)]">{item.title}</h3>
-                    <p className="text-zinc-400 font-bold text-sm tracking-wider uppercase mt-2">{item.format} • 33.2 MEGAPIXELS</p>
-                </div>
-            </motion.div>
-        </motion.div>
-    );
-};
-
-// GLAVNA SHOWROOM KOMPONENTA
 const V8Showroom = () => {
     const navigate = useNavigate();
     const [activeFilter, setActiveFilter] = useState('ALL');
-    const [lightboxItem, setLightboxItem] = useState(null);
 
-    // V8 FIX: Zamrzava skrol pozadinske stranice dok je slika u fullscreen-u
-    useEffect(() => {
-        if (lightboxItem) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
-        return () => { document.body.style.overflow = 'unset'; };
-    }, [lightboxItem]);
-
+    // --- POČETAK: V8 SHOWCASE ITEMS ---
     const showcaseItems = [
         { id: 1, type: 'image', category: 'LUXURY CULINARY', format: '16:9', title: 'Michelin Star Seafood', url: 'LINK_JASTOG' },
         { id: 2, type: 'image', category: 'LUXURY CULINARY', format: '16:9', title: 'Premium Wagyu Steak', url: 'LINK_STEJK' },
@@ -70,70 +23,91 @@ const V8Showroom = () => {
         { id: 12, type: 'image', category: 'PRODUCT & MACRO', format: '16:9', title: 'Bespoke Obsidian Hypercar', url: 'LINK_CRNI_AUTO' },
         { id: 13, type: 'image', category: 'PRODUCT & MACRO', format: '16:9', title: 'Luxury Perfume & Amber', url: 'LINK_PARFEM' },
         { id: 14, type: 'image', category: 'PRODUCT & MACRO', format: '16:9', title: 'Macro Diamond & Timepieces', url: 'LINK_SAT_NAKIT' },
-        { id: 15, type: 'image', category: 'ROMAN REALISM', format: '16:9', title: 'Legionary Armament', url: 'LINK_GLADIJATOR_OPREMA' },
         { id: 18, type: 'image', category: 'NIGHTLIFE & LUXURY', format: '16:9', title: 'Premium Craft Cocktails', url: 'LINK_KOKTELI' },
-        { id: 16, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Smartwatch Hologram', url: 'LINK_SAT_VIDEO' },
-        { id: 17, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'VR Paradise Transition', url: 'LINK_VR_VIDEO' },
         
-        // --- 4x NOVI 9:16 VERTIKALNI VIDEI (Vidljivi na ALL) ---
+        { id: 50, type: 'image', category: 'ROMAN REALISM', format: '16:9', title: 'Eternal Legionary Stand', url: '/v8_roman/roman_1.webp' },
+        { id: 51, type: 'image', category: 'ROMAN REALISM', format: '16:9', title: 'Legio X Imperial Plate', url: '/v8_roman/roman_2.webp' },
+        { id: 52, type: 'image', category: 'ROMAN REALISM', format: '16:9', title: 'Senate Hall Majesty', url: '/v8_roman/roman_3.webp' },
+        { id: 53, type: 'image', category: 'ROMAN REALISM', format: '16:9', title: 'Guardian of the Empire', url: '/v8_roman/roman_4.webp' },
+        { id: 54, type: 'image', category: 'ROMAN REALISM', format: '16:9', title: 'Polished Roman Steel', url: '/v8_roman/roman_5.webp' },
+        { id: 55, type: 'image', category: 'ROMAN REALISM', format: '16:9', title: 'March of the Conquerors', url: '/v8_roman/roman_6.webp' },
+        { id: 56, type: 'image', category: 'ROMAN REALISM', format: '16:9', title: 'Victor’s Galea Helmet', url: '/v8_roman/roman_7.webp' },
+        { id: 57, type: 'image', category: 'ROMAN REALISM', format: '16:9', title: 'Iron Discipline Formation', url: '/v8_roman/roman_8.webp' },
+        { id: 58, type: 'image', category: 'ROMAN REALISM', format: '16:9', title: 'Golden Aquila Standard', url: '/v8_roman/roman_9.webp' },
+        { id: 60, type: 'image', category: 'ROMAN REALISM', format: '16:9', title: 'Path of the Centurion', url: '/v8_roman/roman_10.webp' },
+        { id: 61, type: 'image', category: 'ROMAN REALISM', format: '16:9', title: 'Elite Command Pride', url: '/v8_roman/roman_11.webp' },
+        { id: 62, type: 'image', category: 'ROMAN REALISM', format: '16:9', title: 'Winter Campaign Frost', url: '/v8_roman/roman_12.webp' },
+        { id: 63, type: 'image', category: 'ROMAN REALISM', format: '16:9', title: 'Praetorian Obsidian Shadows', url: '/v8_roman/roman_13.webp' },
+        { id: 64, type: 'image', category: 'ROMAN REALISM', format: '16:9', title: 'Impenetrable Scutum Wall', url: '/v8_roman/roman_14.webp' },
+
+        { id: 65, type: 'video', category: 'ROMAN REALISM', format: '16:9', title: 'Epic Testudo Formation', url: 'LINK_ROMAN_VID_H1' },
+        { id: 66, type: 'video', category: 'ROMAN REALISM', format: '16:9', title: 'Colosseum Sand Cinematic', url: 'LINK_ROMAN_VID_H2' },
+
+        { id: 67, type: 'video', category: 'ROMAN REALISM', format: '9:16', title: 'Praetorian Guard Elite', url: '/v8_roman/v8_pretorian.mp4' },
+        { id: 68, type: 'video', category: 'ROMAN REALISM', format: '9:16', title: 'Gladius Edge Reel', url: 'LINK_ROMAN_VID_V2' },
+
         { id: 19, type: 'video', category: 'ABSTRACT TECH', format: '9:16', title: 'Cyberpunk Vertical Flow', url: 'LINK_VERT_1' },
         { id: 20, type: 'video', category: 'NIGHTLIFE & LUXURY', format: '9:16', title: 'Neon Nights Reel', url: 'LINK_VERT_2' },
         { id: 21, type: 'video', category: 'PRODUCT & MACRO', format: '9:16', title: 'Macro Watch Vertical', url: 'LINK_VERT_3' },
         { id: 22, type: 'video', category: 'SPACES & ARCHITECTURE', format: '9:16', title: 'Skyscraper Drone Vert', url: 'LINK_VERT_4' },
 
-        // --- 4x NOVI 16:9 CINEMATIC VIDEI ---
-        { id: 23, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Epic Landscape Pan', url: 'LINK_CINE_1' },
-        { id: 24, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Slow Motion Culinary', url: 'LINK_CINE_2' },
-        { id: 25, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Abstract Fluid Dynamics', url: 'LINK_CINE_3' },
-        { id: 26, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Roman Legion March', url: 'LINK_CINE_4' },
-        
-        { id: 27, type: 'image', category: 'ICE FRUIT FUSION', format: '16:9', title: 'Mango Pulse Frost', url: '/ice-fruit/ifs_3.webp' },
-        { id: 28, type: 'image', category: 'ICE FRUIT FUSION', format: '16:9', title: 'Kiwi Frost Dynamics', url: '/ice-fruit/ifs_1.webp' },
-        { id: 29, type: 'image', category: 'ICE FRUIT FUSION', format: '16:9', title: 'Obsidian Kiwi Splash', url: '/ice-fruit/ifs_2.webp' },
+        { id: 23, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'V8 Luxury Smartwatch', url: '/v8_video_16_9/v8_smart_watch.mp4' }, 
+        { id: 26, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Galaxy Smartwatch Promo', url: '/v8_video_16_9/Smart_Watch_16_9.mp4' }, 
+        { id: 32, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Cinematic Project Alpha', url: 'LINK_CINE_7' },
+
+        { id: 24, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Nike Neon Frequency', url: '/v8_video_16_9/Nike_Woman.mp4' }, 
+        { id: 30, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Mangorax Cinematic Splash', url: '/v8_video_16_9/v8_orange_brutal.mp4' }, 
+        { id: 33, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Cinematic Project Beta', url: 'LINK_CINE_8' },
+
+        { id: 25, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Neon Blue Cinematic Walk', url: '/v8_video_16_9/Neon_Blue_Girl.mp4' }, 
+        { id: 31, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'BMW X8 Black Edition', url: '/v8_video_16_9/v8_BMW_x7.mp4' }, 
+        { id: 34, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Cinematic Project Gamma', url: 'LINK_CINE_9' },
+
+        { id: 35, type: 'video', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Deep Ocean Leviathan', url: 'LINK_UNDER_CINE_1' },
+        { id: 36, type: 'video', category: 'UNDERWATER MARINE LIFE', format: '9:16', title: 'Abyssal Trench Dive', url: 'LINK_UNDER_VERT_1' },
+        { id: 37, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Bioluminescent Reef', url: 'LINK_UNDER_IMG_1' },
+        { id: 38, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Apex Predator Macro', url: 'LINK_UNDER_IMG_2' },
+        { id: 39, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Sunken Obsidian Ruins', url: 'LINK_UNDER_IMG_3' },
+        { id: 40, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Neon Jellyfish Swarm', url: 'LINK_UNDER_IMG_4' },
+        { id: 41, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Crystal Clear Shallows', url: 'LINK_UNDER_IMG_5' },
+        { id: 42, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Deep Sea Volcanic Vents', url: 'LINK_UNDER_IMG_6' },
+        { id: 43, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Whale Shark Encounter', url: 'LINK_UNDER_IMG_7' },
     ];
+    // --- KRAJ: V8 SHOWCASE ITEMS ---
     
-    const filters = ['ALL', 'LUXURY CULINARY', 'ICE FRUIT FUSION', 'ABSTRACT TECH', 'CINEMATIC MOTION', 'ROMAN REALISM', 'SPACES & ARCHITECTURE', 'PRODUCT & MACRO', 'NIGHTLIFE & LUXURY'];
+    const filters = ['ALL', 'LUXURY CULINARY', 'ICE FRUIT FUSION', 'ABSTRACT TECH', 'CINEMATIC MOTION', 'ROMAN REALISM', 'SPACES & ARCHITECTURE', 'PRODUCT & MACRO', 'NIGHTLIFE & LUXURY', 'UNDERWATER MARINE LIFE'];
 
     const filteredItems = activeFilter === 'ALL' ? showcaseItems : showcaseItems.filter(item => item.category === activeFilter);
 
-    // DIREKTAN PRELAZ BEZ UČITAVANJA (NO LOADER)
     const handleOpenStore = () => {
         window.scrollTo(0, 0); 
         navigate('/stock');    
     };
     
     return (
-        // V8 FIX: React Fragment prazni tagovi omogućavaju da Lightbox bude nezavisan od filter animacije stranice
         <>
-            <AnimatePresence>
-                {lightboxItem && <FullScreenLightbox item={lightboxItem} onClose={() => setLightboxItem(null)} />}
-            </AnimatePresence>
-
-            {/* CINEMATIC PAGE TRANSITION: Stranica izranja iz crnila */}
+            {/* CINEMATIC PAGE TRANSITION */}
             <motion.div 
                 initial={{ opacity: 0, filter: 'blur(10px)' }}
                 animate={{ opacity: 1, filter: 'blur(0px)' }}
                 transition={{ duration: 0.8 }}
                 className="min-h-screen bg-[#050505] pt-32 pb-24 px-6 font-sans text-white overflow-hidden"
             >
-                {/* HERO SEKCIJA SA TVOJOM NOVOM SLIKOM */}
+                {/* HERO SEKCIJA */}
                 <motion.div 
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 1, delay: 0.2 }}
                     className="relative w-full max-w-7xl mx-auto mb-24 rounded-[3rem] overflow-hidden border border-white/10 shadow-[0_0_60px_rgba(255,140,0,0.15)]"
                 >
-                    {/* Tvoja tečna V8 pozadina */}
                     <div 
                         className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-70"
                         style={{ backgroundImage: "url('/v8-showroom/v8-hero.png')" }} 
                     ></div>
                     
-                    {/* Profesionalni prelaz: Zatamnjenje sa donje i bočnih strana da tekst "iskače" */}
                     <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050505]/20 via-[#050505]/60 to-[#050505]"></div>
                     <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#050505] via-transparent to-[#050505]"></div>
 
-                    {/* Sadržaj iznad slike */}
                     <div className="relative z-10 text-center py-32 px-6">
                         <motion.div 
                             initial={{ opacity: 0, scale: 0.8 }}
@@ -158,14 +132,14 @@ const V8Showroom = () => {
                     </div>
                 </motion.div>
 
-                {/* FILTERI (Animirani jedan po jedan) */}
+                {/* FILTERI */}
                 <motion.div 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 1, delay: 0.5 }}
                     className="flex flex-wrap justify-center gap-4 mb-16 max-w-5xl mx-auto relative z-10"
                 >
-                    {filters.map((filter, idx) => (
+                    {filters.map((filter) => (
                         <motion.button 
                             key={filter}
                             whileHover={{ scale: 1.05 }}
@@ -178,7 +152,7 @@ const V8Showroom = () => {
                     ))}
                 </motion.div>
 
-                {/* MASONRY GALERIJA - SCROLL REVEAL EFEKAT */}
+                {/* MASONRY GALERIJA */}
                 <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6 max-w-7xl mx-auto">
                     <AnimatePresence>
                         {filteredItems.map((item, index) => (
@@ -187,8 +161,9 @@ const V8Showroom = () => {
                                 initial={{ opacity: 0, y: 80 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true, margin: "-50px" }}
-                                transition={{ duration: 0.6, delay: index * 0.05 }}
-                                onClick={() => setLightboxItem(item)}
+                                transition={{ duration: 0.6, delay: (index % 10) * 0.05 }}
+                                // V8 FIX: OVO TE SADA ŠALJE NA NOVU STRANICU!
+                                onClick={() => navigate('/media', { state: { item } })}
                                 className="relative group rounded-3xl overflow-hidden bg-[#0a0a0a] border border-white/5 cursor-pointer break-inside-avoid transform transition-transform duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(255,140,0,0.15)] z-50"
                             >
                                 <div className="absolute inset-0 bg-gradient-to-tr from-[#FF8C00]/0 via-[#FF8C00]/0 to-[#FF8C00]/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-30"></div>
@@ -200,8 +175,8 @@ const V8Showroom = () => {
                                 </div>
                                 <div className="absolute top-4 right-4 z-20">
                                     <span className="bg-blue-900/90 backdrop-blur-md border border-red-600 text-red-500 px-3 py-1.5 rounded-lg font-black text-[9px] uppercase tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.8)]">
-        {item.type === 'video' ? 'CINEMATIC VIDEO' : '33MP IMAGE'}
-    </span>
+                                        {item.type === 'video' ? 'CINEMATIC VIDEO' : '33MP IMAGE'}
+                                    </span>
                                 </div>
 
                                 <div className="relative w-full h-full overflow-hidden">
@@ -212,17 +187,34 @@ const V8Showroom = () => {
                                                     <Play size={24} fill="currentColor" />
                                                 </div>
                                             </div>
-                                            {/* V8 DINAMIČKI PLACEHOLDER KOJI PRATI 9:16 ili 16:9 FORMAT */}
-                                            <div className={`w-full bg-zinc-900 flex items-center justify-center text-zinc-700 font-black tracking-widest ${item.format === '9:16' ? 'aspect-[9/16]' : 'aspect-video'}`}>
-                                                {item.format} VIDEO PLACEHOLDER
-                                            </div>
+                                            
+                                            {item.url.includes('LINK_') ? (
+                                                <div className={`w-full bg-zinc-900 flex items-center justify-center text-zinc-700 font-black tracking-widest ${item.format === '9:16' ? 'aspect-[9/16]' : 'aspect-video'}`}>
+                                                    {item.format} VIDEO PLACEHOLDER
+                                                </div>
+                                            ) : (
+                                                <video 
+                                                    src={`${item.url}#t=0.001`} 
+                                                    preload="metadata" 
+                                                    muted
+                                                    controls={false} 
+                                                    className={`w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out ${item.format === '9:16' ? 'aspect-[9/16]' : 'aspect-video'}`}
+                                                    onContextMenu={(e) => e.preventDefault()} 
+                                                />
+                                            )}
                                         </>
                                     ) : (
-                                        <img src={item.url} alt={item.title} loading="lazy" className="w-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out" />
+                                        <img 
+                                            src={item.url.includes('LINK_') ? `https://placehold.co/1920x1080/0a0a0a/444?text=${item.title}` : item.url} 
+                                            alt={item.title} 
+                                            loading="lazy" 
+                                            className="w-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out" 
+                                            onContextMenu={(e) => e.preventDefault()} 
+                                            onDragStart={(e) => e.preventDefault()} 
+                                        />
                                     )}
                                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10"></div>
                                 </div>
-
                                 <div className="absolute bottom-0 left-0 w-full p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 z-20">
                                     <h3 className="text-xl font-black text-white uppercase tracking-widest mb-1">{item.title}</h3>
                                     <p className="text-[#FF8C00] font-bold text-[10px] uppercase tracking-[0.2em]">{item.category}</p>

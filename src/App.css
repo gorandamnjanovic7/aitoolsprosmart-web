@@ -74,3 +74,30 @@ img, video {
     transform: translateX(-50%); 
   }
 }
+/* POČETAK: V8 Premium Scrollbar & Selection */
+::selection {
+  background-color: #ea580c;
+  color: #050505;
+  text-shadow: none;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050505;
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1f1f1f;
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ea580c;
+}
+/* KRAJ: V8 Premium Scrollbar & Selection */
