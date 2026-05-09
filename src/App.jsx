@@ -8,7 +8,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import navBg from './navbar-bg.webp';
 import V8Reveal from './V8Reveal'; // <-- DODAT V8 REVEAL
-import Lenis from '@studio-freight/lenis';
+import Lenis from 'lenis';
 
 // FIREBASE
 import { db, auth, provider } from './firebase';
