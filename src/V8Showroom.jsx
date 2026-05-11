@@ -69,9 +69,9 @@ const V8Showroom = () => {
         { id: 409, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Interactive Holo-Projector', url: '/v8_tg/tg_9.webp' },
         { id: 410, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Next-Gen Gaming Station', url: '/v8_tg/tg_10.webp' },
         { id: 411, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Advanced Tactical Smartwatch', url: '/v8_tg/tg_11.webp' },
-        { id: 412, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Superconductor Cooling Grid', url: 'LINK_TECH_12' },
-        { id: 413, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Smart City Mainframe Hub', url: 'LINK_TECH_13' },
-        { id: 414, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Fusion Cell Battery Cell', url: 'LINK_TECH_14' },
+        { id: 412, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Obsidian Acoustic Hub', url: '/v8_tg/tg_12.webp' }, 
+        { id: 413, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Quantum Polyhedron Core', url: '/v8_tg/tg_13.webp' }, 
+        { id: 414, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Lunar Prism Smart Hub', url: '/v8_tg/tg_14.webp' }, 
         { id: 415, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Quantum Encryption Key', url: 'LINK_TECH_15' },
         { id: 416, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Robotic Exoskeleton Frame', url: 'LINK_TECH_16' },
         { id: 417, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Laser Communication Array', url: 'LINK_TECH_17' },
@@ -137,6 +137,10 @@ const V8Showroom = () => {
         { id: 26, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Galaxy Smartwatch Promo', url: '/v8_video_16_9/Smart_Watch_16_9.mp4' }, 
         { id: 32, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Classic Cobra Desert Drift', url: '/v8_video_16_9/v8_mix.mp4' }, 
         { id: 24, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Nike Neon Frequency', url: '/v8_video_16_9/Nike_Woman.mp4' }, 
+        { id: 80, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Nike Air Defiance', url: '/v8_video_16_9/v8_nike_1.mp4' }, // <-- UBAČEN NIKE 1
+        { id: 81, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Nike Cybernetic Stride', url: '/v8_video_16_9/v8_nike_2.mp4' }, // <-- UBAČEN NIKE 2
+        { id: 82, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Nike Neon Velocity', url: '/v8_video_16_9/v8_nike_3.mp4' }, // <-- UBAČEN NIKE 3
+        { id: 83, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Jordan Urban Ascension', url: '/v8_video_16_9/v8_jordan_1.mp4' }, // <-- UBAČEN JORDAN
         { id: 30, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Mangorax Cinematic Splash', url: '/v8_video_16_9/v8_orange_brutal.mp4' }, 
         { id: 33, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Glacial Clockwork Dynamics', url: '/v8_video_16_9/v8_ice.mp4' }, 
         { id: 25, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Neon Blue Cinematic Walk', url: '/v8_video_16_9/Neon_Blue_Girl.mp4' }, 
@@ -159,21 +163,76 @@ const V8Showroom = () => {
     ];
     // --- KRAJ: V8 SHOWCASE ITEMS ---
     
-    // --- POČETAK: V8 FILTERI SA IKONICAMA ---
+    // --- POČETAK: V8 FILTERI SA INDIVIDUALNIM BOJAMA ---
     const filters = [
-        { name: 'ALL', icon: Globe },
-        { name: 'LUXURY CULINARY', icon: Utensils },
-        { name: 'ICE FRUIT FUSION', icon: Droplets },
-        { name: 'TECH & GADGETS', icon: Cpu },
-        { name: 'ABSTRACT TECH', icon: Hexagon },
-        { name: 'CINEMATIC MOTION', icon: Film },
-        { name: 'ROMAN REALISM', icon: Shield },
-        { name: 'SPACES & ARCHITECTURE', icon: Building2 },
-        { name: 'PRODUCT & MACRO', icon: Aperture },
-        { name: 'LUXURY LIFESTYLE', icon: Gem },
-        { name: 'UNDERWATER MARINE LIFE', icon: Waves }
+        { 
+            name: 'ALL', icon: Globe, 
+            active: 'bg-gradient-to-r from-orange-600/20 to-amber-500/10 border-orange-500/60 text-orange-400 shadow-[0_0_20px_rgba(234,88,12,0.3)]', 
+            hover: 'hover:border-orange-500/50 hover:text-orange-400 hover:shadow-[0_0_15px_rgba(234,88,12,0.2)]',
+            glow: 'drop-shadow-[0_0_8px_rgba(234,88,12,0.8)]'
+        },
+        { 
+            name: 'LUXURY CULINARY', icon: Utensils, 
+            active: 'bg-gradient-to-r from-rose-600/20 to-red-500/10 border-rose-500/60 text-rose-400 shadow-[0_0_20px_rgba(244,63,94,0.3)]', 
+            hover: 'hover:border-rose-500/50 hover:text-rose-400 hover:shadow-[0_0_15px_rgba(244,63,94,0.2)]',
+            glow: 'drop-shadow-[0_0_8px_rgba(244,63,94,0.8)]'
+        },
+        { 
+            name: 'ICE FRUIT FUSION', icon: Droplets, 
+            active: 'bg-gradient-to-r from-cyan-600/20 to-teal-500/10 border-cyan-500/60 text-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]', 
+            hover: 'hover:border-cyan-500/50 hover:text-cyan-400 hover:shadow-[0_0_15px_rgba(6,182,212,0.2)]',
+            glow: 'drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]'
+        },
+        { 
+            name: 'TECH & GADGETS', icon: Cpu, 
+            active: 'bg-gradient-to-r from-blue-600/20 to-indigo-500/10 border-blue-500/60 text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.3)]', 
+            hover: 'hover:border-blue-500/50 hover:text-blue-400 hover:shadow-[0_0_15px_rgba(59,130,246,0.2)]',
+            glow: 'drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]'
+        },
+        { 
+            name: 'ABSTRACT TECH', icon: Hexagon, 
+            active: 'bg-gradient-to-r from-fuchsia-600/20 to-purple-500/10 border-fuchsia-500/60 text-fuchsia-400 shadow-[0_0_20px_rgba(217,70,239,0.3)]', 
+            hover: 'hover:border-fuchsia-500/50 hover:text-fuchsia-400 hover:shadow-[0_0_15px_rgba(217,70,239,0.2)]',
+            glow: 'drop-shadow-[0_0_8px_rgba(217,70,239,0.8)]'
+        },
+        { 
+            name: 'CINEMATIC MOTION', icon: Film, 
+            active: 'bg-gradient-to-r from-amber-600/20 to-yellow-500/10 border-amber-500/60 text-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.3)]', 
+            hover: 'hover:border-amber-500/50 hover:text-amber-400 hover:shadow-[0_0_15px_rgba(245,158,11,0.2)]',
+            glow: 'drop-shadow-[0_0_8px_rgba(245,158,11,0.8)]'
+        },
+        { 
+            name: 'ROMAN REALISM', icon: Shield, 
+            active: 'bg-gradient-to-r from-red-700/20 to-red-600/10 border-red-600/60 text-red-500 shadow-[0_0_20px_rgba(220,38,38,0.3)]', 
+            hover: 'hover:border-red-600/50 hover:text-red-500 hover:shadow-[0_0_15px_rgba(220,38,38,0.2)]',
+            glow: 'drop-shadow-[0_0_8px_rgba(220,38,38,0.8)]'
+        },
+        { 
+            name: 'SPACES & ARCHITECTURE', icon: Building2, 
+            active: 'bg-gradient-to-r from-emerald-600/20 to-green-500/10 border-emerald-500/60 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.3)]', 
+            hover: 'hover:border-emerald-500/50 hover:text-emerald-400 hover:shadow-[0_0_15px_rgba(16,185,129,0.2)]',
+            glow: 'drop-shadow-[0_0_8px_rgba(16,185,129,0.8)]'
+        },
+        { 
+            name: 'PRODUCT & MACRO', icon: Aperture, 
+            active: 'bg-gradient-to-r from-violet-600/20 to-indigo-500/10 border-violet-500/60 text-violet-400 shadow-[0_0_20px_rgba(139,92,246,0.3)]', 
+            hover: 'hover:border-violet-500/50 hover:text-violet-400 hover:shadow-[0_0_15px_rgba(139,92,246,0.2)]',
+            glow: 'drop-shadow-[0_0_8px_rgba(139,92,246,0.8)]'
+        },
+        { 
+            name: 'LUXURY LIFESTYLE', icon: Gem, 
+            active: 'bg-gradient-to-r from-yellow-500/20 to-amber-400/10 border-yellow-400/60 text-yellow-300 shadow-[0_0_20px_rgba(250,204,21,0.3)]', 
+            hover: 'hover:border-yellow-400/50 hover:text-yellow-300 hover:shadow-[0_0_15px_rgba(250,204,21,0.2)]',
+            glow: 'drop-shadow-[0_0_8px_rgba(250,204,21,0.8)]'
+        },
+        { 
+            name: 'UNDERWATER MARINE LIFE', icon: Waves, 
+            active: 'bg-gradient-to-r from-sky-600/20 to-blue-500/10 border-sky-500/60 text-sky-400 shadow-[0_0_20px_rgba(14,165,233,0.3)]', 
+            hover: 'hover:border-sky-500/50 hover:text-sky-400 hover:shadow-[0_0_15px_rgba(14,165,233,0.2)]',
+            glow: 'drop-shadow-[0_0_8px_rgba(14,165,233,0.8)]'
+        }
     ];
-    // --- KRAJ: V8 FILTERI ---
+    // --- KRAJ: V8 FILTERI SA INDIVIDUALNIM BOJAMA ---
 
     const filteredItems = activeFilter === 'ALL' ? showcaseItems : showcaseItems.filter(item => item.category === activeFilter);
 
@@ -229,29 +288,37 @@ const V8Showroom = () => {
                     </div>
                 </motion.div>
 
-                {/* FILTERI SA IKONICAMA I OKVIRIMA */}
+                {/* FILTERI SA INDIVIDUALNIM BOJAMA */}
                 <motion.div 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 1, delay: 0.5 }}
                     className="flex flex-wrap justify-center gap-3 mb-16 max-w-6xl mx-auto relative z-10"
                 >
-                    {filters.map((filter) => (
-                        <motion.button 
-                            key={filter.name}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => setActiveFilter(filter.name)}
-                            className={`group flex items-center gap-2.5 px-6 py-3.5 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all duration-300 border relative z-50 ${
-                                activeFilter === filter.name 
-                                ? 'bg-gradient-to-r from-[#FF8C00]/20 to-orange-900/20 border-[#FF8C00] text-[#FF8C00] shadow-[0_0_20px_rgba(255,140,0,0.3)]' 
-                                : 'bg-gradient-to-b from-[#111] to-[#050505] border-white/10 text-zinc-500 hover:border-[#FF8C00]/50 hover:text-white hover:shadow-[0_0_15px_rgba(255,140,0,0.15)]'
-                            }`}
-                        >
-                            <filter.icon size={15} className={activeFilter === filter.name ? 'text-[#FF8C00]' : 'text-zinc-600 group-hover:text-[#FF8C00] transition-colors duration-300'} />
-                            {filter.name}
-                        </motion.button>
-                    ))}
+                    {filters.map((filter) => {
+                        const isActive = activeFilter === filter.name;
+                        return (
+                            <motion.button 
+                                key={filter.name}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => setActiveFilter(filter.name)}
+                                className={`group flex items-center gap-2.5 px-6 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 border backdrop-blur-md cursor-pointer ${
+                                    isActive 
+                                    ? filter.active 
+                                    : `bg-white/5 border-white/10 text-zinc-400 hover:bg-white/10 ${filter.hover}`
+                                }`}
+                            >
+                                <filter.icon 
+                                    size={15} 
+                                    className={`transition-all duration-300 ${
+                                        isActive ? filter.glow : 'opacity-60 group-hover:opacity-100'
+                                    }`} 
+                                />
+                                {filter.name}
+                            </motion.button>
+                        );
+                    })}
                 </motion.div>
 
                 {/* MASONRY GALERIJA */}
