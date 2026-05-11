@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Zap, Layers, MonitorSmartphone } from 'lucide-react';
+import { 
+    Play, Zap, Layers, MonitorSmartphone, Globe, Utensils, Droplets, 
+    Cpu, Hexagon, Film, Shield, Building2, Aperture, Gem, Waves 
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -9,22 +12,107 @@ const V8Showroom = () => {
 
     // --- POČETAK: V8 SHOWCASE ITEMS ---
     const showcaseItems = [
+        // --- LUXURY CULINARY ---
+        { id: 101, type: 'image', category: 'LUXURY CULINARY', format: '16:9', title: 'Gourmet Seafood Tartare', url: '/v8_hrana/h_1.webp' },
+        { id: 102, type: 'image', category: 'LUXURY CULINARY', format: '16:9', title: 'Pan-Seared Hokkaido Scallops', url: '/v8_hrana/h_2.webp' },
+        { id: 103, type: 'image', category: 'LUXURY CULINARY', format: '16:9', title: 'Sunset Coastal Lobster Feast', url: '/v8_hrana/h_3.webp' },
+        { id: 104, type: 'image', category: 'LUXURY CULINARY', format: '16:9', title: 'Prime Wagyu Tenderloin', url: '/v8_hrana/h_4.webp' },
+        { id: 105, type: 'image', category: 'LUXURY CULINARY', format: '16:9', title: 'Char-Grilled Filet Mignon', url: '/v8_hrana/h_5.webp' },
+        { id: 106, type: 'image', category: 'LUXURY CULINARY', format: '16:9', title: 'Decadent Chocolate Opera', url: '/v8_hrana/h_6.webp' },
+        { id: 107, type: 'image', category: 'LUXURY CULINARY', format: '16:9', title: 'Molten Chocolate Lava Tart', url: '/v8_hrana/h_7.webp' },
+        { id: 108, type: 'image', category: 'LUXURY CULINARY', format: '16:9', title: 'Artisan Truffle Dome', url: '/v8_hrana/h_8.webp' },
+        { id: 109, type: 'image', category: 'LUXURY CULINARY', format: '16:9', title: 'Shattered Obsidian Sphere', url: '/v8_hrana/h_9.webp' },
+        { id: 110, type: 'image', category: 'LUXURY CULINARY', format: '16:9', title: 'Velvet Chocolate Pour', url: '/v8_hrana/h_10.webp' },
         { id: 1, type: 'image', category: 'LUXURY CULINARY', format: '16:9', title: 'Michelin Star Seafood', url: 'LINK_JASTOG' },
         { id: 2, type: 'image', category: 'LUXURY CULINARY', format: '16:9', title: 'Premium Wagyu Steak', url: 'LINK_STEJK' },
         { id: 3, type: 'image', category: 'LUXURY CULINARY', format: '16:9', title: 'Decadent Chocolate Sphere', url: 'LINK_COKOLADNA_SFERA' },
+
+        // --- ICE FRUIT FUSION ---
+        { id: 201, type: 'image', category: 'ICE FRUIT FUSION', format: '16:9', title: 'Kiwi Splash Dynamics', url: '/ice-fruit/ifs_1.webp' },
+        { id: 202, type: 'image', category: 'ICE FRUIT FUSION', format: '16:9', title: 'Dark Kiwi Fusion', url: '/ice-fruit/ifs_2.webp' },
+        { id: 203, type: 'image', category: 'ICE FRUIT FUSION', format: '16:9', title: 'Orange Citrus Burst', url: '/ice-fruit/ifs_3.webp' },
+        { id: 204, type: 'video', category: 'ICE FRUIT FUSION', format: '16:9', title: 'Mangorax Cinematic Splash', url: '/ice-fruit/v8_orange_brutal.mp4' },
+
+        // --- LUXURY LIFESTYLE ---
+        { id: 301, type: 'image', category: 'LUXURY LIFESTYLE', format: '16:9', title: 'Crimson Hypercar Estate', url: '/v8_LL/ll_1.webp' },
+        { id: 302, type: 'image', category: 'LUXURY LIFESTYLE', format: '16:9', title: 'Infinity Pool Retreat', url: '/v8_LL/ll_2.webp' },
+        { id: 303, type: 'image', category: 'LUXURY LIFESTYLE', format: '16:9', title: 'Exclusive Gala Dinner', url: '/v8_LL/ll_3.webp' },
+        { id: 304, type: 'image', category: 'LUXURY LIFESTYLE', format: '16:9', title: 'Private Jet Cabin', url: '/v8_LL/ll_4.webp' },
+        { id: 305, type: 'image', category: 'LUXURY LIFESTYLE', format: '16:9', title: 'Grand Staircase Elegance', url: '/v8_LL/ll_5.webp' },
+        { id: 306, type: 'image', category: 'LUXURY LIFESTYLE', format: '16:9', title: 'VIP Red Carpet Soirée', url: '/v8_LL/ll_6.webp' },
+        { id: 307, type: 'image', category: 'LUXURY LIFESTYLE', format: '16:9', title: 'Modern Penthouse Suite', url: '/v8_LL/ll_7.webp' },
+        { id: 308, type: 'image', category: 'LUXURY LIFESTYLE', format: '16:9', title: 'Mega Yacht Ocean Cruise', url: '/v8_LL/ll_8.webp' },
+        { id: 309, type: 'image', category: 'LUXURY LIFESTYLE', format: '16:9', title: 'Coastal Resort Lounge', url: '/v8_LL/ll_9.webp' },
+        { id: 310, type: 'image', category: 'LUXURY LIFESTYLE', format: '16:9', title: 'Michelin Star Dining', url: '/v8_LL/ll_10.webp' },
+        { id: 311, type: 'image', category: 'LUXURY LIFESTYLE', format: '16:9', title: 'Chauffeur Driven Executive', url: '/v8_LL/ll_11.webp' },
+        { id: 312, type: 'image', category: 'LUXURY LIFESTYLE', format: '16:9', title: 'Designer Boutique Avenue', url: '/v8_LL/ll_12.webp' },
+        { id: 313, type: 'image', category: 'LUXURY LIFESTYLE', format: '16:9', title: 'Equestrian Club Classic', url: '/v8_LL/ll_13.webp' },
+        { id: 314, type: 'image', category: 'LUXURY LIFESTYLE', format: '16:9', title: 'Sunset Marina Mooring', url: '/v8_LL/ll_14.webp' },
+        { id: 315, type: 'image', category: 'LUXURY LIFESTYLE', format: '16:9', title: 'Golden Hour Cocktail Deck', url: '/v8_LL/ll_15.webp' },
+        { id: 316, type: 'image', category: 'LUXURY LIFESTYLE', format: '16:9', title: 'Gentleman\'s Cigar Lounge', url: '/v8_LL/ll_16.webp' },
+        { id: 317, type: 'image', category: 'LUXURY LIFESTYLE', format: '16:9', title: 'Tropical Island Villa', url: '/v8_LL/ll_17.webp' },
+        { id: 318, type: 'image', category: 'LUXURY LIFESTYLE', format: '16:9', title: 'Panoramic City Skyline', url: '/v8_LL/ll_18.webp' },
+        { id: 319, type: 'image', category: 'LUXURY LIFESTYLE', format: '16:9', title: 'High-Stakes Casino Royale', url: '/v8_LL/ll_19.webp' },
+        { id: 320, type: 'image', category: 'LUXURY LIFESTYLE', format: '16:9', title: 'Exclusive Premiere Night', url: '/v8_LL/ll_20.webp' },
+        { id: 321, type: 'video', category: 'LUXURY LIFESTYLE', format: '9:16', title: 'Global Nomad Reel', url: 'LINK_LIFESTYLE_V_916' },
+        { id: 322, type: 'video', category: 'LUXURY LIFESTYLE', format: '16:9', title: 'Sunset Yacht Party', url: 'LINK_LIFESTYLE_V_169' },
+
+        // --- TECH & GADGETS ---
+        { id: 401, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Neural VR Headset', url: '/v8_tg/tg_1.webp' },
+        { id: 402, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Quantum Laptop Display', url: '/v8_tg/tg_2.webp' },
+        { id: 403, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Cyberpunk Server Rig', url: '/v8_tg/tg_3.webp' },
+        { id: 404, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Holographic Smartphone', url: '/v8_tg/tg_4.webp' },
+        { id: 405, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Command Center Workstation', url: '/v8_tg/tg_5.webp' },
+        { id: 406, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Neon Cyber Desk', url: '/v8_tg/tg_6.webp' },
+        { id: 407, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Autonomous Surveillance Drone', url: '/v8_tg/tg_7.webp' },
+        { id: 408, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Mainframe Data Center', url: '/v8_tg/tg_8.webp' },
+        { id: 409, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Interactive Holo-Projector', url: '/v8_tg/tg_9.webp' },
+        { id: 410, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Next-Gen Gaming Station', url: '/v8_tg/tg_10.webp' },
+        { id: 411, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Advanced Tactical Smartwatch', url: '/v8_tg/tg_11.webp' },
+        { id: 412, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Superconductor Cooling Grid', url: 'LINK_TECH_12' },
+        { id: 413, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Smart City Mainframe Hub', url: 'LINK_TECH_13' },
+        { id: 414, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Fusion Cell Battery Cell', url: 'LINK_TECH_14' },
+        { id: 415, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Quantum Encryption Key', url: 'LINK_TECH_15' },
+        { id: 416, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Robotic Exoskeleton Frame', url: 'LINK_TECH_16' },
+        { id: 417, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Laser Communication Array', url: 'LINK_TECH_17' },
+        { id: 418, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Liquid Metal Coolant Pipe', url: 'LINK_TECH_18' },
+        { id: 419, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Bio-Metric Security Scanner', url: 'LINK_TECH_19' },
+        { id: 420, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Gravitational Wave Detector', url: 'LINK_TECH_20' },
+        { id: 421, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Next-Gen Gaming Engine Rig', url: 'LINK_TECH_21' },
+        { id: 422, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Plasma Igniter Component', url: 'LINK_TECH_22' },
+        { id: 423, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Neural Link Headset', url: 'LINK_TECH_23' },
+        { id: 424, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Zero-G Environment Kit', url: 'LINK_TECH_24' },
+        { id: 425, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Solar Harvesting Skin', url: 'LINK_TECH_25' },
+        { id: 426, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Tactile Feedback Glove', url: 'LINK_TECH_26' },
+        { id: 427, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Sub-Atomic Microchip', url: 'LINK_TECH_27' },
+        { id: 428, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Data Crystal Storage', url: 'LINK_TECH_28' },
+        { id: 429, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Thermal Shield Plating', url: 'LINK_TECH_29' },
+        { id: 430, type: 'image', category: 'TECH & GADGETS', format: '16:9', title: 'Infinite Loop Power Core', url: 'LINK_TECH_30' },
+        { id: 431, type: 'video', category: 'TECH & GADGETS', format: '9:16', title: 'Cyberpunk VR Interface', url: '/v8_tg/tgv_1.mp4' },
+        { id: 432, type: 'video', category: 'TECH & GADGETS', format: '9:16', title: 'Holographic Gadget Display', url: '/v8_tg/tgv_2.mp4' },
+        { id: 433, type: 'video', category: 'TECH & GADGETS', format: '9:16', title: 'Smart Eyewear Showcase', url: '/v8_tg/tgv_3.mp4' },
+
+        // --- ABSTRACT TECH ---
         { id: 4, type: 'image', category: 'ABSTRACT TECH', format: '16:9', title: 'Neural Network Grid', url: 'LINK_NEURAL_GRID' },
         { id: 5, type: 'image', category: 'ABSTRACT TECH', format: '16:9', title: 'Shattered Dimension', url: 'LINK_STAKLO' },
         { id: 6, type: 'image', category: 'ABSTRACT TECH', format: '16:9', title: 'Liquid Obsidian Flow', url: 'LINK_CRNA_TECNOST' },
         { id: 7, type: 'image', category: 'ABSTRACT TECH', format: '16:9', title: 'Corporate HUD Matrix', url: 'LINK_KANCELARIJA_HUD' },
+        { id: 19, type: 'video', category: 'ABSTRACT TECH', format: '9:16', title: 'Cyberpunk Vertical Flow', url: 'LINK_VERT_1' },
+
+        // --- SPACES & ARCHITECTURE ---
         { id: 8, type: 'image', category: 'SPACES & ARCHITECTURE', format: '16:9', title: 'Neo-Kyoto Executive Suite', url: 'LINK_SAJBERPANK_KANCELARIJA' },
         { id: 9, type: 'image', category: 'SPACES & ARCHITECTURE', format: '16:9', title: 'Biophilic Office Design', url: 'LINK_ZELENA_KANCELARIJA' },
         { id: 10, type: 'image', category: 'SPACES & ARCHITECTURE', format: '16:9', title: 'Billionaire Penthouse Sunset', url: 'LINK_PENTHOUSE' },
         { id: 11, type: 'image', category: 'SPACES & ARCHITECTURE', format: '16:9', title: 'Stormy Highway Trails', url: 'LINK_AUTOPUT_OLUJA' },
+        { id: 22, type: 'video', category: 'SPACES & ARCHITECTURE', format: '9:16', title: 'Skyscraper Drone Vert', url: 'LINK_VERT_4' },
+
+        // --- PRODUCT & MACRO ---
         { id: 12, type: 'image', category: 'PRODUCT & MACRO', format: '16:9', title: 'Bespoke Obsidian Hypercar', url: 'LINK_CRNI_AUTO' },
         { id: 13, type: 'image', category: 'PRODUCT & MACRO', format: '16:9', title: 'Luxury Perfume & Amber', url: 'LINK_PARFEM' },
         { id: 14, type: 'image', category: 'PRODUCT & MACRO', format: '16:9', title: 'Macro Diamond & Timepieces', url: 'LINK_SAT_NAKIT' },
-        { id: 18, type: 'image', category: 'NIGHTLIFE & LUXURY', format: '16:9', title: 'Premium Craft Cocktails', url: 'LINK_KOKTELI' },
-        
+        { id: 21, type: 'video', category: 'PRODUCT & MACRO', format: '9:16', title: 'Macro Watch Vertical', url: 'LINK_VERT_3' },
+
+        // --- ROMAN REALISM ---
         { id: 50, type: 'image', category: 'ROMAN REALISM', format: '16:9', title: 'Eternal Legionary Stand', url: '/v8_roman/roman_1.webp' },
         { id: 51, type: 'image', category: 'ROMAN REALISM', format: '16:9', title: 'Legio X Imperial Plate', url: '/v8_roman/roman_2.webp' },
         { id: 52, type: 'image', category: 'ROMAN REALISM', format: '16:9', title: 'Senate Hall Majesty', url: '/v8_roman/roman_3.webp' },
@@ -39,43 +127,53 @@ const V8Showroom = () => {
         { id: 62, type: 'image', category: 'ROMAN REALISM', format: '16:9', title: 'Winter Campaign Frost', url: '/v8_roman/roman_12.webp' },
         { id: 63, type: 'image', category: 'ROMAN REALISM', format: '16:9', title: 'Praetorian Obsidian Shadows', url: '/v8_roman/roman_13.webp' },
         { id: 64, type: 'image', category: 'ROMAN REALISM', format: '16:9', title: 'Impenetrable Scutum Wall', url: '/v8_roman/roman_14.webp' },
-
         { id: 65, type: 'video', category: 'ROMAN REALISM', format: '16:9', title: 'Epic Testudo Formation', url: 'LINK_ROMAN_VID_H1' },
         { id: 66, type: 'video', category: 'ROMAN REALISM', format: '16:9', title: 'Colosseum Sand Cinematic', url: 'LINK_ROMAN_VID_H2' },
-
         { id: 67, type: 'video', category: 'ROMAN REALISM', format: '9:16', title: 'Praetorian Guard Elite', url: '/v8_roman/v8_pretorian.mp4' },
         { id: 68, type: 'video', category: 'ROMAN REALISM', format: '9:16', title: 'Gladius Edge Reel', url: 'LINK_ROMAN_VID_V2' },
 
-        { id: 19, type: 'video', category: 'ABSTRACT TECH', format: '9:16', title: 'Cyberpunk Vertical Flow', url: 'LINK_VERT_1' },
-        { id: 20, type: 'video', category: 'NIGHTLIFE & LUXURY', format: '9:16', title: 'Neon Nights Reel', url: 'LINK_VERT_2' },
-        { id: 21, type: 'video', category: 'PRODUCT & MACRO', format: '9:16', title: 'Macro Watch Vertical', url: 'LINK_VERT_3' },
-        { id: 22, type: 'video', category: 'SPACES & ARCHITECTURE', format: '9:16', title: 'Skyscraper Drone Vert', url: 'LINK_VERT_4' },
-
+        // --- CINEMATIC MOTION ---
         { id: 23, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'V8 Luxury Smartwatch', url: '/v8_video_16_9/v8_smart_watch.mp4' }, 
         { id: 26, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Galaxy Smartwatch Promo', url: '/v8_video_16_9/Smart_Watch_16_9.mp4' }, 
-        { id: 32, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Cinematic Project Alpha', url: 'LINK_CINE_7' },
-
+        { id: 32, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Classic Cobra Desert Drift', url: '/v8_video_16_9/v8_mix.mp4' }, 
         { id: 24, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Nike Neon Frequency', url: '/v8_video_16_9/Nike_Woman.mp4' }, 
         { id: 30, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Mangorax Cinematic Splash', url: '/v8_video_16_9/v8_orange_brutal.mp4' }, 
-        { id: 33, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Cinematic Project Beta', url: 'LINK_CINE_8' },
-
+        { id: 33, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Glacial Clockwork Dynamics', url: '/v8_video_16_9/v8_ice.mp4' }, 
         { id: 25, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Neon Blue Cinematic Walk', url: '/v8_video_16_9/Neon_Blue_Girl.mp4' }, 
         { id: 31, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'BMW X8 Black Edition', url: '/v8_video_16_9/v8_BMW_x7.mp4' }, 
-        { id: 34, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Cinematic Project Gamma', url: 'LINK_CINE_9' },
+        { id: 34, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Adidas Alpine Expedition', url: '/v8_video_16_9/v8_ranac.mp4' },
 
+        // --- UNDERWATER MARINE LIFE (Bypass Cache) ---
         { id: 35, type: 'video', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Deep Ocean Leviathan', url: 'LINK_UNDER_CINE_1' },
         { id: 36, type: 'video', category: 'UNDERWATER MARINE LIFE', format: '9:16', title: 'Abyssal Trench Dive', url: 'LINK_UNDER_VERT_1' },
-        { id: 37, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Bioluminescent Reef', url: 'LINK_UNDER_IMG_1' },
-        { id: 38, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Apex Predator Macro', url: 'LINK_UNDER_IMG_2' },
-        { id: 39, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Sunken Obsidian Ruins', url: 'LINK_UNDER_IMG_3' },
-        { id: 40, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Neon Jellyfish Swarm', url: 'LINK_UNDER_IMG_4' },
-        { id: 41, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Crystal Clear Shallows', url: 'LINK_UNDER_IMG_5' },
-        { id: 42, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Deep Sea Volcanic Vents', url: 'LINK_UNDER_IMG_6' },
-        { id: 43, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Whale Shark Encounter', url: 'LINK_UNDER_IMG_7' },
+        { id: 37, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Abyssal Reef Discovery', url: '/okean/u_01.webp' },
+        { id: 38, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Bioluminescent Depths', url: '/okean/u_02.webp' },
+        { id: 39, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Apex Predator Shadows', url: '/okean/u_03.webp' },
+        { id: 40, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Sunken Ancient Ruins', url: '/okean/u_04.webp' },
+        { id: 41, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Neon Jellyfish Bloom', url: '/okean/u_05.webp' },
+        { id: 42, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Crystal Ocean Shallows', url: '/okean/u_06.webp' },
+        { id: 43, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Volcanic Ridge Expedition', url: '/okean/u_07.webp' },
+        { id: 44, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Majestic Whale Shark Encounter', url: '/okean/u_08.webp' },
+        { id: 45, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Deep Sea Leviathan Watch', url: '/okean/u_09.webp' },
+        { id: 46, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Oceanic Trench Exploration', url: '/okean/u_010.webp' },
     ];
     // --- KRAJ: V8 SHOWCASE ITEMS ---
     
-    const filters = ['ALL', 'LUXURY CULINARY', 'ICE FRUIT FUSION', 'ABSTRACT TECH', 'CINEMATIC MOTION', 'ROMAN REALISM', 'SPACES & ARCHITECTURE', 'PRODUCT & MACRO', 'NIGHTLIFE & LUXURY', 'UNDERWATER MARINE LIFE'];
+    // --- POČETAK: V8 FILTERI SA IKONICAMA ---
+    const filters = [
+        { name: 'ALL', icon: Globe },
+        { name: 'LUXURY CULINARY', icon: Utensils },
+        { name: 'ICE FRUIT FUSION', icon: Droplets },
+        { name: 'TECH & GADGETS', icon: Cpu },
+        { name: 'ABSTRACT TECH', icon: Hexagon },
+        { name: 'CINEMATIC MOTION', icon: Film },
+        { name: 'ROMAN REALISM', icon: Shield },
+        { name: 'SPACES & ARCHITECTURE', icon: Building2 },
+        { name: 'PRODUCT & MACRO', icon: Aperture },
+        { name: 'LUXURY LIFESTYLE', icon: Gem },
+        { name: 'UNDERWATER MARINE LIFE', icon: Waves }
+    ];
+    // --- KRAJ: V8 FILTERI ---
 
     const filteredItems = activeFilter === 'ALL' ? showcaseItems : showcaseItems.filter(item => item.category === activeFilter);
 
@@ -86,7 +184,6 @@ const V8Showroom = () => {
     
     return (
         <>
-            {/* CINEMATIC PAGE TRANSITION */}
             <motion.div 
                 initial={{ opacity: 0, filter: 'blur(10px)' }}
                 animate={{ opacity: 1, filter: 'blur(0px)' }}
@@ -132,22 +229,27 @@ const V8Showroom = () => {
                     </div>
                 </motion.div>
 
-                {/* FILTERI */}
+                {/* FILTERI SA IKONICAMA I OKVIRIMA */}
                 <motion.div 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 1, delay: 0.5 }}
-                    className="flex flex-wrap justify-center gap-4 mb-16 max-w-5xl mx-auto relative z-10"
+                    className="flex flex-wrap justify-center gap-3 mb-16 max-w-6xl mx-auto relative z-10"
                 >
                     {filters.map((filter) => (
                         <motion.button 
-                            key={filter}
+                            key={filter.name}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            onClick={() => setActiveFilter(filter)}
-                            className={`px-8 py-3.5 rounded-xl font-black text-[11px] uppercase tracking-widest transition-colors duration-300 border relative z-50 ${activeFilter === filter ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00] shadow-[0_0_20px_rgba(255,140,0,0.2)]' : 'bg-[#0a0a0a] border-white/10 text-zinc-500 hover:border-[#FF8C00]/50 hover:text-white'}`}
+                            onClick={() => setActiveFilter(filter.name)}
+                            className={`group flex items-center gap-2.5 px-6 py-3.5 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all duration-300 border relative z-50 ${
+                                activeFilter === filter.name 
+                                ? 'bg-gradient-to-r from-[#FF8C00]/20 to-orange-900/20 border-[#FF8C00] text-[#FF8C00] shadow-[0_0_20px_rgba(255,140,0,0.3)]' 
+                                : 'bg-gradient-to-b from-[#111] to-[#050505] border-white/10 text-zinc-500 hover:border-[#FF8C00]/50 hover:text-white hover:shadow-[0_0_15px_rgba(255,140,0,0.15)]'
+                            }`}
                         >
-                            {filter}
+                            <filter.icon size={15} className={activeFilter === filter.name ? 'text-[#FF8C00]' : 'text-zinc-600 group-hover:text-[#FF8C00] transition-colors duration-300'} />
+                            {filter.name}
                         </motion.button>
                     ))}
                 </motion.div>
@@ -162,7 +264,6 @@ const V8Showroom = () => {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true, margin: "-50px" }}
                                 transition={{ duration: 0.6, delay: (index % 10) * 0.05 }}
-                                // V8 FIX: OVO TE SADA ŠALJE NA NOVU STRANICU!
                                 onClick={() => navigate('/media', { state: { item } })}
                                 className="relative group rounded-3xl overflow-hidden bg-[#0a0a0a] border border-white/5 cursor-pointer break-inside-avoid transform transition-transform duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(255,140,0,0.15)] z-50"
                             >

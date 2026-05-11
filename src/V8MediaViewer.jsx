@@ -42,7 +42,7 @@ const V8MediaViewer = () => {
                     onClick={() => navigate(-1)} 
                     className="flex items-center gap-2 bg-zinc-900/50 border border-white/5 hover:border-[#ea580c] hover:text-[#ea580c] px-6 py-3 rounded-full transition-all font-black uppercase tracking-widest text-[12px]"
                 >
-                    <ChevronLeft size={20} /> Nazad u Showroom
+                   <ChevronLeft size={20} /> Back to Showroom
                 </button>
             </div>
 
