@@ -30,6 +30,9 @@ import V8Showroom from './V8Showroom';
 import VisitorCounter from './VisitorCounter';
 import SingleProductPage from './SingleProductPage';
 import V8MediaViewer from './V8MediaViewer';
+import V8Terms from './V8Terms';
+import V8Privacy from './V8Privacy';
+import V8Refund from './V8Refund';
 
 if (typeof window !== 'undefined') {
   if ('scrollRestoration' in window.history) { window.history.scrollRestoration = 'manual'; }
@@ -1439,6 +1442,9 @@ useEffect(() => {
             <Route path="/admin" element={<V8PageWrapper><AdminPage apps={appsData} refreshData={refreshData} /></V8PageWrapper>} />
             <Route path="/stock" element={<V8PageWrapper><V8StockBerza /></V8PageWrapper>} />
             <Route path="/showroom" element={<V8PageWrapper><V8Showroom /></V8PageWrapper>} />
+            <Route path="/terms" element={<V8PageWrapper><V8Terms /></V8PageWrapper>} />
+            <Route path="/privacy" element={<V8PageWrapper><V8Privacy /></V8PageWrapper>} />
+            <Route path="/refund" element={<V8PageWrapper><V8Refund /></V8PageWrapper>} />
             {/* V8 KONAČNI FIX: Nova ruta za brutalni video prikaz */}
     <Route path="/media" element={<V8PageWrapper><V8MediaViewer /></V8PageWrapper>} />
           </Routes>
@@ -1448,6 +1454,20 @@ useEffect(() => {
       <SmartScrollButton />
       <VisitorCounter />
       <V8ContactWidget />
+      {/* V8 PREMIUM COPY & COMPLIANCE NOTICE */}
+           <div className="text-orange-500/60 font-bold normal-case tracking-[0.2em] text-[11px] mt-2">Premium Digital Assets & Software Solutions.</div>
+           <div className="text-zinc-500/60 font-medium text-[9px] mt-4 max-w-4xl text-center leading-relaxed border-t border-white/5 pt-4 px-4">
+              <strong>COMPLIANCE NOTICE:</strong> AI TOOLS PRO SMART exclusively develops and sells ready-made digital products (software templates, AI prompt libraries, and premium stock assets). We do not offer custom client services, consulting, or agency work. All purchases are instant digital downloads.
+           </div>
+           
+           {/* LEGAL LINKS FOR LEMON SQUEEZY */}
+           <div className="flex flex-wrap justify-center items-center gap-4 text-zinc-600 font-black text-[9px] uppercase tracking-[0.3em] mt-6">
+              <Link to="/terms" className="hover:text-orange-500 transition-colors">Terms of Service</Link>
+              <span className="text-white/10">|</span>
+              <Link to="/privacy" className="hover:text-orange-500 transition-colors">Privacy Policy</Link>
+              <span className="text-white/10">|</span>
+              <Link to="/refund" className="hover:text-orange-500 transition-colors">Refund Policy</Link>
+           </div>
 
       <footer className="flex flex-col items-center gap-6 text-center text-zinc-100 font-black italic uppercase text-[9px] tracking-[0.5em] py-8 mt-8" style={{ borderTop: '0.5px solid #f97316' }}>
         <div className="flex items-center gap-6">
