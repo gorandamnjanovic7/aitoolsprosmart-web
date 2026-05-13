@@ -30,15 +30,13 @@ const V8StockBerza = () => {
   const [editingPaketId, setEditingPaketId] = useState(null); 
   const [fullScreenImageUrl, setFullScreenImageUrl] = useState(null);
  
-  // V8 FIX: Po defaultu stavljeno na TRUE da Premium grmi odmah!
   const [showPremium, setShowPremium] = useState(true);
 
-  // V8 PURE ENGLISH ADMIN FORM FIELDS
+  // V8 KONTROLE: Default je sada TRI formata
   const [noviNazivEn, setNoviNazivEn] = useState('');
   const [noviVolume, setNoviVolume] = useState('');
-  const [noviFormat, setNoviFormat] = useState('16:9 (20 IMAGES)');
+  const [noviFormat, setNoviFormat] = useState('16:9, 9:16 & 21:9 (BUNDLE)');
   const [novaKategorijaEn, setNovaKategorijaEn] = useState('');
-  // V8 FIX: Default cena podignuta na premium nivo $49.99
   const [novaCena, setNovaCena] = useState('49.99'); 
   const [noviTip, setNoviTip] = useState('Image'); 
   const [noviOpisEn, setNoviOpisEn] = useState(''); 
@@ -61,14 +59,16 @@ const V8StockBerza = () => {
     return () => unsub();
   }, []);
 
-  // AUTOMATIC DESCRIPTION ($) - V8 FIX: Ubačen 9:16 i $1,500 vrednost!
+  // V8 AUTOMATIC DESCRIPTION
   useEffect(() => {
-    if (noviFormat === '16:9 (20 IMAGES)') {
-      setNoviOpisEn("PACKAGE CONTENTS: 20 PREMIUM AI VISUALS IN ULTRA-WIDE 16:9 & 9:16 (VERTICAL). PERFECT FOR WEBSITES, YT, REELS AND TIKTOK. COMMERCIAL VALUE OVER $1,500.");
-    } else if (noviFormat === 'ALL FORMATS (80 IMAGES)') {
-      setNoviOpisEn("PACKAGE CONTENTS: 80 PREMIUM AI VISUALS IN 4 RESOLUTIONS (16:9, 9:16, 1:1, 21:9). COMPLETE PACKAGE FOR ALL PLATFORMS. THE ULTIMATE V8 COLLECTION. COMMERCIAL VALUE OVER $3,000.");
-    } else if (noviFormat === '16:9 & 9:16 (33MP MASTERWORK)') {
-      setNoviOpisEn("V8 MASTERWORK BUNDLE: COMPLETE COLLECTION OF 20 PREMIUM VISUALS IN 33.2 MEGAPIXELS (8K UHD) RESOLUTION. INCLUDES BOTH 16:9 (LANDSCAPE) AND 9:16 (PORTRAIT) ASPECT RATIOS. FLAWLESS TEXTURES, ZERO BRANDING, IP-SAFE. DESIGNED EXCLUSIVELY FOR LUXURY BRANDS AND HIGH-END COMMERCIAL CAMPAIGNS. COMMERCIAL VALUE OVER $1,500.");
+    if (noviFormat === '16:9 ONLY (SINGLE)') {
+      setNoviOpisEn("PACKAGE CONTENTS: PREMIUM AI VISUALS IN ULTRA-WIDE 16:9 ONLY. PERFECT FOR WEBSITES, DESKTOP BACKGROUNDS AND CINEMATIC B-ROLL. COMMERCIAL VALUE OVER $1,500.");
+    } else if (noviFormat === '16:9, 9:16 & 21:9 (BUNDLE)') {
+      setNoviOpisEn("PACKAGE CONTENTS: PREMIUM AI VISUALS IN 3 FORMATS: 16:9 (LANDSCAPE), 9:16 (PORTRAIT) AND 21:9 (ULTRA-WIDE). PERFECT FOR DESKTOP, TIKTOK, INSTAGRAM REELS, AND CINEMATIC DISPLAYS. COMMERCIAL VALUE OVER $2,000.");
+    } else if (noviFormat === 'ALL FORMATS (16:9, 9:16, 21:9, 1:1)') {
+      setNoviOpisEn("PACKAGE CONTENTS: 80 PREMIUM AI VISUALS IN 4 RESOLUTIONS (16:9, 9:16, 21:9, AND 1:1 SQUARE). COMPLETE PACKAGE FOR ALL PLATFORMS. THE ULTIMATE V8 COLLECTION. COMMERCIAL VALUE OVER $3,000.");
+    } else if (noviFormat === '16:9 & 9:16 (33.2MP MASTERWORK)') {
+      setNoviOpisEn("V8 MASTERWORK BUNDLE: COMPLETE COLLECTION OF 20 PREMIUM VISUALS IN 33.2 MEGAPIXELS (8K UHD) RESOLUTION, sRGB COLORS, POLISHED AD PRODUCT, FILM GRAIN, JPG HIGH QUALITY. INCLUDES BOTH 16:9 (LANDSCAPE) AND 9:16 (PORTRAIT) ASPECT RATIOS. FLAWLESS TEXTURES, ZERO BRANDING, IP-SAFE. DESIGNED EXCLUSIVELY FOR LUXURY BRANDS AND HIGH-END COMMERCIAL CAMPAIGNS. COMMERCIAL VALUE OVER $2,500.");
     }
   }, [noviFormat]);
 
@@ -80,36 +80,30 @@ const V8StockBerza = () => {
     } catch (err) { console.error(err); }
   };
 
-  // POČETAK: prijavaIKupovina
-const prijavaIKupovina = async (paket) => {
-  if (currentUser) {
-      snimiKupcaUBazu(currentUser, paket);
-      if (paket.lemonLink) {
-          window.location.href = paket.lemonLink; 
-      } else {
-          setShowPaymentModal(paket); 
-      }
-  } else {
-      const provider = new GoogleAuthProvider();
-      
-      // OVO JE V8 TURBO LINIJA KOJA FORSIRA IZBOR NALOGA:
-      provider.setCustomParameters({ prompt: 'select_account' });
-      
-      try {
-          const result = await signInWithPopup(auth, provider);
-          await snimiKupcaUBazu(result.user, paket);
-          
-          if (paket.lemonLink) {
-              window.location.href = paket.lemonLink;
-          } else {
-              setShowPaymentModal(paket); 
-          }
-      } catch (error) { 
-          v8Toast.error("Login via Google is required to proceed with the purchase."); 
-      }
-  }
-};
-// KRAJ: prijavaIKupovina
+  const prijavaIKupovina = async (paket) => {
+    if (currentUser) {
+        snimiKupcaUBazu(currentUser, paket);
+        if (paket.lemonLink) {
+            window.location.href = paket.lemonLink; 
+        } else {
+            setShowPaymentModal(paket); 
+        }
+    } else {
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        try {
+            const result = await signInWithPopup(auth, provider);
+            await snimiKupcaUBazu(result.user, paket);
+            if (paket.lemonLink) {
+                window.location.href = paket.lemonLink;
+            } else {
+                setShowPaymentModal(paket); 
+            }
+        } catch (error) { 
+            v8Toast.error("Login via Google is required to proceed with the purchase."); 
+        }
+    }
+  };
 
   const snimiKupcaUBazu = async (user, paket) => {
       try {
@@ -151,17 +145,8 @@ const prijavaIKupovina = async (paket) => {
     } catch (err) { v8Toast.error("Error uploading previews!"); } finally { setIsUploadingPrimer(false); e.target.value = null; }
   };
 
-  // POČETAK: removeMainImage
-  const removeMainImage = () => {
-    setPreviewUrl('');
-  };
-  // KRAJ: removeMainImage
-
-  // POČETAK: removeThumbnail
-  const removeThumbnail = (indexToRemove) => {
-    setPrimeriUrls(prev => prev.filter((_, idx) => idx !== indexToRemove));
-  };
-  // KRAJ: removeThumbnail
+  const removeMainImage = () => setPreviewUrl('');
+  const removeThumbnail = (indexToRemove) => setPrimeriUrls(prev => prev.filter((_, idx) => idx !== indexToRemove));
 
   const dodajPaket = async (e) => {
     e.preventDefault();
@@ -199,9 +184,9 @@ const prijavaIKupovina = async (paket) => {
     setEditingPaketId(paket.id); 
     setNoviNazivEn(paket.nazivEn || ''); 
     setNoviVolume(paket.volume || '');
-    setNoviFormat(paket.format || '16:9 (20 IMAGES)'); 
+    setNoviFormat(paket.format || '16:9, 9:16 & 21:9 (BUNDLE)'); 
     setNovaKategorijaEn(paket.kategorijaEn || ''); 
-    setNovaCena(paket.cena || '49.99'); // V8 FIX 
+    setNovaCena(paket.cena || '49.99'); 
     setNoviTip(paket.tip || 'Image');
     setNoviOpisEn(paket.opisEn || ''); 
     setPreviewUrl(paket.previewUrl || ''); 
@@ -215,9 +200,9 @@ const prijavaIKupovina = async (paket) => {
     setEditingPaketId(null); 
     setNoviNazivEn(''); 
     setNoviVolume(''); 
-    setNoviFormat('16:9 (20 IMAGES)'); 
+    setNoviFormat('16:9, 9:16 & 21:9 (BUNDLE)'); 
     setNovaKategorijaEn(''); 
-    setNovaCena('49.99'); // V8 FIX
+    setNovaCena('49.99'); 
     setPreviewUrl(''); 
     setZipLink(''); 
     setLemonLink(''); 
@@ -237,6 +222,13 @@ const prijavaIKupovina = async (paket) => {
       return numCena.toFixed(2);
   };
 
+  // V8 FUNKCIJA ZA DINAMIČKI ASPEKT KARTICE
+  const getAspectClass = (format) => {
+      if (!format) return 'aspect-video';
+      if (format.includes('16:9 ONLY')) return 'aspect-video'; 
+      return 'aspect-square'; 
+  };
+
   return (
     <motion.div 
         initial={{ y: "-100vh", opacity: 0 }} 
@@ -254,25 +246,19 @@ const prijavaIKupovina = async (paket) => {
       <FullScreenLightbox imageUrl={fullScreenImageUrl} onClose={() => setFullScreenImageUrl(null)} />
 
       <div className="max-w-7xl mx-auto">
-        
-        {/* --- V8 PREMIUM HERO KONTEJNER SA DINAMIČKIM TEKSTOM I PREKIDAČEM --- */}
         <motion.div 
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.2 }}
             className="relative w-full max-w-7xl mx-auto mb-16 rounded-[3rem] overflow-hidden border border-white/10 shadow-[0_0_60px_rgba(255,140,0,0.15)]"
         >
-            {/* Tečna V8 pozadina (Putanja tačno sa tvog diska) */}
             <div 
                 className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-70"
                 style={{ backgroundImage: "url('/v8-stok/v8-stock-hero.jpg.webp')" }} 
             ></div>
-            
-            {/* Profesionalni prelaz: Zatamnjenje */}
             <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050505]/20 via-[#050505]/70 to-[#050505]"></div>
             <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#050505] via-transparent to-[#050505]"></div>
 
-            {/* Sadržaj iznad slike */}
             <div className="relative z-10 text-center py-20 px-6">
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter mb-4 text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)] transition-all">
                     {showPremium ? (
@@ -288,7 +274,6 @@ const prijavaIKupovina = async (paket) => {
                         : "THE ULTIMATE ARSENAL OF ROYALTY-FREE AI ASSETS FOR HIGH-END PRODUCTION AND VISIONARY CREATORS."}
                 </p>
                 
-                {/* --- V8 PREMIUM PREKIDAČ (Sada je integrisan unutar slike) --- */}
                 <div className="flex justify-center relative z-10">
                     <div className="bg-[#050505]/80 backdrop-blur-md border border-white/10 p-1.5 rounded-full inline-flex items-center shadow-xl">
                         <button 
@@ -316,62 +301,52 @@ const prijavaIKupovina = async (paket) => {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div className="flex flex-col gap-2 md:col-span-1">
-                    <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
-                        <Type size={14} /> PACKAGE TITLE
-                    </label>
-                    <input type="text" value={noviNazivEn} onChange={(e)=>setNoviNazivEn(e.target.value)} placeholder="E.g. Nature & Landscapes" className="bg-black border border-[#FF8C00]/50 p-4 rounded-xl text-[14px] font-black text-white w-full outline-none focus:border-[#FF8C00] transition-all" required />
+                    <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase"><Type size={14} /> PACKAGE TITLE</label>
+                    <input type="text" value={noviNazivEn} onChange={(e)=>setNoviNazivEn(e.target.value)} placeholder="E.g. Roman History" className="bg-black border border-[#FF8C00]/50 p-4 rounded-xl text-[14px] font-black text-white w-full outline-none focus:border-[#FF8C00] transition-all" required />
                 </div>
                 
                 <div className="flex flex-col gap-2 md:col-span-1">
-                    <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
-                        <Layers size={14} /> CATEGORY
-                    </label>
-                    <input type="text" value={novaKategorijaEn} onChange={(e)=>setNovaKategorijaEn(e.target.value)} placeholder="E.g. Abstract" className="bg-black border border-[#FF8C00]/50 p-4 rounded-xl text-[14px] font-black text-white w-full outline-none focus:border-[#FF8C00] transition-all" required />
+                    <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase"><Layers size={14} /> CATEGORY</label>
+                    <input type="text" value={novaKategorijaEn} onChange={(e)=>setNovaKategorijaEn(e.target.value)} placeholder="E.g. History" className="bg-black border border-[#FF8C00]/50 p-4 rounded-xl text-[14px] font-black text-white w-full outline-none focus:border-[#FF8C00] transition-all" required />
                 </div>
 
                 <div className="flex flex-col gap-2 md:col-span-1">
-                    <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
-                        <FolderArchive size={14} /> COLLECTION (VOLUME)
-                    </label>
-                    <input type="text" placeholder="E.g. VOL 1 (Optional)" value={noviVolume} onChange={(e) => setNoviVolume(e.target.value)} className="bg-black text-white border border-white/10 p-4 rounded-xl text-[13px] font-black outline-none focus:border-[#FF8C00] transition-all" />
+                    <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase"><FolderArchive size={14} /> COLLECTION (VOLUME)</label>
+                    <input type="text" placeholder="E.g. VOL 1" value={noviVolume} onChange={(e) => setNoviVolume(e.target.value)} className="bg-black text-white border border-white/10 p-4 rounded-xl text-[13px] font-black outline-none focus:border-[#FF8C00] transition-all" />
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
               <div className="flex flex-col gap-2 md:col-span-1">
-                  <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
-                      <FileText size={14} /> DESCRIPTION
-                  </label>
-                  <textarea value={noviOpisEn} onChange={(e)=>setNoviOpisEn(e.target.value)} placeholder="Package contents..." rows={3} className="bg-black border border-white/10 p-4 rounded-xl text-[12px] font-bold text-white w-full outline-none resize-none focus:border-[#FF8C00] transition-all h-full" required />
+                  <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase"><FileText size={14} /> DESCRIPTION</label>
+                  <textarea value={noviOpisEn} onChange={(e)=>setNoviOpisEn(e.target.value)} placeholder="Package contents..." rows={4} className="bg-black border border-white/10 p-4 rounded-xl text-[12px] font-bold text-white w-full outline-none resize-none focus:border-[#FF8C00] transition-all h-full" required />
               </div>
 
               <div className="flex flex-col gap-6 md:col-span-2">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      <div className="flex flex-col gap-2">
-                          <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
-                              <Wallet size={14} /> PRICE (USD)
-                          </label>
-                          <input type="text" value={novaCena} onChange={(e)=>setNovaCena(e.target.value)} placeholder="E.g. 49.99" className="bg-black border border-white/10 p-4 rounded-xl text-[13px] font-bold text-white outline-none focus:border-[#FF8C00] transition-all" />
-                      </div>
+                  <div className="flex flex-col gap-2">
+                      <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase"><Wallet size={14} /> PRICE (USD)</label>
+                      <input type="text" value={novaCena} onChange={(e)=>setNovaCena(e.target.value)} placeholder="E.g. 49.99" className="bg-black border border-white/10 p-4 rounded-xl text-[13px] font-bold text-white outline-none focus:border-[#FF8C00] transition-all" />
+                  </div>
 
-                      <div className="flex flex-col gap-2">
-                          <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
-                              <MonitorPlay size={14} /> FORMAT
+                  <div className="flex flex-col gap-2">
+                      <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase"><MonitorPlay size={14} /> FORMAT</label>
+                      <div className="grid grid-cols-2 gap-2">
+                          <label className={`cursor-pointer p-3 rounded-xl border-2 transition-all text-center font-black text-[9px] uppercase ${noviFormat === '16:9, 9:16 & 21:9 (BUNDLE)' ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]' : 'bg-black border-white/10 text-zinc-500 hover:border-white/30'}`}>
+                              <input type="radio" name="format" value="16:9, 9:16 & 21:9 (BUNDLE)" checked={noviFormat === '16:9, 9:16 & 21:9 (BUNDLE)'} onChange={(e) => setNoviFormat(e.target.value)} className="hidden" />
+                              16:9, 9:16 & 21:9
                           </label>
-                          <div className="flex flex-col sm:flex-row gap-2">
-                              <label className={`cursor-pointer flex-1 p-3 rounded-xl border-2 transition-all text-center font-black text-[9px] uppercase ${noviFormat === '16:9 (20 IMAGES)' ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]' : 'bg-black border-white/10 text-zinc-500'}`}>
-                                  <input type="radio" name="format" value="16:9 (20 IMAGES)" checked={noviFormat === '16:9 (20 IMAGES)'} onChange={(e) => setNoviFormat(e.target.value)} className="hidden" />
-                                  16:9 (20 IMAGES)
-                              </label>
-                              <label className={`cursor-pointer flex-1 p-3 rounded-xl border-2 transition-all text-center font-black text-[9px] uppercase ${noviFormat === 'ALL FORMATS (80 IMAGES)' ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]' : 'bg-black border-white/10 text-zinc-500'}`}>
-                                  <input type="radio" name="format" value="ALL FORMATS (80 IMAGES)" checked={noviFormat === 'ALL FORMATS (80 IMAGES)'} onChange={(e) => setNoviFormat(e.target.value)} className="hidden" />
-                                  ALL FORMATS
-                              </label>
-                              <label className={`cursor-pointer flex-1 p-3 rounded-xl border-2 transition-all text-center font-black text-[9px] uppercase ${noviFormat === '16:9 & 9:16 (33MP MASTERWORK)' ? 'bg-gradient-to-r from-orange-600 to-amber-500 border-[#FF8C00] text-white shadow-[0_0_15px_rgba(234,88,12,0.4)]' : 'bg-black border-white/10 text-zinc-500 hover:border-orange-500/50'}`}>
-                                  <input type="radio" name="format" value="16:9 & 9:16 (33MP MASTERWORK)" checked={noviFormat === '16:9 & 9:16 (33MP MASTERWORK)'} onChange={(e) => setNoviFormat(e.target.value)} className="hidden" />
-                                  33MP MASTERWORK
-                              </label>
-                          </div>
+                          <label className={`cursor-pointer p-3 rounded-xl border-2 transition-all text-center font-black text-[9px] uppercase ${noviFormat === '16:9 ONLY (SINGLE)' ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]' : 'bg-black border-white/10 text-zinc-500 hover:border-white/30'}`}>
+                              <input type="radio" name="format" value="16:9 ONLY (SINGLE)" checked={noviFormat === '16:9 ONLY (SINGLE)'} onChange={(e) => setNoviFormat(e.target.value)} className="hidden" />
+                              16:9 ONLY
+                          </label>
+                          <label className={`cursor-pointer p-3 rounded-xl border-2 transition-all text-center font-black text-[9px] uppercase ${noviFormat === 'ALL FORMATS (16:9, 9:16, 21:9, 1:1)' ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]' : 'bg-black border-white/10 text-zinc-500 hover:border-white/30'}`}>
+                              <input type="radio" name="format" value="ALL FORMATS (16:9, 9:16, 21:9, 1:1)" checked={noviFormat === 'ALL FORMATS (16:9, 9:16, 21:9, 1:1)'} onChange={(e) => setNoviFormat(e.target.value)} className="hidden" />
+                              ALL (INC. 21:9)
+                          </label>
+                          <label className={`cursor-pointer p-3 rounded-xl border-2 transition-all text-center font-black text-[9px] uppercase flex items-center justify-center gap-1 ${noviFormat === '16:9 & 9:16 (33.2MP MASTERWORK)' ? 'bg-gradient-to-r from-orange-600 to-amber-500 border-[#FF8C00] text-white shadow-[0_0_15px_rgba(234,88,12,0.4)]' : 'bg-black border-white/10 text-zinc-500 hover:border-orange-500/50'}`}>
+                              <input type="radio" name="format" value="16:9 & 9:16 (33.2MP MASTERWORK)" checked={noviFormat === '16:9 & 9:16 (33.2MP MASTERWORK)'} onChange={(e) => setNoviFormat(e.target.value)} className="hidden" />
+                              <Zap size={10} /> 33.2MP MASTERWORK
+                          </label>
                       </div>
                   </div>
               </div>
@@ -380,16 +355,12 @@ const prijavaIKupovina = async (paket) => {
             <div className="border-t border-white/10 pt-6 mt-2">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div className="flex flex-col gap-2">
-                        <label className="flex items-center gap-2 text-blue-400 font-black text-[11px] tracking-widest uppercase">
-                            <LinkIcon size={14} /> GOOGLE DRIVE (DELIVERY)
-                        </label>
+                        <label className="flex items-center gap-2 text-blue-400 font-black text-[11px] tracking-widest uppercase"><LinkIcon size={14} /> GOOGLE DRIVE (DELIVERY)</label>
                         <input type="url" value={zipLink} onChange={(e)=>setZipLink(e.target.value)} placeholder="https://drive.google.com/..." className="bg-black border border-blue-500/50 p-4 rounded-xl text-[13px] text-white w-full outline-none font-bold focus:border-blue-400 transition-all" required />
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <label className="flex items-center gap-2 text-yellow-400 font-black text-[11px] tracking-widest uppercase">
-                            <Zap size={14} /> LEMON SQUEEZY CHECKOUT LINK
-                        </label>
+                        <label className="flex items-center gap-2 text-yellow-400 font-black text-[11px] tracking-widest uppercase"><Zap size={14} /> LEMON SQUEEZY CHECKOUT LINK</label>
                         <input type="url" value={lemonLink} onChange={(e)=>setLemonLink(e.target.value)} placeholder="https://store.lemonsqueezy.com/checkout/..." className="bg-black border border-yellow-500/50 p-4 rounded-xl text-[13px] text-white w-full outline-none font-bold focus:border-yellow-400 transition-all" />
                     </div>
                 </div>
@@ -420,9 +391,7 @@ const prijavaIKupovina = async (paket) => {
 
                   <div className="flex flex-wrap gap-4 items-end">
                     <div className="flex flex-col gap-2">
-                        <label className="flex items-center gap-2 text-zinc-400 font-black text-[10px] tracking-widest uppercase">
-                            <ImageIcon size={12} /> MAIN IMAGE
-                        </label>
+                        <label className="flex items-center gap-2 text-zinc-400 font-black text-[10px] tracking-widest uppercase"><ImageIcon size={12} /> MAIN IMAGE</label>
                         <label className="bg-zinc-900 hover:bg-[#FF8C00] text-white hover:text-black border border-white/10 hover:border-[#FF8C00] px-6 py-4 rounded-xl font-black text-[11px] uppercase cursor-pointer transition-all flex items-center gap-2"> 
                           <ImageIcon size={16} /> {isUploading ? 'UPLOADING...' : 'ADD PREVIEW'} 
                           <input type="file" onChange={handleUploadPreview} className="hidden" /> 
@@ -430,9 +399,7 @@ const prijavaIKupovina = async (paket) => {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <label className="flex items-center gap-2 text-zinc-400 font-black text-[10px] tracking-widest uppercase">
-                            <Images size={12} /> GALLERY IMAGES
-                        </label>
+                        <label className="flex items-center gap-2 text-zinc-400 font-black text-[10px] tracking-widest uppercase"><Images size={12} /> GALLERY IMAGES</label>
                         <label className="bg-zinc-900 hover:bg-[#FF8C00] text-white hover:text-black border border-white/10 hover:border-[#FF8C00] px-6 py-4 rounded-xl font-black text-[11px] uppercase cursor-pointer transition-all flex items-center gap-2"> 
                           <Images size={16} /> {isUploadingPrimer ? 'UPLOADING...' : `ADD THUMBNAILS (${primeriUrls.length}/4)`} 
                           <input type="file" multiple onChange={handleUploadPrimeri} className="hidden" /> 
@@ -448,30 +415,29 @@ const prijavaIKupovina = async (paket) => {
           </form>
         )}
 
-        {/* --- PACKAGE CARDS DISPLAY --- */}
         <div className="flex flex-wrap justify-center gap-12 max-w-5xl mx-auto">
           {paketi
             .filter(paket => {
-              const isPremium = paket.format === '16:9 & 9:16 (33MP MASTERWORK)';
+              // V8 FIX: Hvatamo apsolutno svaki paket koji ima reč MASTERWORK u bazi! (Nema više brisanja starih)
+              const isPremium = paket.format && paket.format.includes('MASTERWORK');
               return showPremium ? isPremium : !isPremium;
             })
             .map(paket => (
             <div key={paket.id} className="w-full md:w-[calc(50%-1.5rem)] v8-premium-card group transition-all duration-500 hover:scale-[1.02] shadow-[0_0_30px_rgba(255,140,0,0.15)] flex flex-col">
               <div className="v8-card-content p-5 md:p-6">
                 
-                <div className="aspect-video relative rounded-2xl overflow-hidden mb-4 bg-black border border-white/5 shadow-inner">
-                  {/* VOLUME BEDZ (Gore levo) */}
+                {/* V8 SMART IMAGE CONTAINER */}
+                <div className={`${getAspectClass(paket.format)} relative rounded-2xl overflow-hidden mb-4 bg-black border border-white/5 shadow-inner`}>
                   {paket.volume && (
                       <div className="absolute top-0 left-0 bg-[#FF8C00] text-black px-3 py-1.5 rounded-br-xl rounded-tl-2xl font-black text-[10px] uppercase tracking-widest z-20 shadow-lg border-b border-r border-[#FF8C00]/50">
                           {paket.volume}
                       </div>
                   )}
                   
-                  {/* NOVI DUPLI BEDZEVI (Gore desno - jedan ispod drugog) */}
                   <div className="absolute top-2 right-2 flex flex-col gap-1.5 items-end z-20">
                       {paket.format && (
                           <div className="bg-black/80 backdrop-blur-md border border-[#FF8C00]/50 text-[#FF8C00] px-3 py-1 rounded-lg font-black text-[9px] uppercase tracking-wider shadow-lg">
-                              {paket.format}
+                              {paket.format.split('(')[0].trim()}
                           </div>
                       )}
                       {(paket.kategorijaEn || paket.kategorija) && (
@@ -532,7 +498,6 @@ const prijavaIKupovina = async (paket) => {
         </div>
       </div>
 
-      {/* --- INTERNATIONAL PAYMENT MODAL --- */}
       {showPaymentModal && (
         <div className="fixed inset-0 z-[9000] bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-[#050505] rounded-3xl max-w-[420px] w-full relative pt-8 pb-10 px-8 border-2 border-[#FF8C00] shadow-[0_0_50px_rgba(255,140,0,0.2)] flex flex-col items-center">
@@ -546,15 +511,9 @@ const prijavaIKupovina = async (paket) => {
             </p>
             
             <div className="w-full mb-6 p-4 bg-[#FF8C00]/10 border border-[#FF8C00]/50 rounded-xl text-center">
-                <p className="text-[10px] text-zinc-300 font-black uppercase tracking-widest mb-1">
-                    ⚠️ IMPORTANT
-                </p>
-                <p className="text-[12px] text-white font-bold mb-1">
-                    Send proof of payment to:
-                </p>
-                <p className="text-[16px] text-[#FF8C00] font-black uppercase tracking-wider">
-                    aitoolsprosmart@gmail.com
-                </p>
+                <p className="text-[10px] text-zinc-300 font-black uppercase tracking-widest mb-1">⚠️ IMPORTANT</p>
+                <p className="text-[12px] text-white font-bold mb-1">Send proof of payment to:</p>
+                <p className="text-[16px] text-[#FF8C00] font-black uppercase tracking-wider">aitoolsprosmart@gmail.com</p>
             </div>
             
             <div className="w-full border border-white/10 rounded-2xl p-6 mb-6 bg-[#0a0a0a] flex flex-col items-center shadow-inner relative overflow-hidden">
