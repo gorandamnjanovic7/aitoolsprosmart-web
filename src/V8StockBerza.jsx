@@ -1,24 +1,78 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { CLOUDINARY_UPLOAD_PRESET, CLOUDINARY_CLOUD_NAME } from './data';
 import { Sparkles, Download, Zap, ShieldCheck, X, Image as ImageIcon, Video, FolderArchive, Layers, Pencil, Users, CheckCircle, Globe, Type, FileText, Wallet, MonitorPlay, Link as LinkIcon, Images } from 'lucide-react';
 import { db, auth } from './firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
-import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+// V8 FIX: SAMO JEDNA LINIJA ZA FIREBASE AUTH (Uključuje i signOut)
+import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
 import { v8Toast } from './App';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
+// POČETAK FUNKCIJE: FullScreenLightbox (V8 SLEEP PROTOCOL)
 const FullScreenLightbox = ({ imageUrl, onClose }) => {
+    
+    useEffect(() => {
+        if (imageUrl) {
+            document.body.style.overflow = 'hidden';
+            
+            // V8 CSS SNAJPER: Privremeno gasi narandžasti kursor i pali sistemski
+            const style = document.createElement('style');
+            style.id = 'v8-sleep-protocol';
+            style.innerHTML = `
+                /* Nasilno sakriva tvoj narandžasti kursor po njegovim Tailwind klasama */
+                div[class*="border-[#FF8C00]"][class*="pointer-events-none"] {
+                    display: none !important;
+                    opacity: 0 !important;
+                }
+                /* Nasilno forsira klasičnu Windows strelicu preko celog ekrana */
+                body, .fixed, img, div {
+                    cursor: default !important;
+                }
+                /* Na dugmićima forsira prstić */
+                button, button *, .cursor-pointer {
+                    cursor: pointer !important;
+                }
+            `;
+            document.head.appendChild(style);
+            
+        } else {
+            document.body.style.overflow = '';
+            document.getElementById('v8-sleep-protocol')?.remove();
+        }
+        
+        return () => { 
+            document.body.style.overflow = ''; 
+            document.getElementById('v8-sleep-protocol')?.remove();
+        };
+    }, [imageUrl]);
+
     if (!imageUrl) return null;
-    return (
-        <div className="fixed inset-0 z-[10000] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-4" onClick={onClose}>
-            <button className="absolute top-10 right-10 bg-white/10 hover:bg-[#FF8C00]/20 p-3 rounded-full text-white hover:text-[#FF8C00] transition-all z-10">
-                <X size={28} strokeWidth={3} />
+
+    return createPortal(
+        <div 
+            className="fixed inset-0 z-[999999] bg-[#0f172a]/95 flex items-center justify-center p-4"
+            onClick={onClose}
+        >
+            <button 
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onClose(); }}
+                className="absolute top-6 right-6 md:top-10 md:right-10 bg-[#FF8C00] text-white p-4 rounded-full hover:bg-[#e67e00] transition-all z-[1000000] shadow-[0_0_20px_rgba(255,140,0,0.5)] border-none"
+            >
+                <X size={32} strokeWidth={3} />
             </button>
-            <img src={imageUrl} alt="Full Screen Preview" className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-[0_0_80px_rgba(255,140,0,0.25)] border-2 border-white/5" onClick={(e) => e.stopPropagation()} />
-        </div>
+
+            <img 
+                src={imageUrl} 
+                alt="Full Screen Preview" 
+                className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-[0_0_80px_rgba(255,140,0,0.4)] border border-[#FF8C00]/30 relative z-[999999]" 
+                onClick={(e) => e.stopPropagation()} 
+            />
+        </div>,
+        document.body
     );
 };
-
+// KRAJ FUNKCIJE: FullScreenLightbox
 const V8StockBerza = () => {
   const [paketi, setPaketi] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -32,7 +86,7 @@ const V8StockBerza = () => {
  
   const [showPremium, setShowPremium] = useState(true);
 
-  // V8 KONTROLE: Default je sada TRI formata
+  // V8 KONTROLE
   const [noviNazivEn, setNoviNazivEn] = useState('');
   const [noviVolume, setNoviVolume] = useState('');
   const [noviFormat, setNoviFormat] = useState('16:9, 9:16 & 21:9 (BUNDLE)');
@@ -68,7 +122,7 @@ const V8StockBerza = () => {
     } else if (noviFormat === 'ALL FORMATS (16:9, 9:16, 21:9, 1:1)') {
       setNoviOpisEn("PACKAGE CONTENTS: 80 PREMIUM AI VISUALS IN 4 RESOLUTIONS (16:9, 9:16, 21:9, AND 1:1 SQUARE). COMPLETE PACKAGE FOR ALL PLATFORMS. THE ULTIMATE V8 COLLECTION. COMMERCIAL VALUE OVER $3,000.");
     } else if (noviFormat === '16:9 & 9:16 (33.2MP MASTERWORK)') {
-      setNoviOpisEn("V8 MASTERWORK BUNDLE: COMPLETE COLLECTION OF 20 PREMIUM VISUALS IN 33.2 MEGAPIXELS (8K UHD) RESOLUTION, sRGB COLORS, POLISHED AD PRODUCT, FILM GRAIN, JPG HIGH QUALITY. INCLUDES BOTH 16:9 (LANDSCAPE) AND 9:16 (PORTRAIT) ASPECT RATIOS. FLAWLESS TEXTURES, ZERO BRANDING, IP-SAFE. DESIGNED EXCLUSIVELY FOR LUXURY BRANDS AND HIGH-END COMMERCIAL CAMPAIGNS. COMMERCIAL VALUE OVER $2,500.");
+      setNoviOpisEn("V8 MASTERWORK BUNDLE: COMPLETE COLLECTION OF 20 PREMIUM VISUALS IN 33.2 MEGAPIXELS (8K UHD) RESOLUTION, sRGB COLORS, POLISHED AD PRODUCT, FILM GRAIN, CONTRIBUTOR QUALITY CLEANUP, PREMIUM SHARPNESS WITHOUT AI PLASTIC, COLOR GRADING, HIGHLIGHT ROLLOFF, SHADOW DEPTH, JPG HIGH QUALITY. INCLUDES BOTH 16:9 (LANDSCAPE) AND 9:16 (PORTRAIT) ASPECT RATIOS. FLAWLESS TEXTURES, ZERO BRANDING, IP-SAFE. DESIGNED EXCLUSIVELY FOR LUXURY BRANDS AND HIGH-END COMMERCIAL CAMPAIGNS. COMMERCIAL VALUE OVER $2,500.");
     }
   }, [noviFormat]);
 
@@ -80,6 +134,7 @@ const V8StockBerza = () => {
     } catch (err) { console.error(err); }
   };
 
+  // POCETAK FUNKCIJE: prijavaIKupovina (V8 NUKE METODA ZA GOOGLE LOGIN)
   const prijavaIKupovina = async (paket) => {
     if (currentUser) {
         snimiKupcaUBazu(currentUser, paket);
@@ -89,21 +144,33 @@ const V8StockBerza = () => {
             setShowPaymentModal(paket); 
         }
     } else {
-        const provider = new GoogleAuthProvider();
-        provider.setCustomParameters({ prompt: 'select_account' });
         try {
-            const result = await signInWithPopup(auth, provider);
+            // 1. NASILNO ČIŠĆENJE: Ubijamo svaku skrivenu sesiju u browseru
+            await signOut(auth);
+
+            // 2. STROGI PARAMETRI ZA GOOGLE
+            const v8Provider = new GoogleAuthProvider();
+            v8Provider.setCustomParameters({ 
+                prompt: 'select_account',
+                login_hint: '' // Forsira ga da zaboravi defaultni mail
+            });
+            
+            // 3. POKRETANJE POPUP-a
+            const result = await signInWithPopup(auth, v8Provider);
             await snimiKupcaUBazu(result.user, paket);
+            
             if (paket.lemonLink) {
                 window.location.href = paket.lemonLink;
             } else {
                 setShowPaymentModal(paket); 
             }
         } catch (error) { 
-            v8Toast.error("Login via Google is required to proceed with the purchase."); 
+            console.error("V8 Auth Error:", error);
+            v8Toast.error("Login canceled or blocked. Try incognito mode."); 
         }
     }
   };
+  // KRAJ FUNKCIJE: prijavaIKupovina
 
   const snimiKupcaUBazu = async (user, paket) => {
       try {
@@ -418,8 +485,8 @@ const V8StockBerza = () => {
         <div className="flex flex-wrap justify-center gap-12 max-w-5xl mx-auto">
           {paketi
             .filter(paket => {
-              // V8 FIX: Hvatamo apsolutno svaki paket koji ima reč MASTERWORK u bazi! (Nema više brisanja starih)
-              const isPremium = paket.format && paket.format.includes('MASTERWORK');
+              const formatString = paket.format || "";
+              const isPremium = formatString.includes('MASTERWORK');
               return showPremium ? isPremium : !isPremium;
             })
             .map(paket => (

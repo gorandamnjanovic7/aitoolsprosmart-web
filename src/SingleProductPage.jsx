@@ -20,12 +20,15 @@ import * as data from './data';
 import { v8Toast } from './App'; 
 import mojBaner from './moj-baner.png'; 
 
+// POCETAK FUNKCIJE: getRibbonStyle
 const getRibbonStyle = (index) => {
   if (index === 0) return "bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.7)]";
   const colors = ["bg-blue-600 shadow-[0_0_15px_rgba(37,99,235,0.5)]", "bg-purple-600 shadow-[0_0_15px_rgba(147,51,234,0.5)]", "bg-emerald-600 shadow-[0_0_15px_rgba(16,185,129,0.5)]"];
   return colors[Math.max(0, index - 1) % colors.length];
 };
+// KRAJ FUNKCIJE: getRibbonStyle
 
+// POCETAK FUNKCIJE: renderV8Description
 // V8 UNIVERZALNI SMART PARSER ZA SVE PROIZVODE
 const renderV8Description = (text) => {
   if (!text) return <p className="text-zinc-500 italic">No description available.</p>;
@@ -102,7 +105,9 @@ const renderV8Description = (text) => {
     );
   });
 };
+// KRAJ FUNKCIJE: renderV8Description
 
+// POCETAK FUNKCIJE: SingleProductPage
 export default function SingleProductPage({ apps = [] }) {
   const { id } = useParams(); 
   const app = apps.find(a => a.id === id); 
@@ -150,6 +155,7 @@ export default function SingleProductPage({ apps = [] }) {
   const cenaMesecno = app.price ? parseFloat(app.price) : 15;
   const cenaLifetime = app.priceLifetime ? parseFloat(app.priceLifetime) : 89;
   
+  // POCETAK FUNKCIJE: handlePaymentGlobal
   const handlePaymentGlobal = async (tip, cena) => {
     if (auth.currentUser) {
       try { await setDoc(doc(db, "posetioci", auth.currentUser.uid), { poslednjiKlik: serverTimestamp(), zainteresovanZa: tip }, { merge: true }); } catch (err) {}
@@ -169,6 +175,7 @@ export default function SingleProductPage({ apps = [] }) {
       } catch (error) { v8Toast.error("Login error!"); }
     }
   };
+  // KRAJ FUNKCIJE: handlePaymentGlobal
   
   return (
     <div className="bg-[#050505] pt-32 pb-32 px-6 font-sans text-white text-left relative">
@@ -253,7 +260,15 @@ export default function SingleProductPage({ apps = [] }) {
                 ) : (
                   <div className="bg-[#050505] border border-orange-500/40 p-5 rounded-2xl shadow-[0_0_20px_rgba(234,88,12,0.1)] relative overflow-hidden group">
                     <div className="absolute top-0 right-0 bg-orange-600 text-white text-[8px] font-black uppercase tracking-widest px-4 py-1.5 rounded-bl-xl z-10 shadow-lg">DIGITAL PRODUCT 🌐</div>
-                    <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mb-6 mt-2 flex items-center justify-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.8)]"></span> Secure Digital Checkout</p>
+                    <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mb-4 mt-2 flex items-center justify-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.8)]"></span> Secure Digital Checkout</p>
+                    
+                    {/* V8 FIX: NOVI FORMAT BEDŽEVI */}
+                    <div className="flex justify-center gap-2 mb-6">
+                        <span className="bg-white/5 border border-white/10 text-zinc-400 text-[9px] px-2 py-1 rounded uppercase font-black tracking-widest">16:9</span>
+                        <span className="bg-white/5 border border-white/10 text-zinc-400 text-[9px] px-2 py-1 rounded uppercase font-black tracking-widest">9:16</span>
+                        <span className="bg-white/5 border border-white/10 text-zinc-400 text-[9px] px-2 py-1 rounded uppercase font-black tracking-widest">21:9</span>
+                    </div>
+
                     <div className="flex flex-col gap-3">
                       <button onClick={() => handlePaymentGlobal('Standard License', cenaMesecno)} className="w-full py-4 rounded-xl flex items-center justify-between px-5 bg-white/5 border border-white/10 hover:border-orange-500/50 hover:bg-orange-500/10 text-white font-black text-[12px] uppercase tracking-widest transition-all"><span className="flex items-center gap-2"><Zap className="w-4 h-4 text-orange-500" /> Standard License</span><span className="text-orange-400">${cenaMesecno}</span></button>
                       <button onClick={() => handlePaymentGlobal('Master License', cenaLifetime)} className="w-full py-4 rounded-xl flex items-center justify-between px-5 bg-gradient-to-r from-orange-600/20 to-amber-600/20 border border-orange-500/40 hover:from-orange-600 hover:to-amber-600 text-white font-black text-[12px] uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(234,88,12,0.2)] hover:shadow-[0_0_25px_rgba(234,88,12,0.6)]"><span className="flex items-center gap-2"><Award className="w-4 h-4 text-amber-400" /> Master License</span><span className="text-white drop-shadow-md">${cenaLifetime}</span></button>
@@ -298,3 +313,4 @@ export default function SingleProductPage({ apps = [] }) {
     </div>
   );
 }
+// KRAJ FUNKCIJE: SingleProductPage

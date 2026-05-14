@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { BrowserRouter as Router, Routes, Route, Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { 
@@ -70,12 +71,14 @@ export const v8Toast = {
   subscribe: (l) => { v8Toast.listeners.push(l); return () => v8Toast.listeners = v8Toast.listeners.filter(cb => cb !== l); }
 };
 
-// POČETAK: V8 Radar Kursor
+// POČETAK FUNKCIJE: V8 Radar Kursor
 const V8RadarCursor = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true); // V8 zaštita
     const updateMousePosition = (e) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
@@ -97,9 +100,13 @@ const V8RadarCursor = () => {
     };
   }, []);
 
-  return (
+  if (!mounted) return null;
+
+  // V8 FIX: createPortal lansira kursor izvan svih kaveza, direktno iznad svega!
+  return createPortal(
     <motion.div
-      className="fixed top-0 left-0 w-8 h-8 border-2 border-[#FF8C00] rounded-full pointer-events-none z-[100000] flex items-center justify-center shadow-[0_0_15px_rgba(255,140,0,0.5)]"
+      className="fixed top-0 left-0 w-8 h-8 border-2 border-[#FF8C00] rounded-full pointer-events-none flex items-center justify-center shadow-[0_0_15px_rgba(255,140,0,0.5)]"
+      style={{ zIndex: 99999999 }} // Nasilno hardkodovan Z-index
       animate={{
         x: mousePosition.x - 16,
         y: mousePosition.y - 16,
@@ -109,10 +116,11 @@ const V8RadarCursor = () => {
       transition={{ type: 'tween', ease: 'backOut', duration: 0.1 }}
     >
       <div className={`w-1 h-1 bg-[#FF8C00] rounded-full transition-opacity duration-300 ${isHovering ? 'opacity-0' : 'opacity-100'}`} />
-    </motion.div>
+    </motion.div>,
+    document.body
   );
 };
-// KRAJ: V8 Radar Kursor
+// KRAJ FUNKCIJE: V8 Radar Kursor
 
 // POČETAK: V8 Magnetic Button Wrapper
 const MagneticButton = ({ children, className = "" }) => {
