@@ -1,9 +1,10 @@
+// POČETAK FAJLA: SingleProductPage.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { 
   ChevronLeft, Maximize, ChevronRight, HelpCircle, ChevronDown, 
-  Loader2, CheckCircle, Zap, Award, X, PlayCircle 
+  Loader2, CheckCircle, Zap, Award, X, PlayCircle, DownloadCloud 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -20,20 +21,15 @@ import * as data from './data';
 import { v8Toast } from './App'; 
 import mojBaner from './moj-baner.png'; 
 
-// POCETAK FUNKCIJE: getRibbonStyle
 const getRibbonStyle = (index) => {
   if (index === 0) return "bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.7)]";
   const colors = ["bg-blue-600 shadow-[0_0_15px_rgba(37,99,235,0.5)]", "bg-purple-600 shadow-[0_0_15px_rgba(147,51,234,0.5)]", "bg-emerald-600 shadow-[0_0_15px_rgba(16,185,129,0.5)]"];
   return colors[Math.max(0, index - 1) % colors.length];
 };
-// KRAJ FUNKCIJE: getRibbonStyle
 
-// POCETAK FUNKCIJE: renderV8Description
-// V8 UNIVERZALNI SMART PARSER ZA SVE PROIZVODE
 const renderV8Description = (text) => {
   if (!text) return <p className="text-zinc-500 italic">No description available.</p>;
   
-  // V8 HACK: Forsiramo nove redove za ključne elemente, u slučaju da ih Gem zalepi!
   let formattedText = text
     .replace(/🔥/g, '\n🔥')
     .replace(/WHY CHOOSE THIS\?/g, '\nWHY CHOOSE THIS?')
@@ -42,19 +38,16 @@ const renderV8Description = (text) => {
     .replace(/WEAPONIZED FEATURES FOR DOMINATION/g, '\nWEAPONIZED FEATURES FOR DOMINATION\n'); 
   
   const lines = formattedText.split('\n');
-  
   let isWhiteBoldBlock = false;
 
   return lines.map((line, index) => {
     const trimmed = line.trim();
     
-    // Prazan red resetuje blokove
     if (!trimmed) {
         isWhiteBoldBlock = false;
         return <div key={index} className="h-5"></div>; 
     }
 
-    // 1. DETEKCIJA GLAVNIH NASLOVA (Sve velika slova, duže od 3 slova)
     const isHeading = trimmed === trimmed.toUpperCase() && trimmed.length > 3 && !trimmed.startsWith('🔥') && !trimmed.startsWith('[');
     
     if (isHeading || trimmed.includes('[DESCRIPTION]')) {
@@ -66,9 +59,8 @@ const renderV8Description = (text) => {
         );
     }
 
-    // 2. DETEKCIJA NARANDŽASTOG REDA (SAMO prva linija sa vatricom)
     if (trimmed.startsWith('🔥')) {
-        isWhiteBoldBlock = true; // Sledeći redovi do praznog reda biće beli i boldirani
+        isWhiteBoldBlock = true; 
         return (
           <p key={index} className="text-[#FF8C00] font-black text-[15px] md:text-[18px] leading-relaxed mb-4 mt-8 drop-shadow-[0_0_10px_rgba(255,140,0,0.3)] uppercase tracking-wide">
             {trimmed}
@@ -76,7 +68,6 @@ const renderV8Description = (text) => {
         );
     }
 
-    // 3. PODEBLJAVANJE KLJUČNIH REČI SA DVOTAČKOM (npr. "Beginners:")
     if (trimmed.includes(':') && trimmed.split(':')[0].length < 40 && !trimmed.startsWith('http') && !isWhiteBoldBlock) {
         const parts = trimmed.split(':');
         const boldPart = parts[0];
@@ -88,7 +79,6 @@ const renderV8Description = (text) => {
         );
     }
 
-    // 4. BELI BOLD BLOK (Tekst ispod vatrice)
     if (isWhiteBoldBlock) {
         return (
           <p key={index} className="text-white font-bold text-[14px] md:text-[16px] leading-relaxed mb-4">
@@ -97,7 +87,6 @@ const renderV8Description = (text) => {
         );
     }
 
-    // 5. STANDARDNI TEKST (Sve ostalo)
     return (
       <p key={index} className="text-zinc-300 text-[14px] md:text-[16px] leading-relaxed mb-4">
         {trimmed}
@@ -105,9 +94,7 @@ const renderV8Description = (text) => {
     );
   });
 };
-// KRAJ FUNKCIJE: renderV8Description
 
-// POCETAK FUNKCIJE: SingleProductPage
 export default function SingleProductPage({ apps = [] }) {
   const { id } = useParams(); 
   const app = apps.find(a => a.id === id); 
@@ -144,7 +131,7 @@ export default function SingleProductPage({ apps = [] }) {
     return () => unsubscribe();
   }, [app]);
   
-  if (!app) return <div className="min-h-screen bg-black flex items-center justify-center text-zinc-500 uppercase text-[10px] tracking-widest">Loading...</div>;
+  if (!app) return <div className="min-h-screen bg-[#050505] flex items-center justify-center text-zinc-500 uppercase text-[10px] tracking-widest">Loading...</div>;
   
   const currentMedia = app.media?.[activeMedia] || { url: data.bannerUrl, type: 'image' }; 
   const isVideo = currentMedia?.type === 'video' || currentMedia?.url?.match(/\.(mp4|webm|ogg|mov)$/i); 
@@ -152,10 +139,10 @@ export default function SingleProductPage({ apps = [] }) {
   const mainLink = parts[0] || ""; 
   const ribbonClass = getRibbonStyle([...apps].sort((a, b) => Number(b.id) - Number(a.id)).findIndex(a => a.id === id));
 
-  const cenaMesecno = app.price ? parseFloat(app.price) : 15;
-  const cenaLifetime = app.priceLifetime ? parseFloat(app.priceLifetime) : 89;
+  // V8 FIX: POTPUNO UKLONJENA TERMINOLOGIJA PRETPLATE
+  const cenaStandard = app.price ? parseFloat(app.price) : 15;
+  const cenaPremium = app.priceLifetime ? parseFloat(app.priceLifetime) : 89;
   
-  // POCETAK FUNKCIJE: handlePaymentGlobal
   const handlePaymentGlobal = async (tip, cena) => {
     if (auth.currentUser) {
       try { await setDoc(doc(db, "posetioci", auth.currentUser.uid), { poslednjiKlik: serverTimestamp(), zainteresovanZa: tip }, { merge: true }); } catch (err) {}
@@ -175,11 +162,10 @@ export default function SingleProductPage({ apps = [] }) {
       } catch (error) { v8Toast.error("Login error!"); }
     }
   };
-  // KRAJ FUNKCIJE: handlePaymentGlobal
   
   return (
     <div className="bg-[#050505] pt-32 pb-32 px-6 font-sans text-white text-left relative">
-      <Helmet><title>{app.name} | AI TOOLS PRO SMART</title></Helmet>
+      <Helmet><title>{app.name} | V8 FACTORY</title></Helmet>
       <AnimatePresence>
         {fullScreenImage && (
           <div className="fixed inset-0 z-[6000] bg-black/95 flex items-center justify-center p-4" onClick={() => setFullScreenImage(null)}>
@@ -202,8 +188,8 @@ export default function SingleProductPage({ apps = [] }) {
               {app.type && <div className={`mb-6 px-6 py-2.5 rounded-full inline-block text-white text-[13px] font-black uppercase tracking-[0.2em] shadow-xl ${ribbonClass}`}>{app.type}</div>}
               
               {/* Glavna slika/video */}
-              <div className="relative mb-6 aspect-video rounded-[2.5rem] overflow-hidden border-2 border-blue-500 bg-black shadow-2xl group">
-                {!isVideo ? <><img src={currentMedia.url} onClick={() => setFullScreenImage(currentMedia.url)} className="w-full h-full object-cover cursor-pointer" alt="" /><button onClick={(e) => { e.stopPropagation(); setFullScreenImage(currentMedia.url); }} className="absolute top-6 right-6 p-3 bg-black/60 rounded-xl opacity-0 group-hover:opacity-100 transition-all z-20 hover:bg-blue-600"><Maximize className="w-5 h-5 text-white" /></button></> : <video ref={mainVideoRef} src={currentMedia.url} className="w-full h-full object-cover" controls controlsList="nodownload" autoPlay muted loop playsInline />}
+              <div className="relative mb-6 aspect-video rounded-[2.5rem] overflow-hidden border-2 border-orange-500/50 bg-black shadow-2xl group">
+                {!isVideo ? <><img src={currentMedia.url} onClick={() => setFullScreenImage(currentMedia.url)} className="w-full h-full object-cover cursor-pointer" alt="" /><button onClick={(e) => { e.stopPropagation(); setFullScreenImage(currentMedia.url); }} className="absolute top-6 right-6 p-3 bg-black/60 rounded-xl opacity-0 group-hover:opacity-100 transition-all z-20 hover:bg-orange-600"><Maximize className="w-5 h-5 text-white" /></button></> : <video ref={mainVideoRef} src={currentMedia.url} className="w-full h-full object-cover" controls controlsList="nodownload" autoPlay muted loop playsInline />}
                 {app.media?.length > 1 && <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between px-6 pointer-events-none z-20"><button onClick={(e) => {e.stopPropagation(); setActiveMedia((activeMedia - 1 + app.media.length) % app.media.length);}} className="p-3 text-white pointer-events-auto opacity-0 group-hover:opacity-100 hover:text-orange-500 transition-all"><ChevronLeft className="w-8 h-8" /></button><button onClick={(e) => {e.stopPropagation(); setActiveMedia((activeMedia + 1) % app.media.length);}} className="p-3 text-white pointer-events-auto opacity-0 group-hover:opacity-100 hover:text-orange-500 transition-all"><ChevronRight className="w-8 h-8" /></button></div>}
               </div>
               
@@ -238,7 +224,7 @@ export default function SingleProductPage({ apps = [] }) {
           {/* Desna strana: Checkout i Payment */}
           <div className="w-full lg:w-[35%] lg:sticky lg:top-40">
             <V8Reveal delay={0.2} direction="left">
-              <div className="bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] p-8 shadow-2xl">
+              <div className="bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                 <img src={mojBaner} alt="Banner" className="w-full h-40 object-cover rounded-2xl mb-8 border border-white/5" />
                 
                 {isCheckingAccess ? (
@@ -252,17 +238,17 @@ export default function SingleProductPage({ apps = [] }) {
                     <div className="flex flex-col gap-4">
                       {mainLink ? (
                         <a href={data.formatExternalLink(mainLink)} target="_blank" rel="noreferrer" className="w-full py-5 rounded-xl flex items-center justify-center gap-2 bg-gradient-to-r from-green-600 to-emerald-500 text-white font-black text-[13px] uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_20px_rgba(34,197,94,0.4)]">
-                          🚀 OPEN APPLICATION
+                          🚀 OPEN ASSET
                         </a>
-                      ) : (<div className="text-zinc-500 text-[10px] uppercase font-bold p-3 border border-white/5 rounded-xl">App link is not configured</div>)}
+                      ) : (<div className="text-zinc-500 text-[10px] uppercase font-bold p-3 border border-white/5 rounded-xl">Asset link is not configured</div>)}
                     </div>
                   </div>
                 ) : (
                   <div className="bg-[#050505] border border-orange-500/40 p-5 rounded-2xl shadow-[0_0_20px_rgba(234,88,12,0.1)] relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 bg-orange-600 text-white text-[8px] font-black uppercase tracking-widest px-4 py-1.5 rounded-bl-xl z-10 shadow-lg">DIGITAL PRODUCT 🌐</div>
+                    {/* V8 FIX: JASNO NAGLAŠENO JEDNOKRATNO PLAĆANJE */}
+                    <div className="absolute top-0 right-0 bg-orange-600 text-white text-[8px] font-black uppercase tracking-widest px-4 py-1.5 rounded-bl-xl z-10 shadow-lg">ONE-TIME PURCHASE 🌐</div>
                     <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mb-4 mt-2 flex items-center justify-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.8)]"></span> Secure Digital Checkout</p>
                     
-                    {/* V8 FIX: NOVI FORMAT BEDŽEVI */}
                     <div className="flex justify-center gap-2 mb-6">
                         <span className="bg-white/5 border border-white/10 text-zinc-400 text-[9px] px-2 py-1 rounded uppercase font-black tracking-widest">16:9</span>
                         <span className="bg-white/5 border border-white/10 text-zinc-400 text-[9px] px-2 py-1 rounded uppercase font-black tracking-widest">9:16</span>
@@ -270,10 +256,11 @@ export default function SingleProductPage({ apps = [] }) {
                     </div>
 
                     <div className="flex flex-col gap-3">
-                      <button onClick={() => handlePaymentGlobal('Standard License', cenaMesecno)} className="w-full py-4 rounded-xl flex items-center justify-between px-5 bg-white/5 border border-white/10 hover:border-orange-500/50 hover:bg-orange-500/10 text-white font-black text-[12px] uppercase tracking-widest transition-all"><span className="flex items-center gap-2"><Zap className="w-4 h-4 text-orange-500" /> Standard License</span><span className="text-orange-400">${cenaMesecno}</span></button>
-                      <button onClick={() => handlePaymentGlobal('Master License', cenaLifetime)} className="w-full py-4 rounded-xl flex items-center justify-between px-5 bg-gradient-to-r from-orange-600/20 to-amber-600/20 border border-orange-500/40 hover:from-orange-600 hover:to-amber-600 text-white font-black text-[12px] uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(234,88,12,0.2)] hover:shadow-[0_0_25px_rgba(234,88,12,0.6)]"><span className="flex items-center gap-2"><Award className="w-4 h-4 text-amber-400" /> Master License</span><span className="text-white drop-shadow-md">${cenaLifetime}</span></button>
+                      {/* V8 FIX: TERMINOLOGIJA DIGITALNOG PREUZIMANJA */}
+                      <button onClick={() => handlePaymentGlobal('Standard Download', cenaStandard)} className="w-full py-4 rounded-xl flex items-center justify-between px-5 bg-white/5 border border-white/10 hover:border-orange-500/50 hover:bg-orange-500/10 text-white font-black text-[11px] md:text-[12px] uppercase tracking-widest transition-all"><span className="flex items-center gap-2"><DownloadCloud className="w-4 h-4 text-orange-500" /> Standard Download</span><span className="text-orange-400">${cenaStandard}</span></button>
+                      <button onClick={() => handlePaymentGlobal('Premium Bundle', cenaPremium)} className="w-full py-4 rounded-xl flex items-center justify-between px-5 bg-gradient-to-r from-orange-600/20 to-amber-600/20 border border-orange-500/40 hover:from-orange-600 hover:to-amber-600 text-white font-black text-[11px] md:text-[12px] uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(234,88,12,0.2)] hover:shadow-[0_0_25px_rgba(234,88,12,0.6)]"><span className="flex items-center gap-2"><Award className="w-4 h-4 text-amber-400" /> Premium Bundle</span><span className="text-white drop-shadow-md">${cenaPremium}</span></button>
                     </div>
-                    <p className="text-[9px] text-zinc-500 uppercase tracking-widest mt-6 text-center leading-relaxed font-bold px-2">After payment verification, the system will automatically unlock your instant digital download access here.</p>
+                    <p className="text-[9px] text-zinc-500 uppercase tracking-widest mt-6 text-center leading-relaxed font-bold px-2">After checkout, the system will automatically unlock your instant digital download access here.</p>
                   </div>
                 )}
               </div>
@@ -289,21 +276,21 @@ export default function SingleProductPage({ apps = [] }) {
             <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 30 }} className="bg-[#0a0a0a] border border-orange-500/40 rounded-[2.5rem] max-w-md w-full relative text-zinc-100 font-sans shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden">
               <button onClick={() => setWireModalData(null)} className="absolute top-5 right-5 bg-white/5 p-2 rounded-full text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10 transition-all z-10"><X size={20} strokeWidth={3} /></button>
               <div className="p-10 flex flex-col items-center">
-                <h3 className="text-[18px] font-black uppercase tracking-widest mb-2 text-orange-500 flex items-center gap-3"><Zap className="w-5 h-5" /> Wire Instructions</h3>
+                <h3 className="text-[18px] font-black uppercase tracking-widest mb-2 text-orange-500 flex items-center gap-3"><DownloadCloud className="w-5 h-5" /> Digital Asset Checkout</h3>
                 <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mb-6">Package: {wireModalData.tip}</p>
                 
                 <div className="w-full bg-[#050505] border border-white/10 rounded-2xl p-6 space-y-4 text-[13px] font-mono shadow-inner mb-8">
-                  <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Recipient:</span><span className="font-bold text-white text-right">Goran Damnjanović</span></div>
-                  <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Email Contact:</span><span className="font-bold text-white text-[11px] md:text-[13px]">aitoolsprosmart@gmail.com</span></div>
-                  <div className="flex justify-between pt-2"><span className="text-zinc-500 uppercase">Amount:</span><span className="font-black text-orange-500 text-[18px] drop-shadow-[0_0_8px_rgba(234,88,12,0.5)]">${wireModalData.cena}</span></div>
+                  <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Provider:</span><span className="font-bold text-white text-right">V8 Digital Vault</span></div>
+                  <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Support:</span><span className="font-bold text-white text-[11px] md:text-[13px]">aitoolsprosmart@gmail.com</span></div>
+                  <div className="flex justify-between pt-2"><span className="text-zinc-500 uppercase">Total (One-Time):</span><span className="font-black text-orange-500 text-[18px] drop-shadow-[0_0_8px_rgba(234,88,12,0.5)]">${wireModalData.cena}</span></div>
                 </div>
                 
                 <div className="w-full bg-[#050505] border border-orange-500/30 rounded-2xl p-5 text-center shadow-[0_0_20px_rgba(234,88,12,0.15)]">
-                  <p className="text-[11px] md:text-[12px] text-zinc-400 font-black uppercase tracking-widest mb-4">Please contact us to arrange payment:</p>
+                  <p className="text-[11px] md:text-[12px] text-zinc-400 font-black uppercase tracking-widest mb-4">Please contact us to complete your one-time purchase:</p>
                   <a href="mailto:aitoolsprosmart@gmail.com" className="flex items-center justify-center gap-2 w-full bg-white/5 border border-white/10 hover:border-orange-500/50 hover:bg-orange-500/10 text-orange-400 py-3 rounded-xl font-black text-[12px] md:text-[14px] tracking-widest transition-all cursor-pointer shadow-inner">
-                    📧 aitoolsprosmart@gmail.com
+                    📧 Request Checkout Link
                   </a>
-                  <span className="block mt-5 text-[10px] text-zinc-500 uppercase font-black tracking-widest">System unlocks access immediately upon verification! 🚀</span>
+                  <span className="block mt-5 text-[10px] text-zinc-500 uppercase font-black tracking-widest">System unlocks your download automatically! 🚀</span>
                 </div>
               </div>
             </motion.div>

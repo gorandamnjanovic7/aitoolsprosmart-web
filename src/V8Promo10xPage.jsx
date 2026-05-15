@@ -1,68 +1,102 @@
+// POČETAK FAJLA: V8Promo10xPage.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { doc, onSnapshot } from 'firebase/firestore';
-import { db } from './firebase';
-import { Crown, CheckCircle, Zap, Play, Rocket, TrendingUp, Cpu, Crosshair } from 'lucide-react';
-import { motion } from 'framer-motion'; // V8: Dodali smo Framer Motion za premium animacije!
+import { doc, onSnapshot, serverTimestamp, setDoc, getDoc, collection, addDoc } from 'firebase/firestore';
+import { signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'firebase/auth';
+import { db, auth } from './firebase';
+import { Crown, CheckCircle, Zap, Play, Rocket, TrendingUp, Cpu, Crosshair, DownloadCloud, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion'; 
+import { v8Toast } from './App';
 
-// Početak funkcije: V8Promo10xPage
 const V8Promo10xPage = () => {
   const [promoData, setPromoData] = useState({ images: [], promoText: "" });
+  const [lemonLink, setLemonLink] = useState("");
+  const [currentUser, setCurrentUser] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
-  // V8 FIX: Forsira skrol na vrh stranice pri učitavanju!
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "v8_settings", "promo10x"), (doc) => {
-      if (doc.exists()) {
-        setPromoData(doc.data());
+    const unsubAuth = onAuthStateChanged(auth, (user) => {
+        setCurrentUser(user);
+    });
+
+    const unsubPromo = onSnapshot(doc(db, "v8_settings", "promo10x"), (docSnap) => {
+      if (docSnap.exists()) {
+        setPromoData(docSnap.data());
       }
     });
-    return () => unsub();
+
+    const unsubLemon = onSnapshot(doc(db, "v8_settings", "lemon"), (docSnap) => {
+      if (docSnap.exists()) {
+          setLemonLink(docSnap.data().checkoutUrl || "");
+      }
+    });
+
+    return () => { unsubAuth(); unsubPromo(); unsubLemon(); };
   }, []);
 
-  const images = promoData?.images?.length > 0 
-    ? promoData.images 
-    : ['/thumbinal.png']; 
-
+  const images = promoData?.images?.length > 0 ? promoData.images : ['/thumbinal.png']; 
   const videoUrl = "/v8-reklama.mp4";
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
   const handlePlayVideo = () => {
     setIsPlaying(true);
-    if (videoRef.current) {
-      videoRef.current.play();
-    }
+    if (videoRef.current) { videoRef.current.play(); }
   };
 
   const handleVideoEnded = () => {
     setIsPlaying(false); 
     if (document.fullscreenElement || document.webkitFullscreenElement) {
-      if (document.exitFullscreen) {
-        document.exitFullscreen().catch(() => {});
-      } else if (document.webkitExitFullscreen) { 
-        document.webkitExitFullscreen();
-      }
+      if (document.exitFullscreen) { document.exitFullscreen().catch(() => {}); } 
+      else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
     }
   };
 
   const toggleFullScreen = () => {
     if (!videoRef.current) return;
-    
     if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-      if (videoRef.current.requestFullscreen) {
-        videoRef.current.requestFullscreen();
-      } else if (videoRef.current.webkitRequestFullscreen) { 
-        videoRef.current.webkitRequestFullscreen();
-      }
+      if (videoRef.current.requestFullscreen) { videoRef.current.requestFullscreen(); } 
+      else if (videoRef.current.webkitRequestFullscreen) { videoRef.current.webkitRequestFullscreen(); }
     } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      } else if (document.webkitExitFullscreen) { 
-        document.webkitExitFullscreen();
-      }
+      if (document.exitFullscreen) { document.exitFullscreen(); } 
+      else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+    }
+  };
+
+  const snimiKupcaUBazu = async (user) => {
+      try {
+          await addDoc(collection(db, "v8_kupci"), {
+              ime: user.displayName || "Client", email: user.email, uid: user.uid,
+              zeliPaket: "V8 PROMO 10X LIFETIME", cenaPaketa: 199.99, vreme: serverTimestamp(), isPaid: false
+          });
+      } catch (error) { console.error(error); }
+  };
+
+  const handlePurchaseClick = async () => {
+    if (currentUser) {
+        snimiKupcaUBazu(currentUser);
+        if (lemonLink) {
+            window.location.href = lemonLink; 
+        } else {
+            setShowPaymentModal(true); 
+        }
+    } else {
+        try {
+            await signOut(auth);
+            const v8Provider = new GoogleAuthProvider();
+            v8Provider.setCustomParameters({ prompt: 'select_account', login_hint: '' });
+            const result = await signInWithPopup(auth, v8Provider);
+            await snimiKupcaUBazu(result.user);
+            
+            if (lemonLink) {
+                window.location.href = lemonLink;
+            } else {
+                setShowPaymentModal(true); 
+            }
+        } catch (error) { v8Toast.error("Login canceled."); }
     }
   };
 
@@ -71,27 +105,12 @@ const V8Promo10xPage = () => {
       
       {/* --- V8 PREMIUM HERO KARTICA --- */}
       <div className="relative w-full max-w-5xl mx-auto rounded-[2.5rem] border border-orange-500/20 shadow-[0_0_40px_rgba(234,88,12,0.1)] overflow-hidden flex flex-col items-center justify-center p-10 md:p-16 text-center mt-6 mb-16 group">
-
-        {/* 1. ANIMIRANA POZADINA (Povećana vidljivost zlata) */}
         <div className="absolute inset-0 z-0 bg-[#050505]">
-          <img
-            src="/promo-bg.webp"
-            alt="V8 Engine Power"
-            className="w-full h-full object-cover opacity-90 scale-100 group-hover:scale-110 transition-transform duration-[15000ms] ease-out"
-          />
-          {/* Zatamnjenje: Ivice mračne, sredina propušta više zlata (via-30) */}
+          <img src="/promo-bg.webp" alt="V8 Engine Power" className="w-full h-full object-cover opacity-90 scale-100 group-hover:scale-110 transition-transform duration-[15000ms] ease-out" />
           <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/95 via-[#050505]/30 to-[#050505]/95"></div>
         </div>
 
-        {/* 2. SADRŽAJ KARTICE SA FRAMER MOTION ANIMACIJOM */}
-        <motion.div 
-          initial={{ opacity: 0, y: 40 }} 
-          whileInView={{ opacity: 1, y: 0 }} 
-          viewport={{ once: true }} 
-          transition={{ duration: 0.9, ease: "easeOut" }}
-          className="relative z-10 flex flex-col items-center w-full px-2"
-        >
-          
+        <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.9, ease: "easeOut" }} className="relative z-10 flex flex-col items-center w-full px-2">
           <div className="inline-flex items-center justify-center gap-2 bg-orange-500/10 border border-orange-500/30 px-5 py-2.5 rounded-full text-orange-500 text-[11px] font-black uppercase tracking-[0.2em] mb-8 shadow-[0_0_15px_rgba(234,88,12,0.2)]">
             <Crown className="w-4 h-4" /> EXCLUSIVE V8 PREMIERE
           </div>
@@ -120,150 +139,97 @@ const V8Promo10xPage = () => {
               No compromises. No hidden fees. Just pure, raw power at your click.
             </p>
           </div>
-
         </motion.div>
       </div>
-      {/* --- KRAJ V8 KARTICE --- */}
 
-      {/* --- PREMIUM ANIMIRANI BEDŽEVI (Kaskadna animacija) --- */}
-      <motion.div 
-        initial={{ opacity: 0, y: 30 }} 
-        whileInView={{ opacity: 1, y: 0 }} 
-        viewport={{ once: true }} 
-        transition={{ duration: 0.8, delay: 0.3 }}
-        className="max-w-5xl mx-auto px-6"
-      >
+      {/* --- PREMIUM ANIMIRANI BEDŽEVI --- */}
+      <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.3 }} className="max-w-5xl mx-auto px-6">
         <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-[11px] md:text-[13px] font-black tracking-[0.15em] uppercase mb-20">
-          
-          <div className="group flex items-center gap-3 bg-[#0a0a0a] border border-zinc-800 hover:border-green-500/50 px-5 py-3 rounded-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(34,197,94,0.15)] cursor-default">
-            <Crosshair className="w-5 h-5 text-green-500 group-hover:rotate-90 transition-transform duration-500 drop-shadow-[0_0_8px_rgba(34,197,94,0.6)]" /> 
-            <span className="text-zinc-400 group-hover:text-white transition-colors">99.8% Precision</span>
-          </div>
-
-          <div className="group flex items-center gap-3 bg-[#0a0a0a] border border-zinc-800 hover:border-orange-500/50 px-5 py-3 rounded-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(249,115,22,0.15)] cursor-default">
-            <Cpu className="w-5 h-5 text-orange-500 group-hover:animate-pulse transition-transform duration-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.6)]" /> 
-            <span className="text-zinc-400 group-hover:text-white transition-colors">V8 Architecture</span>
-          </div>
-
-          <div className="group flex items-center gap-3 bg-[#0a0a0a] border border-zinc-800 hover:border-blue-500/50 px-5 py-3 rounded-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(59,130,246,0.15)] cursor-default">
-            <Rocket className="w-5 h-5 text-blue-500 group-hover:-translate-y-1.5 transition-transform duration-300 drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]" /> 
-            <span className="text-zinc-400 group-hover:text-white transition-colors">0.3s Response</span>
-          </div>
-
-          <div className="group flex items-center gap-3 bg-[#0a0a0a] border border-zinc-800 hover:border-yellow-500/50 px-5 py-3 rounded-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(234,179,8,0.15)] cursor-default">
-            <TrendingUp className="w-5 h-5 text-yellow-500 group-hover:scale-110 transition-transform duration-300 drop-shadow-[0_0_8px_rgba(234,179,8,0.6)]" /> 
-            <span className="text-zinc-400 group-hover:text-white transition-colors">10X Conversion</span>
-          </div>
-
+          <div className="group flex items-center gap-3 bg-[#0a0a0a] border border-zinc-800 hover:border-green-500/50 px-5 py-3 rounded-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(34,197,94,0.15)] cursor-default"><Crosshair className="w-5 h-5 text-green-500 group-hover:rotate-90 transition-transform duration-500 drop-shadow-[0_0_8px_rgba(34,197,94,0.6)]" /> <span className="text-zinc-400 group-hover:text-white transition-colors">99.8% Precision</span></div>
+          <div className="group flex items-center gap-3 bg-[#0a0a0a] border border-zinc-800 hover:border-orange-500/50 px-5 py-3 rounded-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(249,115,22,0.15)] cursor-default"><Cpu className="w-5 h-5 text-orange-500 group-hover:animate-pulse transition-transform duration-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.6)]" /> <span className="text-zinc-400 group-hover:text-white transition-colors">V8 Architecture</span></div>
+          <div className="group flex items-center gap-3 bg-[#0a0a0a] border border-zinc-800 hover:border-blue-500/50 px-5 py-3 rounded-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(59,130,246,0.15)] cursor-default"><Rocket className="w-5 h-5 text-blue-500 group-hover:-translate-y-1.5 transition-transform duration-300 drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]" /> <span className="text-zinc-400 group-hover:text-white transition-colors">0.3s Response</span></div>
+          <div className="group flex items-center gap-3 bg-[#0a0a0a] border border-zinc-800 hover:border-yellow-500/50 px-5 py-3 rounded-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(234,179,8,0.15)] cursor-default"><TrendingUp className="w-5 h-5 text-yellow-500 group-hover:scale-110 transition-transform duration-300 drop-shadow-[0_0_8px_rgba(234,179,8,0.6)]" /> <span className="text-zinc-400 group-hover:text-white transition-colors">10X Conversion</span></div>
         </div>
       </motion.div>
 
-      {/* --- PAMETNI VIDEO PLEJER (Fade i Scale animacija) --- */}
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }} 
-        whileInView={{ opacity: 1, scale: 1 }} 
-        viewport={{ once: true }} 
-        transition={{ duration: 0.8, delay: 0.2 }}
-        className="max-w-4xl mx-auto px-6 mb-24 relative group"
-      >
+      {/* --- PAMETNI VIDEO PLEJER --- */}
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.2 }} className="max-w-4xl mx-auto px-6 mb-24 relative group">
         <div className="w-full aspect-video relative p-[2px] rounded-[2rem] overflow-hidden bg-black">
-          
           <div className="absolute inset-[-100%] animate-[spin_4s_linear_infinite] v8-ai-aura opacity-70 group-hover:opacity-100 transition-opacity duration-500 z-0"></div>
-          
           <div className="relative w-full h-full bg-black rounded-[calc(2rem-2px)] overflow-hidden z-10 flex items-center justify-center">
-            
             {!isPlaying && (
-              <div 
-                className="absolute inset-0 z-20 flex items-center justify-center cursor-pointer group/play"
-                onClick={handlePlayVideo}
-              >
+              <div className="absolute inset-0 z-20 flex items-center justify-center cursor-pointer group/play" onClick={handlePlayVideo}>
                 <img src="/thumbinal.png" alt="V8 Poster" className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover/play:opacity-40 transition-opacity" />
-                
-                <div className="relative z-30 bg-orange-500/90 p-4 rounded-full border border-orange-400 shadow-[0_0_20px_rgba(255,69,0,0.6)] group-hover/play:scale-110 transition-transform">
-                  <Play className="w-8 h-8 text-white fill-white ml-1" />
-                </div>
+                <div className="relative z-30 bg-orange-500/90 p-4 rounded-full border border-orange-400 shadow-[0_0_20px_rgba(255,69,0,0.6)] group-hover/play:scale-110 transition-transform"><Play className="w-8 h-8 text-white fill-white ml-1" /></div>
               </div>
             )}
-
-            <video 
-              ref={videoRef}
-              controls={isPlaying} 
-              controlsList="nodownload" 
-              muted 
-              playsInline 
-              onEnded={handleVideoEnded} 
-              onDoubleClick={toggleFullScreen}
-              className="w-full h-full object-cover cursor-pointer"
-              poster="/v8-poster.jpg" 
-              title="Double click for Fullscreen"
-            >
+            <video ref={videoRef} controls={isPlaying} controlsList="nodownload" muted playsInline onEnded={handleVideoEnded} onDoubleClick={toggleFullScreen} className="w-full h-full object-cover cursor-pointer" poster="/v8-poster.jpg" title="Double click for Fullscreen">
               <source src={videoUrl} type="video/mp4" />
             </video>
           </div>
-
           <div className="absolute -inset-4 animate-[spin_4s_linear_infinite] v8-ai-aura opacity-20 group-hover:opacity-50 blur-2xl transition-opacity duration-700 pointer-events-none z-0"></div>
         </div>
         <p className="text-zinc-600 text-[10px] text-center mt-3 uppercase tracking-widest font-bold">Double-click video for full screen</p>
       </motion.div>
 
-      {/* --- V8 BESKONAČNA TRAKA --- */}
-      <motion.div 
-        initial={{ opacity: 0 }} 
-        whileInView={{ opacity: 1 }} 
-        viewport={{ once: true }} 
-        transition={{ duration: 1 }}
-        className="w-full mb-20 overflow-hidden bg-black py-10 border-y border-white/5"
-      >
-        
+      {/* --- V8 BESKONAČNA TRAKA I KUPNJAA --- */}
+      <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 1 }} className="w-full mb-20 overflow-hidden bg-black py-10 border-y border-white/5">
         <h3 className="flex items-center justify-center gap-3 text-[11px] font-black uppercase tracking-[0.3em] text-zinc-500 mb-8 text-center">
-          <span className="relative flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.9)]"></span>
-          </span>
-          Live V8 Visual Stream
+          <span className="relative flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.9)]"></span></span> Live V8 Visual Stream
         </h3>
 
         <div className="flex justify-center mb-10">
-          <button 
-            className="px-10 md:px-14 py-4 md:py-5 bg-gradient-to-r from-orange-600 to-[#FF4500] hover:from-orange-500 hover:to-red-600 text-black font-extrabold text-[15px] md:text-[18px] tracking-[0.2em] uppercase rounded-sm shadow-[0_0_30px_rgba(255,69,0,0.6)] hover:shadow-[0_0_50px_rgba(255,69,0,0.9)] transform hover:scale-105 transition-all duration-300 border border-orange-400/50 flex items-center gap-3"
-            onClick={() => { 
-              alert('Dugme radi! Ovde treba ubaciti logiku za otvaranje naplate.'); 
-            }} 
-          >
-            <Crown className="w-5 h-5 text-black" />
-            GET LIFETIME LICENSE ($199.99)
+          <button onClick={handlePurchaseClick} className="px-10 md:px-14 py-4 md:py-5 bg-gradient-to-r from-orange-600 to-[#FF4500] hover:from-orange-500 hover:to-red-600 text-black font-extrabold text-[15px] md:text-[18px] tracking-[0.2em] uppercase rounded-sm shadow-[0_0_30px_rgba(255,69,0,0.6)] hover:shadow-[0_0_50px_rgba(255,69,0,0.9)] transform hover:scale-105 transition-all duration-300 border border-orange-400/50 flex items-center gap-3">
+            <Crown className="w-5 h-5 text-black" /> GET LIFETIME LICENSE ($199.99)
           </button>
         </div>
         
         <div className="v8-slider-container-small flex overflow-hidden">
           <div className="v8-track-fast flex w-max hover:[animation-play-state:paused] transition-all" style={{ animationDuration: '150s' }}>
-            
-            {images.map((imgUrl, idx) => (
-              <div key={`v8-1-${idx}`} className="relative p-[2px] rounded-2xl overflow-hidden group transition-all duration-500 hover:scale-105 shrink-0 w-[260px] md:w-[360px] aspect-video cursor-default mx-3">
-                <div className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-gradient-to-r from-orange-600 via-transparent to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <div className="relative h-full w-full rounded-[14px] overflow-hidden bg-[#050505] z-10">
-                  <img src={imgUrl} alt={`V8 Visual ${idx + 1}`} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-500" />
-                </div>
-                <div className="absolute -inset-4 animate-[spin_3s_linear_infinite] bg-gradient-to-r from-orange-600 to-blue-600 opacity-0 group-hover:opacity-30 blur-xl transition-opacity duration-700 pointer-events-none z-0"></div>
-              </div>
-            ))}
-            
-            {images.map((imgUrl, idx) => (
-              <div key={`v8-2-${idx}`} className="relative p-[2px] rounded-2xl overflow-hidden group transition-all duration-500 hover:scale-105 shrink-0 w-[260px] md:w-[360px] aspect-video cursor-default mx-3">
-                <div className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-gradient-to-r from-orange-600 via-transparent to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <div className="relative h-full w-full rounded-[14px] overflow-hidden bg-[#050505] z-10">
-                  <img src={imgUrl} alt={`V8 Visual ${idx + 1}`} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-500" />
-                </div>
-                <div className="absolute -inset-4 animate-[spin_3s_linear_infinite] bg-gradient-to-r from-orange-600 to-blue-600 opacity-0 group-hover:opacity-30 blur-xl transition-opacity duration-700 pointer-events-none z-0"></div>
-              </div>
-            ))}
+            {images.map((imgUrl, idx) => (<div key={`v8-1-${idx}`} className="relative p-[2px] rounded-2xl overflow-hidden group transition-all duration-500 hover:scale-105 shrink-0 w-[260px] md:w-[360px] aspect-video cursor-default mx-3"><div className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-gradient-to-r from-orange-600 via-transparent to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div><div className="relative h-full w-full rounded-[14px] overflow-hidden bg-[#050505] z-10"><img src={imgUrl} alt={`V8 Visual ${idx + 1}`} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-500" /></div><div className="absolute -inset-4 animate-[spin_3s_linear_infinite] bg-gradient-to-r from-orange-600 to-blue-600 opacity-0 group-hover:opacity-30 blur-xl transition-opacity duration-700 pointer-events-none z-0"></div></div>))}
+            {images.map((imgUrl, idx) => (<div key={`v8-2-${idx}`} className="relative p-[2px] rounded-2xl overflow-hidden group transition-all duration-500 hover:scale-105 shrink-0 w-[260px] md:w-[360px] aspect-video cursor-default mx-3"><div className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-gradient-to-r from-orange-600 via-transparent to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div><div className="relative h-full w-full rounded-[14px] overflow-hidden bg-[#050505] z-10"><img src={imgUrl} alt={`V8 Visual ${idx + 1}`} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-500" /></div><div className="absolute -inset-4 animate-[spin_3s_linear_infinite] bg-gradient-to-r from-orange-600 to-blue-600 opacity-0 group-hover:opacity-30 blur-xl transition-opacity duration-700 pointer-events-none z-0"></div></div>))}
           </div>
         </div>
-
       </motion.div>
+
+      {/* --- V8 DIGITAL CHECKOUT MODAL (CLEAN) --- */}
+      <AnimatePresence>
+        {showPaymentModal && (
+          <div className="fixed inset-0 z-[9000] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 30 }} className="bg-[#0a0a0a] border border-orange-500/40 rounded-[2.5rem] max-w-md w-full relative text-zinc-100 font-sans shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden">
+              <button onClick={() => setShowPaymentModal(false)} className="absolute top-5 right-5 bg-white/5 p-2 rounded-full text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10 transition-all z-10"><X size={20} strokeWidth={3} /></button>
+              
+              <div className="p-10 flex flex-col items-center">
+                <div className="w-16 h-16 rounded-full bg-orange-600/10 flex items-center justify-center mb-4 border border-orange-500/30 shadow-[0_0_20px_rgba(234,88,12,0.2)]">
+                   <DownloadCloud className="w-8 h-8 text-orange-500" />
+                </div>
+                
+                <h3 className="text-[18px] font-black uppercase tracking-widest mb-2 text-white text-center">Digital Asset Checkout</h3>
+                <p className="text-[10px] text-orange-400 font-black uppercase tracking-widest mb-8 text-center">V8 PROMO 10X LIFETIME</p>
+                
+                <div className="w-full bg-[#050505] border border-white/10 rounded-2xl p-6 space-y-4 text-[13px] font-mono shadow-inner mb-8">
+                  <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Provider:</span><span className="font-bold text-white text-right">V8 Vault</span></div>
+                  <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Support:</span><span className="font-bold text-white text-[11px]">aitoolsprosmart@gmail.com</span></div>
+                  <div className="flex justify-between pt-2 items-center"><span className="text-zinc-500 uppercase">Total (One-Time):</span><span className="font-black text-white text-[22px] drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">$199.99</span></div>
+                </div>
+                
+                <div className="w-full bg-[#050505] border border-orange-500/30 rounded-2xl p-6 text-center shadow-[0_0_20px_rgba(234,88,12,0.15)] relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                  <p className="text-[11px] md:text-[12px] text-zinc-300 font-black uppercase tracking-widest mb-4">Please contact support to complete your one-time purchase:</p>
+                  <a href="mailto:aitoolsprosmart@gmail.com" className="flex items-center justify-center gap-2 w-full bg-white text-black hover:bg-orange-500 hover:text-white py-3.5 rounded-xl font-black text-[12px] uppercase tracking-widest transition-all cursor-pointer shadow-lg">
+                     Request Checkout Link
+                  </a>
+                  <span className="block mt-4 text-[9px] text-zinc-500 uppercase font-bold tracking-widest">System unlocks your download automatically after checkout! 🚀</span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );
 };
 
 export default V8Promo10xPage;
+// KRAJ FAJLA: V8Promo10xPage.jsx

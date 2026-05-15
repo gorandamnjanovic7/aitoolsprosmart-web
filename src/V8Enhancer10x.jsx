@@ -1,7 +1,8 @@
+// POČETAK FAJLA: V8Enhancer10x.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { Zap, Loader2, Eye, Trash2, UploadCloud, Dices, History, Lock, X, PlayCircle, ShieldAlert, ChevronLeft } from 'lucide-react';
+import { Zap, Loader2, Eye, Trash2, UploadCloud, Dices, History, Lock, X, PlayCircle, ShieldAlert, ChevronLeft, DownloadCloud } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
@@ -9,7 +10,7 @@ import { useGSAP } from '@gsap/react';
 // FIREBASE
 import { db, auth, provider } from './firebase';
 import { signInWithPopup, onAuthStateChanged, signOut } from "firebase/auth";
-import { collection, getDocs, doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { collection, getDocs, doc, getDoc, setDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
 
 // DATA & TOAST
 import * as data from './data';
@@ -91,25 +92,34 @@ const V8Enhancer10x = () => {
   const [isVIP, setIsVIP] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(null);
   const [vipHistory, setVipHistory] = useState([]);
+  const [lemonLink, setLemonLink] = useState("");
 
-  // --- VIP AUTENTIFIKACIJA ---
+  // --- VIP AUTENTIFIKACIJA & LEMON SQUEEZY LINK ---
   useEffect(() => {
+    const unsubLemon = onSnapshot(doc(db, "v8_settings", "lemon"), (docSnap) => {
+        if (docSnap.exists()) {
+            setLemonLink(docSnap.data().checkoutUrl || "");
+        }
+    });
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        if (user.email === "damnjanovicgoran7@gmail.com") {
-          setIsVIP(true); v8Toast.success("Welcome back, Master Goran!"); loadHistory(user.email);
+        const email = user.email ? user.email.toLowerCase() : "";
+        // 🔥 V8 POPRAVKA: PUŠTAMO OBA TVOJA MEJLA 🔥
+        if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
+          setIsVIP(true); v8Toast.success("Welcome back, Master Goran!"); loadHistory(email);
         } else {
           try {
-            const docRef = doc(db, "vip_users", user.email.toLowerCase());
+            const docRef = doc(db, "vip_users", email);
             const docSnap = await getDoc(docRef);
             if (docSnap.exists() && docSnap.data().unlockedApps && (docSnap.data().unlockedApps.includes('FULL_ACCESS') || docSnap.data().unlockedApps.includes('10X_ENHANCER'))) { 
-              setIsVIP(true); v8Toast.success("Premium Access Granted!"); loadHistory(user.email); 
+              setIsVIP(true); v8Toast.success("Premium Access Granted!"); loadHistory(email); 
             } else { setIsVIP(false); }
           } catch(e) { setIsVIP(false); }
         }
       } else { setIsVIP(false); setVipHistory([]); }
     });
-    return () => unsubscribe();
+    return () => { unsubscribe(); unsubLemon(); };
   }, []);
 
   const loadHistory = (email) => {
@@ -139,10 +149,12 @@ const V8Enhancer10x = () => {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      if (user.email === "damnjanovicgoran7@gmail.com") {
+      const email = user.email ? user.email.toLowerCase() : "";
+      
+      if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
         setIsVIP(true);
       } else {
-        const docRef = doc(db, "vip_users", user.email.toLowerCase());
+        const docRef = doc(db, "vip_users", email);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists() && docSnap.data().unlockedApps && (docSnap.data().unlockedApps.includes('FULL_ACCESS') || docSnap.data().unlockedApps.includes('10X_ENHANCER'))) { setIsVIP(true); } else {
            v8Toast.error("Email not found in the premium database.");
@@ -152,38 +164,57 @@ const V8Enhancer10x = () => {
     } catch (err) { v8Toast.error("Login failed!"); }
   };
 
+  // --- V8 BLINDIRANA FUNKCIJA ZA PLAĆANJE ---
   const handlePaymentV8 = async (tip, cena) => {
-    if (auth.currentUser) { 
-      try { 
-        await setDoc(doc(db, "posetioci", auth.currentUser.uid), { poslednjiKlik: serverTimestamp(), zainteresovanZa: tip }, { merge: true }); 
-      } catch (err) {} 
-      setShowPaymentModal({ tip, cena });
-    } else {
-      try {
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-        
-        await setDoc(doc(db, "posetioci", user.uid), { 
-          ime: user.displayName, 
-          email: user.email, 
-          vremePrijave: serverTimestamp(), 
-          zainteresovanZa: tip, 
-          identitet: "V8-Client" 
-        }, { merge: true });
-        
-        const docRef = doc(db, "vip_users", user.email.toLowerCase());
-        const docSnap = await getDoc(docRef);
-        
-        if (docSnap.exists() && docSnap.data().unlockedApps && (docSnap.data().unlockedApps.includes('FULL_ACCESS') || docSnap.data().unlockedApps.includes('10X_ENHANCER'))) {
-            setIsVIP(true);
-            v8Toast.success("Welcome back! Access is already unlocked.");
-            loadHistory(user.email);
-        } else {
-            setShowPaymentModal({ tip, cena });
+    let currentUser = auth.currentUser;
+
+    if (!currentUser) {
+        try {
+            const result = await signInWithPopup(auth, provider);
+            currentUser = result.user;
+        } catch (error) {
+            v8Toast.error("Login canceled.");
+            return;
         }
-      } catch (error) { 
-        v8Toast.error("Google authentication failed!"); 
-      }
+    }
+
+    if (currentUser) {
+        try {
+            await setDoc(doc(db, "posetioci", currentUser.uid), { 
+                ime: currentUser.displayName || "Client", 
+                email: currentUser.email, 
+                vremePrijave: serverTimestamp(), 
+                zainteresovanZa: tip, 
+                identitet: "V8-Client" 
+            }, { merge: true });
+
+            const email = currentUser.email ? currentUser.email.toLowerCase() : "";
+            
+            // 🔥 V8 POPRAVKA: I OVDE PROVERAVAMO OBA TVOJA MEJLA 🔥
+            if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
+                setIsVIP(true);
+                v8Toast.success("Access already unlocked!");
+                loadHistory(email);
+                return; // Prekidamo ovde, ne otvaramo mu modal za naplatu!
+            }
+
+            const docRef = doc(db, "vip_users", email);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists() && docSnap.data().unlockedApps && (docSnap.data().unlockedApps.includes('FULL_ACCESS') || docSnap.data().unlockedApps.includes('10X_ENHANCER'))) {
+                setIsVIP(true);
+                v8Toast.success("Access already unlocked!");
+                loadHistory(email);
+            } else {
+                if (lemonLink && lemonLink.includes("http")) {
+                    window.location.href = lemonLink;
+                } else {
+                    setShowPaymentModal({ tip, cena });
+                }
+            }
+        } catch (err) {
+            v8Toast.error("System error.");
+        }
     }
   };
 
@@ -574,66 +605,37 @@ const V8Enhancer10x = () => {
         </div>
       </div>
 
-      {/* --- MODAL PLAĆANJE (GLOBAL WIRE INSTRUCTIONS) --- */}
+      {/* --- V8 DIGITAL CHECKOUT MODAL (CLEANED) --- */}
       <AnimatePresence>
         {showPaymentModal && (
-          <div className="fixed inset-0 z-[9000] bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
-            <div className="bg-[#050505] rounded-3xl max-w-[420px] w-full relative pt-8 pb-10 px-8 border-2 border-[#FF8C00] shadow-[0_0_50px_rgba(255,140,0,0.2)] flex flex-col items-center">
+          <div className="fixed inset-0 z-[9000] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 30 }} className="bg-[#0a0a0a] border border-orange-500/40 rounded-[2.5rem] max-w-md w-full relative text-zinc-100 font-sans shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden">
+              <button onClick={() => setShowPaymentModal(null)} className="absolute top-5 right-5 bg-white/5 p-2 rounded-full text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10 transition-all z-10"><X size={20} strokeWidth={3} /></button>
               
-              <h2 className="text-2xl font-black uppercase tracking-widest mb-2 text-[#FF8C00]">
-                INTERNATIONAL WIRE
-              </h2>
-              
-              <p className="text-[11px] text-zinc-400 font-black uppercase tracking-widest mb-6 text-center">
-                {showPaymentModal.tip}
-              </p>
-              
-              <div className="w-full mb-6 p-4 bg-[#FF8C00]/10 border border-[#FF8C00]/50 rounded-xl text-center">
-                  <p className="text-[10px] text-zinc-300 font-black uppercase tracking-widest mb-1">
-                      ⚠️ IMPORTANT
-                  </p>
-                  <p className="text-[12px] text-white font-bold mb-1">
-                      Send proof of payment to:
-                  </p>
-                  <p className="text-[16px] text-[#FF8C00] font-black uppercase tracking-wider">
-                      aitoolsprosmart@gmail.com
-                  </p>
-              </div>
-             
-              <div className="w-full border border-white/10 rounded-2xl p-6 mb-6 bg-[#0a0a0a] flex flex-col items-center shadow-inner relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#FF8C00] to-transparent opacity-50"></div>
+              <div className="p-10 flex flex-col items-center">
+                <div className="w-16 h-16 rounded-full bg-orange-600/10 flex items-center justify-center mb-4 border border-orange-500/30 shadow-[0_0_20px_rgba(234,88,12,0.2)]">
+                   <DownloadCloud className="w-8 h-8 text-orange-500" />
+                </div>
                 
-                <div className="w-full text-left text-[12px] uppercase tracking-wider text-zinc-300 space-y-4 font-mono">
-                    <div className="pb-3 border-b border-white/5">
-                        <span className="text-zinc-600 block text-[9px] mb-1 font-sans font-black">BENEFICIARY</span>
-                        <strong className="text-white text-[13px]">GORAN DAMNJANOVIĆ</strong>
-                    </div>
-                    <div className="pb-3 border-b border-white/5">
-                        <span className="text-zinc-600 block text-[9px] mb-1 font-sans font-black">BANK</span>
-                        <strong className="text-zinc-400">KOMERCIJALNA BANKA AD BEOGRAD</strong>
-                    </div>
-                    <div className="pb-3 border-b border-white/5">
-                        <span className="text-zinc-600 block text-[9px] mb-1 font-sans font-black">SWIFT / BIC</span>
-                        <strong className="text-[#FF8C00]">KOBBRSBG</strong>
-                    </div>
-                    <div className="pb-3 border-b border-white/5">
-                        <span className="text-zinc-600 block text-[9px] mb-1 font-sans font-black">IBAN</span>
-                        <strong className="text-[#FF8C00] select-all tracking-widest text-[14px]">RS35205903102884947363</strong>
-                    </div>
-                    <div className="pt-2 flex justify-between items-end">
-                        <span className="text-zinc-600 font-sans font-black text-[10px]">TOTAL:</span>
-                        <strong className="text-white text-[24px] leading-none">${showPaymentModal.cena}</strong>
-                    </div>
+                <h3 className="text-[18px] font-black uppercase tracking-widest mb-2 text-white text-center">Digital Asset Checkout</h3>
+                <p className="text-[10px] text-orange-400 font-black uppercase tracking-widest mb-8 text-center">{showPaymentModal.tip}</p>
+                
+                <div className="w-full bg-[#050505] border border-white/10 rounded-2xl p-6 space-y-4 text-[13px] font-mono shadow-inner mb-8">
+                  <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Provider:</span><span className="font-bold text-white text-right">V8 Vault</span></div>
+                  <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Support:</span><span className="font-bold text-white text-[11px]">aitoolsprosmart@gmail.com</span></div>
+                  <div className="flex justify-between pt-2 items-center"><span className="text-zinc-500 uppercase">Total (One-Time):</span><span className="font-black text-white text-[22px] drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">${showPaymentModal.cena}</span></div>
+                </div>
+                
+                <div className="w-full bg-[#050505] border border-orange-500/30 rounded-2xl p-6 text-center shadow-[0_0_20px_rgba(234,88,12,0.15)] relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                  <p className="text-[11px] md:text-[12px] text-zinc-300 font-black uppercase tracking-widest mb-4">Please contact support to complete your one-time purchase:</p>
+                  <a href="mailto:aitoolsprosmart@gmail.com" className="flex items-center justify-center gap-2 w-full bg-white text-black hover:bg-orange-500 hover:text-white py-3.5 rounded-xl font-black text-[12px] uppercase tracking-widest transition-all cursor-pointer shadow-lg">
+                     Request Checkout Link
+                  </a>
+                  <span className="block mt-4 text-[9px] text-zinc-500 uppercase font-bold tracking-widest">System unlocks your access automatically! 🚀</span>
                 </div>
               </div>
-              
-              <p className="mt-2 text-[11px] text-zinc-400 font-bold text-center uppercase tracking-widest">Access will be unlocked upon payment confirmation!</p>
-
-              <button onClick={() => setShowPaymentModal(null)} className="absolute top-4 right-4 bg-white/5 p-2 rounded-full text-zinc-500 hover:text-[#FF8C00] hover:bg-[#FF8C00]/10 transition-all">
-                <X size={20} strokeWidth={3} />
-              </button>
-              
-            </div>
+            </motion.div>
           </div>
         )}
       </AnimatePresence>
@@ -642,3 +644,4 @@ const V8Enhancer10x = () => {
 };
 
 export default V8Enhancer10x;
+// KRAJ FAJLA: V8Enhancer10x.jsx
