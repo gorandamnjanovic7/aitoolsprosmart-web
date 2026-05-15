@@ -4,16 +4,16 @@ import { HelmetProvider } from 'react-helmet-async';
 import { ShieldAlert, CheckCircle, ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// 🔥 FIREBASE 🔥
+// FIREBASE
 import { db, auth } from './firebase';
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, collection, addDoc, query, orderBy, getDocs } from 'firebase/firestore';
 
-// 🔥 DATA & COMPONENTS 🔥
+// DATA & COMPONENTS
 import * as data from './data';
 import './App.css'; 
 
-// PAGES
+// --- SVE TVOJE STRANICE ---
 import HomePage from './HomePage';
 import V8Enhancer10x from './V8Enhancer10x';
 import V8Promo10xPage from './V8Promo10xPage'; 
@@ -31,14 +31,32 @@ import V8DatabaseAdmin from "./V8DatabaseAdmin";
 import V8AdminDashboard from "./V8AdminDashboard";
 import V8OptimizerPage from './V8OptimizerPage'; 
 
-// UI
+// UI COMPONENTS
 import V8RadarCursor from './V8RadarCursor';
 import V8Navbar from './V8Navbar';
 import V8Footer from './V8Footer';
 
-// ANALYTICS & TOAST LOGIKA
+if (typeof window !== 'undefined') {
+  if ('scrollRestoration' in window.history) { window.history.scrollRestoration = 'manual'; }
+  if (window.location.hash) { window.history.replaceState(null, '', window.location.pathname); }
+  window.scrollTo(0, 0);
+}
+
+const MOJA_IP = "213.196.99.10"; 
+let globalUserIp = "";
+const currentSessionId = Math.random().toString(36).substring(2, 15);
+
+const fetchUserIp = async () => {
+  try {
+    const res = await fetch('https://api.ipify.org?format=json');
+    const d = await res.json(); globalUserIp = d.ip;
+  } catch (err) {}
+};
+fetchUserIp();
+
 export const logAnalyticsEvent = async (type, details) => {
-    try { await addDoc(collection(db, "analytics"), { type, ...details, timestamp: Date.now() }); } catch (err) {}
+  if (globalUserIp === MOJA_IP || globalUserIp === "") return; 
+  try { await addDoc(collection(db, "analytics"), { type, ...details, timestamp: Date.now(), sessionId: currentSessionId }); } catch (err) {}
 };
 
 export const v8Toast = {
@@ -48,23 +66,34 @@ export const v8Toast = {
   subscribe: (l) => { v8Toast.listeners.push(l); return () => v8Toast.listeners = v8Toast.listeners.filter(cb => cb !== l); }
 };
 
-const V8PageWrapper = ({ children }) => (
-  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.5 }}>
-    {children}
-  </motion.div>
-);
+// --- V8 CINEMATIC PAGE TRANSITION ---
+const V8PageWrapper = ({ children }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, filter: "blur(12px)", y: 20, scale: 0.98 }}
+      animate={{ opacity: 1, filter: "blur(0px)", y: 0, scale: 1 }}
+      exit={{ opacity: 0, filter: "blur(12px)", y: -20, scale: 0.98 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      className="w-full h-full origin-center"
+    >
+      {children}
+    </motion.div>
+  );
+};
 
 const V8ToastContainer = () => {
   const [toasts, setToasts] = useState([]);
-  useEffect(() => v8Toast.subscribe((t) => { 
-    setToasts(p => [...p, t]); 
-    setTimeout(() => setToasts(p => p.filter(x => x.id !== t.id)), 3500); 
-  }), []);
+  useEffect(() => {
+    return v8Toast.subscribe((t) => {
+      setToasts(p => [...p, t]);
+      setTimeout(() => setToasts(p => p.filter(x => x.id !== t.id)), 3500);
+    });
+  }, []);
   return (
     <div className="fixed top-24 right-6 z-[9999] flex flex-col gap-3 pointer-events-none">
       <AnimatePresence>
         {toasts.map(t => (
-          <motion.div key={t.id} initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className={`p-4 rounded-xl shadow-2xl border flex items-center gap-3 backdrop-blur-xl ${t.type === 'success' ? 'bg-green-900/40 border-green-500/50 text-green-100' : 'bg-red-900/40 border-red-500/50 text-red-100'}`}>
+          <motion.div key={t.id} initial={{ opacity: 0, x: 50, scale: 0.9 }} animate={{ opacity: 1, x: 0, scale: 1 }} exit={{ opacity: 0, x: 20, scale: 0.9 }} className={`p-4 rounded-xl shadow-2xl border flex items-center gap-3 backdrop-blur-xl ${t.type === 'success' ? 'bg-green-900/40 border-green-500/50 text-green-100' : 'bg-red-900/40 border-red-500/50 text-red-100'}`}>
             {t.type === 'success' ? <CheckCircle className="w-5 h-5 text-green-400" /> : <ShieldAlert className="w-5 h-5 text-red-400" />}
             <span className="text-[11px] font-black uppercase tracking-widest">{t.msg}</span>
           </motion.div>
@@ -74,80 +103,136 @@ const V8ToastContainer = () => {
   );
 };
 
+// --- TVOJ ORIGINALNI LOADER SA KRUGOVIMA ---
 const FullScreenBoot = ({ onComplete }) => {
   const [progress, setProgress] = useState(0);
-  useEffect(() => { 
-    const interval = setInterval(() => { 
-      setProgress(p => { 
-        if (p >= 100) { clearInterval(interval); setTimeout(onComplete, 800); return 100; } 
-        return p + 2; 
-      }); 
-    }, 30); 
-    return () => clearInterval(interval); 
+  const [isIgniting, setIsIgniting] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setProgress(p => {
+        if (p >= 100) { 
+          clearInterval(interval); 
+          setIsIgniting(true); 
+          setTimeout(onComplete, 1200); 
+          return 100; 
+        }
+        return p + Math.floor(Math.random() * 4) + 1; 
+      });
+    }, 40); 
+    return () => clearInterval(interval);
   }, [onComplete]);
+
   return (
-    <div className="fixed inset-0 z-[9999] bg-[#050505] flex items-center justify-center flex-col">
-      <div className="w-64 h-1 bg-white/5 rounded-full overflow-hidden">
-        <motion.div className="h-full bg-orange-500" style={{ width: `${progress}%` }} />
+    <motion.div 
+      className="fixed inset-0 z-[9999] bg-[#050505] flex flex-col items-center justify-center overflow-hidden"
+      exit={{ opacity: 0, scale: 1.05, filter: "blur(15px)" }} 
+      transition={{ duration: 0.8, ease: "easeInOut" }}
+    >
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <motion.div 
+          animate={{ scale: isIgniting ? 4 : [1, 1.2, 1], opacity: isIgniting ? 0 : [0.05, 0.15, 0.05] }}
+          transition={{ duration: isIgniting ? 0.8 : 2, repeat: isIgniting ? 0 : Infinity }}
+          className="w-96 h-96 bg-orange-600 rounded-full blur-[100px]"
+        />
       </div>
-      <span className="text-orange-500 text-[10px] font-black mt-4 uppercase tracking-[0.3em]">V8 SYSTEM BOOTING... {progress}%</span>
-    </div>
+      <div className="relative z-10 flex flex-col items-center">
+        <div className="relative w-48 h-48 flex items-center justify-center mb-12">
+          <motion.div animate={{ rotate: 360 }} transition={{ duration: 10, repeat: Infinity, ease: "linear" }} className="absolute inset-0 border-[1px] border-orange-500/20 rounded-full border-t-orange-500 shadow-[0_0_15px_rgba(234,88,12,0.2)]" />
+          <motion.div animate={{ rotate: -360 }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }} className="absolute inset-6 border-[1px] border-blue-500/20 rounded-full border-b-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.2)]" />
+          <motion.img src={data.logoUrl} alt="V8 Logo" animate={{ scale: isIgniting ? 1.5 : [0.95, 1.05, 0.95], filter: isIgniting ? "drop-shadow(0 0 40px rgba(234,88,12,1))" : "drop-shadow(0 0 10px rgba(234,88,12,0.5))" }} transition={{ duration: isIgniting ? 0.5 : 2, repeat: isIgniting ? 0 : Infinity }} className="w-20 h-20 object-contain relative z-10" />
+        </div>
+        <div className="w-64 md:w-80">
+          <div className="flex justify-between items-end mb-3 font-mono">
+            <motion.span animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 0.8, repeat: Infinity }} className="text-orange-500 text-[10px] md:text-[11px] font-black uppercase tracking-[0.3em]">
+              {isIgniting ? "SYSTEM READY // V8 ONLINE" : "BOOTING V8 CORE..."}
+            </motion.span>
+            <span className="text-white text-[12px] md:text-[14px] font-black tracking-widest">{progress}%</span>
+          </div>
+          <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden relative shadow-inner">
+            <motion.div className="absolute top-0 left-0 h-full bg-gradient-to-r from-orange-600 via-orange-400 to-amber-300 shadow-[0_0_15px_rgba(234,88,12,0.8)]" style={{ width: `${progress}%` }} layout />
+          </div>
+        </div>
+      </div>
+      <AnimatePresence>
+        {isIgniting && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="absolute inset-0 bg-orange-500/20 z-50 pointer-events-none mix-blend-overlay" />}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 
-// --- APP CONTENT: Mozak sajta koji upravlja stanjem logovanja ---
+const SmartScrollButton = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
+  useEffect(() => { 
+    const checkScroll = () => setIsScrolled(window.scrollY > 400); 
+    window.addEventListener('scroll', checkScroll); 
+    return () => window.removeEventListener('scroll', checkScroll); 
+  }, []);
+  const handleAction = () => { window.scrollTo({ top: isScrolled ? 0 : document.body.scrollHeight, behavior: 'smooth' }); };
+  return (
+    <button onClick={handleAction} className="fixed bottom-10 right-6 z-[5000] flex flex-col items-center group transition-all duration-500">
+      <div className={`w-1.5 rounded-full transition-all duration-700 flex items-center justify-center ${isScrolled ? 'bg-orange-500 shadow-[0_0_12px_rgba(249,115,22,0.8)] h-16' : 'bg-white/20 h-10 hover:bg-white/40'}`}>
+        <div className={`transition-transform duration-700 text-white ${isScrolled ? 'rotate-0' : 'rotate-180'}`}><ChevronUp size={14} strokeWidth={4} /></div>
+      </div>
+    </button>
+  );
+};
+
+// --- APP CONTENT COMPONENT ---
 function AppContent({ appsData, refreshData }) {
   const [isBooting, setIsBooting] = useState(true);
   const location = useLocation();
-  const [isVIPLoggedIn, setIsVIPLoggedIn] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const prevLocation = useRef(location.pathname);
+  const entryTime = useRef(Date.now());
   const [authVersion, setAuthVersion] = useState(0); 
 
+  // Forsiranje re-rendera kada se korisnik prijavi/odjavi
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (user) => {
-        if(user) {
-          const email = user.email ? user.email.toLowerCase() : "";
-          const isMe = email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com";
-          
-          if (isMe) {
-            setIsAdmin(true);
-            setIsVIPLoggedIn(true);
-          } else {
-            setIsAdmin(false); 
-            try {
-              const docSnap = await getDoc(doc(db, "vip_users", email));
-              setIsVIPLoggedIn(docSnap.exists());
-            } catch(e) { setIsVIPLoggedIn(false); }
-          }
-        } else {
-          setIsVIPLoggedIn(false);
-          setIsAdmin(false);
-        }
-        setAuthVersion(v => v + 1); // 🔥 FORCE-SYNC KLJUČ 🔥
+    const unsub = onAuthStateChanged(auth, () => {
+        setAuthVersion(v => v + 1);
     }); 
     return () => unsub();
   }, []);
 
-  const handleHomeClick = (e) => { 
-    if (location.pathname === '/') { 
-      e.preventDefault(); 
-      window.scrollTo({ top: 0, behavior: 'smooth' }); 
-    } 
-  };
+  useEffect(() => {
+    const handleContextMenu = (e) => { 
+      if (e.target.tagName === 'IMG' || e.target.tagName === 'VIDEO') { e.preventDefault(); } 
+    };
+    document.addEventListener('contextmenu', handleContextMenu);
+    return () => document.removeEventListener('contextmenu', handleContextMenu);
+  }, []);
+
+  useEffect(() => {
+    if (prevLocation.current !== location.pathname) {
+       const timeSpent = Date.now() - entryTime.current;
+       logAnalyticsEvent('time_spent', { path: prevLocation.current, durationMS: timeSpent });
+       prevLocation.current = location.pathname; entryTime.current = Date.now();
+       logAnalyticsEvent('page_view', { path: location.pathname });
+    }
+  }, [location.pathname]);
+
+  useEffect(() => { logAnalyticsEvent('page_view', { path: location.pathname }); }, []);
+
+  useEffect(() => {
+    const handleGlobalClick = (e) => { const target = e.target.closest('button, a'); if (target) logAnalyticsEvent('click', { elementText: target.innerText || target.getAttribute('aria-label') || 'Icon', path: window.location.pathname }); };
+    document.addEventListener('click', handleGlobalClick); return () => document.removeEventListener('click', handleGlobalClick);
+  }, []);
+
+  const handleHomeClick = (e) => { if (location.pathname === '/') { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); window.history.replaceState(null, '', '/'); } };
 
   return (
-    <div key={authVersion} className="min-h-screen bg-[#050505] text-zinc-100 flex flex-col font-sans relative text-left">
+    <div key={authVersion} className="min-h-screen bg-[#050505] text-zinc-100 flex flex-col font-sans relative pb-20 lg:pb-0 text-left">
       <V8RadarCursor />
       <V8ToastContainer />
       
       <AnimatePresence>
-        {isBooting && <FullScreenBoot key="boot" onComplete={() => setIsBooting(false)} />}
+        {isBooting && <FullScreenBoot key="boot" onComplete={() => { setIsBooting(false); window.scrollTo(0,0); }} />}
       </AnimatePresence>
       
-      <V8Navbar isVIPLoggedIn={isVIPLoggedIn} isAdmin={isAdmin} handleHomeClick={handleHomeClick} />
+      <V8Navbar handleHomeClick={handleHomeClick} />
       
       <div className="flex-1 text-left pt-20">
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<V8PageWrapper><HomePage apps={appsData} /></V8PageWrapper>} />
             <Route path="/optimizer" element={<V8PageWrapper><V8OptimizerPage /></V8PageWrapper>} />
@@ -167,13 +252,14 @@ function AppContent({ appsData, refreshData }) {
         </AnimatePresence>
       </div>
       
+      <SmartScrollButton />
+      <VisitorCounter />
       <V8ContactWidget />
       <V8Footer />
     </div>
   );
 }
 
-// --- GLAVNI EXPORT ---
 export default function App() {
   const [appsData, setAppsData] = useState([]);
 
@@ -181,8 +267,11 @@ export default function App() {
     try {
       const q = query(collection(db, "v8_products"), orderBy("createdAt", "desc"));
       const snap = await getDocs(q);
-      setAppsData(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    } catch (error) { setAppsData([]); }
+      const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setAppsData(data);
+    } catch (error) {
+      setAppsData([]);
+    }
   }, []);
 
   useEffect(() => { refreshData(); }, [refreshData]);

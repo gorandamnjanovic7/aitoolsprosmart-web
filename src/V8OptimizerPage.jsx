@@ -70,7 +70,7 @@ const V8OptimizerPage = () => {
         >
             <div 
                 className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-60"
-                style={{ backgroundImage: "url('/v8-showroom/v8-hero.png')" }} 
+                style={{ backgroundImage: "url('/v8_py/v8_py_pozadina.webp')" }} 
             ></div>
             
             <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050505]/30 via-[#050505]/70 to-[#050505]"></div>

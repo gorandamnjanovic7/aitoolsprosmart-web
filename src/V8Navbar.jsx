@@ -1,127 +1,237 @@
 // POČETAK FAJLA: V8Navbar.jsx
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { ChevronDown, ImageIcon, Zap, Lock, LogOut, User, LayoutDashboard, Database } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-// 🔥 FIREBASE MOZAK 🔥
-import { auth, provider } from './firebase';
+// FIREBASE & TOOLS
+import { auth, provider, db } from './firebase';
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc } from 'firebase/firestore';
 import { v8Toast } from './App';
 import * as data from './data';
 import navBg from './navbar-bg.webp';
+import MagneticButton from './MagneticButton';
 
 const V8Navbar = ({ handleHomeClick }) => {
+  const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
+  
+  // --- V8 BRZI RADAR ZA LOGIN (Jedino što je menjano u logici) ---
+  const [user, setUser] = useState(null);
+  const [isVIPInDB, setIsVIPInDB] = useState(false);
 
-  // --- V8 INSTANT RADAR ---
+  const currentUserEmail = user?.email?.toLowerCase() || "";
+  const isAdmin = currentUserEmail === "damnjanovicgoran7@gmail.com" || currentUserEmail === "aitoolsprosmart@gmail.com";
+  const isVIP = isAdmin || isVIPInDB;
+
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
+    const unsub = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        if (currentUser.email.toLowerCase() !== "damnjanovicgoran7@gmail.com" && 
+            currentUser.email.toLowerCase() !== "aitoolsprosmart@gmail.com") {
+          try {
+            const docSnap = await getDoc(doc(db, "vip_users", currentUser.email.toLowerCase()));
+            setIsVIPInDB(docSnap.exists());
+          } catch (e) { setIsVIPInDB(false); }
+        }
+      } else {
+        setUser(null); setIsVIPInDB(false);
+      }
     });
     return () => unsub();
   }, []);
 
+  // POČETAK: Logika za providnost na skrol
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
+    const handleScroll = () => { setScrolled(window.scrollY > 50); };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  // --- DIREKTNA PROVERA (BEZ ČEKANJA) ---
-  const email = currentUser?.email?.toLowerCase() || "";
-  const isGoran = email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com";
+  // KRAJ: Logika za providnost na skrol
 
   const handleLogout = async () => {
     await signOut(auth);
+    if(typeof v8Toast !== 'undefined') v8Toast.success("V8 Disconnected.");
     window.location.reload(); 
   };
 
   const handleLogin = async () => {
     try {
       await signInWithPopup(auth, provider);
-      if(typeof v8Toast !== 'undefined') v8Toast.success("V8 SYSTEM ONLINE!");
+      if(typeof v8Toast !== 'undefined') v8Toast.success("V8 IGNITED!");
     } catch (err) { console.error(err); }
   };
 
   return (
-    <div className="fixed top-0 left-0 w-full z-[9999]">
-      <nav className={`w-full transition-all duration-500 border-b-2 ${scrolled ? 'py-3 bg-black/95 backdrop-blur-xl border-orange-500/60 shadow-[0_10px_40px_rgba(0,0,0,0.8)]' : 'py-5 bg-transparent border-transparent'}`}
-        style={{ backgroundImage: scrolled ? `linear-gradient(rgba(5, 5, 5, 0.9), rgba(5, 5, 5, 0.9)), url(${navBg})` : 'none', backgroundSize: 'cover' }}>
-        
+    <div className="fixed top-0 left-0 w-full z-[1000]">
+      <nav 
+        className={`w-full transition-all duration-500 border-b-2 ${
+          scrolled 
+          ? 'py-3 md:py-4 bg-black/60 backdrop-blur-xl border-orange-500/60 shadow-[0_10px_40px_rgba(234,88,12,0.3)]' 
+          : 'py-5 md:py-7 bg-transparent border-transparent shadow-none'
+        }`}
+        style={{
+          backgroundImage: scrolled 
+            ? `linear-gradient(rgba(5, 5, 5, 0.8), rgba(5, 5, 5, 0.8)), url(${navBg})`
+            : `url(${navBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'left center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
         <div className="max-w-7xl mx-auto flex justify-between items-center px-4 md:px-8">
           
-          {/* LOGO */}
-          <Link to="/" onClick={handleHomeClick} className="flex items-center gap-3 shrink-0">
-            <img src={data.logoUrl} className={`object-contain transition-all duration-500 ${scrolled ? 'h-8' : 'h-10'} animate-pulse`} alt="logo" />
-            <div className="flex flex-col md:flex-row md:gap-1.5 font-black italic leading-none">
-              <span className="text-blue-500 text-[10px] md:text-[14px] uppercase tracking-widest">AI TOOLS</span>
-              <span className="text-orange-500 text-[10px] md:text-[14px] uppercase tracking-widest">PRO SMART</span>
+          {/* POČETAK: LOGO SEKCIJA */}
+          <Link to="/" onClick={handleHomeClick} className="flex items-center gap-3 group shrink-0 mr-4">
+            <img src={data.logoUrl} className={`object-contain transition-all duration-500 ${scrolled ? 'h-8 md:h-10' : 'h-10 md:h-12'} animate-pulse group-hover:scale-105`} alt="logo" />
+            <div className="flex items-center gap-1.5 whitespace-nowrap">
+              <span className={`font-black uppercase tracking-[0.1em] text-blue-500 italic group-hover:text-orange-500 transition-all duration-500 ${scrolled ? 'text-[10px] md:text-[12px]' : 'text-[11px] md:text-[14px]'}`}>AI TOOLS</span>
+              <span className={`font-black uppercase tracking-[0.1em] text-orange-500 italic group-hover:text-blue-500 transition-all duration-500 ${scrolled ? 'text-[10px] md:text-[12px]' : 'text-[11px] md:text-[14px]'}`}>PRO SMART</span>
             </div>
           </Link>
+          {/* KRAJ: LOGO SEKCIJA */}
 
-          <div className="flex items-center justify-end gap-2 md:gap-4 font-black uppercase text-[10px] tracking-widest">
+          <div className="flex-1 flex items-center justify-end gap-3 font-black uppercase text-[10px] md:text-[11px] tracking-widest whitespace-nowrap">
             
-            <Link to="/" className="hidden sm:inline-block px-3 py-2 rounded-full bg-white/5 hover:bg-white/10 text-zinc-300">Home</Link>
+            {/* POČETAK: HOME DUGME */}
+            <MagneticButton>
+               <Link to="/" onClick={handleHomeClick} className="hidden lg:flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-emerald-900/30 border border-emerald-500/40 text-emerald-400 hover:text-white hover:bg-emerald-800/50 hover:border-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] cursor-pointer">
+                 <Globe className="w-4 h-4" /> Home
+               </Link>
+            </MagneticButton>
+            {/* KRAJ: HOME DUGME */}
 
-            {/* V8 TOOLS DROPDOWN */}
-            <div className="relative group">
-              <button className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-gradient-to-r from-red-600 to-orange-600 border border-orange-400 text-white shadow-lg cursor-pointer">
-                <Zap className="w-3.5 h-3.5 text-yellow-300" /> <span className="hidden md:inline">V8 TOOLS</span><ChevronDown className="w-3 h-3" />
-              </button>
-              <div className="absolute top-full right-0 pt-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[9999]">
-                <div className="bg-black/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 w-52 shadow-2xl flex flex-col gap-1">
-                  <Link to="/enxance" className="px-4 py-3 rounded-xl hover:bg-orange-500/10 hover:text-orange-400 transition-all font-black text-[10px]">10X ENHANCER</Link>
-                  <Link to="/optimizer" className="px-4 py-3 rounded-xl hover:bg-orange-500/10 hover:text-orange-400 transition-all font-black text-[10px]">V8 OPTIMIZER</Link>
-                  <Link to="/#marketplace" className="px-4 py-3 rounded-xl hover:bg-blue-500/10 hover:text-blue-400 transition-all font-black text-[10px]">AI STORE</Link>
-                </div>
-              </div>
-            </div>
-
-            {/* STOCK DROPDOWN */}
-            <div className="relative group">
-              <button className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-blue-900/30 border border-blue-500/50 text-blue-300 cursor-pointer hover:text-white transition-all">
-                <ImageIcon className="w-3.5 h-3.5" /> <span className="hidden md:inline">STOCK</span><ChevronDown className="w-3 h-3" />
-              </button>
-              <div className="absolute top-full right-0 pt-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[9999]">
-                <div className="bg-black/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 w-52 shadow-2xl flex flex-col gap-1">
-                  <Link to="/stock" className="px-4 py-3 rounded-xl hover:bg-blue-500/10 hover:text-blue-400 transition-all font-black text-[10px]">BUNDLES</Link>
-                  <Link to="/showroom" className="px-4 py-3 rounded-xl hover:bg-purple-500/10 hover:text-purple-400 transition-all font-black text-[10px]">SHOWROOM</Link>
-                </div>
-              </div>
-            </div>
-
-            {/* --- V8 AUTH LOGIC (NEPROBOJNO - SAMO ZA GORANA) --- */}
-            <div className="flex items-center gap-2 border-l border-white/10 pl-2">
-              {currentUser ? (
-                <div className="flex items-center gap-2">
-                  {/* AKO SI TO TI, CRTAMO SVE BEZ PITANJA */}
-                  {isGoran && (
-                    <>
-                      <Link to="/dashboard" className="bg-yellow-600/20 border border-yellow-500/50 text-yellow-400 px-3 py-2 rounded-full text-[9px] hover:bg-yellow-600 hover:text-white transition-all shadow-lg flex items-center gap-1.5">
-                        <LayoutDashboard size={12} /> DASHBOARD
-                      </Link>
-                      <Link to="/admin" className="hidden lg:flex bg-red-600/20 border border-red-500/50 text-red-400 px-3 py-2 rounded-full text-[9px] items-center gap-1.5 hover:bg-red-600 hover:text-white transition-all">
-                        <Database size={12} /> CMS
-                      </Link>
-                    </>
-                  )}
+            {/* POČETAK: V8 MASTER TOOLS DROPDOWN */}
+            <div className="relative group hidden lg:block">
+              <MagneticButton>
+                <button className="flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-red-600/90 via-orange-600/90 to-red-600/90 border border-orange-400 text-white transition-all shadow-[0_0_15px_rgba(249,115,22,0.4)] hover:shadow-[0_0_25px_rgba(249,115,22,0.8)] cursor-pointer relative overflow-hidden">
+                  <Zap className="w-4 h-4 text-yellow-300 animate-pulse drop-shadow-[0_0_8px_rgba(253,224,71,1)]" strokeWidth={2.5} /> 
+                  <span>V8 MASTER TOOLS</span>
+                  <ChevronDown className="w-3 h-3 text-yellow-300 group-hover:rotate-180 transition-transform duration-300" />
+                </button>
+              </MagneticButton>
+              
+              <div className="absolute top-full right-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-400 z-[9999]">
+                <div className="bg-black/90 backdrop-blur-2xl border border-white/10 border-t-orange-500 border-b-orange-500/30 rounded-2xl p-2 w-64 shadow-[0_30px_60px_rgba(0,0,0,0.9)] flex flex-col gap-1 relative overflow-hidden">
+                  <div className="absolute -top-12 -right-12 w-32 h-32 bg-orange-600/30 rounded-full blur-[40px] pointer-events-none z-0"></div>
                   
-                  {/* VAULT ZA TEBE I VIP KORISNIKE */}
-                  <Link to="/trezor" className="bg-orange-600/20 border border-orange-500/50 text-orange-400 px-3 py-2 rounded-full text-[9px] flex items-center gap-1.5 hover:bg-orange-600 hover:text-white transition-all shadow-lg">
-                    <Lock className="w-3 h-3" /> VAULT
+                  {/* STAVKA 1: 10X ENHANCER */}
+                  <Link to="/enxance" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-orange-500/30">
+                    <div className="bg-orange-500/20 p-2 rounded-lg group-hover/item:bg-orange-500/40 transition-colors shadow-[0_0_10px_rgba(249,115,22,0.3)]">
+                      <Zap className="w-5 h-5 text-orange-400 transition-transform group-hover/item:scale-110" />
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-orange-400 transition-all drop-shadow-md">10X ENHANCER</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Premium AI Engine</span>
+                    </div>
                   </Link>
 
-                  <button onClick={handleLogout} className="text-zinc-500 hover:text-red-500 p-2 bg-white/5 rounded-full cursor-pointer transition-all">
-                    <LogOut className="w-4 h-4" />
-                  </button>
+                  {/* STAVKA 2: AI STORE */}
+                  <Link to="/#marketplace" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-blue-500/30 mt-1">
+                    <div className="bg-blue-500/20 p-2 rounded-lg group-hover/item:bg-blue-500/40 transition-colors shadow-[0_0_10px_rgba(59,130,246,0.3)]">
+                      <Award className="w-5 h-5 text-blue-400 transition-transform group-hover/item:scale-110" />
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-blue-400 transition-all drop-shadow-md">AI STORE</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Asset Marketplace</span>
+                    </div>
+                  </Link>
+                  
+                  {/* STAVKA 3: CINEMATIC OPTIMIZER */}
+                  <Link to="/optimizer" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-orange-500/30 mt-1">
+                    <div className="bg-orange-500/20 p-2 rounded-lg group-hover/item:bg-orange-500/40 transition-colors shadow-[0_0_10px_rgba(249,115,22,0.3)]">
+                      <ImageIcon className="w-5 h-5 text-orange-400 transition-transform group-hover/item:scale-110" />
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-orange-400 transition-all drop-shadow-md">V8 OPTIMIZER</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Cinematic Image Processor</span>
+                    </div>
+                  </Link>
                 </div>
-              ) : (
-                <button onClick={handleLogin} className="bg-zinc-800 px-5 py-2 rounded-full text-zinc-400 border border-white/5 hover:bg-zinc-700 hover:text-white transition-all cursor-pointer font-black text-[10px]">
-                   LOGIN
-                </button>
-              )}
+              </div>
             </div>
+            {/* KRAJ: V8 MASTER TOOLS DROPDOWN */}
+
+            {/* POČETAK: PREMIUM STOCK DROPDOWN */}
+            <div className="relative group hidden lg:block">
+              <MagneticButton>
+                <button className="flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-blue-900/30 to-indigo-900/30 border border-blue-500/50 text-blue-300 hover:text-white hover:border-blue-400 transition-all shadow-[0_0_15px_rgba(59,130,246,0.15)] cursor-pointer">
+                  <ImageIcon className="w-4 h-4 text-blue-400 drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]" /> 
+                  <span>PREMIUM STOCK</span>
+                  <ChevronDown className="w-3 h-3 text-blue-400 group-hover:rotate-180 transition-transform duration-300" />
+                </button>
+              </MagneticButton>
+              
+              <div className="absolute top-full right-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-400 z-[9999]">
+                <div className="bg-black/80 backdrop-blur-2xl border border-white/10 border-t-blue-500/60 border-b-purple-500/30 rounded-2xl p-2 w-64 shadow-[0_30px_60px_rgba(0,0,0,0.8)] flex flex-col gap-1 relative overflow-hidden">
+                  <div className="absolute -top-12 -right-12 w-32 h-32 bg-blue-600/20 rounded-full blur-[40px] pointer-events-none z-0"></div>
+                  
+                  {/* STAVKA 1: MASTER STOCK BUNDLES */}
+                  <Link to="/stock" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-400 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-blue-500/30">
+                    <div className="bg-blue-500/10 p-2 rounded-lg group-hover/item:bg-blue-500/20 transition-colors">
+                      <Layers className="w-5 h-5 text-blue-400 transition-transform group-hover/item:scale-110" />
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-all">MASTER STOCK BUNDLES</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">High-End Visuals</span>
+                    </div>
+                  </Link>
+                  
+                  {/* STAVKA 2: SHOWROOM */}
+                  <Link to="/showroom" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-400 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-purple-500/30">
+                    <div className="bg-purple-500/10 p-2 rounded-lg group-hover/item:bg-purple-500/20 transition-colors">
+                      <ImageIcon className="w-5 h-5 text-purple-400 transition-transform group-hover/item:scale-110" />
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:drop-shadow-[0_0_8px_rgba(168,85,247,0.5)] transition-all">Showroom</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Visual Gallery</span>
+                    </div>
+                  </Link>
+                </div>
+              </div>
+            </div>
+            {/* KRAJ: PREMIUM STOCK DROPDOWN */}
+
+            {/* POČETAK: AUTH LOGIKA (Admin / VIP) */}
+            {user ? (
+               <div className="flex items-center gap-2 ml-2 border-l border-white/10 pl-4">
+                 {isAdmin && (
+                   <>
+                     <MagneticButton>
+                       <Link to="/admin" className="bg-red-600/20 border border-red-500/50 text-red-400 px-4 md:px-5 py-2 md:py-2.5 rounded-full flex items-center gap-2 hover:bg-red-600 hover:text-white transition-all shadow-[0_0_10px_rgba(220,38,38,0.2)] hidden md:flex">
+                         <Settings className="w-4 h-4" /> CMS DB
+                       </Link>
+                     </MagneticButton>
+                     <MagneticButton>
+                       <Link to="/dashboard" className="bg-yellow-600/20 border border-yellow-500/50 text-yellow-400 px-4 md:px-5 py-2 md:py-2.5 rounded-full flex items-center gap-2 hover:bg-yellow-600 hover:text-white transition-all shadow-[0_0_10px_rgba(234,179,8,0.2)] hidden md:flex">
+                         <ShieldAlert className="w-4 h-4" /> DASHBOARD
+                       </Link>
+                     </MagneticButton>
+                   </>
+                 )}
+                 {isVIP && (
+                   <MagneticButton>
+                     <Link to="/trezor" className="bg-orange-600/20 border border-orange-500/50 text-orange-400 px-4 md:px-5 py-2 md:py-2.5 rounded-full flex items-center gap-2 hover:bg-orange-600 hover:text-white transition-all shadow-[0_0_10px_rgba(234,88,12,0.2)]">
+                       <Lock className="w-4 h-4" /> VAULT
+                     </Link>
+                   </MagneticButton>
+                 )}
+                 <button onClick={handleLogout} className="text-zinc-500 hover:text-red-500 transition-colors p-2 bg-white/5 rounded-full hover:bg-white/10 cursor-pointer" title="Log out">
+                   <LogOut className="w-4 h-4" />
+                 </button>
+               </div>
+            ) : (
+               <div className="ml-2 border-l border-white/10 pl-4">
+                 <MagneticButton>
+                   <button onClick={handleLogin} className="bg-zinc-800 px-4 md:px-5 py-2 md:py-2.5 rounded-full text-zinc-400 shadow-xl hover:bg-zinc-700 hover:text-white transition-all hidden sm:block border border-white/5 cursor-pointer">
+                     <User className="w-4 h-4 inline mr-2" /> LOGIN
+                   </button>
+                 </MagneticButton>
+               </div>
+            )}
+            {/* KRAJ: AUTH LOGIKA (Admin / VIP) */}
 
           </div>
         </div>
@@ -130,4 +240,3 @@ const V8Navbar = ({ handleHomeClick }) => {
   );
 };
 export default V8Navbar;
-// KRAJ FAJLA: V8Navbar.jsx
