@@ -56,7 +56,8 @@ const V8OptimizerPage = () => {
             setActiveLog(prev => prev < v8Logs.length - 1 ? prev + 1 : prev);
         }, 800);
 
-        const response = await fetch('http://localhost:8000/api/v8-optimize', {
+        // PRAVI UDARAC: Gađamo produkcioni Railway server
+        const response = await fetch('https://aitoolsprosmart-becend-production.up.railway.app/api/v8-optimize', {
             method: 'POST',
             body: formData,
         });

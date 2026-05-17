@@ -83,13 +83,45 @@ const V8PromptEngine = ({ engineName = "SEEDANCE 2.0" }) => {
     // KRAJ FUNKCIJE: obrisiSliku
   };
 
-  const generisiMasterPrompt = () => {
-    // POČETAK FUNKCIJE: generisiMasterPrompt
+  // POČETAK FUNKCIJE: generisiMasterPrompt
+  const generisiMasterPrompt = async () => {
     setIsGenerating(true);
-    // Ovde šalješ podatke backendu
-    setTimeout(() => setIsGenerating(false), 2000); 
-    // KRAJ FUNKCIJE: generisiMasterPrompt
+    
+    // Pakujemo sve parametre iz UI-ja (tekst, sliku, trajanje, format i Koji motor palimo)
+    const formData = new FormData();
+    formData.append('engine', engineName); // "SEEDANCE 2.0" ili "KLING 3.0"
+    formData.append('text', isImageModeActive ? imageDescription : promptText);
+    formData.append('duration', duration);
+    formData.append('aspectRatio', aspectRatio);
+    
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
+
+    try {
+      // PRAVI UDARAC: Palimo produkcioni Railway server!
+      const response = await fetch('https://aitoolsprosmart-becend-production.up.railway.app/api/v8-generate', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("V8 Server Error");
+
+      // Dobijamo 5 kilometarskih promptova u JSON formatu nazad
+      const data = await response.json();
+      
+      // PROVERI KONZOLU - Ovde stižu rezultati od Pythona
+      console.log("V8 MASTER PROMPT REZULTAT:", data);
+      alert("Prompts generated successfully! Check Console."); // Privremeni alert dok ne odradimo modal za prikaz
+      
+    } catch (error) {
+      console.error("V8 Engine failure:", error);
+      alert("Greška na serveru, proveri konekciju.");
+    } finally {
+      setIsGenerating(false);
+    }
   };
+  // KRAJ FUNKCIJE: generisiMasterPrompt
 
   return (
     <div className="bg-[#050505] p-8 md:p-12 rounded-[2.5rem] border border-[#FF8C00]/30 shadow-[0_0_50px_rgba(255,140,0,0.1)] max-w-5xl mx-auto mt-10 relative overflow-hidden">
