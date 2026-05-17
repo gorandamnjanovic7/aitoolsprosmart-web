@@ -1,7 +1,7 @@
 // POČETAK FAJLA: V8Navbar.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User } from 'lucide-react';
+import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 // FIREBASE & TOOLS
@@ -14,6 +14,7 @@ import navBg from './navbar-bg.webp';
 import MagneticButton from './MagneticButton';
 
 const V8Navbar = ({ handleHomeClick }) => {
+  // POČETAK FUNKCIJE: V8Navbar
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   
@@ -149,6 +150,28 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Cinematic Image Processor</span>
                     </div>
                   </Link>
+
+                  {/* STAVKA 4: SEEDANCE 2.0 ENGINE */}
+                  <Link to="/seedance" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-green-500/30 mt-1">
+                    <div className="bg-green-500/20 p-2 rounded-lg group-hover/item:bg-green-500/40 transition-colors shadow-[0_0_10px_rgba(34,197,94,0.3)]">
+                      <MonitorPlay className="w-5 h-5 text-green-400 transition-transform group-hover/item:scale-110" />
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-green-400 transition-all drop-shadow-md">SEEDANCE 2.0</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Cinematic Video Prompting</span>
+                    </div>
+                  </Link>
+
+                  {/* STAVKA 5: KLING 3.0 ENGINE */}
+                  <Link to="/kling" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-red-500/30 mt-1">
+                    <div className="bg-red-500/20 p-2 rounded-lg group-hover/item:bg-red-500/40 transition-colors shadow-[0_0_10px_rgba(239,68,68,0.3)]">
+                      <Video className="w-5 h-5 text-red-400 transition-transform group-hover/item:scale-110" />
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-red-400 transition-all drop-shadow-md">KLING 3.0</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Hyper-Real Motion Engine</span>
+                    </div>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -238,5 +261,7 @@ const V8Navbar = ({ handleHomeClick }) => {
       </nav>
     </div>
   );
+  // KRAJ FUNKCIJE: V8Navbar
 };
 export default V8Navbar;
+// KRAJ FAJLA: V8Navbar.jsx

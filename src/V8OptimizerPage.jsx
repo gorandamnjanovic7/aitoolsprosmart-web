@@ -39,23 +39,48 @@ const V8OptimizerPage = () => {
     setActiveLog(0);
   };
 
+  // POČETAK FUNKCIJE: processImage
   const processImage = async () => {
     if (files.length === 0) return;
     setIsProcessing(true);
     setResult(null);
     setActiveLog(0);
 
-    for (let i = 0; i < v8Logs.length; i++) {
-      await new Promise(r => setTimeout(r, 450));
-      setActiveLog(i + 1);
-    }
+    const formData = new FormData();
+    files.forEach((file) => {
+        formData.append('images', file);
+    });
 
-    setTimeout(() => {
-      setIsProcessing(false);
-      setResult("V8_ENTERPRISE_BATCH.zip"); 
-      if(typeof v8Toast !== 'undefined') v8Toast.success("V8 CINEMATIC BATCH READY!");
-    }, 500);
+    try {
+        const progressInterval = setInterval(() => {
+            setActiveLog(prev => prev < v8Logs.length - 1 ? prev + 1 : prev);
+        }, 800);
+
+        const response = await fetch('http://localhost:8000/api/v8-optimize', {
+            method: 'POST',
+            body: formData,
+        });
+
+        clearInterval(progressInterval);
+
+        if (!response.ok) throw new Error("V8 Server Error");
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        
+        setResult(url); 
+        setActiveLog(v8Logs.length); 
+        
+        if(typeof v8Toast !== 'undefined') v8Toast.success("V8 CINEMATIC BATCH READY!");
+    } catch (error) {
+        console.error("Batch failure:", error);
+        if(typeof v8Toast !== 'undefined') v8Toast.error("Optimization failed. Check server logs.");
+        setActiveLog(0);
+    } finally {
+        setIsProcessing(false);
+    }
   };
+  // KRAJ FUNKCIJE: processImage
 
   return (
     <div className="min-h-screen pt-28 pb-20 px-6 flex flex-col items-center bg-[#050505]">
@@ -178,13 +203,19 @@ const V8OptimizerPage = () => {
               )}
             </div>
 
+            {/* POČETAK FUNKCIJE: renderDownloadButton */}
             {result && (
               <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="mt-10">
-                <button className="w-full bg-white text-black py-6 rounded-full font-black uppercase tracking-[0.5em] text-[13px] hover:bg-orange-500 hover:text-white transition-all shadow-2xl">
+                <a 
+                  href={result} 
+                  download="V8_ENTERPRISE_BATCH.zip" 
+                  className="w-full bg-white text-black py-6 px-8 rounded-full font-black uppercase tracking-[0.5em] text-[13px] hover:bg-orange-500 hover:text-white transition-all shadow-2xl inline-block text-center cursor-pointer"
+                >
                   DOWNLOAD V8 BATCH (.ZIP)
-                </button>
+                </a>
               </motion.div>
             )}
+            {/* KRAJ FUNKCIJE: renderDownloadButton */}
           </div>
         </div>
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
-import { ShieldAlert, CheckCircle, ChevronUp } from 'lucide-react';
+import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay,  CheckCircle, ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // FIREBASE
@@ -30,6 +30,7 @@ import TrezorPage from './TrezorPage';
 import V8DatabaseAdmin from "./V8DatabaseAdmin";
 import V8AdminDashboard from "./V8AdminDashboard";
 import V8OptimizerPage from './V8OptimizerPage'; 
+import V8PromptEngine from './V8PromptEngine';
 
 // UI COMPONENTS
 import V8RadarCursor from './V8RadarCursor';
@@ -236,6 +237,9 @@ function AppContent({ appsData, refreshData }) {
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<V8PageWrapper><HomePage apps={appsData} /></V8PageWrapper>} />
             <Route path="/optimizer" element={<V8PageWrapper><V8OptimizerPage /></V8PageWrapper>} />
+            {/* TVOJE DVE NOVE V8 MAŠINE */}
+            <Route path="/seedance" element={<V8PageWrapper><V8PromptEngine engineName="SEEDANCE 2.0" /></V8PageWrapper>} />
+            <Route path="/kling" element={<V8PageWrapper><V8PromptEngine engineName="KLING 3.0" /></V8PageWrapper>} />
             <Route path="/enxance" element={<V8PageWrapper><V8Enhancer10x /></V8PageWrapper>} />
             <Route path="/promo" element={<V8PageWrapper><V8Promo10xPage /></V8PageWrapper>} />
             <Route path="/app/:id" element={<V8PageWrapper><SingleProductPage apps={appsData} /></V8PageWrapper>} />
