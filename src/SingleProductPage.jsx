@@ -1,6 +1,7 @@
 // POČETAK FAJLA: SingleProductPage.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { createPortal } from 'react-dom'; // 🔥 DODATO ZA V8 PORTAL MODAL
 import { Helmet } from 'react-helmet-async';
 import { 
   ChevronLeft, Maximize, ChevronRight, HelpCircle, ChevronDown, 
@@ -12,9 +13,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import V8Reveal from './V8Reveal';
 
 // FIREBASE
-import { db, auth, provider } from './firebase';
-import { signInWithPopup, onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { db, auth } from './firebase';
+import { signInWithPopup, onAuthStateChanged, GoogleAuthProvider } from "firebase/auth";
+import { doc, getDoc, setDoc, serverTimestamp, collection, addDoc } from 'firebase/firestore'; // 🔥 DODATO ZA RADAR
 
 // DATA & GLOBAL
 import * as data from './data';
@@ -108,6 +109,16 @@ export default function SingleProductPage({ apps = [] }) {
   
   useEffect(() => { window.scrollTo(0, 0); }, [id]);
 
+  // 🔥 DODATO: Zaključavanje ekrana da ne mrda kad se otvori modal 🔥
+  useEffect(() => {
+    if (wireModalData || fullScreenImage) {
+        document.body.style.overflow = 'hidden';
+    } else {
+        document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [wireModalData, fullScreenImage]);
+
   useEffect(() => {
     if (!app) return;
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -139,43 +150,81 @@ export default function SingleProductPage({ apps = [] }) {
   const mainLink = parts[0] || ""; 
   const ribbonClass = getRibbonStyle([...apps].sort((a, b) => Number(b.id) - Number(a.id)).findIndex(a => a.id === id));
 
-  // V8 FIX: POTPUNO UKLONJENA TERMINOLOGIJA PRETPLATE
   const cenaStandard = app.price ? parseFloat(app.price) : 15;
   const cenaPremium = app.priceLifetime ? parseFloat(app.priceLifetime) : 89;
   
+  // 🔥 V8 BLINDIRANA FUNKCIJA ZA PLAĆANJE 🔥
   const handlePaymentGlobal = async (tip, cena) => {
-    if (auth.currentUser) {
-      try { await setDoc(doc(db, "posetioci", auth.currentUser.uid), { poslednjiKlik: serverTimestamp(), zainteresovanZa: tip }, { merge: true }); } catch (err) {}
-      setWireModalData({ tip, cena });
-    } else {
-      try {
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-        const email = user.email ? user.email.toLowerCase() : "";
-        await setDoc(doc(db, "posetioci", user.uid), { ime: user.displayName, email: user.email, vremePrijave: serverTimestamp(), zainteresovanZa: tip, identitet: "V8-Client-Global" }, { merge: true });
+    try {
+        let currentUser = auth.currentUser;
         
-        const docRef = doc(db, "vip_users", email);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists() && docSnap.data().unlockedApps && (docSnap.data().unlockedApps.includes(app.id) || docSnap.data().unlockedApps.includes('FULL_ACCESS'))) {
-            setHasAccess(true); v8Toast.success("Welcome back! Access is already unlocked.");
-        } else { setWireModalData({ tip, cena }); }
-      } catch (error) { v8Toast.error("Login error!"); }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        if (!currentUser) {
+            const v8Provider = new GoogleAuthProvider();
+            v8Provider.setCustomParameters({ prompt: 'select_account' });
+            const result = await signInWithPopup(auth, v8Provider);
+            currentUser = result.user;
+        }
+
+        if (currentUser) {
+            // BELEŽIMO U RADAR
+            await addDoc(collection(db, "v8_kupci"), {
+                ime: currentUser.displayName || "Client", email: currentUser.email, uid: currentUser.uid,
+                zeliPaket: tip, cenaPaketa: cena, vreme: serverTimestamp(), isPaid: false
+            });
+
+            // ČUVAMO KOMPATIBILNOST
+            await setDoc(doc(db, "posetioci", currentUser.uid), { 
+                ime: currentUser.displayName || "Client", 
+                email: currentUser.email, 
+                vremePrijave: serverTimestamp(), 
+                zainteresovanZa: tip, 
+                identitet: "V8-Client-Global" 
+            }, { merge: true });
+
+            const email = currentUser.email ? currentUser.email.toLowerCase() : "";
+            
+            if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
+                setHasAccess(true);
+                v8Toast.success("Access already unlocked!");
+                return; 
+            }
+
+            const docRef = doc(db, "vip_users", email);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists() && docSnap.data().unlockedApps && (docSnap.data().unlockedApps.includes(app.id) || docSnap.data().unlockedApps.includes('FULL_ACCESS'))) {
+                setHasAccess(true);
+                v8Toast.success("Access already unlocked!");
+            } else {
+                setWireModalData({ tip, cena });
+            }
+        }
+    } catch (err) {
+        console.error("V8 PAYMENT ERROR:", err);
+        v8Toast.error(err.message || "Greška na sistemu za naplatu.");
     }
   };
   
   return (
     <div className="bg-[#050505] pt-32 pb-32 px-6 font-sans text-white text-left relative">
       <Helmet><title>{app.name} | V8 FACTORY</title></Helmet>
-      <AnimatePresence>
-        {fullScreenImage && (
-          <div className="fixed inset-0 z-[6000] bg-black/95 flex items-center justify-center p-4" onClick={() => setFullScreenImage(null)}>
-            <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }}>
-              <button className="absolute top-6 right-6 text-white bg-black/50 hover:bg-red-600 rounded-full p-3 transition-all z-[6010]"><X className="w-8 h-8" /></button>
-              <img src={fullScreenImage} className="max-w-full max-h-full object-contain" alt="Enlarged" onClick={(e) => e.stopPropagation()} />
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      
+      {/* FULLSCREEN IMAGE MODAL - SADA U PORTALU */}
+      {createPortal(
+        <AnimatePresence>
+          {fullScreenImage && (
+            <div className="fixed inset-0 z-[999999] bg-black/95 flex items-center justify-center p-4" onClick={() => setFullScreenImage(null)}>
+              <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }}>
+                <button className="absolute top-6 right-6 text-white bg-black/50 hover:bg-red-600 rounded-full p-3 transition-all z-[6010]"><X className="w-8 h-8" /></button>
+                <img src={fullScreenImage} className="max-w-full max-h-full object-contain" alt="Enlarged" onClick={(e) => e.stopPropagation()} />
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       <div className="max-w-7xl mx-auto">
         <button onClick={() => navigate('/')} className="text-zinc-400 hover:text-white flex items-center gap-2 mb-10 uppercase text-[10px] font-black tracking-widest transition-all"><ChevronLeft className="w-4 h-4" /> Go Back</button>
@@ -245,7 +294,6 @@ export default function SingleProductPage({ apps = [] }) {
                   </div>
                 ) : (
                   <div className="bg-[#050505] border border-orange-500/40 p-5 rounded-2xl shadow-[0_0_20px_rgba(234,88,12,0.1)] relative overflow-hidden group">
-                    {/* V8 FIX: JASNO NAGLAŠENO JEDNOKRATNO PLAĆANJE */}
                     <div className="absolute top-0 right-0 bg-orange-600 text-white text-[8px] font-black uppercase tracking-widest px-4 py-1.5 rounded-bl-xl z-10 shadow-lg">ONE-TIME PURCHASE 🌐</div>
                     <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mb-4 mt-2 flex items-center justify-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.8)]"></span> Secure Digital Checkout</p>
                     
@@ -256,9 +304,8 @@ export default function SingleProductPage({ apps = [] }) {
                     </div>
 
                     <div className="flex flex-col gap-3">
-                      {/* V8 FIX: TERMINOLOGIJA DIGITALNOG PREUZIMANJA */}
-                      <button onClick={() => handlePaymentGlobal('Standard Download', cenaStandard)} className="w-full py-4 rounded-xl flex items-center justify-between px-5 bg-white/5 border border-white/10 hover:border-orange-500/50 hover:bg-orange-500/10 text-white font-black text-[11px] md:text-[12px] uppercase tracking-widest transition-all"><span className="flex items-center gap-2"><DownloadCloud className="w-4 h-4 text-orange-500" /> Standard Download</span><span className="text-orange-400">${cenaStandard}</span></button>
-                      <button onClick={() => handlePaymentGlobal('Premium Bundle', cenaPremium)} className="w-full py-4 rounded-xl flex items-center justify-between px-5 bg-gradient-to-r from-orange-600/20 to-amber-600/20 border border-orange-500/40 hover:from-orange-600 hover:to-amber-600 text-white font-black text-[11px] md:text-[12px] uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(234,88,12,0.2)] hover:shadow-[0_0_25px_rgba(234,88,12,0.6)]"><span className="flex items-center gap-2"><Award className="w-4 h-4 text-amber-400" /> Premium Bundle</span><span className="text-white drop-shadow-md">${cenaPremium}</span></button>
+                      <button onClick={(e) => { e.preventDefault(); handlePaymentGlobal(`Standard Download - ${app.name}`, cenaStandard); }} className="w-full py-4 rounded-xl flex items-center justify-between px-5 bg-white/5 border border-white/10 hover:border-orange-500/50 hover:bg-orange-500/10 text-white font-black text-[11px] md:text-[12px] uppercase tracking-widest transition-all"><span className="flex items-center gap-2"><DownloadCloud className="w-4 h-4 text-orange-500" /> Standard Download</span><span className="text-orange-400">${cenaStandard}</span></button>
+                      <button onClick={(e) => { e.preventDefault(); handlePaymentGlobal(`Premium Bundle - ${app.name}`, cenaPremium); }} className="w-full py-4 rounded-xl flex items-center justify-between px-5 bg-gradient-to-r from-orange-600/20 to-amber-600/20 border border-orange-500/40 hover:from-orange-600 hover:to-amber-600 text-white font-black text-[11px] md:text-[12px] uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(234,88,12,0.2)] hover:shadow-[0_0_25px_rgba(234,88,12,0.6)]"><span className="flex items-center gap-2"><Award className="w-4 h-4 text-amber-400" /> Premium Bundle</span><span className="text-white drop-shadow-md">${cenaPremium}</span></button>
                     </div>
                     <p className="text-[9px] text-zinc-500 uppercase tracking-widest mt-6 text-center leading-relaxed font-bold px-2">After checkout, the system will automatically unlock your instant digital download access here.</p>
                   </div>
@@ -270,33 +317,39 @@ export default function SingleProductPage({ apps = [] }) {
         </div>
       </div>
 
-     <AnimatePresence>
-        {wireModalData && (
-          <div className="fixed inset-0 z-[7000] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 30 }} className="bg-[#0a0a0a] border border-orange-500/40 rounded-[2.5rem] max-w-md w-full relative text-zinc-100 font-sans shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden">
-              <button onClick={() => setWireModalData(null)} className="absolute top-5 right-5 bg-white/5 p-2 rounded-full text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10 transition-all z-10"><X size={20} strokeWidth={3} /></button>
-              <div className="p-10 flex flex-col items-center">
-                <h3 className="text-[18px] font-black uppercase tracking-widest mb-2 text-orange-500 flex items-center gap-3"><DownloadCloud className="w-5 h-5" /> Digital Asset Checkout</h3>
-                <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mb-6">Package: {wireModalData.tip}</p>
-                
-                <div className="w-full bg-[#050505] border border-white/10 rounded-2xl p-6 space-y-4 text-[13px] font-mono shadow-inner mb-8">
-                  <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Provider:</span><span className="font-bold text-white text-right">V8 Digital Vault</span></div>
-                  <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Support:</span><span className="font-bold text-white text-[11px] md:text-[13px]">aitoolsprosmart@gmail.com</span></div>
-                  <div className="flex justify-between pt-2"><span className="text-zinc-500 uppercase">Total (One-Time):</span><span className="font-black text-orange-500 text-[18px] drop-shadow-[0_0_8px_rgba(234,88,12,0.5)]">${wireModalData.cena}</span></div>
+      {/* 🔥 V8 PAYMENT MODAL PORTAL (ZAKUCAN ZA CENTAR) 🔥 */}
+      {createPortal(
+        <AnimatePresence>
+          {wireModalData && (
+            <div className="fixed inset-0 z-[999999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4">
+              <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 30 }} className="bg-[#0a0a0a] border border-orange-500/40 rounded-[2.5rem] max-w-md w-full relative text-zinc-100 font-sans shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden">
+                <button onClick={() => setWireModalData(null)} className="absolute top-5 right-5 bg-white/5 p-2 rounded-full text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10 transition-all z-10"><X size={20} strokeWidth={3} /></button>
+                <div className="p-10 flex flex-col items-center">
+                  <h3 className="text-[18px] font-black uppercase tracking-widest mb-2 text-orange-500 flex items-center gap-3"><DownloadCloud className="w-5 h-5" /> Digital Asset Checkout</h3>
+                  <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mb-6 text-center">Package: {wireModalData?.tip}</p>
+                  
+                  <div className="w-full bg-[#050505] border border-white/10 rounded-2xl p-6 space-y-4 text-[13px] font-mono shadow-inner mb-8">
+                    <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Provider:</span><span className="font-bold text-white text-right">V8 Digital Vault</span></div>
+                    <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Support:</span><span className="font-bold text-white text-[11px] md:text-[13px]">aitoolsprosmart@gmail.com</span></div>
+                    <div className="flex justify-between pt-2"><span className="text-zinc-500 uppercase">Total (One-Time):</span><span className="font-black text-orange-500 text-[18px] drop-shadow-[0_0_8px_rgba(234,88,12,0.5)]">${wireModalData?.cena}</span></div>
+                  </div>
+                  
+                  <div className="w-full bg-[#050505] border border-orange-500/30 rounded-2xl p-5 text-center shadow-[0_0_20px_rgba(234,88,12,0.15)] group relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                    <p className="text-[11px] md:text-[12px] text-zinc-400 font-black uppercase tracking-widest mb-4">Please contact us to complete your one-time purchase:</p>
+                    <a href="mailto:aitoolsprosmart@gmail.com" className="flex items-center justify-center gap-2 w-full bg-white/5 border border-white/10 hover:border-orange-500/50 hover:bg-orange-500/10 text-orange-400 py-3 rounded-xl font-black text-[12px] md:text-[14px] tracking-widest transition-all cursor-pointer shadow-inner">
+                      📧 Request Checkout Link
+                    </a>
+                    <span className="block mt-5 text-[10px] text-zinc-500 uppercase font-black tracking-widest">System unlocks your download automatically! 🚀</span>
+                  </div>
                 </div>
-                
-                <div className="w-full bg-[#050505] border border-orange-500/30 rounded-2xl p-5 text-center shadow-[0_0_20px_rgba(234,88,12,0.15)]">
-                  <p className="text-[11px] md:text-[12px] text-zinc-400 font-black uppercase tracking-widest mb-4">Please contact us to complete your one-time purchase:</p>
-                  <a href="mailto:aitoolsprosmart@gmail.com" className="flex items-center justify-center gap-2 w-full bg-white/5 border border-white/10 hover:border-orange-500/50 hover:bg-orange-500/10 text-orange-400 py-3 rounded-xl font-black text-[12px] md:text-[14px] tracking-widest transition-all cursor-pointer shadow-inner">
-                    📧 Request Checkout Link
-                  </a>
-                  <span className="block mt-5 text-[10px] text-zinc-500 uppercase font-black tracking-widest">System unlocks your download automatically! 🚀</span>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
     </div>
   );
 }
