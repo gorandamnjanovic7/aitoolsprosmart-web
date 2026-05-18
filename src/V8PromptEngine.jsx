@@ -1,7 +1,13 @@
 // POČETAK FAJLA: V8PromptEngine.jsx
-import React, { useState, useRef } from 'react';
-import { Upload, FileImage, Clock, Wand2, MonitorPlay, Smartphone, Settings2, X, Diamond, Lock } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Upload, FileImage, Clock, Wand2, MonitorPlay, Smartphone, Settings2, X, Diamond, Lock, DownloadCloud } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import MagneticButton from './MagneticButton'; 
+
+// 🔥 DODATO: Firebase importi za kupovinu i auth
+import { db, auth } from './firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
 
 const V8PromptEngine = ({ engineName = "SEEDANCE 2.0" }) => {
   // POČETAK FUNKCIJE: V8PromptEngine
@@ -19,9 +25,25 @@ const V8PromptEngine = ({ engineName = "SEEDANCE 2.0" }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const inputRef = useRef(null);
 
+  // 🔥 DODATO: State za Modal i Korisnika 🔥
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
   // Logika za međusobno isključivanje polja
   const isImageModeActive = !!imageFile || imageDescription.length > 0;
   const isTextModeActive = promptText.length > 0;
+
+  // 🔥 DODATO: Praćenje Auth stanja 🔥
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (user) => {
+      if (user) {
+          setCurrentUser(user);
+      } else { 
+          setCurrentUser(null); 
+      }
+    });
+    return () => unsub();
+  }, []);
 
   const handleDrag = (e) => {
     // POČETAK FUNKCIJE: handleDrag
@@ -87,9 +109,8 @@ const V8PromptEngine = ({ engineName = "SEEDANCE 2.0" }) => {
   const generisiMasterPrompt = async () => {
     setIsGenerating(true);
     
-    // Pakujemo sve parametre iz UI-ja (tekst, sliku, trajanje, format i Koji motor palimo)
     const formData = new FormData();
-    formData.append('engine', engineName); // "SEEDANCE 2.0" ili "KLING 3.0"
+    formData.append('engine', engineName); 
     formData.append('text', isImageModeActive ? imageDescription : promptText);
     formData.append('duration', duration);
     formData.append('aspectRatio', aspectRatio);
@@ -99,7 +120,6 @@ const V8PromptEngine = ({ engineName = "SEEDANCE 2.0" }) => {
     }
 
     try {
-      // PRAVI UDARAC: Palimo produkcioni Railway server!
       const response = await fetch('https://aitoolsprosmart-becend-production.up.railway.app/api/v8-generate', {
         method: 'POST',
         body: formData,
@@ -107,12 +127,9 @@ const V8PromptEngine = ({ engineName = "SEEDANCE 2.0" }) => {
 
       if (!response.ok) throw new Error("V8 Server Error");
 
-      // Dobijamo 5 kilometarskih promptova u JSON formatu nazad
       const data = await response.json();
-      
-      // PROVERI KONZOLU - Ovde stižu rezultati od Pythona
       console.log("V8 MASTER PROMPT REZULTAT:", data);
-      alert("Prompts generated successfully! Check Console."); // Privremeni alert dok ne odradimo modal za prikaz
+      alert("Prompts generated successfully! Check Console."); 
       
     } catch (error) {
       console.error("V8 Engine failure:", error);
@@ -123,21 +140,83 @@ const V8PromptEngine = ({ engineName = "SEEDANCE 2.0" }) => {
   };
   // KRAJ FUNKCIJE: generisiMasterPrompt
 
+  // 🔥 DODATO: Funkcija za okidanje naplate (Auth -> Logovanje -> Prikaz Modala) 🔥
+  const pokreniKupovinu = async () => {
+    const imePaketa = `V8 PRO LICENSE: ${engineName}`;
+    const cenaPaketa = "149.00"; // U dolarima
+
+    // Zapisujemo u bazu da znamo ko je tražio
+    const snimiKupca = async (user) => {
+        try {
+            await addDoc(collection(db, "v8_kupci"), {
+                ime: user.displayName || "Client", email: user.email, uid: user.uid,
+                zeliPaket: imePaketa, cenaPaketa: cenaPaketa, vreme: serverTimestamp(), isPaid: false
+            });
+        } catch (error) { console.error("Greška pri beleženju kupca:", error); }
+    };
+
+    if (currentUser) {
+        snimiKupca(currentUser);
+        setShowPaymentModal(true);
+    } else {
+        try {
+            await signOut(auth);
+            const v8Provider = new GoogleAuthProvider();
+            v8Provider.setCustomParameters({ prompt: 'select_account', login_hint: '' });
+            const result = await signInWithPopup(auth, v8Provider);
+            await snimiKupca(result.user);
+            setShowPaymentModal(true); 
+        } catch (error) { 
+            console.error("Login canceled."); 
+        }
+    }
+  };
+  // 🔥 KRAJ FUNKCIJE: pokreniKupovinu 🔥
+
   return (
     <div className="bg-[#050505] p-8 md:p-12 rounded-[2.5rem] border border-[#FF8C00]/30 shadow-[0_0_50px_rgba(255,140,0,0.1)] max-w-5xl mx-auto mt-10 relative overflow-hidden">
       
-      {/* Pozadinski sjaj */}
-      <div className="absolute -top-32 -right-32 w-96 h-96 bg-[#FF8C00]/10 rounded-full blur-[100px] pointer-events-none"></div>
+      {/* --- POČETAK: HERO BOX --- */}
+      <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.1 }}
+          className="relative w-full mx-auto mb-12 rounded-[2.5rem] overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(255,140,0,0.15)]"
+      >
+          {/* Pozadina */}
+          <div 
+              className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-50"
+              style={{ backgroundImage: "url('/v8_py/v8_py_pozadina.webp')" }} 
+          ></div>
+          
+          <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050505]/40 via-[#050505]/80 to-[#050505]"></div>
+          <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#050505]/80 via-transparent to-[#050505]/80"></div>
 
-      <div className="text-center mb-10 relative z-10">
-        <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tighter mb-4 flex items-center justify-center gap-3">
-          {engineName === "KLING 3.0" ? <Settings2 className="text-red-500 w-10 h-10" /> : <MonitorPlay className="text-green-500 w-10 h-10" />}
-          {engineName} <span className="text-[#FF8C00]">ENGINE</span>
-        </h2>
-        <p className="text-zinc-400 font-bold tracking-widest text-[11px] uppercase">
-          Generate Kilometric, Ready-To-Use Blockbuster Prompts
-        </p>
-      </div>
+          <div className="relative z-10 py-16 px-6 text-center flex flex-col items-center">
+              <div className="inline-block bg-orange-600/10 border border-orange-500/30 px-5 py-2 rounded-full text-orange-400 font-black uppercase tracking-[0.3em] text-[10px] mb-6 animate-pulse shadow-[0_0_20px_rgba(234,88,12,0.2)] backdrop-blur-sm">
+                V8 CORE // CINEMATIC GENERATOR
+              </div>
+              
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-black italic uppercase tracking-tighter text-white mb-6 drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)] flex items-center justify-center gap-4 flex-wrap">
+                {engineName === "KLING 3.0" ? <Settings2 className="text-red-500 w-12 h-12 md:w-16 md:h-16 drop-shadow-[0_0_15px_rgba(239,68,68,0.8)]" /> : <MonitorPlay className="text-green-500 w-12 h-12 md:w-16 md:h-16 drop-shadow-[0_0_15px_rgba(34,197,94,0.8)]" />}
+                {engineName} <span className="text-transparent bg-clip-text bg-gradient-to-b from-orange-500 to-amber-600 drop-shadow-none">ENGINE</span>
+              </h1>
+              
+              {/* 🔥 BRUTALNI PODNASLOVI 🔥 */}
+              {engineName === "KLING 3.0" ? (
+                <p className="text-zinc-200 font-bold uppercase tracking-[0.3em] text-[10px] md:text-[11px] max-w-3xl mx-auto leading-relaxed drop-shadow-lg bg-black/60 p-5 rounded-2xl backdrop-blur-md border-l-2 border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.15)]">
+                  Command hyper-realistic physics and flawless kinetic motion. Inject secret meta-tokens to generate CGI-rivaling masterpieces. 
+                  <span className="text-white font-black italic block mt-2 tracking-widest text-[11px] md:text-[12px]">$100,000 PRODUCTION VALUE IN A SINGLE CLICK.</span>
+                </p>
+              ) : (
+                <p className="text-zinc-200 font-bold uppercase tracking-[0.3em] text-[10px] md:text-[11px] max-w-3xl mx-auto leading-relaxed drop-shadow-lg bg-black/60 p-5 rounded-2xl backdrop-blur-md border-l-2 border-green-500 shadow-[0_0_20px_rgba(34,197,94,0.15)]">
+                  Engineer Hollywood-grade cinematography. Harness ARRI Alexa lighting, Leica Summilux optics, and Vogue-level editorial aesthetics. 
+                  <span className="text-white font-black italic block mt-2 tracking-widest text-[11px] md:text-[12px]">THE ULTIMATE DIRECTOR'S TOOLKIT FOR CINEMATIC PERFECTION.</span>
+                </p>
+              )}
+          </div>
+      </motion.div>
+      {/* --- KRAJ: HERO BOX --- */}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 relative z-10 mb-16">
         
@@ -309,13 +388,51 @@ const V8PromptEngine = ({ engineName = "SEEDANCE 2.0" }) => {
                       <span className="text-white font-black font-mono text-6xl">$149</span>
                   </div>
                   <MagneticButton>
-                      <button className="mt-6 bg-white text-black px-10 py-4 rounded-full font-black uppercase tracking-[0.2em] text-[11px] hover:bg-yellow-400 hover:text-black transition-all shadow-xl flex items-center gap-2">
+                      <button 
+                        onClick={pokreniKupovinu} 
+                        className="mt-6 bg-white text-black px-10 py-4 rounded-full font-black uppercase tracking-[0.2em] text-[11px] hover:bg-yellow-400 hover:text-black transition-all shadow-xl flex items-center gap-2"
+                      >
                           SECURE CHECKOUT 🍋
                       </button>
                   </MagneticButton>
               </div>
           </div>
       </div>
+
+      {/* 🔥 V8 PAYMENT MODAL (Isti kao na berzi) 🔥 */}
+      <AnimatePresence>
+        {showPaymentModal && (
+          <div className="fixed inset-0 z-[9000] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 30 }} className="bg-[#0a0a0a] border border-orange-500/40 rounded-[2.5rem] max-w-md w-full relative text-zinc-100 font-sans shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden">
+              <button onClick={() => setShowPaymentModal(false)} className="absolute top-5 right-5 bg-white/5 p-2 rounded-full text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10 transition-all z-10"><X size={20} strokeWidth={3} /></button>
+              
+              <div className="p-10 flex flex-col items-center">
+                <div className="w-16 h-16 rounded-full bg-orange-600/10 flex items-center justify-center mb-4 border border-orange-500/30 shadow-[0_0_20px_rgba(234,88,12,0.2)]">
+                   <DownloadCloud className="w-8 h-8 text-orange-500" />
+                </div>
+                
+                <h3 className="text-[18px] font-black uppercase tracking-widest mb-2 text-white text-center">Digital Asset Checkout</h3>
+                <p className="text-[10px] text-orange-400 font-black uppercase tracking-widest mb-8 text-center text-balance px-4">{`V8 PRO LICENSE: ${engineName}`}</p>
+                
+                <div className="w-full bg-[#050505] border border-white/10 rounded-2xl p-6 space-y-4 text-[13px] font-mono shadow-inner mb-8">
+                  <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Provider:</span><span className="font-bold text-white text-right">V8 Vault</span></div>
+                  <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Support:</span><span className="font-bold text-white text-[11px]">aitoolsprosmart@gmail.com</span></div>
+                  <div className="flex justify-between pt-2 items-center"><span className="text-zinc-500 uppercase">Total (One-Time):</span><span className="font-black text-white text-[22px] drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">$149.00</span></div>
+                </div>
+                
+                <div className="w-full bg-[#050505] border border-orange-500/30 rounded-2xl p-6 text-center shadow-[0_0_20px_rgba(234,88,12,0.15)] relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                  <p className="text-[11px] md:text-[12px] text-zinc-300 font-black uppercase tracking-widest mb-4">Please contact support to complete your one-time purchase:</p>
+                  <a href="mailto:aitoolsprosmart@gmail.com" className="flex items-center justify-center gap-2 w-full bg-white text-black hover:bg-orange-500 hover:text-white py-3.5 rounded-xl font-black text-[12px] uppercase tracking-widest transition-all cursor-pointer shadow-lg">
+                      Request Checkout Link
+                  </a>
+                  <span className="block mt-4 text-[9px] text-zinc-500 uppercase font-bold tracking-widest">System unlocks your generator automatically after checkout! 🚀</span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

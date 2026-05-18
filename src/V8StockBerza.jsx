@@ -2,15 +2,16 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { CLOUDINARY_UPLOAD_PRESET, CLOUDINARY_CLOUD_NAME } from './data';
-import { Sparkles, Download, Zap, ShieldCheck, X, Image as ImageIcon, Video, FolderArchive, Layers, Pencil, Users, CheckCircle, Globe, Type, FileText, Wallet, MonitorPlay, Link as LinkIcon, Images, DownloadCloud, Crown } from 'lucide-react';
+import { Sparkles, Download, Zap, ShieldCheck, X, Image as ImageIcon, Video, FolderArchive, Layers, Pencil, Users, CheckCircle, Globe, Type, FileText, Wallet, MonitorPlay, Link as LinkIcon, Images, DownloadCloud, Crown, AlertCircle } from 'lucide-react';
 import { db, auth } from './firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
 import { v8Toast } from './App';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// V8 SLEEP PROTOCOL LIGHTBOX
+// POČETAK FUNKCIJE: FullScreenLightbox
 const FullScreenLightbox = ({ imageUrl, onClose }) => {
+    // POČETAK FUNKCIJE: useEffect (FullScreenLightbox)
     useEffect(() => {
         if (imageUrl) {
             document.body.style.overflow = 'hidden';
@@ -28,6 +29,7 @@ const FullScreenLightbox = ({ imageUrl, onClose }) => {
         }
         return () => { document.body.style.overflow = ''; document.getElementById('v8-sleep-protocol')?.remove(); };
     }, [imageUrl]);
+    // KRAJ FUNKCIJE: useEffect (FullScreenLightbox)
 
     if (!imageUrl) return null;
     return createPortal(
@@ -37,22 +39,25 @@ const FullScreenLightbox = ({ imageUrl, onClose }) => {
         </div>, document.body
     );
 };
+// KRAJ FUNKCIJE: FullScreenLightbox
 
+// POČETAK FUNKCIJE: V8StockBerza
 const V8StockBerza = () => {
   const [paketi, setPaketi] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentUser, setCurrentUser] = useState(null); 
   const [showPaymentModal, setShowPaymentModal] = useState(null);
+  
+  const [showInjectorConfirm, setShowInjectorConfirm] = useState(false);
+  
   const [isUploading, setIsUploading] = useState(false);
   const [isUploadingPrimer, setIsUploadingPrimer] = useState(false);
   const [primeriUrls, setPrimeriUrls] = useState([]); 
   const [editingPaketId, setEditingPaketId] = useState(null); 
   const [fullScreenImageUrl, setFullScreenImageUrl] = useState(null);
   
-  // 🔥 V8 TAB SISTEM 🔥
   const [activeTab, setActiveTab] = useState('premium');
 
-  // V8 KONTROLE
   const [noviNazivEn, setNoviNazivEn] = useState('');
   const [noviVolume, setNoviVolume] = useState('');
   const [noviFormat, setNoviFormat] = useState('16:9, 9:16 & 21:9 (BUNDLE)');
@@ -64,6 +69,7 @@ const V8StockBerza = () => {
   const [zipLink, setZipLink] = useState('');
   const [lemonLink, setLemonLink] = useState('');
 
+  // POČETAK FUNKCIJE: useEffect (Auth)
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -75,8 +81,9 @@ const V8StockBerza = () => {
     fetchPaketi();
     return () => unsub();
   }, []);
+  // KRAJ FUNKCIJE: useEffect (Auth)
 
-  // 🔥 DINAMIČKI CMS: Ako je tab Bundles, forsira format na BUNDLE 🔥
+  // POČETAK FUNKCIJE: useEffect (CMS Tab)
   useEffect(() => {
     if (activeTab === 'bundles') {
       setNoviFormat('33.2MP MASTERWORK BUNDLE');
@@ -84,21 +91,23 @@ const V8StockBerza = () => {
       setNoviFormat('16:9, 9:16 & 21:9 (BUNDLE)');
     }
   }, [activeTab]);
+  // KRAJ FUNKCIJE: useEffect (CMS Tab)
 
-  // V8 AUTOMATIC DESCRIPTION
-  useEffect(() => {
-    if (noviFormat === '16:9 ONLY (SINGLE)') { setNoviOpisEn("PACKAGE CONTENTS: PREMIUM AI VISUALS IN ULTRA-WIDE 16:9 ONLY. PERFECT FOR WEBSITES, DESKTOP BACKGROUNDS AND CINEMATIC B-ROLL. COMMERCIAL VALUE OVER $1,500."); } 
-    else if (noviFormat === '16:9, 9:16 & 21:9 (BUNDLE)') { setNoviOpisEn("PACKAGE CONTENTS: PREMIUM AI VISUALS IN 3 FORMATS: 16:9 (LANDSCAPE), 9:16 (PORTRAIT) AND 21:9 (ULTRA-WIDE). PERFECT FOR DESKTOP, TIKTOK, INSTAGRAM REELS, AND CINEMATIC DISPLAYS. COMMERCIAL VALUE OVER $2,000."); } 
-    else if (noviFormat === 'ALL FORMATS (16:9, 9:16, 21:9, 1:1)') { setNoviOpisEn("PACKAGE CONTENTS: 80 PREMIUM AI VISUALS IN 4 RESOLUTIONS (16:9, 9:16, 21:9, AND 1:1 SQUARE). COMPLETE PACKAGE FOR ALL PLATFORMS. THE ULTIMATE V8 COLLECTION. COMMERCIAL VALUE OVER $3,000."); } 
-    else if (noviFormat === '16:9 & 9:16 (33.2MP MASTERWORK)') { 
-        // 🔥 NOVI BRUTALNI OPIS ZA 20 PREMIUM VIZUALA
+  // POČETAK FUNKCIJE: useEffect (Description)
+  useEffect(() => {
+    if (noviFormat === '16:9 ONLY (SINGLE)') { setNoviOpisEn("PACKAGE CONTENTS: PREMIUM AI VISUALS IN ULTRA-WIDE 16:9 ONLY. PERFECT FOR WEBSITES, DESKTOP BACKGROUNDS AND CINEMATIC B-ROLL. COMMERCIAL VALUE OVER $1,500."); } 
+    else if (noviFormat === '16:9, 9:16 & 21:9 (BUNDLE)') { setNoviOpisEn("PACKAGE CONTENTS: PREMIUM AI VISUALS IN 3 FORMATS: 16:9 (LANDSCAPE), 9:16 (PORTRAIT) AND 21:9 (ULTRA-WIDE). PERFECT FOR DESKTOP, TIKTOK, INSTAGRAM REELS, AND CINEMATIC DISPLAYS. COMMERCIAL VALUE OVER $2,000."); } 
+    else if (noviFormat === 'ALL FORMATS (16:9, 9:16, 21:9, 1:1)') { setNoviOpisEn("PACKAGE CONTENTS: 80 PREMIUM AI VISUALS IN 4 RESOLUTIONS (16:9, 9:16, 21:9, AND 1:1 SQUARE). COMPLETE PACKAGE FOR ALL PLATFORMS. THE ULTIMATE V8 COLLECTION. COMMERCIAL VALUE OVER $3,000."); } 
+    else if (noviFormat === '16:9 & 9:16 (33.2MP MASTERWORK)') { 
         setNoviOpisEn("V8 MASTERWORK BUNDLE: COMPLETE COLLECTION OF 20 PREMIUM VISUALS IN 33.2 MEGAPIXELS (8K UHD) RESOLUTION, sRGB COLORS, POLISHED AD PRODUCT, FILM GRAIN, CONTRIBUTOR QUALITY CLEANUP, PREMIUM SHARPNESS WITHOUT AI PLASTIC, COLOR GRADING, HIGHLIGHT ROLLOFF, SHADOW DEPTH, JPG HIGH QUALITY. INCLUDES BOTH 16:9 (LANDSCAPE) AND 9:16 (PORTRAIT) ASPECT RATIOS. FLAWLESS TEXTURES, ZERO BRANDING, IP-SAFE. DESIGNED EXCLUSIVELY FOR LUXURY BRANDS AND HIGH-END COMMERCIAL CAMPAIGNS. COMMERCIAL VALUE OVER $2,500."); 
     }
-    else if (noviFormat === '33.2MP MASTERWORK BUNDLE') { 
-      setNoviOpisEn("V8 MASTERWORK BUNDLE: COMPLETE COLLECTION OF 60 PREMIUM VISUALS IN 33.2 MEGAPIXELS (8K UHD) RESOLUTION, sRGB COLORS, POLISHED AD PRODUCT, FILM GRAIN, CONTRIBUTOR QUALITY CLEANUP, PREMIUM SHARPNESS WITHOUT AI PLASTIC, COLOR GRADING, HIGHLIGHT ROLLOFF, SHADOW DEPTH, JPG HIGH QUALITY. INCLUDES BOTH 16:9 (LANDSCAPE) AND 9:16 (PORTRAIT) ASPECT RATIOS. FLAWLESS TEXTURES, ZERO BRANDING, IP-SAFE. DESIGNED EXCLUSIVELY FOR LUXURY BRANDS AND HIGH-END COMMERCIAL CAMPAIGNS. COMMERCIAL VALUE OVER $10000."); 
-    }
-  }, [noviFormat]);
+    else if (noviFormat === '33.2MP MASTERWORK BUNDLE') { 
+      setNoviOpisEn("V8 MASTERWORK BUNDLE: COMPLETE COLLECTION OF 60 PREMIUM VISUALS IN 33.2 MEGAPIXELS (8K UHD) RESOLUTION, sRGB COLORS, POLISHED AD PRODUCT, FILM GRAIN, CONTRIBUTOR QUALITY CLEANUP, PREMIUM SHARPNESS WITHOUT AI PLASTIC, COLOR GRADING, HIGHLIGHT ROLLOFF, SHADOW DEPTH, JPG HIGH QUALITY. INCLUDES BOTH 16:9 (LANDSCAPE) AND 9:16 (PORTRAIT) ASPECT RATIOS. FLAWLESS TEXTURES, ZERO BRANDING, IP-SAFE. DESIGNED EXCLUSIVELY FOR LUXURY BRANDS AND HIGH-END COMMERCIAL CAMPAIGNS. COMMERCIAL VALUE OVER $10000."); 
+    }
+  }, [noviFormat]);
+  // KRAJ FUNKCIJE: useEffect (Description)
 
+  // POČETAK FUNKCIJE: fetchPaketi
   const fetchPaketi = async () => {
     try {
       const q = query(collection(db, "v8_stock_paketi"), orderBy("createdAt", "desc"));
@@ -106,8 +115,9 @@ const V8StockBerza = () => {
       setPaketi(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     } catch (err) { console.error(err); }
   };
+  // KRAJ FUNKCIJE: fetchPaketi
 
-  // V8 CHECKOUT REDIRECT / MODAL
+  // POČETAK FUNKCIJE: prijavaIKupovina
   const prijavaIKupovina = async (paket) => {
     if (currentUser) {
         snimiKupcaUBazu(currentUser, paket);
@@ -132,7 +142,9 @@ const V8StockBerza = () => {
         } catch (error) { v8Toast.error("Login canceled."); }
     }
   };
+  // KRAJ FUNKCIJE: prijavaIKupovina
 
+  // POČETAK FUNKCIJE: snimiKupcaUBazu
   const snimiKupcaUBazu = async (user, paket) => {
       try {
           const imePaketa = paket.nazivEn || "Premium Package";
@@ -142,8 +154,9 @@ const V8StockBerza = () => {
           });
       } catch (error) { console.error(error); }
   };
+  // KRAJ FUNKCIJE: snimiKupcaUBazu
 
-  // UPLOAD FUNKCIJE
+  // POČETAK FUNKCIJE: handleUploadPreview
   const handleUploadPreview = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -155,12 +168,13 @@ const V8StockBerza = () => {
       setPreviewUrl(resData.secure_url);
     } catch (err) { v8Toast.error("Upload error!"); } finally { setIsUploading(false); }
   };
+  // KRAJ FUNKCIJE: handleUploadPreview
 
+  // POČETAK FUNKCIJE: handleUploadPrimeri
   const handleUploadPrimeri = async (e) => {
     const files = Array.from(e.target.files); 
     if (files.length === 0) return;
     
-    // 🔥 LIMIT SE POVEĆAVA NA 6 AKO JE TAB BUNDLES 🔥
     const maxImages = activeTab === 'bundles' ? 6 : 4;
     const slobodnaMesta = maxImages - primeriUrls.length;
     
@@ -177,11 +191,21 @@ const V8StockBerza = () => {
       setPrimeriUrls(prev => [...prev, ...noveSlike]);
     } catch (err) { v8Toast.error("Error uploading previews!"); } finally { setIsUploadingPrimer(false); e.target.value = null; }
   };
+  // KRAJ FUNKCIJE: handleUploadPrimeri
 
-  const removeMainImage = () => setPreviewUrl('');
-  const removeThumbnail = (indexToRemove) => setPrimeriUrls(prev => prev.filter((_, idx) => idx !== indexToRemove));
+  // POČETAK FUNKCIJE: removeMainImage
+  const removeMainImage = () => {
+    setPreviewUrl('');
+  };
+  // KRAJ FUNKCIJE: removeMainImage
 
-  // CRUD FUNKCIJE
+  // POČETAK FUNKCIJE: removeThumbnail
+  const removeThumbnail = (indexToRemove) => {
+    setPrimeriUrls(prev => prev.filter((_, idx) => idx !== indexToRemove));
+  };
+  // KRAJ FUNKCIJE: removeThumbnail
+
+  // POČETAK FUNKCIJE: dodajPaket
   const dodajPaket = async (e) => {
     e.preventDefault();
     if (!previewUrl || !zipLink) { v8Toast.error("Image & ZIP needed!"); return; }
@@ -197,7 +221,9 @@ const V8StockBerza = () => {
         stoziEdit(); fetchPaketi();
     } catch (error) { v8Toast.error(error.message); }
   };
+  // KRAJ FUNKCIJE: dodajPaket
 
+  // POČETAK FUNKCIJE: startEditPaket
   const startEditPaket = (paket) => {
     setEditingPaketId(paket.id); setNoviNazivEn(paket.nazivEn || ''); setNoviVolume(paket.volume || '');
     setNoviFormat(paket.format || '16:9, 9:16 & 21:9 (BUNDLE)'); setNovaKategorijaEn(paket.kategorijaEn || ''); 
@@ -205,28 +231,96 @@ const V8StockBerza = () => {
     setPreviewUrl(paket.previewUrl || ''); setZipLink(paket.zipLink || ''); setLemonLink(paket.lemonLink || ''); setPrimeriUrls(paket.primeri || []); 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+  // KRAJ FUNKCIJE: startEditPaket
 
+  // POČETAK FUNKCIJE: stoziEdit
   const stoziEdit = () => {
     setEditingPaketId(null); setNoviNazivEn(''); setNoviVolume(''); setNoviFormat('16:9, 9:16 & 21:9 (BUNDLE)'); 
     setNovaKategorijaEn(''); setNovaCena('49.99'); setPreviewUrl(''); setZipLink(''); setLemonLink(''); setPrimeriUrls([]);
   };
+  // KRAJ FUNKCIJE: stoziEdit
 
-  const obrisiPaket = async (id) => { if (window.confirm("Are you sure?")) { await deleteDoc(doc(db, "v8_stock_paketi", id)); fetchPaketi(); } };
+  // POČETAK FUNKCIJE: obrisiPaket
+  const obrisiPaket = async (id) => { 
+    if (window.confirm("Are you sure?")) { 
+      await deleteDoc(doc(db, "v8_stock_paketi", id)); 
+      fetchPaketi(); 
+    } 
+  };
+  // KRAJ FUNKCIJE: obrisiPaket
 
+  // POČETAK FUNKCIJE: getGlobalCena
   const getGlobalCena = (cena) => {
       const numCena = parseFloat(cena);
       if (numCena > 500) { return (Math.ceil((numCena / 110) * 1.2) + 0.99).toFixed(2); }
       return numCena.toFixed(2);
   };
+  // KRAJ FUNKCIJE: getGlobalCena
 
+  // POČETAK FUNKCIJE: getAspectClass
   const getAspectClass = (format) => {
       if (!format) return 'aspect-video';
       if (format.includes('16:9 ONLY')) return 'aspect-video'; 
       return 'aspect-square'; 
   };
+  // KRAJ FUNKCIJE: getAspectClass
 
+  // POČETAK FUNKCIJE: napuniBazuMasovno
+  const napuniBazuMasovno = async () => {
+    setShowInjectorConfirm(false); 
+
+    const sviProizvodi = [
+      {
+        nazivEn: "ROMAN EMPIRE: CENTURIONS",
+        kategorijaEn: "History & Cinematic",
+        volume: "VOL 1",
+        format: "33.2MP MASTERWORK BUNDLE",
+        tip: "Image",
+        cena: "149.99",
+        opisEn: "V8 MASTERWORK BUNDLE: COMPLETE COLLECTION OF 60 PREMIUM VISUALS IN 33.2 MEGAPIXELS. FEATURING ROMAN LEGIONS, MARCHING THROUGH HEAVY RAIN, ULTRA-REALISTIC MICRO-TEXTURES. COMMERCIAL VALUE OVER $10000.",
+        previewUrl: "https://tvoj-cloudinary-link.com/slika-rimljana.jpg", 
+        primeri: [
+          "https://tvoj-cloudinary-link.com/rim-primer1.jpg", 
+          "https://tvoj-cloudinary-link.com/rim-primer2.jpg"
+        ],
+        zipLink: "https://drive.google.com/...",
+        lemonLink: "https://store.lemonsqueezy.com/..."
+      },
+      {
+        nazivEn: "VIKINGS: RAGNAR'S WRATH",
+        kategorijaEn: "Mythology & Action",
+        volume: "VOL 2",
+        format: "16:9 & 9:16 (33.2MP MASTERWORK)",
+        tip: "Image",
+        cena: "99.99",
+        opisEn: "PREMIUM CINEMATIC RENDER OF VIKING WARRIORS. HIGH CONTRAST, ARRI ALEXA LIGHTING. COMMERCIAL VALUE OVER $2,500.",
+        previewUrl: "https://tvoj-cloudinary-link.com/slika-vikinga.jpg", 
+        primeri: [],
+        zipLink: "https://drive.google.com/...",
+        lemonLink: "https://store.lemonsqueezy.com/..."
+      }
+    ];
+
+    try {
+      for (const proizvod of sviProizvodi) {
+        await addDoc(collection(db, "v8_stock_paketi"), {
+          ...proizvod,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+      }
+      if(typeof v8Toast !== 'undefined') v8Toast.success("V8 INJECTOR: BAZA USPEŠNO NAPUNJENA!");
+      fetchPaketi(); 
+    } catch (error) {
+      console.error(error);
+      if(typeof v8Toast !== 'undefined') v8Toast.error("GREŠKA PRI PUNJENJU BAZE!");
+    }
+  };
+  // KRAJ FUNKCIJE: napuniBazuMasovno
+
+  // 🔥 OVDE JE BILA GREŠKA: Zamenjen motion.div sa običnim div-om da se ekran ne zaglavi van monitora 🔥
   return (
-    <motion.div initial={{ y: "-100vh", opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ type: "spring", stiffness: 60, damping: 15 }} className="min-h-screen bg-[#050505] font-sans text-white pt-32 pb-24 px-6">
+    <div className="min-h-screen bg-[#050505] font-sans text-white pt-32 pb-24 px-6">
       <style>{`
         @keyframes spin-gradient { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .v8-premium-card { position: relative; border-radius: 2rem; padding: 2px; overflow: hidden; background: #0a0a0a; }
@@ -246,21 +340,21 @@ const V8StockBerza = () => {
 
             <div className="relative z-10 text-center py-20 px-6">
                 
-                {/* 🔥 V8 DINAMIČKI NASLOVI 🔥 */}
+                {/* V8 DINAMIČKI NASLOVI */}
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter mb-4 text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)] transition-all">
                     {activeTab === 'premium' && (<>V8 33MP <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500 drop-shadow-none">MASTERWORK ASSETS</span></>)}
                     {activeTab === 'bundles' && (<>V8 33MP MASTER <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500 drop-shadow-none">STOCK BUNDLES</span></>)}
                     {activeTab === 'standard' && (<>V8 PREMIUM <span className="text-[#FF8C00]">STOCK MARKET</span></>)}
                 </h1>
                 
-                {/* 🔥 V8 DINAMIČKI TEKSTOVI 🔥 */}
+                {/* V8 DINAMIČKI TEKSTOVI */}
                 <p className="text-zinc-200 font-bold uppercase tracking-[0.3em] text-[10px] md:text-[12px] max-w-4xl mx-auto leading-relaxed mb-10 drop-shadow-lg bg-black/30 p-3 rounded-lg backdrop-blur-sm transition-all">
                     {activeTab === 'premium' && "PURE UNADULTERATED PIXELS. 33.2 MEGAPIXELS OF MASTERWORK RESOLUTION. ZERO COMPROMISE FOR LUXURY BRANDS."}
                     {activeTab === 'bundles' && "ENTER THE MILLION-DOLLAR VAULT. OVER 60 IMAGES IN STUNNING 33.2 MEGAPIXELS. YOU ARE NOT JUST BUYING IMAGES. YOU ARE ACQUIRING A MULTI-MILLION DOLLAR CINEMATIC PRODUCTION, RENDERED WITH IMPOSSIBLE PRECISION. FOR ELITE AGENCIES AND VISIONARY DIRECTORS ONLY."}
                     {activeTab === 'standard' && "THE ULTIMATE ARSENAL OF ROYALTY-FREE AI ASSETS FOR HIGH-END PRODUCTION AND VISIONARY CREATORS."}
                 </p>
                 
-                {/* 🔥 V8 3-WAY DUGMIĆI 🔥 */}
+                {/* V8 3-WAY DUGMIĆI */}
                 <div className="flex justify-center relative z-10">
                     <div className="bg-[#050505]/80 backdrop-blur-md border border-white/10 p-1.5 rounded-full inline-flex flex-wrap items-center justify-center shadow-xl gap-1">
                         <button onClick={() => setActiveTab('standard')} className={`px-6 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 ${activeTab === 'standard' ? 'bg-zinc-800 text-white shadow-md border border-white/10' : 'text-zinc-400 hover:text-white'}`}>Standard Assets</button>
@@ -275,9 +369,18 @@ const V8StockBerza = () => {
 
         {isAdmin && (
           <form onSubmit={dodajPaket} className="bg-[#0a0a0a] border-2 border-[#FF8C00]/50 rounded-[2.5rem] p-8 mb-16 shadow-[0_0_30px_rgba(255,140,0,0.1)] max-w-4xl mx-auto">
-            <h2 className="text-xl font-black text-[#FF8C00] uppercase tracking-widest mb-8 flex items-center gap-2 border-b border-[#FF8C00]/20 pb-4">
+            <h2 className="text-xl font-black text-[#FF8C00] uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-[#FF8C00]/20 pb-4">
               <Zap className="w-6 h-6" /> {editingPaketId ? 'EDIT PACKAGE' : 'ADD NEW ZIP PACKAGE'}
             </h2>
+            
+            {/* V8 INJECTOR DUGME (PALI CUSTOM MODAL) */}
+            <button 
+              type="button" 
+              onClick={() => setShowInjectorConfirm(true)} 
+              className="mb-8 bg-red-600/20 text-red-500 border border-red-500/50 hover:bg-red-600 hover:text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center gap-2 w-max"
+            >
+              <Zap size={14} /> MASS INJECT PRODUCTS (V8 HELPER)
+            </button>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div className="flex flex-col gap-2 md:col-span-1"><label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase"><Type size={14} /> PACKAGE TITLE</label><input type="text" value={noviNazivEn} onChange={(e)=>setNoviNazivEn(e.target.value)} placeholder="E.g. Roman History" className="bg-black border border-[#FF8C00]/50 p-4 rounded-xl text-[14px] font-black text-white w-full outline-none focus:border-[#FF8C00] transition-all" required /></div>
@@ -291,7 +394,7 @@ const V8StockBerza = () => {
                   <div className="flex flex-col gap-2"><label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase"><Wallet size={14} /> PRICE (USD)</label><input type="text" value={novaCena} onChange={(e)=>setNovaCena(e.target.value)} placeholder="E.g. 49.99" className="bg-black border border-white/10 p-4 rounded-xl text-[13px] font-bold text-white outline-none focus:border-[#FF8C00] transition-all" /></div>
                   <div className="flex flex-col gap-2"><label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase"><MonitorPlay size={14} /> FORMAT</label>
                       
-                      {/* 🔥 V8 DINAMIČKA FORMA ZA FORMAT 🔥 */}
+                      {/* V8 DINAMIČKA FORMA ZA FORMAT */}
                       {activeTab === 'bundles' ? (
                           <div className="grid grid-cols-1 gap-2">
                               <label className="cursor-pointer p-3 rounded-xl border-2 transition-all text-center font-black text-[9px] uppercase bg-gradient-to-r from-blue-600 to-indigo-500 border-blue-400 text-white shadow-[0_0_15px_rgba(59,130,246,0.4)] flex items-center justify-center gap-2">
@@ -332,7 +435,6 @@ const V8StockBerza = () => {
                   <div className="flex flex-wrap gap-4 items-end">
                     <div className="flex flex-col gap-2"><label className="flex items-center gap-2 text-zinc-400 font-black text-[10px] tracking-widest uppercase"><ImageIcon size={12} /> MAIN IMAGE</label><label className="bg-zinc-900 hover:bg-[#FF8C00] text-white hover:text-black border border-white/10 hover:border-[#FF8C00] px-6 py-4 rounded-xl font-black text-[11px] uppercase cursor-pointer transition-all flex items-center gap-2"><ImageIcon size={16} /> {isUploading ? 'UPLOADING...' : 'ADD PREVIEW'}<input type="file" onChange={handleUploadPreview} className="hidden" /></label></div>
                     
-                    {/* 🔥 DINAMIČKI LIMIT ZA SLIKE (6 KAD JE BUNDLE, INAČE 4) 🔥 */}
                     <div className="flex flex-col gap-2"><label className="flex items-center gap-2 text-zinc-400 font-black text-[10px] tracking-widest uppercase"><Images size={12} /> GALLERY</label><label className="bg-zinc-900 hover:bg-[#FF8C00] text-white hover:text-black border border-white/10 hover:border-[#FF8C00] px-6 py-4 rounded-xl font-black text-[11px] uppercase cursor-pointer transition-all flex items-center gap-2"><Images size={16} /> {isUploadingPrimer ? 'UPLOADING...' : `ADD THUMBNAILS (${primeriUrls.length}/${activeTab === 'bundles' ? 6 : 4})`}<input type="file" multiple onChange={handleUploadPrimeri} className="hidden" /></label></div>
                     
                     <button type="submit" className="ml-auto px-8 py-4 rounded-xl font-black text-[13px] tracking-widest uppercase bg-[#FF8C00] hover:bg-orange-500 text-black transition-all shadow-[0_0_20px_rgba(255,140,0,0.5)] flex items-center gap-2 hover:scale-105"><Zap size={18} /> {editingPaketId ? 'SAVE CHANGES' : 'SAVE PACKAGE'}</button>
@@ -350,10 +452,8 @@ const V8StockBerza = () => {
               if (activeTab === 'premium') {
                   return formatString.includes('MASTERWORK') && !formatString.includes('MASTERWORK BUNDLE');
               } else if (activeTab === 'bundles') {
-                  // Samo oni paketi koji su kreirani kroz Masterwork Bundle tab
                   return formatString.includes('MASTERWORK BUNDLE');
               } else {
-                  // Svi ostali (Standardni) paketi
                   return !formatString.includes('MASTERWORK');
               }
             })
@@ -377,7 +477,6 @@ const V8StockBerza = () => {
                 </div>
                 
                 {paket.primeri && paket.primeri.length > 0 && (
-                    // 🔥 DINAMIČKI GRID ZA SLIKE (3 kolone ako ima više od 4 slike) 🔥
                     <div className={`grid gap-3 mb-6 ${paket.primeri.length > 4 ? 'grid-cols-3' : 'grid-cols-4'}`}>
                         {paket.primeri.map((imgUrl, idx) => (
                             <div key={idx} className="aspect-square rounded-xl overflow-hidden border border-white/10 bg-zinc-900 shadow-xl relative cursor-pointer" onClick={() => setFullScreenImageUrl(imgUrl)}>
@@ -447,7 +546,7 @@ const V8StockBerza = () => {
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
                   <p className="text-[11px] md:text-[12px] text-zinc-300 font-black uppercase tracking-widest mb-4">Please contact support to complete your one-time purchase:</p>
                   <a href="mailto:aitoolsprosmart@gmail.com" className="flex items-center justify-center gap-2 w-full bg-white text-black hover:bg-orange-500 hover:text-white py-3.5 rounded-xl font-black text-[12px] uppercase tracking-widest transition-all cursor-pointer shadow-lg">
-                     Request Checkout Link
+                      Request Checkout Link
                   </a>
                   <span className="block mt-4 text-[9px] text-zinc-500 uppercase font-bold tracking-widest">System unlocks your download automatically after checkout! 🚀</span>
                 </div>
@@ -456,9 +555,47 @@ const V8StockBerza = () => {
           </div>
         )}
       </AnimatePresence>
-    </motion.div>
+
+      {/* 🔥 NOVI CUSTOM MODAL ZA INJEKCIJU 🔥 */}
+      <AnimatePresence>
+        {showInjectorConfirm && (
+          <div className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }} 
+              animate={{ opacity: 1, scale: 1, y: 0 }} 
+              exit={{ opacity: 0, scale: 0.9, y: 20 }} 
+              className="bg-[#0a0a0a] border border-red-500/50 rounded-[2.5rem] max-w-md w-full relative shadow-[0_0_80px_rgba(220,38,38,0.2)] overflow-hidden p-10 text-center"
+            >
+              <div className="mx-auto w-20 h-20 bg-red-600/10 border border-red-500/30 rounded-full flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(220,38,38,0.4)]">
+                <AlertCircle className="w-10 h-10 text-red-500 animate-pulse" />
+              </div>
+              <h3 className="text-2xl font-black uppercase text-white tracking-widest mb-3">SYSTEM OVERRIDE</h3>
+              <p className="text-zinc-400 font-bold text-[11px] uppercase tracking-widest mb-8 leading-relaxed">
+                You are about to inject multiple premium assets directly into the live V8 database. <br/><span className="text-red-500 mt-2 block">Are you sure you want to ignite this process?</span>
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button 
+                  onClick={() => setShowInjectorConfirm(false)} 
+                  className="px-6 py-4 rounded-xl font-black text-[11px] uppercase tracking-widest bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all w-full border border-white/5"
+                >
+                  ABORT
+                </button>
+                <button 
+                  onClick={napuniBazuMasovno} 
+                  className="px-6 py-4 rounded-xl font-black text-[11px] uppercase tracking-widest bg-red-600 text-white hover:bg-red-500 transition-all w-full shadow-[0_0_20px_rgba(220,38,38,0.5)] flex items-center justify-center gap-2"
+                >
+                  <Zap size={14} /> IGNITE INJECTION
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+    </div>
   );
 };
+// KRAJ FUNKCIJE: V8StockBerza
 
 export default V8StockBerza;
 // KRAJ FAJLA: V8StockBerza.jsx

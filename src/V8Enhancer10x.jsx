@@ -1,5 +1,6 @@
 // POČETAK FAJLA: V8Enhancer10x.jsx
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom'; // 🔥 DODATO: Za zakucavanje modala na centar ekrana
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Zap, Loader2, Eye, Trash2, UploadCloud, Dices, History, Lock, X, PlayCircle, ShieldAlert, ChevronLeft, DownloadCloud } from 'lucide-react';
@@ -8,9 +9,9 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 
 // FIREBASE
-import { db, auth, provider } from './firebase';
-import { signInWithPopup, onAuthStateChanged, signOut } from "firebase/auth";
-import { collection, getDocs, doc, getDoc, setDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
+import { db, auth } from './firebase';
+import { signInWithPopup, onAuthStateChanged, signOut, GoogleAuthProvider } from "firebase/auth";
+import { collection, getDocs, doc, getDoc, setDoc, serverTimestamp, onSnapshot, addDoc } from "firebase/firestore";
 
 // DATA & TOAST
 import * as data from './data';
@@ -94,18 +95,27 @@ const V8Enhancer10x = () => {
   const [vipHistory, setVipHistory] = useState([]);
   const [lemonLink, setLemonLink] = useState("");
 
+  // 🔥 DODATO: Zaključavanje ekrana da ne mrda kad se otvori modal 🔥
+  useEffect(() => {
+    if (showPaymentModal) {
+        document.body.style.overflow = 'hidden';
+    } else {
+        document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [showPaymentModal]);
+
   // --- VIP AUTENTIFIKACIJA & LEMON SQUEEZY LINK ---
   useEffect(() => {
-    const unsubLemon = onSnapshot(doc(db, "v8_settings", "lemon"), (docSnap) => {
+    const unsubLemon = onSnapshot(doc(db, "v8_settings", "lemon_checkout"), (docSnap) => {
         if (docSnap.exists()) {
-            setLemonLink(docSnap.data().checkoutUrl || "");
+            setLemonLink(docSnap.data().optimizer || "");
         }
     });
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         const email = user.email ? user.email.toLowerCase() : "";
-        // 🔥 V8 POPRAVKA: PUŠTAMO OBA TVOJA MEJLA 🔥
         if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
           setIsVIP(true); v8Toast.success("Welcome back, Master Goran!"); loadHistory(email);
         } else {
@@ -145,9 +155,11 @@ const V8Enhancer10x = () => {
     v8Toast.success("Removed from V8 Vault!");
   };
 
-  const handlePremiumLogin = async () => {
+  const handlePremiumLogin = async (e) => {
+    if (e) e.preventDefault();
     try {
-      const result = await signInWithPopup(auth, provider);
+      const v8Provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, v8Provider);
       const user = result.user;
       const email = user.email ? user.email.toLowerCase() : "";
       
@@ -164,22 +176,27 @@ const V8Enhancer10x = () => {
     } catch (err) { v8Toast.error("Login failed!"); }
   };
 
-  // --- V8 BLINDIRANA FUNKCIJA ZA PLAĆANJE ---
+  // 🔥 V8 BLINDIRANA FUNKCIJA ZA PLAĆANJE (SA MODALOM) 🔥
   const handlePaymentV8 = async (tip, cena) => {
-    let currentUser = auth.currentUser;
+    try {
+        let currentUser = auth.currentUser;
 
-    if (!currentUser) {
-        try {
-            const result = await signInWithPopup(auth, provider);
+        // Vraća ekran na vrh pre logovanja, sprečava bug skrolovanja
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        if (!currentUser) {
+            const v8Provider = new GoogleAuthProvider();
+            v8Provider.setCustomParameters({ prompt: 'select_account' });
+            const result = await signInWithPopup(auth, v8Provider);
             currentUser = result.user;
-        } catch (error) {
-            v8Toast.error("Login canceled.");
-            return;
         }
-    }
 
-    if (currentUser) {
-        try {
+        if (currentUser) {
+            await addDoc(collection(db, "v8_kupci"), {
+                ime: currentUser.displayName || "Client", email: currentUser.email, uid: currentUser.uid,
+                zeliPaket: tip, cenaPaketa: cena, vreme: serverTimestamp(), isPaid: false
+            });
+
             await setDoc(doc(db, "posetioci", currentUser.uid), { 
                 ime: currentUser.displayName || "Client", 
                 email: currentUser.email, 
@@ -190,12 +207,11 @@ const V8Enhancer10x = () => {
 
             const email = currentUser.email ? currentUser.email.toLowerCase() : "";
             
-            // 🔥 V8 POPRAVKA: I OVDE PROVERAVAMO OBA TVOJA MEJLA 🔥
             if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
                 setIsVIP(true);
                 v8Toast.success("Access already unlocked!");
                 loadHistory(email);
-                return; // Prekidamo ovde, ne otvaramo mu modal za naplatu!
+                return; 
             }
 
             const docRef = doc(db, "vip_users", email);
@@ -212,9 +228,10 @@ const V8Enhancer10x = () => {
                     setShowPaymentModal({ tip, cena });
                 }
             }
-        } catch (err) {
-            v8Toast.error("System error.");
         }
+    } catch (err) {
+        console.error("V8 PAYMENT ERROR:", err);
+        v8Toast.error(err.message || "Greška na sistemu za naplatu.");
     }
   };
 
@@ -265,7 +282,7 @@ const V8Enhancer10x = () => {
     } catch (err) { v8Toast.error("Vision server unavailable."); } finally { setIsAnalyzingImage(false); }
   };
 
-  // --- V8 PRIVATNA BAZA PROMPTOVA (GORANOV INŽENJERING) ---
+  // --- V8 PRIVATNA BAZA PROMPTOVA ---
   const V8_PRESETS = {
     abstract: {
       prompts: [
@@ -327,7 +344,6 @@ const V8Enhancer10x = () => {
             setGeneratedPrompts(nextState);
             saveToHistory(nextState.cinematic, "Cinematic Concept");
         } else {
-            // POZIV ZA NODE.JS SERVER /api/roast (Očekuje prompt na engleskom)
             const res = await fetch(`${BASE_BACKEND_URL}/api/roast`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -399,12 +415,22 @@ const V8Enhancer10x = () => {
         <div className="mb-12 text-center w-full relative z-10 flex flex-col items-center mt-4">
           <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-500 to-orange-400 drop-shadow-[0_0_15px_rgba(234,88,12,0.3)]">10X PROMPT ENHANCER</h1>
           <div className="text-[12px] md:text-[14px] font-black text-green-400 uppercase tracking-[0.2em] flex items-center gap-3">Premium 3-in-1 Tool. $199.99 LIFETIME LICENSE.</div>
+          
+          {/* 🔥 LOKOT I DUGME ZA PLAĆANJE SA ZAKLJUČAVANJEM EVENTA 🔥 */}
           {!isVIP && (
              <div className="mt-8 p-6 bg-[#050505] border border-red-500/30 rounded-3xl flex flex-col items-center max-w-4xl mx-auto z-20 shadow-2xl">
                 <Lock className="w-10 h-10 text-red-500 mb-4" />
                 <h3 className="text-2xl font-black text-white uppercase tracking-widest mb-2">SYSTEM IS LOCKED</h3>
                 <div className="flex gap-4 w-full justify-center mb-6">
-                   <RippleButton onClick={() => handlePaymentV8('10X Enhancer - Lifetime', 199.99)} className="bg-green-600 hover:bg-green-500 text-white px-8 py-4 rounded-xl font-black text-[13px] uppercase tracking-widest shadow-[0_0_20px_rgba(22,163,74,0.4)]">GET LIFETIME LICENSE ($199.99)</RippleButton>
+                   <RippleButton 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handlePaymentV8('10X ENHANCER LIFETIME', '199.99');
+                      }} 
+                      className="bg-green-600 hover:bg-green-500 text-white px-8 py-4 rounded-xl font-black text-[13px] uppercase tracking-widest shadow-[0_0_20px_rgba(22,163,74,0.4)]"
+                   >
+                      GET LIFETIME LICENSE ($199.99)
+                   </RippleButton>
                    <button onClick={handlePremiumLogin} className="text-[10px] uppercase font-black tracking-widest text-zinc-500 hover:text-white border-b border-zinc-700">ALREADY HAVE ACCESS - LOG IN</button>
                 </div>
              </div>
@@ -509,7 +535,7 @@ const V8Enhancer10x = () => {
               </div>
            </div>
 
-           {/* --- NARANDŽASTA SEKCIJA: 10X MATRICA (HORIZONTALNA) --- */}
+           {/* --- NARANDŽASTA SEKCIJA: 10X MATRICA --- */}
            <div className={`bg-[#0a0a0a]/50 backdrop-blur-md border border-amber-400/30 rounded-[2.5rem] p-8 md:p-12 transition-all duration-500 shadow-[0_0_30px_rgba(251,191,36,0.1)] hover:shadow-[0_0_40px_rgba(251,191,36,0.2)] flex flex-col gap-10 ${!isVIP ? 'opacity-50 grayscale-[50%] pointer-events-none select-none' : 'hover:border-amber-400/60 group'}`}>
               <div className="w-full text-center border-b border-amber-400/20 pb-6 mb-2"><h2 className="text-[12px] font-black uppercase text-amber-400 tracking-wider">WE WILL MAKE YOUR PROMPT 10X BETTER</h2></div>
               
@@ -605,40 +631,44 @@ const V8Enhancer10x = () => {
         </div>
       </div>
 
-      {/* --- V8 DIGITAL CHECKOUT MODAL (CLEANED) --- */}
-      <AnimatePresence>
-        {showPaymentModal && (
-          <div className="fixed inset-0 z-[9000] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 30 }} className="bg-[#0a0a0a] border border-orange-500/40 rounded-[2.5rem] max-w-md w-full relative text-zinc-100 font-sans shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden">
-              <button onClick={() => setShowPaymentModal(null)} className="absolute top-5 right-5 bg-white/5 p-2 rounded-full text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10 transition-all z-10"><X size={20} strokeWidth={3} /></button>
-              
-              <div className="p-10 flex flex-col items-center">
-                <div className="w-16 h-16 rounded-full bg-orange-600/10 flex items-center justify-center mb-4 border border-orange-500/30 shadow-[0_0_20px_rgba(234,88,12,0.2)]">
-                   <DownloadCloud className="w-8 h-8 text-orange-500" />
-                </div>
+      {/* 🔥 V8 PAYMENT MODAL PORTAL (ZAKUCAN ZA CENTAR) 🔥 */}
+      {createPortal(
+        <AnimatePresence>
+          {showPaymentModal && (
+            <div className="fixed inset-0 z-[999999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4">
+              <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 30 }} className="bg-[#0a0a0a] border border-orange-500/40 rounded-[2.5rem] max-w-md w-full relative text-zinc-100 font-sans shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden">
+                <button onClick={() => setShowPaymentModal(null)} className="absolute top-5 right-5 bg-white/5 p-2 rounded-full text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10 transition-all z-10"><X size={20} strokeWidth={3} /></button>
                 
-                <h3 className="text-[18px] font-black uppercase tracking-widest mb-2 text-white text-center">Digital Asset Checkout</h3>
-                <p className="text-[10px] text-orange-400 font-black uppercase tracking-widest mb-8 text-center">{showPaymentModal.tip}</p>
-                
-                <div className="w-full bg-[#050505] border border-white/10 rounded-2xl p-6 space-y-4 text-[13px] font-mono shadow-inner mb-8">
-                  <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Provider:</span><span className="font-bold text-white text-right">V8 Vault</span></div>
-                  <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Support:</span><span className="font-bold text-white text-[11px]">aitoolsprosmart@gmail.com</span></div>
-                  <div className="flex justify-between pt-2 items-center"><span className="text-zinc-500 uppercase">Total (One-Time):</span><span className="font-black text-white text-[22px] drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">${showPaymentModal.cena}</span></div>
+                <div className="p-10 flex flex-col items-center">
+                  <div className="w-16 h-16 rounded-full bg-orange-600/10 flex items-center justify-center mb-4 border border-orange-500/30 shadow-[0_0_20px_rgba(234,88,12,0.2)]">
+                     <DownloadCloud className="w-8 h-8 text-orange-500" />
+                  </div>
+                  
+                  <h3 className="text-[18px] font-black uppercase tracking-widest mb-2 text-white text-center">Digital Asset Checkout</h3>
+                  <p className="text-[10px] text-orange-400 font-black uppercase tracking-widest mb-8 text-center">{showPaymentModal?.tip}</p>
+                  
+                  <div className="w-full bg-[#050505] border border-white/10 rounded-2xl p-6 space-y-4 text-[13px] font-mono shadow-inner mb-8">
+                    <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Provider:</span><span className="font-bold text-white text-right">V8 Vault</span></div>
+                    <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Support:</span><span className="font-bold text-white text-[11px]">aitoolsprosmart@gmail.com</span></div>
+                    <div className="flex justify-between pt-2 items-center"><span className="text-zinc-500 uppercase">Total (One-Time):</span><span className="font-black text-white text-[22px] drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">${showPaymentModal?.cena}</span></div>
+                  </div>
+                  
+                  <div className="w-full bg-[#050505] border border-orange-500/30 rounded-2xl p-6 text-center shadow-[0_0_20px_rgba(234,88,12,0.15)] relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                    <p className="text-[11px] md:text-[12px] text-zinc-300 font-black uppercase tracking-widest mb-4">Please contact support to complete your one-time purchase:</p>
+                    <a href="mailto:aitoolsprosmart@gmail.com" className="flex items-center justify-center gap-2 w-full bg-white text-black hover:bg-orange-500 hover:text-white py-3.5 rounded-xl font-black text-[12px] uppercase tracking-widest transition-all cursor-pointer shadow-lg">
+                        Request Checkout Link
+                    </a>
+                    <span className="block mt-4 text-[9px] text-zinc-500 uppercase font-bold tracking-widest">System unlocks your access automatically! 🚀</span>
+                  </div>
                 </div>
-                
-                <div className="w-full bg-[#050505] border border-orange-500/30 rounded-2xl p-6 text-center shadow-[0_0_20px_rgba(234,88,12,0.15)] relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-                  <p className="text-[11px] md:text-[12px] text-zinc-300 font-black uppercase tracking-widest mb-4">Please contact support to complete your one-time purchase:</p>
-                  <a href="mailto:aitoolsprosmart@gmail.com" className="flex items-center justify-center gap-2 w-full bg-white text-black hover:bg-orange-500 hover:text-white py-3.5 rounded-xl font-black text-[12px] uppercase tracking-widest transition-all cursor-pointer shadow-lg">
-                     Request Checkout Link
-                  </a>
-                  <span className="block mt-4 text-[9px] text-zinc-500 uppercase font-bold tracking-widest">System unlocks your access automatically! 🚀</span>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
     </div>
   );
 };

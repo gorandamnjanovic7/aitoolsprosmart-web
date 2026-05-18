@@ -1,17 +1,26 @@
+// POČETAK FAJLA: V8Showroom.jsx
 import React, { useState, useEffect } from 'react';
 import { 
     Play, Zap, Layers, MonitorSmartphone, Globe, Utensils, Droplets, 
-    Cpu, Hexagon, Film, Shield, Building2, Aperture, Gem, Waves 
+    Cpu, Hexagon, Film, Shield, Building2, Aperture, Gem, Waves, Loader2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// 🔥 FIREBASE IMPORTS 🔥
+import { db } from './firebase';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+
+// POČETAK FUNKCIJE: V8Showroom
 const V8Showroom = () => {
     const navigate = useNavigate();
     const [activeFilter, setActiveFilter] = useState('ALL');
+    
+    // 🔥 NOVI STATE ZA NOVE FAJLOVE IZ BAZE 🔥
+    const [firebaseItems, setFirebaseItems] = useState([]);
 
-    // --- POČETAK: V8 SHOWCASE ITEMS ---
-    const showcaseItems = [
+    // --- POČETAK: TVOJI STARI HARDKODOVANI ITEMI ---
+    const hardcodedItems = [
         // --- LUXURY CULINARY ---
         { id: 101, type: 'image', category: 'LUXURY CULINARY', format: '16:9', title: 'Gourmet Seafood Tartare', url: '/v8_hrana/h_1.webp' },
         { id: 102, type: 'image', category: 'LUXURY CULINARY', format: '16:9', title: 'Pan-Seared Hokkaido Scallops', url: '/v8_hrana/h_2.webp' },
@@ -137,19 +146,17 @@ const V8Showroom = () => {
         { id: 26, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Galaxy Smartwatch Promo', url: '/v8_video_16_9/Smart_Watch_16_9.mp4' }, 
         { id: 32, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Classic Cobra Desert Drift', url: '/v8_video_16_9/v8_mix.mp4' }, 
         { id: 24, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Nike Neon Frequency', url: '/v8_video_16_9/Nike_Woman.mp4' }, 
-        { id: 80, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Nike Air Defiance', url: '/v8_video_16_9/v8_nike_1.mp4' }, // <-- UBAČEN NIKE 1
-        { id: 81, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Nike Cybernetic Stride', url: '/v8_video_16_9/v8_nike_2.mp4' }, // <-- UBAČEN NIKE 2
-        { id: 82, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Nike Neon Velocity', url: '/v8_video_16_9/v8_nike_3.mp4' }, // <-- UBAČEN NIKE 3
-        { id: 83, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Jordan Urban Ascension', url: '/v8_video_16_9/v8_jordan_1.mp4' }, // <-- UBAČEN JORDAN
+        { id: 80, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Nike Air Defiance', url: '/v8_video_16_9/v8_nike_1.mp4' }, 
+        { id: 81, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Nike Cybernetic Stride', url: '/v8_video_16_9/v8_nike_2.mp4' }, 
+        { id: 82, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Nike Neon Velocity', url: '/v8_video_16_9/v8_nike_3.mp4' }, 
+        { id: 83, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Jordan Urban Ascension', url: '/v8_video_16_9/v8_jordan_1.mp4' }, 
         { id: 30, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Mangorax Cinematic Splash', url: '/v8_video_16_9/v8_orange_brutal.mp4' }, 
         { id: 33, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Glacial Clockwork Dynamics', url: '/v8_video_16_9/v8_ice.mp4' }, 
         { id: 25, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Neon Blue Cinematic Walk', url: '/v8_video_16_9/Neon_Blue_Girl.mp4' }, 
         { id: 31, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'BMW X8 Black Edition', url: '/v8_video_16_9/v8_BMW_x7.mp4' }, 
         { id: 34, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Adidas Alpine Expedition', url: '/v8_video_16_9/v8_ranac.mp4' },
 
-        // --- UNDERWATER MARINE LIFE (Bypass Cache) ---
-        { id: 35, type: 'video', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Deep Ocean Leviathan', url: 'LINK_UNDER_CINE_1' },
-        { id: 36, type: 'video', category: 'UNDERWATER MARINE LIFE', format: '9:16', title: 'Abyssal Trench Dive', url: 'LINK_UNDER_VERT_1' },
+        // --- UNDERWATER MARINE LIFE (Obrisana 2 lažna videa) ---
         { id: 37, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Abyssal Reef Discovery', url: '/okean/u_01.webp' },
         { id: 38, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Bioluminescent Depths', url: '/okean/u_02.webp' },
         { id: 39, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Apex Predator Shadows', url: '/okean/u_03.webp' },
@@ -161,9 +168,23 @@ const V8Showroom = () => {
         { id: 45, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Deep Sea Leviathan Watch', url: '/okean/u_09.webp' },
         { id: 46, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Oceanic Trench Exploration', url: '/okean/u_010.webp' },
     ];
-    // --- KRAJ: V8 SHOWCASE ITEMS ---
-    
-    // --- POČETAK: V8 FILTERI SA INDIVIDUALNIM BOJAMA ---
+    // --- KRAJ: TVOJI STARI HARDKODOVANI ITEMI ---
+
+    // POČETAK FUNKCIJE: useEffect (Fetch Firebase Items)
+    useEffect(() => {
+        const q = query(collection(db, "v8_showroom_baza"), orderBy("createdAt", "desc"));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setFirebaseItems(items);
+        });
+        return () => unsubscribe();
+    }, []);
+    // KRAJ FUNKCIJE: useEffect (Fetch Firebase Items)
+
+    // 🔥 OVDE SPAJAMO NOVE FAJLOVE (IZ BAZE) SA TVOJIM STARIM (IZ KODA) 🔥
+    const showcaseItems = [...firebaseItems, ...hardcodedItems];
+
+    // POČETAK FUNKCIJE: filters array
     const filters = [
         { 
             name: 'ALL', icon: Globe, 
@@ -232,183 +253,180 @@ const V8Showroom = () => {
             glow: 'drop-shadow-[0_0_8px_rgba(14,165,233,0.8)]'
         }
     ];
-    // --- KRAJ: V8 FILTERI SA INDIVIDUALNIM BOJAMA ---
+    // KRAJ FUNKCIJE: filters array
 
     const filteredItems = activeFilter === 'ALL' ? showcaseItems : showcaseItems.filter(item => item.category === activeFilter);
 
+    // POČETAK FUNKCIJE: handleOpenStore
     const handleOpenStore = () => {
         window.scrollTo(0, 0); 
         navigate('/stock');    
     };
+    // KRAJ FUNKCIJE: handleOpenStore
     
     return (
-        <>
+        <div className="min-h-screen bg-[#050505] pt-32 pb-24 px-6 font-sans text-white overflow-hidden">
+            {/* HERO SEKCIJA */}
             <motion.div 
-                initial={{ opacity: 0, filter: 'blur(10px)' }}
-                animate={{ opacity: 1, filter: 'blur(0px)' }}
-                transition={{ duration: 0.8 }}
-                className="min-h-screen bg-[#050505] pt-32 pb-24 px-6 font-sans text-white overflow-hidden"
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 0.2 }}
+                className="relative w-full max-w-7xl mx-auto mb-24 rounded-[3rem] overflow-hidden border border-white/10 shadow-[0_0_60px_rgba(255,140,0,0.15)]"
             >
-                {/* HERO SEKCIJA */}
-                <motion.div 
-                    initial={{ opacity: 0, y: 50 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 1, delay: 0.2 }}
-                    className="relative w-full max-w-7xl mx-auto mb-24 rounded-[3rem] overflow-hidden border border-white/10 shadow-[0_0_60px_rgba(255,140,0,0.15)]"
-                >
-                    <div 
-                        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-70"
-                        style={{ backgroundImage: "url('/v8-showroom/v8-hero.png')" }} 
-                    ></div>
+                <div 
+                    className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-70"
+                    style={{ backgroundImage: "url('/v8-showroom/v8-hero.png')" }} 
+                ></div>
+                
+                <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050505]/20 via-[#050505]/60 to-[#050505]"></div>
+                <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#050505] via-transparent to-[#050505]"></div>
+
+                <div className="relative z-10 text-center py-32 px-6">
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.5, duration: 0.5 }}
+                        className="inline-block px-5 py-2 rounded-full bg-black/60 backdrop-blur-md border border-[#FF8C00]/30 text-[#FF8C00] font-black uppercase text-[10px] tracking-widest mb-8 shadow-[0_0_20px_rgba(255,140,0,0.2)]"
+                    >
+                        V8 Masterwork Edition
+                    </motion.div>
+
+                    <h1 className="text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter mb-6 text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)]">
+                        BEYOND <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FF8C00] to-amber-600 drop-shadow-none">PIXELS</span>
+                    </h1>
                     
-                    <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050505]/20 via-[#050505]/60 to-[#050505]"></div>
-                    <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#050505] via-transparent to-[#050505]"></div>
-
-                    <div className="relative z-10 text-center py-32 px-6">
-                        <motion.div 
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 0.5, duration: 0.5 }}
-                            className="inline-block px-5 py-2 rounded-full bg-black/60 backdrop-blur-md border border-[#FF8C00]/30 text-[#FF8C00] font-black uppercase text-[10px] tracking-widest mb-8 shadow-[0_0_20px_rgba(255,140,0,0.2)]"
-                        >
-                            V8 Masterwork Edition
-                        </motion.div>
-
-                        <h1 className="text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter mb-6 text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)]">
-                            BEYOND <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FF8C00] to-amber-600 drop-shadow-none">PIXELS</span>
-                        </h1>
-                        
-                        <p className="text-zinc-200 font-bold uppercase tracking-[0.4em] text-[11px] md:text-[13px] max-w-3xl mx-auto leading-relaxed mb-12 drop-shadow-lg bg-black/20 p-4 rounded-xl backdrop-blur-sm">
-                            Step into the V8 Masterwork Showroom. Experience 33.2 Megapixel resolution and hyper-realistic cinematic motion. Designed exclusively for top-tier agencies and visionary brands.
-                        </p>
-                        
-                        <button onClick={handleOpenStore} className="bg-gradient-to-r from-orange-600 to-amber-500 text-white px-12 py-5 rounded-full font-black text-[13px] uppercase tracking-widest shadow-[0_0_30px_rgba(234,88,12,0.5)] hover:scale-105 hover:shadow-[0_0_50px_rgba(234,88,12,0.8)] transition-all flex items-center gap-3 mx-auto border border-orange-400/50 relative z-50">
-                            <Zap size={20} fill="currentColor" /> UNLOCK FULL BUNDLES NOW
-                        </button>
-                    </div>
-                </motion.div>
-
-                {/* FILTERI SA INDIVIDUALNIM BOJAMA */}
-                <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 1, delay: 0.5 }}
-                    className="flex flex-wrap justify-center gap-3 mb-16 max-w-6xl mx-auto relative z-10"
-                >
-                    {filters.map((filter) => {
-                        const isActive = activeFilter === filter.name;
-                        return (
-                            <motion.button 
-                                key={filter.name}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => setActiveFilter(filter.name)}
-                                className={`group flex items-center gap-2.5 px-6 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 border backdrop-blur-md cursor-pointer ${
-                                    isActive 
-                                    ? filter.active 
-                                    : `bg-white/5 border-white/10 text-zinc-400 hover:bg-white/10 ${filter.hover}`
-                                }`}
-                            >
-                                <filter.icon 
-                                    size={15} 
-                                    className={`transition-all duration-300 ${
-                                        isActive ? filter.glow : 'opacity-60 group-hover:opacity-100'
-                                    }`} 
-                                />
-                                {filter.name}
-                            </motion.button>
-                        );
-                    })}
-                </motion.div>
-
-                {/* MASONRY GALERIJA */}
-                <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6 max-w-7xl mx-auto">
-                    <AnimatePresence>
-                        {filteredItems.map((item, index) => (
-                            <motion.div 
-                                key={item.id} 
-                                initial={{ opacity: 0, y: 80 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true, margin: "-50px" }}
-                                transition={{ duration: 0.6, delay: (index % 10) * 0.05 }}
-                                onClick={() => navigate('/media', { state: { item } })}
-                                className="relative group rounded-3xl overflow-hidden bg-[#0a0a0a] border border-white/5 cursor-pointer break-inside-avoid transform transition-transform duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(255,140,0,0.15)] z-50"
-                            >
-                                <div className="absolute inset-0 bg-gradient-to-tr from-[#FF8C00]/0 via-[#FF8C00]/0 to-[#FF8C00]/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-30"></div>
-
-                                <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
-                                    <span className="bg-black/80 backdrop-blur-md border border-white/10 text-white px-3 py-1.5 rounded-lg font-black text-[9px] uppercase tracking-wider flex items-center gap-1.5">
-                                        <MonitorSmartphone size={12} className="text-[#FF8C00]" /> {item.format}
-                                    </span>
-                                </div>
-                                <div className="absolute top-4 right-4 z-20">
-                                    <span className="bg-blue-900/90 backdrop-blur-md border border-red-600 text-red-500 px-3 py-1.5 rounded-lg font-black text-[9px] uppercase tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.8)]">
-                                        {item.type === 'video' ? 'CINEMATIC VIDEO' : '33MP IMAGE'}
-                                    </span>
-                                </div>
-
-                                <div className="relative w-full h-full overflow-hidden">
-                                    {item.type === 'video' ? (
-                                        <>
-                                            <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40 group-hover:bg-transparent transition-all">
-                                                <div className="w-16 h-16 bg-[#FF8C00] rounded-full flex items-center justify-center text-black pl-1 shadow-[0_0_30px_rgba(255,140,0,0.5)] group-hover:scale-110 transition-transform">
-                                                    <Play size={24} fill="currentColor" />
-                                                </div>
-                                            </div>
-                                            
-                                            {item.url.includes('LINK_') ? (
-                                                <div className={`w-full bg-zinc-900 flex items-center justify-center text-zinc-700 font-black tracking-widest ${item.format === '9:16' ? 'aspect-[9/16]' : 'aspect-video'}`}>
-                                                    {item.format} VIDEO PLACEHOLDER
-                                                </div>
-                                            ) : (
-                                                <video 
-                                                    src={`${item.url}#t=0.001`} 
-                                                    preload="metadata" 
-                                                    muted
-                                                    controls={false} 
-                                                    className={`w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out ${item.format === '9:16' ? 'aspect-[9/16]' : 'aspect-video'}`}
-                                                    onContextMenu={(e) => e.preventDefault()} 
-                                                />
-                                            )}
-                                        </>
-                                    ) : (
-                                        <img 
-                                            src={item.url.includes('LINK_') ? `https://placehold.co/1920x1080/0a0a0a/444?text=${item.title}` : item.url} 
-                                            alt={item.title} 
-                                            loading="lazy" 
-                                            className="w-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out" 
-                                            onContextMenu={(e) => e.preventDefault()} 
-                                            onDragStart={(e) => e.preventDefault()} 
-                                        />
-                                    )}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10"></div>
-                                </div>
-                                <div className="absolute bottom-0 left-0 w-full p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 z-20">
-                                    <h3 className="text-xl font-black text-white uppercase tracking-widest mb-1">{item.title}</h3>
-                                    <p className="text-[#FF8C00] font-bold text-[10px] uppercase tracking-[0.2em]">{item.category}</p>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </AnimatePresence>
-                </div>
-
-                <motion.div 
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.8 }}
-                    className="max-w-4xl mx-auto mt-32 text-center bg-gradient-to-b from-[#0a0a0a] to-[#050505] border border-white/5 rounded-[3rem] p-12 relative overflow-hidden"
-                >
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1 bg-gradient-to-r from-transparent via-[#FF8C00] to-transparent opacity-50"></div>
-                    <h2 className="text-3xl font-black uppercase text-white tracking-widest mb-4">READY TO UPGRADE YOUR VISUALS?</h2>
-                    <p className="text-zinc-500 font-bold uppercase text-[11px] tracking-widest mb-10">Stop using generic stock. Dominate your market with V8.</p>
-                    <button onClick={handleOpenStore} className="bg-[#FF8C00] text-black px-12 py-5 rounded-full font-black text-[13px] uppercase tracking-widest shadow-[0_0_40px_rgba(255,140,0,0.3)] hover:scale-105 hover:bg-white transition-all flex items-center gap-3 mx-auto relative z-50">
-                        <Layers size={20} /> BROWSE V8 STORE
+                    <p className="text-zinc-200 font-bold uppercase tracking-[0.4em] text-[11px] md:text-[13px] max-w-3xl mx-auto leading-relaxed mb-12 drop-shadow-lg bg-black/20 p-4 rounded-xl backdrop-blur-sm">
+                        Step into the V8 Masterwork Showroom. Experience 33.2 Megapixel resolution and hyper-realistic cinematic motion. Designed exclusively for top-tier agencies and visionary brands.
+                    </p>
+                    
+                    <button onClick={handleOpenStore} className="bg-gradient-to-r from-orange-600 to-amber-500 text-white px-12 py-5 rounded-full font-black text-[13px] uppercase tracking-widest shadow-[0_0_30px_rgba(234,88,12,0.5)] hover:scale-105 hover:shadow-[0_0_50px_rgba(234,88,12,0.8)] transition-all flex items-center gap-3 mx-auto border border-orange-400/50 relative z-50">
+                        <Zap size={20} fill="currentColor" /> UNLOCK FULL BUNDLES NOW
                     </button>
-                </motion.div>
+                </div>
             </motion.div>
-        </>
+
+            {/* FILTERI SA INDIVIDUALNIM BOJAMA */}
+            <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1, delay: 0.5 }}
+                className="flex flex-wrap justify-center gap-3 mb-16 max-w-6xl mx-auto relative z-10"
+            >
+                {filters.map((filter) => {
+                    const isActive = activeFilter === filter.name;
+                    return (
+                        <motion.button 
+                            key={filter.name}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setActiveFilter(filter.name)}
+                            className={`group flex items-center gap-2.5 px-6 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 border backdrop-blur-md cursor-pointer ${
+                                isActive 
+                                ? filter.active 
+                                : `bg-white/5 border-white/10 text-zinc-400 hover:bg-white/10 ${filter.hover}`
+                            }`}
+                        >
+                            <filter.icon 
+                                size={15} 
+                                className={`transition-all duration-300 ${
+                                    isActive ? filter.glow : 'opacity-60 group-hover:opacity-100'
+                                }`} 
+                            />
+                            {filter.name}
+                        </motion.button>
+                    );
+                })}
+            </motion.div>
+
+            {/* MASONRY GALERIJA */}
+            <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6 max-w-7xl mx-auto">
+                <AnimatePresence>
+                    {filteredItems.map((item, index) => (
+                        <motion.div 
+                            key={item.id} 
+                            initial={{ opacity: 0, y: 80 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: "-50px" }}
+                            transition={{ duration: 0.6, delay: (index % 10) * 0.05 }}
+                            onClick={() => navigate('/media', { state: { item } })}
+                            className="relative group rounded-3xl overflow-hidden bg-[#0a0a0a] border border-white/5 cursor-pointer break-inside-avoid transform transition-transform duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(255,140,0,0.15)] z-50"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-tr from-[#FF8C00]/0 via-[#FF8C00]/0 to-[#FF8C00]/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-30"></div>
+
+                            <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
+                                <span className="bg-black/80 backdrop-blur-md border border-white/10 text-white px-3 py-1.5 rounded-lg font-black text-[9px] uppercase tracking-wider flex items-center gap-1.5">
+                                    <MonitorSmartphone size={12} className="text-[#FF8C00]" /> {item.format}
+                                </span>
+                            </div>
+                            <div className="absolute top-4 right-4 z-20">
+                                <span className="bg-blue-900/90 backdrop-blur-md border border-red-600 text-red-500 px-3 py-1.5 rounded-lg font-black text-[9px] uppercase tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.8)]">
+                                    {item.type === 'video' ? 'CINEMATIC VIDEO' : '33MP IMAGE'}
+                                </span>
+                            </div>
+
+                            <div className="relative w-full h-full overflow-hidden">
+                                {item.type === 'video' ? (
+                                    <>
+                                        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40 group-hover:bg-transparent transition-all">
+                                            <div className="w-16 h-16 bg-[#FF8C00] rounded-full flex items-center justify-center text-black pl-1 shadow-[0_0_30px_rgba(255,140,0,0.5)] group-hover:scale-110 transition-transform">
+                                                <Play size={24} fill="currentColor" />
+                                            </div>
+                                        </div>
+                                        
+                                        {item.url.includes('LINK_') ? (
+                                            <div className={`w-full bg-zinc-900 flex items-center justify-center text-zinc-700 font-black tracking-widest ${item.format === '9:16' ? 'aspect-[9/16]' : 'aspect-video'}`}>
+                                                {item.format} VIDEO PLACEHOLDER
+                                            </div>
+                                        ) : (
+                                            <video 
+                                                src={`${item.url}#t=0.001`} 
+                                                preload="metadata" 
+                                                muted
+                                                controls={false} 
+                                                className={`w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out ${item.format === '9:16' ? 'aspect-[9/16]' : 'aspect-video'}`}
+                                                onContextMenu={(e) => e.preventDefault()} 
+                                            />
+                                        )}
+                                    </>
+                                ) : (
+                                    <img 
+                                        src={item.url.includes('LINK_') ? `https://placehold.co/1920x1080/0a0a0a/444?text=${item.title}` : item.url} 
+                                        alt={item.title} 
+                                        loading="lazy" 
+                                        className="w-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out" 
+                                        onContextMenu={(e) => e.preventDefault()} 
+                                        onDragStart={(e) => e.preventDefault()} 
+                                    />
+                                )}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10"></div>
+                            </div>
+                            <div className="absolute bottom-0 left-0 w-full p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 z-20">
+                                <h3 className="text-xl font-black text-white uppercase tracking-widest mb-1">{item.title}</h3>
+                                <p className="text-[#FF8C00] font-bold text-[10px] uppercase tracking-[0.2em]">{item.category}</p>
+                            </div>
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
+            </div>
+
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8 }}
+                className="max-w-4xl mx-auto mt-32 text-center bg-gradient-to-b from-[#0a0a0a] to-[#050505] border border-white/5 rounded-[3rem] p-12 relative overflow-hidden"
+            >
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1 bg-gradient-to-r from-transparent via-[#FF8C00] to-transparent opacity-50"></div>
+                <h2 className="text-3xl font-black uppercase text-white tracking-widest mb-4">READY TO UPGRADE YOUR VISUALS?</h2>
+                <p className="text-zinc-500 font-bold uppercase text-[11px] tracking-widest mb-10">Stop using generic stock. Dominate your market with V8.</p>
+                <button onClick={handleOpenStore} className="bg-[#FF8C00] text-black px-12 py-5 rounded-full font-black text-[13px] uppercase tracking-widest shadow-[0_0_40px_rgba(255,140,0,0.3)] hover:scale-105 hover:bg-white transition-all flex items-center gap-3 mx-auto relative z-50">
+                    <Layers size={20} /> BROWSE V8 STORE
+                </button>
+            </motion.div>
+        </div>
     );
 };
+// KRAJ FUNKCIJE: V8Showroom
 
 export default V8Showroom;
+// KRAJ FAJLA: V8Showroom.jsx
