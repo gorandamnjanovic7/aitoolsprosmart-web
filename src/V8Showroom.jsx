@@ -14,10 +14,20 @@ import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 // POČETAK FUNKCIJE: V8Showroom
 const V8Showroom = () => {
     const navigate = useNavigate();
-    const [activeFilter, setActiveFilter] = useState('ALL');
+    
+    // 🔥 FIX: Učitavamo poslednji aktivni filter iz localStorage, ili 'ALL' ako ne postoji 🔥
+    const [activeFilter, setActiveFilter] = useState(() => {
+        const savedFilter = localStorage.getItem('v8_showroom_filter');
+        return savedFilter || 'ALL';
+    });
     
     // 🔥 NOVI STATE ZA NOVE FAJLOVE IZ BAZE 🔥
     const [firebaseItems, setFirebaseItems] = useState([]);
+
+    // 🔥 FIX: Snimamo u localStorage svaki put kada se filter promeni 🔥
+    useEffect(() => {
+        localStorage.setItem('v8_showroom_filter', activeFilter);
+    }, [activeFilter]);
 
     // --- POČETAK: TVOJI STARI HARDKODOVANI ITEMI ---
     const hardcodedItems = [
@@ -156,7 +166,7 @@ const V8Showroom = () => {
         { id: 31, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'BMW X8 Black Edition', url: '/v8_video_16_9/v8_BMW_x7.mp4' }, 
         { id: 34, type: 'video', category: 'CINEMATIC MOTION', format: '16:9', title: 'Adidas Alpine Expedition', url: '/v8_video_16_9/v8_ranac.mp4' },
 
-        // --- UNDERWATER MARINE LIFE (Obrisana 2 lažna videa) ---
+        // --- UNDERWATER MARINE LIFE ---
         { id: 37, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Abyssal Reef Discovery', url: '/okean/u_01.webp' },
         { id: 38, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Bioluminescent Depths', url: '/okean/u_02.webp' },
         { id: 39, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Apex Predator Shadows', url: '/okean/u_03.webp' },

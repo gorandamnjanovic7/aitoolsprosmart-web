@@ -1,5 +1,6 @@
-// POČETAK FAJLA: V8Enhancer10x.jsx
+// POČETAK FAJLA: EnhancerPromo.jsx
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom'; 
 import { Link } from 'react-router-dom';
 import { Zap, PlayCircle, Timer, DownloadCloud, X, CheckCircle } from 'lucide-react';
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
@@ -10,12 +11,40 @@ import V8Reveal from './V8Reveal';
 import V8CinematicText from './V8CinematicText';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// POČETAK FUNKCIJE: RippleButton
+const RippleButton = ({ children, onClick, disabled, className }) => {
+  const [ripples, setRipples] = useState([]);
+  
+  const handleClick = (e) => {
+    if (disabled) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    setRipples([...ripples, { id: Date.now(), x: e.clientX - rect.left, y: e.clientY - rect.top }]);
+    if (onClick) onClick(e);
+  };
+  
+  return (
+    <button type="button" onClick={handleClick} disabled={disabled} className={`relative overflow-hidden ${className}`}>
+      <span className="relative z-10 flex items-center justify-center">{children}</span>
+      <AnimatePresence>
+        {ripples.map(r => (
+          <motion.span key={r.id} initial={{ scale: 0, opacity: 0.5 }} animate={{ scale: 4, opacity: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.8, ease: "easeOut" }} className="absolute bg-white/40 rounded-full pointer-events-none z-0" style={{ left: r.x, top: r.y, width: 100, height: 100, marginTop: -50, marginLeft: -50 }} onAnimationComplete={() => setRipples(prev => prev.filter(rip => rip.id !== r.id))} />
+        ))}
+      </AnimatePresence>
+    </button>
+  );
+};
+// KRAJ FUNKCIJE: RippleButton
+
+
+// POČETAK FUNKCIJE: CountdownTimer
 const CountdownTimer = () => {
   const [timeLeft, setTimeLeft] = useState(2 * 3600 + 15 * 60 + 43);
+  
   useEffect(() => {
     const interval = setInterval(() => { setTimeLeft(prev => (prev > 0 ? prev - 1 : 24 * 3600)); }, 1000);
     return () => clearInterval(interval);
   }, []);
+  
   const h = Math.floor(timeLeft / 3600).toString().padStart(2, '0');
   const m = Math.floor((timeLeft % 3600) / 60).toString().padStart(2, '0');
   const s = (timeLeft % 60).toString().padStart(2, '0');
@@ -30,12 +59,22 @@ const CountdownTimer = () => {
     </div>
   );
 };
+// KRAJ FUNKCIJE: CountdownTimer
 
+
+// POČETAK FUNKCIJE: EnhancerPromo
 const EnhancerPromo = () => {
   const [hasEnhancerAccess, setHasEnhancerAccess] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [lemonLink, setLemonLink] = useState("");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+
+  // ZAKLJUČAVANJE SKROLOVANJA
+  useEffect(() => {
+    if (showPaymentModal) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = '';
+    return () => { document.body.style.overflow = ''; };
+  }, [showPaymentModal]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -56,7 +95,6 @@ const EnhancerPromo = () => {
       } else { setHasEnhancerAccess(false); }
     });
 
-    // Učitavanje Limun linka iz baze
     const unsubLemon = onSnapshot(doc(db, "v8_settings", "lemon"), (docSnap) => {
       if (docSnap.exists()) {
           setLemonLink(docSnap.data().checkoutUrl || "");
@@ -66,6 +104,7 @@ const EnhancerPromo = () => {
     return () => { unsubscribe(); unsubLemon(); };
   }, []);
 
+  // POČETAK FUNKCIJE: snimiKupcaUBazu
   const snimiKupcaUBazu = async (user) => {
       try {
           await addDoc(collection(db, "v8_kupci"), {
@@ -74,8 +113,9 @@ const EnhancerPromo = () => {
           });
       } catch (error) { console.error("Database error:", error); }
   };
+  // KRAJ FUNKCIJE: snimiKupcaUBazu
 
-  // V8 BLINDIRANA FUNKCIJA ZA KUPOVINU - UNAPREĐENA
+  // POČETAK FUNKCIJE: handlePaymentV8
   const handlePaymentV8 = async () => {
     try {
       let user = currentUser || auth.currentUser;
@@ -85,13 +125,7 @@ const EnhancerPromo = () => {
           v8Provider.setCustomParameters({ prompt: 'select_account' });
           const result = await signInWithPopup(auth, v8Provider);
           user = result.user;
-          
-          // --- V8 NUKE: Forsiramo osvežavanje da navigacija vidi direktora ---
-          if (user) {
-              await snimiKupcaUBazu(user);
-              window.location.reload(); // <--- OVO ĆE SVE DA OSVEŽI
-              return; 
-          }
+          setCurrentUser(user);
       }
 
       if (user) {
@@ -107,6 +141,7 @@ const EnhancerPromo = () => {
       alert("Sistem je blokirao Google prijavu.\n\nRazlog: " + error.message);
     }
   };
+  // KRAJ FUNKCIJE: handlePaymentV8
 
   return (
     <div id="enhancer" className="relative mb-24 flex flex-col items-center justify-center text-center py-24 scroll-mt-32 overflow-hidden rounded-[3rem] mx-4 lg:mx-0 border border-orange-500/20 shadow-[0_0_40px_rgba(234,88,12,0.15)] group">
@@ -139,48 +174,55 @@ const EnhancerPromo = () => {
             <Link to="/enxance" className="bg-gradient-to-r from-green-600 to-emerald-500 text-white px-12 py-4 rounded-xl font-black text-[14px] uppercase tracking-widest shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:scale-105 transition-all flex items-center justify-center gap-3 w-full sm:w-auto cursor-pointer backdrop-blur-md">🚀 LAUNCH ENGINE</Link>
           ) : (
             <>
-              <button type="button" onClick={handlePaymentV8} className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white px-8 py-4 rounded-xl font-black text-[14px] uppercase tracking-widest shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:scale-105 transition-all flex items-center gap-3 w-full sm:w-auto justify-center cursor-pointer backdrop-blur-md"><Zap className="w-5 h-5 fill-white" /> GET LIFETIME LICENSE ($199.99)</button>
+              <RippleButton onClick={handlePaymentV8} className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white px-8 py-4 rounded-xl font-black text-[14px] uppercase tracking-widest shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:scale-105 transition-all flex items-center gap-3 w-full sm:w-auto justify-center cursor-pointer backdrop-blur-md"><Zap className="w-5 h-5 fill-white" /> GET LIFETIME LICENSE ($199.99)</RippleButton>
               <Link to="/promo" className="bg-black/50 backdrop-blur-md border border-orange-500/50 text-orange-400 hover:bg-orange-500 hover:text-white px-8 py-4 rounded-xl font-black text-[14px] uppercase tracking-widest shadow-[0_0_15px_rgba(249,115,22,0.1)] hover:shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:scale-105 transition-all flex items-center gap-3 w-full sm:w-auto justify-center cursor-pointer"><PlayCircle className="w-5 h-5" /> SEE DEMO</Link>
             </>
           )}
         </div>
       </V8Reveal>
 
-      {/* --- V8 DIGITAL CHECKOUT MODAL (CLEAN) --- */}
-      <AnimatePresence>
-        {showPaymentModal && (
-          <div className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 30 }} className="bg-[#0a0a0a] border border-orange-500/40 rounded-[2.5rem] max-w-md w-full relative text-zinc-100 font-sans shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden">
-              <button onClick={() => setShowPaymentModal(false)} className="absolute top-5 right-5 bg-white/5 p-2 rounded-full text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10 transition-all z-10"><X size={20} strokeWidth={3} /></button>
-              
-              <div className="p-10 flex flex-col items-center">
-                <div className="w-16 h-16 rounded-full bg-orange-600/10 flex items-center justify-center mb-4 border border-orange-500/30 shadow-[0_0_20px_rgba(234,88,12,0.2)]">
-                   <DownloadCloud className="w-8 h-8 text-orange-500" />
-                </div>
+      {/* V8 DIGITAL CHECKOUT MODAL (CLEAN) - 🔥 OVDE JE DODAT document.body! 🔥 */}
+      {createPortal(
+        <AnimatePresence>
+          {showPaymentModal && (
+            <div className="fixed inset-0 z-[999999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4">
+              <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 30 }} className="bg-[#0a0a0a] border border-orange-500/40 rounded-[2.5rem] max-w-md w-full relative text-zinc-100 font-sans shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden">
+                <button onClick={() => setShowPaymentModal(false)} className="absolute top-5 right-5 bg-white/5 p-2 rounded-full text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10 transition-all z-10"><X size={20} strokeWidth={3} /></button>
                 
-                <h3 className="text-[18px] font-black uppercase tracking-widest mb-2 text-white text-center">Digital Asset Checkout</h3>
-                <p className="text-[10px] text-orange-400 font-black uppercase tracking-widest mb-8 text-center">10X ENHANCER LIFETIME</p>
-                
-                <div className="w-full bg-[#050505] border border-white/10 rounded-2xl p-6 space-y-4 text-[13px] font-mono shadow-inner mb-8">
-                  <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Provider:</span><span className="font-bold text-white text-right">V8 Vault</span></div>
-                  <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Support:</span><span className="font-bold text-white text-[11px]">aitoolsprosmart@gmail.com</span></div>
-                  <div className="flex justify-between pt-2 items-center"><span className="text-zinc-500 uppercase">Total (One-Time):</span><span className="font-black text-white text-[22px] drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">$199.99</span></div>
+                <div className="p-10 flex flex-col items-center">
+                  <div className="w-16 h-16 rounded-full bg-orange-600/10 flex items-center justify-center mb-4 border border-orange-500/30 shadow-[0_0_20px_rgba(234,88,12,0.2)]">
+                     <DownloadCloud className="w-8 h-8 text-orange-500" />
+                  </div>
+                  
+                  <h3 className="text-[18px] font-black uppercase tracking-widest mb-2 text-white text-center">Digital Asset Checkout</h3>
+                  <p className="text-[10px] text-orange-400 font-black uppercase tracking-widest mb-8 text-center">10X ENHANCER LIFETIME</p>
+                  
+                  <div className="w-full bg-[#050505] border border-white/10 rounded-2xl p-6 space-y-4 text-[13px] font-mono shadow-inner mb-8">
+                    <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Provider:</span><span className="font-bold text-white text-right">V8 Vault</span></div>
+                    <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Support:</span><span className="font-bold text-white text-[11px]">aitoolsprosmart@gmail.com</span></div>
+                    <div className="flex justify-between pt-2 items-center"><span className="text-zinc-500 uppercase">Total (One-Time):</span><span className="font-black text-white text-[22px] drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">$199.99</span></div>
+                  </div>
+                  
+                  <div className="w-full bg-[#050505] border border-orange-500/30 rounded-2xl p-6 text-center shadow-[0_0_20px_rgba(234,88,12,0.15)] relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                    <p className="text-[11px] md:text-[12px] text-zinc-300 font-black uppercase tracking-widest mb-4">Please contact support to complete your one-time purchase:</p>
+                    <a href="mailto:aitoolsprosmart@gmail.com" className="flex items-center justify-center gap-2 w-full bg-white text-black hover:bg-orange-500 hover:text-white py-3.5 rounded-xl font-black text-[12px] uppercase tracking-widest transition-all cursor-pointer shadow-lg">
+                        Request Checkout Link
+                    </a>
+                    <span className="block mt-4 text-[9px] text-zinc-500 uppercase font-bold tracking-widest">System unlocks your download automatically after checkout! 🚀</span>
+                  </div>
                 </div>
-                
-                <div className="w-full bg-[#050505] border border-orange-500/30 rounded-2xl p-6 text-center shadow-[0_0_20px_rgba(234,88,12,0.15)] relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-                  <p className="text-[11px] md:text-[12px] text-zinc-300 font-black uppercase tracking-widest mb-4">Please contact support to complete your one-time purchase:</p>
-                  <a href="mailto:aitoolsprosmart@gmail.com" className="flex items-center justify-center gap-2 w-full bg-white text-black hover:bg-orange-500 hover:text-white py-3.5 rounded-xl font-black text-[12px] uppercase tracking-widest transition-all cursor-pointer shadow-lg">
-                     Request Checkout Link
-                  </a>
-                  <span className="block mt-4 text-[9px] text-zinc-500 uppercase font-bold tracking-widest">System unlocks your download automatically after checkout! 🚀</span>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body // 🔥 OVO JE FALILO! 🔥
+      )}
+
     </div>
   );
 };
+// KRAJ FUNKCIJE: EnhancerPromo
+
 export default EnhancerPromo;
+// KRAJ FAJLA: EnhancerPromo.jsx

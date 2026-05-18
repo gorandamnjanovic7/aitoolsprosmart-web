@@ -1,11 +1,33 @@
 // POČETAK FAJLA: V8Promo10xPage.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { doc, onSnapshot, serverTimestamp, setDoc, getDoc, collection, addDoc } from 'firebase/firestore';
+import { createPortal } from 'react-dom'; // 🔥 DODATO ZA MODAL
+import { doc, onSnapshot, serverTimestamp, getDoc, collection, addDoc } from 'firebase/firestore';
 import { signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from './firebase';
 import { Crown, CheckCircle, Zap, Play, Rocket, TrendingUp, Cpu, Crosshair, DownloadCloud, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion'; 
 import { v8Toast } from './App';
+
+// --- RIPPLE BUTTON KOMPONENTA ---
+const RippleButton = ({ children, onClick, disabled, className }) => {
+  const [ripples, setRipples] = useState([]);
+  const handleClick = (e) => {
+    if (disabled) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    setRipples([...ripples, { id: Date.now(), x: e.clientX - rect.left, y: e.clientY - rect.top }]);
+    if (onClick) onClick(e);
+  };
+  return (
+    <button type="button" onClick={handleClick} disabled={disabled} className={`relative overflow-hidden ${className}`}>
+      <span className="relative z-10 flex items-center justify-center">{children}</span>
+      <AnimatePresence>
+        {ripples.map(r => (
+          <motion.span key={r.id} initial={{ scale: 0, opacity: 0.5 }} animate={{ scale: 4, opacity: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.8, ease: "easeOut" }} className="absolute bg-white/40 rounded-full pointer-events-none z-0" style={{ left: r.x, top: r.y, width: 100, height: 100, marginTop: -50, marginLeft: -50 }} onAnimationComplete={() => setRipples(prev => prev.filter(rip => rip.id !== r.id))} />
+        ))}
+      </AnimatePresence>
+    </button>
+  );
+};
 
 const V8Promo10xPage = () => {
   const [promoData, setPromoData] = useState({ images: [], promoText: "" });
@@ -16,6 +38,13 @@ const V8Promo10xPage = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  // 🔥 ZAKLJUČAVANJE SKROLOVANJA 🔥
+  useEffect(() => {
+    if (showPaymentModal) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = '';
+    return () => { document.body.style.overflow = ''; };
+  }, [showPaymentModal]);
 
   useEffect(() => {
     const unsubAuth = onAuthStateChanged(auth, (user) => {
@@ -28,9 +57,10 @@ const V8Promo10xPage = () => {
       }
     });
 
-    const unsubLemon = onSnapshot(doc(db, "v8_settings", "lemon"), (docSnap) => {
+    // VUČE LINK ZA 10X ENHANCER IZ LEMON BLAGAJNE
+    const unsubLemon = onSnapshot(doc(db, "v8_settings", "lemon_checkout"), (docSnap) => {
       if (docSnap.exists()) {
-          setLemonLink(docSnap.data().checkoutUrl || "");
+          setLemonLink(docSnap.data().enhancer10x || "");
       }
     });
 
@@ -75,10 +105,17 @@ const V8Promo10xPage = () => {
       } catch (error) { console.error(error); }
   };
 
-  const handlePurchaseClick = async () => {
+  const handlePurchaseClick = async (e) => {
+    e.preventDefault();
     if (currentUser) {
+        const email = currentUser.email ? currentUser.email.toLowerCase() : "";
+        if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
+             v8Toast.success("Master Account: Access already granted!");
+             return; 
+        }
+
         snimiKupcaUBazu(currentUser);
-        if (lemonLink) {
+        if (lemonLink && lemonLink.includes("http")) {
             window.location.href = lemonLink; 
         } else {
             setShowPaymentModal(true); 
@@ -91,7 +128,7 @@ const V8Promo10xPage = () => {
             const result = await signInWithPopup(auth, v8Provider);
             await snimiKupcaUBazu(result.user);
             
-            if (lemonLink) {
+            if (lemonLink && lemonLink.includes("http")) {
                 window.location.href = lemonLink;
             } else {
                 setShowPaymentModal(true); 
@@ -179,9 +216,9 @@ const V8Promo10xPage = () => {
         </h3>
 
         <div className="flex justify-center mb-10">
-          <button onClick={handlePurchaseClick} className="px-10 md:px-14 py-4 md:py-5 bg-gradient-to-r from-orange-600 to-[#FF4500] hover:from-orange-500 hover:to-red-600 text-black font-extrabold text-[15px] md:text-[18px] tracking-[0.2em] uppercase rounded-sm shadow-[0_0_30px_rgba(255,69,0,0.6)] hover:shadow-[0_0_50px_rgba(255,69,0,0.9)] transform hover:scale-105 transition-all duration-300 border border-orange-400/50 flex items-center gap-3">
+          <RippleButton onClick={handlePurchaseClick} className="px-10 md:px-14 py-4 md:py-5 bg-gradient-to-r from-orange-600 to-[#FF4500] hover:from-orange-500 hover:to-red-600 text-black font-extrabold text-[15px] md:text-[18px] tracking-[0.2em] uppercase rounded-sm shadow-[0_0_30px_rgba(255,69,0,0.6)] hover:shadow-[0_0_50px_rgba(255,69,0,0.9)] transform hover:scale-105 transition-all duration-300 border border-orange-400/50 flex items-center gap-3">
             <Crown className="w-5 h-5 text-black" /> GET LIFETIME LICENSE ($199.99)
-          </button>
+          </RippleButton>
         </div>
         
         <div className="v8-slider-container-small flex overflow-hidden">
@@ -192,40 +229,43 @@ const V8Promo10xPage = () => {
         </div>
       </motion.div>
 
-      {/* --- V8 DIGITAL CHECKOUT MODAL (CLEAN) --- */}
-      <AnimatePresence>
-        {showPaymentModal && (
-          <div className="fixed inset-0 z-[9000] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 30 }} className="bg-[#0a0a0a] border border-orange-500/40 rounded-[2.5rem] max-w-md w-full relative text-zinc-100 font-sans shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden">
-              <button onClick={() => setShowPaymentModal(false)} className="absolute top-5 right-5 bg-white/5 p-2 rounded-full text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10 transition-all z-10"><X size={20} strokeWidth={3} /></button>
-              
-              <div className="p-10 flex flex-col items-center">
-                <div className="w-16 h-16 rounded-full bg-orange-600/10 flex items-center justify-center mb-4 border border-orange-500/30 shadow-[0_0_20px_rgba(234,88,12,0.2)]">
-                   <DownloadCloud className="w-8 h-8 text-orange-500" />
-                </div>
+      {/* --- V8 DIGITAL CHECKOUT MODAL (CLEAN & ZAKUCAN PORTAL) --- */}
+      {createPortal(
+        <AnimatePresence>
+          {showPaymentModal && (
+            <div className="fixed inset-0 z-[999999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4">
+              <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 30 }} className="bg-[#0a0a0a] border border-orange-500/40 rounded-[2.5rem] max-w-md w-full relative text-zinc-100 font-sans shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden">
+                <button onClick={() => setShowPaymentModal(false)} className="absolute top-5 right-5 bg-white/5 p-2 rounded-full text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10 transition-all z-10"><X size={20} strokeWidth={3} /></button>
                 
-                <h3 className="text-[18px] font-black uppercase tracking-widest mb-2 text-white text-center">Digital Asset Checkout</h3>
-                <p className="text-[10px] text-orange-400 font-black uppercase tracking-widest mb-8 text-center">V8 PROMO 10X LIFETIME</p>
-                
-                <div className="w-full bg-[#050505] border border-white/10 rounded-2xl p-6 space-y-4 text-[13px] font-mono shadow-inner mb-8">
-                  <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Provider:</span><span className="font-bold text-white text-right">V8 Vault</span></div>
-                  <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Support:</span><span className="font-bold text-white text-[11px]">aitoolsprosmart@gmail.com</span></div>
-                  <div className="flex justify-between pt-2 items-center"><span className="text-zinc-500 uppercase">Total (One-Time):</span><span className="font-black text-white text-[22px] drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">$199.99</span></div>
+                <div className="p-10 flex flex-col items-center">
+                  <div className="w-16 h-16 rounded-full bg-orange-600/10 flex items-center justify-center mb-4 border border-orange-500/30 shadow-[0_0_20px_rgba(234,88,12,0.2)]">
+                     <DownloadCloud className="w-8 h-8 text-orange-500" />
+                  </div>
+                  
+                  <h3 className="text-[18px] font-black uppercase tracking-widest mb-2 text-white text-center">Digital Asset Checkout</h3>
+                  <p className="text-[10px] text-orange-400 font-black uppercase tracking-widest mb-8 text-center">V8 PROMO 10X LIFETIME</p>
+                  
+                  <div className="w-full bg-[#050505] border border-white/10 rounded-2xl p-6 space-y-4 text-[13px] font-mono shadow-inner mb-8">
+                    <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Provider:</span><span className="font-bold text-white text-right">V8 Vault</span></div>
+                    <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Support:</span><span className="font-bold text-white text-[11px]">aitoolsprosmart@gmail.com</span></div>
+                    <div className="flex justify-between pt-2 items-center"><span className="text-zinc-500 uppercase">Total (One-Time):</span><span className="font-black text-white text-[22px] drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">$199.99</span></div>
+                  </div>
+                  
+                  <div className="w-full bg-[#050505] border border-orange-500/30 rounded-2xl p-6 text-center shadow-[0_0_20px_rgba(234,88,12,0.15)] relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                    <p className="text-[11px] md:text-[12px] text-zinc-300 font-black uppercase tracking-widest mb-4">Please contact support to complete your one-time purchase:</p>
+                    <a href="mailto:aitoolsprosmart@gmail.com" className="flex items-center justify-center gap-2 w-full bg-white text-black hover:bg-orange-500 hover:text-white py-3.5 rounded-xl font-black text-[12px] uppercase tracking-widest transition-all cursor-pointer shadow-lg">
+                        Request Checkout Link
+                    </a>
+                    <span className="block mt-4 text-[9px] text-zinc-500 uppercase font-bold tracking-widest">System unlocks your download automatically after checkout! 🚀</span>
+                  </div>
                 </div>
-                
-                <div className="w-full bg-[#050505] border border-orange-500/30 rounded-2xl p-6 text-center shadow-[0_0_20px_rgba(234,88,12,0.15)] relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-                  <p className="text-[11px] md:text-[12px] text-zinc-300 font-black uppercase tracking-widest mb-4">Please contact support to complete your one-time purchase:</p>
-                  <a href="mailto:aitoolsprosmart@gmail.com" className="flex items-center justify-center gap-2 w-full bg-white text-black hover:bg-orange-500 hover:text-white py-3.5 rounded-xl font-black text-[12px] uppercase tracking-widest transition-all cursor-pointer shadow-lg">
-                     Request Checkout Link
-                  </a>
-                  <span className="block mt-4 text-[9px] text-zinc-500 uppercase font-bold tracking-widest">System unlocks your download automatically after checkout! 🚀</span>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
     </div>
   );
