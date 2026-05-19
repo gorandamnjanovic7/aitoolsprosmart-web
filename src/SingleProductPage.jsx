@@ -1,7 +1,7 @@
 // POČETAK FAJLA: SingleProductPage.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { createPortal } from 'react-dom'; // 🔥 DODATO ZA V8 PORTAL MODAL
+import { createPortal } from 'react-dom'; 
 import { Helmet } from 'react-helmet-async';
 import { 
   ChevronLeft, Maximize, ChevronRight, HelpCircle, ChevronDown, 
@@ -15,7 +15,7 @@ import V8Reveal from './V8Reveal';
 // FIREBASE
 import { db, auth } from './firebase';
 import { signInWithPopup, onAuthStateChanged, GoogleAuthProvider } from "firebase/auth";
-import { doc, getDoc, setDoc, serverTimestamp, collection, addDoc } from 'firebase/firestore'; // 🔥 DODATO ZA RADAR
+import { doc, getDoc, setDoc, serverTimestamp, collection, addDoc } from 'firebase/firestore'; 
 
 // DATA & GLOBAL
 import * as data from './data';
@@ -43,59 +43,95 @@ const renderV8Description = (text) => {
 
   return lines.map((line, index) => {
     const trimmed = line.trim();
-    
-    if (!trimmed) {
-        isWhiteBoldBlock = false;
-        return <div key={index} className="h-5"></div>; 
-    }
-
+    if (!trimmed) { isWhiteBoldBlock = false; return <div key={index} className="h-5"></div>; }
     const isHeading = trimmed === trimmed.toUpperCase() && trimmed.length > 3 && !trimmed.startsWith('🔥') && !trimmed.startsWith('[');
     
     if (isHeading || trimmed.includes('[DESCRIPTION]')) {
         isWhiteBoldBlock = false; 
-        return (
-          <h3 key={index} className="text-white font-black uppercase tracking-widest text-[18px] md:text-[22px] mt-10 mb-5 border-l-[4px] border-[#FF8C00] pl-4 bg-gradient-to-r from-[#FF8C00]/10 to-transparent py-2">
-            {trimmed.replace('[DESCRIPTION]', 'DESCRIPTION').replace(':', '')}
-          </h3>
-        );
+        return <h3 key={index} className="text-white font-black uppercase tracking-widest text-[18px] md:text-[22px] mt-10 mb-5 border-l-[4px] border-[#FF8C00] pl-4 bg-gradient-to-r from-[#FF8C00]/10 to-transparent py-2">{trimmed.replace('[DESCRIPTION]', 'DESCRIPTION').replace(':', '')}</h3>;
     }
-
     if (trimmed.startsWith('🔥')) {
         isWhiteBoldBlock = true; 
-        return (
-          <p key={index} className="text-[#FF8C00] font-black text-[15px] md:text-[18px] leading-relaxed mb-4 mt-8 drop-shadow-[0_0_10px_rgba(255,140,0,0.3)] uppercase tracking-wide">
-            {trimmed}
-          </p>
-        );
+        return <p key={index} className="text-[#FF8C00] font-black text-[15px] md:text-[18px] leading-relaxed mb-4 mt-8 drop-shadow-[0_0_10px_rgba(255,140,0,0.3)] uppercase tracking-wide">{trimmed}</p>;
     }
-
     if (trimmed.includes(':') && trimmed.split(':')[0].length < 40 && !trimmed.startsWith('http') && !isWhiteBoldBlock) {
-        const parts = trimmed.split(':');
-        const boldPart = parts[0];
-        const rest = parts.slice(1).join(':');
-        return (
-            <p key={index} className="text-zinc-300 text-[14px] md:text-[16px] leading-relaxed mb-4">
-                <strong className="text-white font-black tracking-wide">{boldPart}:</strong>{rest}
-            </p>
-        );
+        const parts = trimmed.split(':'); const boldPart = parts[0]; const rest = parts.slice(1).join(':');
+        return <p key={index} className="text-zinc-300 text-[14px] md:text-[16px] leading-relaxed mb-4"><strong className="text-white font-black tracking-wide">{boldPart}:</strong>{rest}</p>;
     }
-
-    if (isWhiteBoldBlock) {
-        return (
-          <p key={index} className="text-white font-bold text-[14px] md:text-[16px] leading-relaxed mb-4">
-            {trimmed}
-          </p>
-        );
-    }
-
-    return (
-      <p key={index} className="text-zinc-300 text-[14px] md:text-[16px] leading-relaxed mb-4">
-        {trimmed}
-      </p>
-    );
+    if (isWhiteBoldBlock) { return <p key={index} className="text-white font-bold text-[14px] md:text-[16px] leading-relaxed mb-4">{trimmed}</p>; }
+    return <p key={index} className="text-zinc-300 text-[14px] md:text-[16px] leading-relaxed mb-4">{trimmed}</p>;
   });
 };
 
+// 🔥 1. TVOJ ORIGINALNI LIGHTBOX (Izvučen napolje da ne ruši React) 🔥
+const FullScreenLightbox = ({ imageUrl, onClose }) => {
+    useEffect(() => {
+        if (imageUrl) {
+            document.body.style.overflow = 'hidden';
+            const style = document.createElement('style');
+            style.id = 'v8-sleep-protocol';
+            style.innerHTML = `
+                div[class*="border-[#FF8C00]"][class*="pointer-events-none"] { display: none !important; opacity: 0 !important; }
+                body, .fixed, img, div { cursor: default !important; }
+                button, button *, .cursor-pointer { cursor: pointer !important; }
+            `;
+            document.head.appendChild(style);
+        } else {
+            document.body.style.overflow = '';
+            document.getElementById('v8-sleep-protocol')?.remove();
+        }
+        return () => { document.body.style.overflow = ''; document.getElementById('v8-sleep-protocol')?.remove(); };
+    }, [imageUrl]);
+
+    if (!imageUrl) return null;
+    return createPortal(
+        <div className="fixed inset-0 z-[999999] bg-[#0f172a]/95 flex items-center justify-center p-4" onClick={onClose}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onClose(); }} className="absolute top-6 right-6 md:top-10 md:right-10 bg-[#FF8C00] text-white p-4 rounded-full hover:bg-[#e67e00] transition-all z-[1000000] shadow-[0_0_20px_rgba(255,140,0,0.5)] border-none"><X size={32} strokeWidth={3} /></button>
+            <img src={imageUrl} alt="Full Screen Preview" className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-[0_0_80px_rgba(255,140,0,0.4)] border border-[#FF8C00]/30 relative z-[999999]" onClick={(e) => e.stopPropagation()} />
+        </div>, document.body
+    );
+};
+
+// 🔥 2. NOVI V8 CHECKOUT MODAL (Izvučen napolje kao na EnhancerPromo, 100% stabilan) 🔥
+const V8ProductCheckoutModal = ({ data, onClose }) => {
+  useEffect(() => {
+    if (data) document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, [data]);
+
+  if (!data) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+      <div className="bg-[#0a0a0a] border border-orange-500/40 rounded-[2.5rem] max-w-md w-full relative text-zinc-100 font-sans shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden">
+        <button onClick={onClose} className="absolute top-5 right-5 bg-white/5 p-2 rounded-full text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10 transition-all z-10"><X size={20} strokeWidth={3} /></button>
+        <div className="p-10 flex flex-col items-center">
+          <h3 className="text-[18px] font-black uppercase tracking-widest mb-2 text-orange-500 flex items-center gap-3"><DownloadCloud className="w-5 h-5" /> Digital Asset Checkout</h3>
+          <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mb-6 text-center">Package: {data.tip}</p>
+          
+          <div className="w-full bg-[#050505] border border-white/10 rounded-2xl p-6 space-y-4 text-[13px] font-mono shadow-inner mb-8">
+            <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Provider:</span><span className="font-bold text-white text-right">V8 Digital Vault</span></div>
+            <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Support:</span><span className="font-bold text-white text-[11px] md:text-[13px]">aitoolsprosmart@gmail.com</span></div>
+            <div className="flex justify-between pt-2"><span className="text-zinc-500 uppercase">Total (One-Time):</span><span className="font-black text-orange-500 text-[18px] drop-shadow-[0_0_8px_rgba(234,88,12,0.5)]">${data.cena}</span></div>
+          </div>
+          
+          <div className="w-full bg-[#050505] border border-orange-500/30 rounded-2xl p-5 text-center shadow-[0_0_20px_rgba(234,88,12,0.15)] group relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+            <p className="text-[11px] md:text-[12px] text-zinc-400 font-black uppercase tracking-widest mb-4">Please contact us to complete your one-time purchase:</p>
+            <a href="mailto:aitoolsprosmart@gmail.com" className="flex items-center justify-center gap-2 w-full bg-white/5 border border-white/10 hover:border-orange-500/50 hover:bg-orange-500/10 text-orange-400 py-3 rounded-xl font-black text-[12px] md:text-[14px] tracking-widest transition-all cursor-pointer shadow-inner">
+              📧 Request Checkout Link
+            </a>
+            <span className="block mt-5 text-[10px] text-zinc-500 uppercase font-black tracking-widest">System unlocks your download automatically! 🚀</span>
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+};
+
+
+// POČETAK GLAVNE KOMPONENTE
 export default function SingleProductPage({ apps = [] }) {
   const { id } = useParams(); 
   const app = apps.find(a => a.id === id); 
@@ -108,16 +144,6 @@ export default function SingleProductPage({ apps = [] }) {
   const mainVideoRef = useRef(null);
   
   useEffect(() => { window.scrollTo(0, 0); }, [id]);
-
-  // 🔥 DODATO: Zaključavanje ekrana da ne mrda kad se otvori modal 🔥
-  useEffect(() => {
-    if (wireModalData || fullScreenImage) {
-        document.body.style.overflow = 'hidden';
-    } else {
-        document.body.style.overflow = '';
-    }
-    return () => { document.body.style.overflow = ''; };
-  }, [wireModalData, fullScreenImage]);
 
   useEffect(() => {
     if (!app) return;
@@ -142,6 +168,60 @@ export default function SingleProductPage({ apps = [] }) {
     return () => unsubscribe();
   }, [app]);
   
+  // 🔥 V8 PAMETNA MEMORIJA (Automatski otvara modal posle logina na ovoj stranici) 🔥
+  useEffect(() => {
+    const checkPendingPurchase = async () => {
+      const pendingTip = localStorage.getItem('v8_pending_product_tip');
+      const pendingCena = localStorage.getItem('v8_pending_product_cena');
+
+      if (auth.currentUser && pendingTip && pendingCena) {
+        localStorage.removeItem('v8_pending_product_tip');
+        localStorage.removeItem('v8_pending_product_cena');
+
+        const tip = pendingTip;
+        const cena = pendingCena;
+        
+        try {
+            await addDoc(collection(db, "v8_kupci"), {
+                ime: auth.currentUser.displayName || "Client", email: auth.currentUser.email, uid: auth.currentUser.uid,
+                zeliPaket: tip, cenaPaketa: cena, vreme: serverTimestamp(), isPaid: false
+            });
+
+            await setDoc(doc(db, "posetioci", auth.currentUser.uid), { 
+                ime: auth.currentUser.displayName || "Client", 
+                email: auth.currentUser.email, 
+                vremePrijave: serverTimestamp(), 
+                zainteresovanZa: tip, 
+                identitet: "V8-Client-Global" 
+            }, { merge: true });
+
+            const email = auth.currentUser.email ? auth.currentUser.email.toLowerCase() : "";
+            
+            if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
+                setHasAccess(true);
+                v8Toast.success("Access already unlocked!");
+                return; 
+            }
+
+            const docRef = doc(db, "vip_users", email);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists() && docSnap.data().unlockedApps && (docSnap.data().unlockedApps.includes(app.id) || docSnap.data().unlockedApps.includes('FULL_ACCESS'))) {
+                setHasAccess(true);
+                v8Toast.success("Access already unlocked!");
+            } else {
+                setWireModalData({ tip, cena }); // PALI MODAL AUTOMATSKI CVRSTO NA SREDINU!
+            }
+        } catch (err) {
+            console.error("V8 PENDING PAYMENT ERROR:", err);
+        }
+      }
+    };
+    
+    const timer = setTimeout(() => { checkPendingPurchase(); }, 1000);
+    return () => clearTimeout(timer);
+  }, [app]);
+
   if (!app) return <div className="min-h-screen bg-[#050505] flex items-center justify-center text-zinc-500 uppercase text-[10px] tracking-widest">Loading...</div>;
   
   const currentMedia = app.media?.[activeMedia] || { url: data.bannerUrl, type: 'image' }; 
@@ -153,28 +233,28 @@ export default function SingleProductPage({ apps = [] }) {
   const cenaStandard = app.price ? parseFloat(app.price) : 15;
   const cenaPremium = app.priceLifetime ? parseFloat(app.priceLifetime) : 89;
   
-  // 🔥 V8 BLINDIRANA FUNKCIJA ZA PLAĆANJE 🔥
   const handlePaymentGlobal = async (tip, cena) => {
     try {
         let currentUser = auth.currentUser;
-        
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
         if (!currentUser) {
+            // PAMTI PRE LOGINA DA BI OTVORIO MODAL ODMAH POSLE LOGINA
+            localStorage.setItem('v8_pending_product_tip', tip);
+            localStorage.setItem('v8_pending_product_cena', cena);
+
             const v8Provider = new GoogleAuthProvider();
             v8Provider.setCustomParameters({ prompt: 'select_account' });
-            const result = await signInWithPopup(auth, v8Provider);
-            currentUser = result.user;
+            await signInWithPopup(auth, v8Provider);
+            return;
         }
 
         if (currentUser) {
-            // BELEŽIMO U RADAR
             await addDoc(collection(db, "v8_kupci"), {
                 ime: currentUser.displayName || "Client", email: currentUser.email, uid: currentUser.uid,
                 zeliPaket: tip, cenaPaketa: cena, vreme: serverTimestamp(), isPaid: false
             });
 
-            // ČUVAMO KOMPATIBILNOST
             await setDoc(doc(db, "posetioci", currentUser.uid), { 
                 ime: currentUser.displayName || "Client", 
                 email: currentUser.email, 
@@ -202,8 +282,10 @@ export default function SingleProductPage({ apps = [] }) {
             }
         }
     } catch (err) {
+        localStorage.removeItem('v8_pending_product_tip');
+        localStorage.removeItem('v8_pending_product_cena');
         console.error("V8 PAYMENT ERROR:", err);
-        v8Toast.error(err.message || "Greška na sistemu za naplatu.");
+        v8Toast.error(err.message || "Sistem je blokirao Google prijavu.");
     }
   };
   
@@ -211,38 +293,19 @@ export default function SingleProductPage({ apps = [] }) {
     <div className="bg-[#050505] pt-32 pb-32 px-6 font-sans text-white text-left relative">
       <Helmet><title>{app.name} | V8 FACTORY</title></Helmet>
       
-      {/* FULLSCREEN IMAGE MODAL - SADA U PORTALU */}
-      {createPortal(
-        <AnimatePresence>
-          {fullScreenImage && (
-            <div className="fixed inset-0 z-[999999] bg-black/95 flex items-center justify-center p-4" onClick={() => setFullScreenImage(null)}>
-              <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }}>
-                <button className="absolute top-6 right-6 text-white bg-black/50 hover:bg-red-600 rounded-full p-3 transition-all z-[6010]"><X className="w-8 h-8" /></button>
-                <img src={fullScreenImage} className="max-w-full max-h-full object-contain" alt="Enlarged" onClick={(e) => e.stopPropagation()} />
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>,
-        document.body
-      )}
-
       <div className="max-w-7xl mx-auto">
         <button onClick={() => navigate('/')} className="text-zinc-400 hover:text-white flex items-center gap-2 mb-10 uppercase text-[10px] font-black tracking-widest transition-all"><ChevronLeft className="w-4 h-4" /> Go Back</button>
         <div className="flex flex-col lg:flex-row gap-12 items-start">
           
-          {/* Ljeva strana: Slike i Tekst */}
           <div className="w-full lg:w-[65%]">
-            
             <V8Reveal delay={0.1} direction="up">
               {app.type && <div className={`mb-6 px-6 py-2.5 rounded-full inline-block text-white text-[13px] font-black uppercase tracking-[0.2em] shadow-xl ${ribbonClass}`}>{app.type}</div>}
               
-              {/* Glavna slika/video */}
               <div className="relative mb-6 aspect-video rounded-[2.5rem] overflow-hidden border-2 border-orange-500/50 bg-black shadow-2xl group">
                 {!isVideo ? <><img src={currentMedia.url} onClick={() => setFullScreenImage(currentMedia.url)} className="w-full h-full object-cover cursor-pointer" alt="" /><button onClick={(e) => { e.stopPropagation(); setFullScreenImage(currentMedia.url); }} className="absolute top-6 right-6 p-3 bg-black/60 rounded-xl opacity-0 group-hover:opacity-100 transition-all z-20 hover:bg-orange-600"><Maximize className="w-5 h-5 text-white" /></button></> : <video ref={mainVideoRef} src={currentMedia.url} className="w-full h-full object-cover" controls controlsList="nodownload" autoPlay muted loop playsInline />}
                 {app.media?.length > 1 && <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between px-6 pointer-events-none z-20"><button onClick={(e) => {e.stopPropagation(); setActiveMedia((activeMedia - 1 + app.media.length) % app.media.length);}} className="p-3 text-white pointer-events-auto opacity-0 group-hover:opacity-100 hover:text-orange-500 transition-all"><ChevronLeft className="w-8 h-8" /></button><button onClick={(e) => {e.stopPropagation(); setActiveMedia((activeMedia + 1) % app.media.length);}} className="p-3 text-white pointer-events-auto opacity-0 group-hover:opacity-100 hover:text-orange-500 transition-all"><ChevronRight className="w-8 h-8" /></button></div>}
               </div>
               
-              {/* Thumbnail Galerija */}
               <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar scroll-smooth">{app.media?.map((m, idx) => <button type="button" key={idx} onClick={() => setActiveMedia(idx)} className={`relative w-28 h-16 flex-shrink-0 rounded-xl overflow-hidden border-2 transition-all ${activeMedia === idx ? 'border-orange-500 scale-105 shadow-lg' : 'border-white/5 opacity-50 hover:opacity-100'}`}>{(m.type === 'video' || m.url?.match(/\.(mp4|webm|ogg|mov)$/i)) ? <><video src={`${m.url}#t=0.001`} className="w-full h-full object-cover" controlsList="nodownload" /><div className="absolute inset-0 flex items-center justify-center bg-black/40"><PlayCircle className="w-6 h-6 text-white" /></div></> : <img src={m.url} className="w-full h-full object-cover" />}</button>)}</div>
             </V8Reveal>
 
@@ -270,7 +333,6 @@ export default function SingleProductPage({ apps = [] }) {
             </V8Reveal>
           </div>
 
-          {/* Desna strana: Checkout i Payment */}
           <div className="w-full lg:w-[35%] lg:sticky lg:top-40">
             <V8Reveal delay={0.2} direction="left">
               <div className="bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
@@ -313,42 +375,12 @@ export default function SingleProductPage({ apps = [] }) {
               </div>
             </V8Reveal>
           </div>
-
         </div>
       </div>
 
-      {/* 🔥 V8 PAYMENT MODAL PORTAL (ZAKUCAN ZA CENTAR) 🔥 */}
-      {createPortal(
-        <AnimatePresence>
-          {wireModalData && (
-            <div className="fixed inset-0 z-[999999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4">
-              <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 30 }} className="bg-[#0a0a0a] border border-orange-500/40 rounded-[2.5rem] max-w-md w-full relative text-zinc-100 font-sans shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden">
-                <button onClick={() => setWireModalData(null)} className="absolute top-5 right-5 bg-white/5 p-2 rounded-full text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10 transition-all z-10"><X size={20} strokeWidth={3} /></button>
-                <div className="p-10 flex flex-col items-center">
-                  <h3 className="text-[18px] font-black uppercase tracking-widest mb-2 text-orange-500 flex items-center gap-3"><DownloadCloud className="w-5 h-5" /> Digital Asset Checkout</h3>
-                  <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mb-6 text-center">Package: {wireModalData?.tip}</p>
-                  
-                  <div className="w-full bg-[#050505] border border-white/10 rounded-2xl p-6 space-y-4 text-[13px] font-mono shadow-inner mb-8">
-                    <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Provider:</span><span className="font-bold text-white text-right">V8 Digital Vault</span></div>
-                    <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Support:</span><span className="font-bold text-white text-[11px] md:text-[13px]">aitoolsprosmart@gmail.com</span></div>
-                    <div className="flex justify-between pt-2"><span className="text-zinc-500 uppercase">Total (One-Time):</span><span className="font-black text-orange-500 text-[18px] drop-shadow-[0_0_8px_rgba(234,88,12,0.5)]">${wireModalData?.cena}</span></div>
-                  </div>
-                  
-                  <div className="w-full bg-[#050505] border border-orange-500/30 rounded-2xl p-5 text-center shadow-[0_0_20px_rgba(234,88,12,0.15)] group relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-                    <p className="text-[11px] md:text-[12px] text-zinc-400 font-black uppercase tracking-widest mb-4">Please contact us to complete your one-time purchase:</p>
-                    <a href="mailto:aitoolsprosmart@gmail.com" className="flex items-center justify-center gap-2 w-full bg-white/5 border border-white/10 hover:border-orange-500/50 hover:bg-orange-500/10 text-orange-400 py-3 rounded-xl font-black text-[12px] md:text-[14px] tracking-widest transition-all cursor-pointer shadow-inner">
-                      📧 Request Checkout Link
-                    </a>
-                    <span className="block mt-5 text-[10px] text-zinc-500 uppercase font-black tracking-widest">System unlocks your download automatically! 🚀</span>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>,
-        document.body
-      )}
+      {/* POZIVI ZA NEZAVISNE MODALE KOJI RADE BEZ GREŠKE */}
+      <FullScreenLightbox imageUrl={fullScreenImage} onClose={() => setFullScreenImage(null)} />
+      <V8ProductCheckoutModal data={wireModalData} onClose={() => setWireModalData(null)} />
 
     </div>
   );

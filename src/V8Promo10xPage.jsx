@@ -1,14 +1,14 @@
 // POČETAK FAJLA: V8Promo10xPage.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom'; // 🔥 DODATO ZA MODAL
 import { doc, onSnapshot, serverTimestamp, getDoc, collection, addDoc } from 'firebase/firestore';
 import { signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from './firebase';
 import { Crown, CheckCircle, Zap, Play, Rocket, TrendingUp, Cpu, Crosshair, DownloadCloud, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion'; 
 import { v8Toast } from './App';
+import { createPortal } from 'react-dom';
 
-// --- RIPPLE BUTTON KOMPONENTA ---
+// POČETAK KOMPONENTE: RippleButton
 const RippleButton = ({ children, onClick, disabled, className }) => {
   const [ripples, setRipples] = useState([]);
   const handleClick = (e) => {
@@ -28,24 +28,30 @@ const RippleButton = ({ children, onClick, disabled, className }) => {
     </button>
   );
 };
+// KRAJ KOMPONENTE: RippleButton
 
+// POČETAK KOMPONENTE: V8Promo10xPage
 const V8Promo10xPage = () => {
   const [promoData, setPromoData] = useState({ images: [], promoText: "" });
   const [lemonLink, setLemonLink] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
+  // POČETAK FUNKCIJE: Scroll to top
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+  // KRAJ FUNKCIJE: Scroll to top
 
-  // 🔥 ZAKLJUČAVANJE SKROLOVANJA 🔥
+  // POČETAK FUNKCIJE: Lock Scrolling
   useEffect(() => {
     if (showPaymentModal) document.body.style.overflow = 'hidden';
     else document.body.style.overflow = '';
     return () => { document.body.style.overflow = ''; };
   }, [showPaymentModal]);
+  // KRAJ FUNKCIJE: Lock Scrolling
 
+  // POČETAK FUNKCIJE: Firebase Fetch
   useEffect(() => {
     const unsubAuth = onAuthStateChanged(auth, (user) => {
         setCurrentUser(user);
@@ -57,7 +63,6 @@ const V8Promo10xPage = () => {
       }
     });
 
-    // VUČE LINK ZA 10X ENHANCER IZ LEMON BLAGAJNE
     const unsubLemon = onSnapshot(doc(db, "v8_settings", "lemon_checkout"), (docSnap) => {
       if (docSnap.exists()) {
           setLemonLink(docSnap.data().enhancer10x || "");
@@ -66,12 +71,30 @@ const V8Promo10xPage = () => {
 
     return () => { unsubAuth(); unsubPromo(); unsubLemon(); };
   }, []);
+  // KRAJ FUNKCIJE: Firebase Fetch
+
+  // 🔥 NOVO: PAMETNI V8 MEMORY TOKEN 🔥
+  // Ako se stranica osvežila nakon logina, a klijent je kliknuo "Kupi", odrađujemo posao odmah!
+  useEffect(() => {
+    if (currentUser && localStorage.getItem('v8_pending_checkout') === 'true') {
+        localStorage.removeItem('v8_pending_checkout'); // Brišemo token
+        snimiKupcaUBazu(currentUser); // Snimamo kupca
+
+        if (lemonLink && lemonLink.includes("http")) {
+            window.location.href = lemonLink;
+        } else {
+            setShowPaymentModal(true); // OTVARA SE MODAL!
+        }
+    }
+  }, [currentUser, lemonLink]);
+  // KRAJ NOVE FUNKCIJE
 
   const images = promoData?.images?.length > 0 ? promoData.images : ['/thumbinal.png']; 
-  const videoUrl = "/v8-reklama.mp4";
+  const videoUrl = "/V8_reklama.mp4";
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
+  // POČETAK FUNKCIJE: Video Controls
   const handlePlayVideo = () => {
     setIsPlaying(true);
     if (videoRef.current) { videoRef.current.play(); }
@@ -95,7 +118,9 @@ const V8Promo10xPage = () => {
       else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
     }
   };
+  // KRAJ FUNKCIJE: Video Controls
 
+  // POČETAK FUNKCIJE: Snimi Kupca
   const snimiKupcaUBazu = async (user) => {
       try {
           await addDoc(collection(db, "v8_kupci"), {
@@ -104,13 +129,18 @@ const V8Promo10xPage = () => {
           });
       } catch (error) { console.error(error); }
   };
+  // KRAJ FUNKCIJE: Snimi Kupca
 
+  // POČETAK FUNKCIJE: Purchase Click
   const handlePurchaseClick = async (e) => {
     e.preventDefault();
     if (currentUser) {
         const email = currentUser.email ? currentUser.email.toLowerCase() : "";
+        
+        // I Master nalozi prolaze sada normalno da vide modal
         if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
-             v8Toast.success("Master Account: Access already granted!");
+             if (lemonLink && lemonLink.includes("http")) { window.location.href = lemonLink; } 
+             else { setShowPaymentModal(true); }
              return; 
         }
 
@@ -122,32 +152,31 @@ const V8Promo10xPage = () => {
         }
     } else {
         try {
-            await signOut(auth);
-            const v8Provider = new GoogleAuthProvider();
-            v8Provider.setCustomParameters({ prompt: 'select_account', login_hint: '' });
-            const result = await signInWithPopup(auth, v8Provider);
-            await snimiKupcaUBazu(result.user);
+            // 🔥 Postavljamo Memory Token pre nego što otvorimo Google Login
+            localStorage.setItem('v8_pending_checkout', 'true');
             
-            if (lemonLink && lemonLink.includes("http")) {
-                window.location.href = lemonLink;
-            } else {
-                setShowPaymentModal(true); 
-            }
-        } catch (error) { v8Toast.error("Login canceled."); }
+            const v8Provider = new GoogleAuthProvider();
+            v8Provider.setCustomParameters({ prompt: 'select_account' });
+            await signInWithPopup(auth, v8Provider);
+            // Nastavak logike se odrađuje gore u novom useEffect-u!
+        } catch (error) { 
+            localStorage.removeItem('v8_pending_checkout'); // Ako klijent otkaže, brišemo token
+        }
     }
   };
+  // KRAJ FUNKCIJE: Purchase Click
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white pt-24 pb-20 font-sans selection:bg-orange-500 selection:text-white">
+    <div className="min-h-screen bg-[#050505] text-white pt-24 pb-20 font-sans selection:bg-orange-500 selection:text-white relative">
       
-      {/* --- V8 PREMIUM HERO KARTICA --- */}
-      <div className="relative w-full max-w-5xl mx-auto rounded-[2.5rem] border border-orange-500/20 shadow-[0_0_40px_rgba(234,88,12,0.1)] overflow-hidden flex flex-col items-center justify-center p-10 md:p-16 text-center mt-6 mb-16 group">
+      {/* POČETAK SEKCIJE: Hero */}
+      <motion.div initial={{ opacity: 0, scale: 0.95, y: 60 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: 1.1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }} className="relative w-full max-w-5xl mx-auto rounded-[2.5rem] border border-orange-500/20 shadow-[0_0_40px_rgba(234,88,12,0.1)] overflow-hidden flex flex-col items-center justify-center p-10 md:p-16 text-center mt-6 mb-16 group">
         <div className="absolute inset-0 z-0 bg-[#050505]">
-          <img src="/promo-bg.webp" alt="V8 Engine Power" className="w-full h-full object-cover opacity-90 scale-100 group-hover:scale-110 transition-transform duration-[15000ms] ease-out" />
+          <img src="/promo-bg.webp" alt="V8 Engine Power" className="w-full h-full object-cover opacity-70 scale-100 group-hover:scale-105 transition-transform duration-[15000ms] ease-out" />
           <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/95 via-[#050505]/30 to-[#050505]/95"></div>
         </div>
 
-        <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.9, ease: "easeOut" }} className="relative z-10 flex flex-col items-center w-full px-2">
+        <div className="relative z-10 flex flex-col items-center w-full px-2">
           <div className="inline-flex items-center justify-center gap-2 bg-orange-500/10 border border-orange-500/30 px-5 py-2.5 rounded-full text-orange-500 text-[11px] font-black uppercase tracking-[0.2em] mb-8 shadow-[0_0_15px_rgba(234,88,12,0.2)]">
             <Crown className="w-4 h-4" /> EXCLUSIVE V8 PREMIERE
           </div>
@@ -176,10 +205,11 @@ const V8Promo10xPage = () => {
               No compromises. No hidden fees. Just pure, raw power at your click.
             </p>
           </div>
-        </motion.div>
-      </div>
+        </div>
+      </motion.div>
+      {/* KRAJ SEKCIJE: Hero */}
 
-      {/* --- PREMIUM ANIMIRANI BEDŽEVI --- */}
+      {/* POČETAK SEKCIJE: Bedževi */}
       <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.3 }} className="max-w-5xl mx-auto px-6">
         <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-[11px] md:text-[13px] font-black tracking-[0.15em] uppercase mb-20">
           <div className="group flex items-center gap-3 bg-[#0a0a0a] border border-zinc-800 hover:border-green-500/50 px-5 py-3 rounded-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(34,197,94,0.15)] cursor-default"><Crosshair className="w-5 h-5 text-green-500 group-hover:rotate-90 transition-transform duration-500 drop-shadow-[0_0_8px_rgba(34,197,94,0.6)]" /> <span className="text-zinc-400 group-hover:text-white transition-colors">99.8% Precision</span></div>
@@ -188,28 +218,35 @@ const V8Promo10xPage = () => {
           <div className="group flex items-center gap-3 bg-[#0a0a0a] border border-zinc-800 hover:border-yellow-500/50 px-5 py-3 rounded-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(234,179,8,0.15)] cursor-default"><TrendingUp className="w-5 h-5 text-yellow-500 group-hover:scale-110 transition-transform duration-300 drop-shadow-[0_0_8px_rgba(234,179,8,0.6)]" /> <span className="text-zinc-400 group-hover:text-white transition-colors">10X Conversion</span></div>
         </div>
       </motion.div>
+      {/* KRAJ SEKCIJE: Bedževi */}
 
-      {/* --- PAMETNI VIDEO PLEJER --- */}
+      {/* POČETAK SEKCIJE: Video Plejer */}
       <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.2 }} className="max-w-4xl mx-auto px-6 mb-24 relative group">
         <div className="w-full aspect-video relative p-[2px] rounded-[2rem] overflow-hidden bg-black">
           <div className="absolute inset-[-100%] animate-[spin_4s_linear_infinite] v8-ai-aura opacity-70 group-hover:opacity-100 transition-opacity duration-500 z-0"></div>
           <div className="relative w-full h-full bg-black rounded-[calc(2rem-2px)] overflow-hidden z-10 flex items-center justify-center">
+            
             {!isPlaying && (
               <div className="absolute inset-0 z-20 flex items-center justify-center cursor-pointer group/play" onClick={handlePlayVideo}>
                 <img src="/thumbinal.png" alt="V8 Poster" className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover/play:opacity-40 transition-opacity" />
-                <div className="relative z-30 bg-orange-500/90 p-4 rounded-full border border-orange-400 shadow-[0_0_20px_rgba(255,69,0,0.6)] group-hover/play:scale-110 transition-transform"><Play className="w-8 h-8 text-white fill-white ml-1" /></div>
+                <div className="relative z-30 bg-orange-500/90 p-4 rounded-full border border-orange-400 shadow-[0_0_20px_rgba(255,69,0,0.6)] group-hover/play:scale-110 transition-transform">
+                  <Play className="w-8 h-8 text-white fill-white ml-1" />
+                </div>
               </div>
             )}
-            <video ref={videoRef} controls={isPlaying} controlsList="nodownload" muted playsInline onEnded={handleVideoEnded} onDoubleClick={toggleFullScreen} className="w-full h-full object-cover cursor-pointer" poster="/v8-poster.jpg" title="Double click for Fullscreen">
+            
+            <video ref={videoRef} controls={isPlaying} controlsList="nodownload" muted playsInline onEnded={handleVideoEnded} onDoubleClick={toggleFullScreen} className="w-full h-full object-cover cursor-pointer" title="Double click for Fullscreen" poster="/v8-poster.jpg">
               <source src={videoUrl} type="video/mp4" />
             </video>
+
           </div>
           <div className="absolute -inset-4 animate-[spin_4s_linear_infinite] v8-ai-aura opacity-20 group-hover:opacity-50 blur-2xl transition-opacity duration-700 pointer-events-none z-0"></div>
         </div>
         <p className="text-zinc-600 text-[10px] text-center mt-3 uppercase tracking-widest font-bold">Double-click video for full screen</p>
       </motion.div>
+      {/* KRAJ SEKCIJE: Video Plejer */}
 
-      {/* --- V8 BESKONAČNA TRAKA I KUPNJAA --- */}
+      {/* POČETAK SEKCIJE: Traka i Dugme */}
       <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 1 }} className="w-full mb-20 overflow-hidden bg-black py-10 border-y border-white/5">
         <h3 className="flex items-center justify-center gap-3 text-[11px] font-black uppercase tracking-[0.3em] text-zinc-500 mb-8 text-center">
           <span className="relative flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.9)]"></span></span> Live V8 Visual Stream
@@ -228,13 +265,14 @@ const V8Promo10xPage = () => {
           </div>
         </div>
       </motion.div>
+      {/* KRAJ SEKCIJE: Traka i Dugme */}
 
-      {/* --- V8 DIGITAL CHECKOUT MODAL (CLEAN & ZAKUCAN PORTAL) --- */}
+      {/* POČETAK SEKCIJE: Modal */}
       {createPortal(
         <AnimatePresence>
           {showPaymentModal && (
-            <div className="fixed inset-0 z-[999999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4">
-              <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 30 }} className="bg-[#0a0a0a] border border-orange-500/40 rounded-[2.5rem] max-w-md w-full relative text-zinc-100 font-sans shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden">
+            <div className="fixed inset-0 w-screen h-[100dvh] z-[9999999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4" style={{ margin: 0, padding: 0 }}>
+              <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 30 }} className="bg-[#0a0a0a] border border-orange-500/40 rounded-[2.5rem] max-w-md w-full relative text-zinc-100 font-sans shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden m-auto">
                 <button onClick={() => setShowPaymentModal(false)} className="absolute top-5 right-5 bg-white/5 p-2 rounded-full text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10 transition-all z-10"><X size={20} strokeWidth={3} /></button>
                 
                 <div className="p-10 flex flex-col items-center">
@@ -266,10 +304,12 @@ const V8Promo10xPage = () => {
         </AnimatePresence>,
         document.body
       )}
+      {/* KRAJ SEKCIJE: Modal */}
 
     </div>
   );
 };
+// KRAJ KOMPONENTE: V8Promo10xPage
 
 export default V8Promo10xPage;
 // KRAJ FAJLA: V8Promo10xPage.jsx

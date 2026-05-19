@@ -37,6 +37,47 @@ const RippleButton = ({ children, onClick, disabled, className }) => {
   );
 };
 
+// 🔥 V8 CHECKOUT MODAL (NEZAVISNA FUNKCIJA, BEZ ANIMACIJA KOJE RUŠE REACT) 🔥
+const V8OptimizerCheckoutModal = ({ data, onClose }) => {
+  useEffect(() => {
+    if (data) document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, [data]);
+
+  if (!data) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+      <div className="bg-[#0a0a0a] border border-orange-500/40 rounded-[2.5rem] max-w-md w-full relative text-zinc-100 font-sans shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden">
+        <button onClick={onClose} className="absolute top-5 right-5 bg-white/5 p-2 rounded-full text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10 transition-all z-10"><X size={20} strokeWidth={3} /></button>
+        <div className="p-10 flex flex-col items-center">
+          <div className="w-16 h-16 rounded-full bg-orange-600/10 flex items-center justify-center mb-4 border border-orange-500/30 shadow-[0_0_20px_rgba(234,88,12,0.2)]">
+             <DownloadCloud className="w-8 h-8 text-orange-500" />
+          </div>
+          <h3 className="text-[18px] font-black uppercase tracking-widest mb-2 text-white text-center">Digital Asset Checkout</h3>
+          <p className="text-[10px] text-orange-400 font-black uppercase tracking-widest mb-8 text-center">{data.tip}</p>
+          
+          <div className="w-full bg-[#050505] border border-white/10 rounded-2xl p-6 space-y-4 text-[13px] font-mono shadow-inner mb-8">
+            <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Provider:</span><span className="font-bold text-white text-right">V8 Digital Vault</span></div>
+            <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Support:</span><span className="font-bold text-white text-[11px] md:text-[13px]">aitoolsprosmart@gmail.com</span></div>
+            <div className="flex justify-between pt-2"><span className="text-zinc-500 uppercase">Total (One-Time):</span><span className="font-black text-orange-500 text-[22px] drop-shadow-[0_0_8px_rgba(234,88,12,0.5)]">${data.cena}</span></div>
+          </div>
+          
+          <div className="w-full bg-[#050505] border border-orange-500/30 rounded-2xl p-5 text-center shadow-[0_0_20px_rgba(234,88,12,0.15)] group relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+            <p className="text-[11px] md:text-[12px] text-zinc-300 font-black uppercase tracking-widest mb-4">Please contact us to complete your one-time purchase:</p>
+            <a href="mailto:aitoolsprosmart@gmail.com" className="flex items-center justify-center gap-2 w-full bg-white/5 border border-white/10 hover:border-orange-500/50 hover:bg-orange-500/10 text-orange-400 py-3.5 rounded-xl font-black text-[12px] md:text-[14px] tracking-widest transition-all cursor-pointer shadow-inner">
+              📧 Request Checkout Link
+            </a>
+            <span className="block mt-5 text-[10px] text-zinc-500 uppercase font-black tracking-widest">System unlocks your 1000 credits automatically! 🚀</span>
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+};
+
 // POČETAK FUNKCIJE: V8OptimizerPage
 const V8OptimizerPage = () => {
   const [files, setFiles] = useState([]);
@@ -50,13 +91,6 @@ const V8OptimizerPage = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(null);
   const [lemonLink, setLemonLink] = useState("");
   const [isCheckingAccess, setIsCheckingAccess] = useState(true);
-
-  // --- V8 ZAKLJUČAVANJE EKRANA KADA SE OTVORI MODAL ---
-  useEffect(() => {
-    if (showPaymentModal) document.body.style.overflow = 'hidden';
-    else document.body.style.overflow = '';
-    return () => { document.body.style.overflow = ''; };
-  }, [showPaymentModal]);
 
   // --- V8 FIREBASE AUTH & CREDIT LISTENER ---
   useEffect(() => {
@@ -99,6 +133,49 @@ const V8OptimizerPage = () => {
     return () => { unsubscribe(); unsubLemon(); };
   }, []);
 
+  // 🔥 V8 PAMETNA MEMORIJA ZA OPTIMIZER (Opaljuje modal nakon logina) 🔥
+  useEffect(() => {
+    const checkPendingPurchase = async () => {
+      const pendingTip = localStorage.getItem('v8_pending_optimizer_tip');
+      const pendingCena = localStorage.getItem('v8_pending_optimizer_cena');
+
+      if (auth.currentUser && pendingTip && pendingCena) {
+        localStorage.removeItem('v8_pending_optimizer_tip');
+        localStorage.removeItem('v8_pending_optimizer_cena');
+
+        try {
+            await addDoc(collection(db, "v8_kupci"), {
+                ime: auth.currentUser.displayName || "Client", email: auth.currentUser.email, uid: auth.currentUser.uid,
+                zeliPaket: pendingTip, cenaPaketa: pendingCena, vreme: serverTimestamp(), isPaid: false
+            });
+
+            await setDoc(doc(db, "posetioci", auth.currentUser.uid), { 
+                ime: auth.currentUser.displayName || "Client", email: auth.currentUser.email, 
+                vremePrijave: serverTimestamp(), zainteresovanZa: pendingTip, identitet: "V8-Optimizer-Client" 
+            }, { merge: true });
+
+            const email = auth.currentUser.email ? auth.currentUser.email.toLowerCase() : "";
+            
+            if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
+                v8Toast.success("Master Account: Credits maxed out.");
+                return; 
+            }
+
+            if (lemonLink && lemonLink.includes("http")) {
+                window.location.href = lemonLink;
+            } else {
+                setShowPaymentModal({ tip: pendingTip, cena: pendingCena });
+            }
+        } catch (err) {
+            console.error("V8 PENDING ERROR", err);
+        }
+      }
+    };
+    
+    const timer = setTimeout(() => { checkPendingPurchase(); }, 1000);
+    return () => clearTimeout(timer);
+  }, [lemonLink]);
+
   // --- V8 BLINDIRANA FUNKCIJA ZA KUPITI KREDITE (PLAĆANJE) ---
   const handlePaymentV8 = async (e) => {
     if (e) e.preventDefault();
@@ -106,17 +183,21 @@ const V8OptimizerPage = () => {
         let currentUser = auth.currentUser;
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
+        const tipPaketa = 'V8 OPTIMIZER (LIFETIME LICENSE)';
+        const cenaPaketa = "200.00";
+
         if (!currentUser) {
+            // Pamti pre logina da bismo opalili useEffect gore
+            localStorage.setItem('v8_pending_optimizer_tip', tipPaketa);
+            localStorage.setItem('v8_pending_optimizer_cena', cenaPaketa);
+
             const v8Provider = new GoogleAuthProvider();
             v8Provider.setCustomParameters({ prompt: 'select_account' });
-            const result = await signInWithPopup(auth, v8Provider);
-            currentUser = result.user;
+            await signInWithPopup(auth, v8Provider);
+            return;
         }
 
         if (currentUser) {
-            const tipPaketa = 'V8 OPTIMIZER (LIFETIME LICENSE)';
-            const cenaPaketa = "200.00";
-
             await addDoc(collection(db, "v8_kupci"), {
                 ime: currentUser.displayName || "Client", email: currentUser.email, uid: currentUser.uid,
                 zeliPaket: tipPaketa, cenaPaketa: cenaPaketa, vreme: serverTimestamp(), isPaid: false
@@ -141,7 +222,9 @@ const V8OptimizerPage = () => {
             }
         }
     } catch (err) {
-        v8Toast.error(err.message || "Greška na sistemu za naplatu.");
+        localStorage.removeItem('v8_pending_optimizer_tip');
+        localStorage.removeItem('v8_pending_optimizer_cena');
+        v8Toast.error(err.message || "Sistem je blokirao Google prijavu.");
     }
   };
 
@@ -485,43 +568,8 @@ const V8OptimizerPage = () => {
         </div>
       </motion.div>
 
-      {/* 🔥 V8 PAYMENT MODAL PORTAL (ZAKUCAN ZA CENTAR) 🔥 */}
-      {createPortal(
-        <AnimatePresence>
-          {showPaymentModal && (
-            <div className="fixed inset-0 z-[999999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4">
-              <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 30 }} className="bg-[#0a0a0a] border border-orange-500/40 rounded-[2.5rem] max-w-md w-full relative text-zinc-100 font-sans shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden">
-                <button onClick={() => setShowPaymentModal(null)} className="absolute top-5 right-5 bg-white/5 p-2 rounded-full text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10 transition-all z-10"><X size={20} strokeWidth={3} /></button>
-                
-                <div className="p-10 flex flex-col items-center">
-                  <div className="w-16 h-16 rounded-full bg-orange-600/10 flex items-center justify-center mb-4 border border-orange-500/30 shadow-[0_0_20px_rgba(234,88,12,0.2)]">
-                     <DownloadCloud className="w-8 h-8 text-orange-500" />
-                  </div>
-                  
-                  <h3 className="text-[18px] font-black uppercase tracking-widest mb-2 text-white text-center">Digital Asset Checkout</h3>
-                  <p className="text-[10px] text-orange-400 font-black uppercase tracking-widest mb-8 text-center">{showPaymentModal?.tip}</p>
-                  
-                  <div className="w-full bg-[#050505] border border-white/10 rounded-2xl p-6 space-y-4 text-[13px] font-mono shadow-inner mb-8">
-                    <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Provider:</span><span className="font-bold text-white text-right">V8 Vault</span></div>
-                    <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Support:</span><span className="font-bold text-white text-[11px]">aitoolsprosmart@gmail.com</span></div>
-                    <div className="flex justify-between pt-2 items-center"><span className="text-zinc-500 uppercase">Total (One-Time):</span><span className="font-black text-white text-[22px] drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">${showPaymentModal?.cena}</span></div>
-                  </div>
-                  
-                  <div className="w-full bg-[#050505] border border-orange-500/30 rounded-2xl p-6 text-center shadow-[0_0_20px_rgba(234,88,12,0.15)] relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-                    <p className="text-[11px] md:text-[12px] text-zinc-300 font-black uppercase tracking-widest mb-4">Please contact support to complete your one-time purchase:</p>
-                    <a href="mailto:aitoolsprosmart@gmail.com" className="flex items-center justify-center gap-2 w-full bg-white text-black hover:bg-orange-500 hover:text-white py-3.5 rounded-xl font-black text-[12px] uppercase tracking-widest transition-all cursor-pointer shadow-lg">
-                        Request Checkout Link
-                    </a>
-                    <span className="block mt-4 text-[9px] text-zinc-500 uppercase font-bold tracking-widest">System unlocks your 1000 credits automatically! 🚀</span>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>,
-        document.body
-      )}
+      {/* POZIV ZA NEZAVISNI MODAL KOJI 100% RADI BEZ CRNOG EKRANA */}
+      <V8OptimizerCheckoutModal data={showPaymentModal} onClose={() => setShowPaymentModal(null)} />
 
     </div>
   );

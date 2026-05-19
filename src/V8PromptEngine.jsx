@@ -1,13 +1,57 @@
 // POČETAK FAJLA: V8PromptEngine.jsx
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom'; 
 import { Upload, FileImage, Clock, Wand2, MonitorPlay, Smartphone, Settings2, X, Diamond, Lock, DownloadCloud } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MagneticButton from './MagneticButton'; 
 
 // 🔥 DODATO: Firebase importi za kupovinu i auth
 import { db, auth } from './firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, collection, addDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
+
+// 🔥 NEUNIŠTIVI MODAL ZA CHECKOUT (IZVUČEN NAPOLJE KAO KOD ENHANCERA) 🔥
+const V8EngineCheckoutModal = ({ isOpen, onClose, engineName }) => {
+  useEffect(() => {
+    if (isOpen) document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+      <div className="bg-[#0a0a0a] border border-orange-500/40 rounded-[2.5rem] max-w-md w-full relative text-zinc-100 font-sans shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden m-auto">
+        <button onClick={onClose} className="absolute top-5 right-5 bg-white/5 p-2 rounded-full text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10 transition-all z-10"><X size={20} strokeWidth={3} /></button>
+        
+        <div className="p-10 flex flex-col items-center">
+          <div className="w-16 h-16 rounded-full bg-orange-600/10 flex items-center justify-center mb-4 border border-orange-500/30 shadow-[0_0_20px_rgba(234,88,12,0.2)]">
+             <DownloadCloud className="w-8 h-8 text-orange-500" />
+          </div>
+          
+          <h3 className="text-[18px] font-black uppercase tracking-widest mb-2 text-white text-center">Digital Asset Checkout</h3>
+          <p className="text-[10px] text-orange-400 font-black uppercase tracking-widest mb-8 text-center text-balance px-4">{`V8 PRO LICENSE: ${engineName}`}</p>
+          
+          <div className="w-full bg-[#050505] border border-white/10 rounded-2xl p-6 space-y-4 text-[13px] font-mono shadow-inner mb-8">
+            <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Provider:</span><span className="font-bold text-white text-right">V8 Vault</span></div>
+            <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Support:</span><span className="font-bold text-white text-[11px]">aitoolsprosmart@gmail.com</span></div>
+            <div className="flex justify-between pt-2 items-center"><span className="text-zinc-500 uppercase">Total (One-Time):</span><span className="font-black text-white text-[22px] drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">$149.00</span></div>
+          </div>
+          
+          <div className="w-full bg-[#050505] border border-orange-500/30 rounded-2xl p-6 text-center shadow-[0_0_20px_rgba(234,88,12,0.15)] relative overflow-hidden group">
+            <p className="text-[11px] md:text-[12px] text-zinc-300 font-black uppercase tracking-widest mb-4">Please contact support to complete your one-time purchase:</p>
+            <a href="mailto:aitoolsprosmart@gmail.com" className="flex items-center justify-center gap-2 w-full bg-white text-black hover:bg-orange-500 hover:text-white py-3.5 rounded-xl font-black text-[12px] uppercase tracking-widest transition-all cursor-pointer shadow-lg">
+                Request Checkout Link
+            </a>
+            <span className="block mt-4 text-[9px] text-zinc-500 uppercase font-bold tracking-widest">System unlocks your generator automatically after checkout! 🚀</span>
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+};
+
 
 const V8PromptEngine = ({ engineName = "SEEDANCE 2.0" }) => {
   // POČETAK FUNKCIJE: V8PromptEngine
@@ -45,37 +89,65 @@ const V8PromptEngine = ({ engineName = "SEEDANCE 2.0" }) => {
     return () => unsub();
   }, []);
 
+  // 🔥 V8 PAMETNA MEMORIJA (Automatski otvara modal posle logina na ovoj stranici) 🔥
+  useEffect(() => {
+    const checkPendingPurchase = async () => {
+      const pendingEngine = localStorage.getItem('v8_pending_engine_checkout');
+
+      if (auth.currentUser && pendingEngine === engineName) {
+        localStorage.removeItem('v8_pending_engine_checkout'); // Obrisati odmah
+        
+        try {
+            const imePaketa = `V8 PRO LICENSE: ${engineName}`;
+            const cenaPaketa = "149.00"; 
+
+            await addDoc(collection(db, "v8_kupci"), {
+                ime: auth.currentUser.displayName || "Client", email: auth.currentUser.email, uid: auth.currentUser.uid,
+                zeliPaket: imePaketa, cenaPaketa: cenaPaketa, vreme: serverTimestamp(), isPaid: false
+            });
+
+            await setDoc(doc(db, "posetioci", auth.currentUser.uid), { 
+                ime: auth.currentUser.displayName || "Client", email: auth.currentUser.email, 
+                vremePrijave: serverTimestamp(), zainteresovanZa: imePaketa, identitet: "V8-Engine-Client" 
+            }, { merge: true });
+
+            setShowPaymentModal(true); // PALI MODAL AUTOMATSKI!
+        } catch (err) {
+            console.error("V8 PENDING ERROR", err);
+        }
+      }
+    };
+    
+    // Mali delay da sačekamo Auth da setuje usera
+    const timer = setTimeout(() => { checkPendingPurchase(); }, 1000);
+    return () => clearTimeout(timer);
+  }, [engineName]);
+
+
   const handleDrag = (e) => {
-    // POČETAK FUNKCIJE: handleDrag
     e.preventDefault();
     e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
     else if (e.type === "dragleave") setDragActive(false);
-    // KRAJ FUNKCIJE: handleDrag
   };
 
   const handleDrop = (e) => {
-    // POČETAK FUNKCIJE: handleDrop
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
     if (!isTextModeActive && e.dataTransfer.files && e.dataTransfer.files[0]) {
       ucitajSliku(e.dataTransfer.files[0]);
     }
-    // KRAJ FUNKCIJE: handleDrop
   };
 
   const handleChange = (e) => {
-    // POČETAK FUNKCIJE: handleChange
     e.preventDefault();
     if (!isTextModeActive && e.target.files && e.target.files[0]) {
       ucitajSliku(e.target.files[0]);
     }
-    // KRAJ FUNKCIJE: handleChange
   };
 
   const ucitajSliku = (file) => {
-    // POČETAK FUNKCIJE: ucitajSliku
     setImageFile(file);
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -93,19 +165,15 @@ const V8PromptEngine = ({ engineName = "SEEDANCE 2.0" }) => {
       img.src = reader.result;
     };
     reader.readAsDataURL(file);
-    // KRAJ FUNKCIJE: ucitajSliku
   };
 
   const obrisiSliku = () => {
-    // POČETAK FUNKCIJE: obrisiSliku
     setImageFile(null);
     setImagePreview(null);
     setImageDescription('');
     setArLocked(false); 
-    // KRAJ FUNKCIJE: obrisiSliku
   };
 
-  // POČETAK FUNKCIJE: generisiMasterPrompt
   const generisiMasterPrompt = async () => {
     setIsGenerating(true);
     
@@ -138,40 +206,43 @@ const V8PromptEngine = ({ engineName = "SEEDANCE 2.0" }) => {
       setIsGenerating(false);
     }
   };
-  // KRAJ FUNKCIJE: generisiMasterPrompt
 
-  // 🔥 DODATO: Funkcija za okidanje naplate (Auth -> Logovanje -> Prikaz Modala) 🔥
   const pokreniKupovinu = async () => {
     const imePaketa = `V8 PRO LICENSE: ${engineName}`;
     const cenaPaketa = "149.00"; // U dolarima
 
-    // Zapisujemo u bazu da znamo ko je tražio
-    const snimiKupca = async (user) => {
-        try {
-            await addDoc(collection(db, "v8_kupci"), {
-                ime: user.displayName || "Client", email: user.email, uid: user.uid,
-                zeliPaket: imePaketa, cenaPaketa: cenaPaketa, vreme: serverTimestamp(), isPaid: false
-            });
-        } catch (error) { console.error("Greška pri beleženju kupca:", error); }
-    };
+    try {
+      let user = currentUser || auth.currentUser;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    if (currentUser) {
-        snimiKupca(currentUser);
-        setShowPaymentModal(true);
-    } else {
-        try {
-            await signOut(auth);
-            const v8Provider = new GoogleAuthProvider();
-            v8Provider.setCustomParameters({ prompt: 'select_account', login_hint: '' });
-            const result = await signInWithPopup(auth, v8Provider);
-            await snimiKupca(result.user);
-            setShowPaymentModal(true); 
-        } catch (error) { 
-            console.error("Login canceled."); 
-        }
+      if (!user) {
+          // PAMTI PRE LOGINA DA BI OTVORIO MODAL ODMAH POSLE LOGINA
+          localStorage.setItem('v8_pending_engine_checkout', engineName);
+
+          const v8Provider = new GoogleAuthProvider();
+          v8Provider.setCustomParameters({ prompt: 'select_account' });
+          await signInWithPopup(auth, v8Provider);
+          return;
+      }
+
+      if (user) {
+          await addDoc(collection(db, "v8_kupci"), {
+              ime: user.displayName || "Client", email: user.email, uid: user.uid,
+              zeliPaket: imePaketa, cenaPaketa: cenaPaketa, vreme: serverTimestamp(), isPaid: false
+          });
+
+          await setDoc(doc(db, "posetioci", user.uid), { 
+              ime: user.displayName || "Client", email: user.email, 
+              vremePrijave: serverTimestamp(), zainteresovanZa: imePaketa, identitet: "V8-Engine-Client" 
+          }, { merge: true });
+
+          setShowPaymentModal(true);
+      }
+    } catch (err) {
+        localStorage.removeItem('v8_pending_engine_checkout');
+        console.error("V8 PAYMENT ERROR:", err);
     }
   };
-  // 🔥 KRAJ FUNKCIJE: pokreniKupovinu 🔥
 
   return (
     <div className="bg-[#050505] p-8 md:p-12 rounded-[2.5rem] border border-[#FF8C00]/30 shadow-[0_0_50px_rgba(255,140,0,0.1)] max-w-5xl mx-auto mt-10 relative overflow-hidden">
@@ -399,40 +470,8 @@ const V8PromptEngine = ({ engineName = "SEEDANCE 2.0" }) => {
           </div>
       </div>
 
-      {/* 🔥 V8 PAYMENT MODAL (Isti kao na berzi) 🔥 */}
-      <AnimatePresence>
-        {showPaymentModal && (
-          <div className="fixed inset-0 z-[9000] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 30 }} className="bg-[#0a0a0a] border border-orange-500/40 rounded-[2.5rem] max-w-md w-full relative text-zinc-100 font-sans shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden">
-              <button onClick={() => setShowPaymentModal(false)} className="absolute top-5 right-5 bg-white/5 p-2 rounded-full text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10 transition-all z-10"><X size={20} strokeWidth={3} /></button>
-              
-              <div className="p-10 flex flex-col items-center">
-                <div className="w-16 h-16 rounded-full bg-orange-600/10 flex items-center justify-center mb-4 border border-orange-500/30 shadow-[0_0_20px_rgba(234,88,12,0.2)]">
-                   <DownloadCloud className="w-8 h-8 text-orange-500" />
-                </div>
-                
-                <h3 className="text-[18px] font-black uppercase tracking-widest mb-2 text-white text-center">Digital Asset Checkout</h3>
-                <p className="text-[10px] text-orange-400 font-black uppercase tracking-widest mb-8 text-center text-balance px-4">{`V8 PRO LICENSE: ${engineName}`}</p>
-                
-                <div className="w-full bg-[#050505] border border-white/10 rounded-2xl p-6 space-y-4 text-[13px] font-mono shadow-inner mb-8">
-                  <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Provider:</span><span className="font-bold text-white text-right">V8 Vault</span></div>
-                  <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Support:</span><span className="font-bold text-white text-[11px]">aitoolsprosmart@gmail.com</span></div>
-                  <div className="flex justify-between pt-2 items-center"><span className="text-zinc-500 uppercase">Total (One-Time):</span><span className="font-black text-white text-[22px] drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">$149.00</span></div>
-                </div>
-                
-                <div className="w-full bg-[#050505] border border-orange-500/30 rounded-2xl p-6 text-center shadow-[0_0_20px_rgba(234,88,12,0.15)] relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-                  <p className="text-[11px] md:text-[12px] text-zinc-300 font-black uppercase tracking-widest mb-4">Please contact support to complete your one-time purchase:</p>
-                  <a href="mailto:aitoolsprosmart@gmail.com" className="flex items-center justify-center gap-2 w-full bg-white text-black hover:bg-orange-500 hover:text-white py-3.5 rounded-xl font-black text-[12px] uppercase tracking-widest transition-all cursor-pointer shadow-lg">
-                      Request Checkout Link
-                  </a>
-                  <span className="block mt-4 text-[9px] text-zinc-500 uppercase font-bold tracking-widest">System unlocks your generator automatically after checkout! 🚀</span>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {/* 🔥 POZIV ZA NEZAVISNI MODAL 🔥 */}
+      <V8EngineCheckoutModal isOpen={showPaymentModal} onClose={() => setShowPaymentModal(false)} engineName={engineName} />
 
     </div>
   );

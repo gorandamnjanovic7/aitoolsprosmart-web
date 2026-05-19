@@ -7,11 +7,10 @@ import { db, auth } from './firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
 import { v8Toast } from './App';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
-// POČETAK FUNKCIJE: FullScreenLightbox
+// POČETAK FUNKCIJE: FullScreenLightbox (TVOJ ORIGINAL - RADI PERFEKTNO)
 const FullScreenLightbox = ({ imageUrl, onClose }) => {
-    // POČETAK FUNKCIJE: useEffect (FullScreenLightbox)
     useEffect(() => {
         if (imageUrl) {
             document.body.style.overflow = 'hidden';
@@ -29,7 +28,6 @@ const FullScreenLightbox = ({ imageUrl, onClose }) => {
         }
         return () => { document.body.style.overflow = ''; document.getElementById('v8-sleep-protocol')?.remove(); };
     }, [imageUrl]);
-    // KRAJ FUNKCIJE: useEffect (FullScreenLightbox)
 
     if (!imageUrl) return null;
     return createPortal(
@@ -40,6 +38,72 @@ const FullScreenLightbox = ({ imageUrl, onClose }) => {
     );
 };
 // KRAJ FUNKCIJE: FullScreenLightbox
+
+// POČETAK FUNKCIJE: V8PaymentModal (NOVI NEZAVISNI MODAL - BLINDIRAN)
+const V8PaymentModal = ({ paket, onClose, getGlobalCena }) => {
+    useEffect(() => {
+        if (paket) document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = ''; };
+    }, [paket]);
+
+    if (!paket) return null;
+    return createPortal(
+        <div className="fixed inset-0 z-[9999999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4" style={{ position: 'fixed', top: 0, left: 0, bottom: 0, right: 0 }}>
+            <div className="bg-[#0a0a0a] border border-orange-500/40 rounded-[2.5rem] max-w-md w-full relative text-zinc-100 font-sans shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden m-auto">
+                <button onClick={onClose} className="absolute top-5 right-5 bg-white/5 p-2 rounded-full text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10 transition-all z-10"><X size={20} strokeWidth={3} /></button>
+                
+                <div className="p-10 flex flex-col items-center">
+                    <div className="w-16 h-16 rounded-full bg-orange-600/10 flex items-center justify-center mb-4 border border-orange-500/30 shadow-[0_0_20px_rgba(234,88,12,0.2)]">
+                        <DownloadCloud className="w-8 h-8 text-orange-500" />
+                    </div>
+                    <h3 className="text-[18px] font-black uppercase tracking-widest mb-2 text-white text-center">Digital Asset Checkout</h3>
+                    <p className="text-[10px] text-orange-400 font-black uppercase tracking-widest mb-8 text-center">{paket.nazivEn}</p>
+                    
+                    <div className="w-full bg-[#050505] border border-white/10 rounded-2xl p-6 space-y-4 text-[13px] font-mono shadow-inner mb-8">
+                        <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Provider:</span><span className="font-bold text-white text-right">V8 Vault</span></div>
+                        <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Support:</span><span className="font-bold text-white text-[11px]">aitoolsprosmart@gmail.com</span></div>
+                        <div className="flex justify-between pt-2 items-center"><span className="text-zinc-500 uppercase">Total (One-Time):</span><span className="font-black text-white text-[22px] drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">${getGlobalCena(paket.cena)}</span></div>
+                    </div>
+                    
+                    <div className="w-full bg-[#050505] border border-orange-500/30 rounded-2xl p-6 text-center shadow-[0_0_20px_rgba(234,88,12,0.15)] relative overflow-hidden group">
+                        <p className="text-[11px] md:text-[12px] text-zinc-300 font-black uppercase tracking-widest mb-4">Please contact support to complete your purchase:</p>
+                        <a href="mailto:aitoolsprosmart@gmail.com" className="flex items-center justify-center gap-2 w-full bg-white text-black hover:bg-orange-500 hover:text-white py-3.5 rounded-xl font-black text-[12px] uppercase tracking-widest transition-all cursor-pointer shadow-lg">Request Checkout Link</a>
+                        <span className="block mt-4 text-[9px] text-zinc-500 uppercase font-bold tracking-widest">System unlocks your download automatically after checkout! 🚀</span>
+                    </div>
+                </div>
+            </div>
+        </div>, document.body
+    );
+};
+// KRAJ FUNKCIJE: V8PaymentModal
+
+// POČETAK FUNKCIJE: V8InjectorModal (NOVI NEZAVISNI MODAL - BLINDIRAN)
+const V8InjectorModal = ({ isOpen, onClose, onConfirm }) => {
+    useEffect(() => {
+        if (isOpen) document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = ''; };
+    }, [isOpen]);
+
+    if (!isOpen) return null;
+    return createPortal(
+        <div className="fixed inset-0 z-[9999999] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4" style={{ position: 'fixed', top: 0, left: 0, bottom: 0, right: 0 }}>
+            <div className="bg-[#0a0a0a] border border-red-500/50 rounded-[2.5rem] max-w-md w-full relative shadow-[0_0_80px_rgba(220,38,38,0.2)] overflow-hidden p-10 text-center m-auto">
+                <div className="mx-auto w-20 h-20 bg-red-600/10 border border-red-500/30 rounded-full flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(220,38,38,0.4)]">
+                    <AlertCircle className="w-10 h-10 text-red-500 animate-pulse" />
+                </div>
+                <h3 className="text-2xl font-black uppercase text-white tracking-widest mb-3">SYSTEM OVERRIDE</h3>
+                <p className="text-zinc-400 font-bold text-[11px] uppercase tracking-widest mb-8 leading-relaxed">
+                    You are about to inject multiple premium assets directly into the live V8 database. <br/><span className="text-red-500 mt-2 block">Are you sure you want to ignite this process?</span>
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onClick={onClose} className="px-6 py-4 rounded-xl font-black text-[11px] uppercase tracking-widest bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all w-full border border-white/5">ABORT</button>
+                    <button onClick={onConfirm} className="px-6 py-4 rounded-xl font-black text-[11px] uppercase tracking-widest bg-red-600 text-white hover:bg-red-500 transition-all w-full shadow-[0_0_20px_rgba(220,38,38,0.5)] flex items-center justify-center gap-2"><Zap size={14} /> IGNITE INJECTION</button>
+                </div>
+            </div>
+        </div>, document.body
+    );
+};
+// KRAJ FUNKCIJE: V8InjectorModal
 
 // POČETAK FUNKCIJE: V8StockBerza
 const V8StockBerza = () => {
@@ -83,6 +147,35 @@ const V8StockBerza = () => {
   }, []);
   // KRAJ FUNKCIJE: useEffect (Auth)
 
+  // 🔥 V8 PAMETNA MEMORIJA (Automatski otvara modal posle logina na Berzi) 🔥
+  useEffect(() => {
+    const checkPendingPurchase = async () => {
+      const pendingPaketId = localStorage.getItem('v8_pending_stock_paket_id');
+
+      if (auth.currentUser && pendingPaketId && paketi.length > 0) {
+        const trazeniPaket = paketi.find(p => p.id === pendingPaketId);
+        localStorage.removeItem('v8_pending_stock_paket_id'); 
+
+        if(trazeniPaket) {
+            try {
+                await snimiKupcaUBazu(auth.currentUser, trazeniPaket);
+                
+                if (trazeniPaket.lemonLink && trazeniPaket.lemonLink.trim() !== "") {
+                    window.location.href = trazeniPaket.lemonLink;
+                } else {
+                    setShowPaymentModal(trazeniPaket); // PALI MODAL AUTOMATSKI!
+                }
+            } catch (err) {
+                console.error("V8 PENDING ERROR", err);
+            }
+        }
+      }
+    };
+    
+    const timer = setTimeout(() => { checkPendingPurchase(); }, 1000);
+    return () => clearTimeout(timer);
+  }, [paketi]);
+
   // POČETAK FUNKCIJE: useEffect (CMS Tab)
   useEffect(() => {
     if (activeTab === 'bundles') {
@@ -121,25 +214,25 @@ const V8StockBerza = () => {
   const prijavaIKupovina = async (paket) => {
     if (currentUser) {
         snimiKupcaUBazu(currentUser, paket);
-        if (paket.lemonLink) {
+        if (paket.lemonLink && paket.lemonLink.trim() !== "") {
             window.location.href = paket.lemonLink;
         } else {
             setShowPaymentModal(paket);
         }
     } else {
         try {
+            // PAMTI PRE LOGINA DA BI OTVORIO MODAL ODMAH POSLE LOGINA
+            localStorage.setItem('v8_pending_stock_paket_id', paket.id);
+            
             await signOut(auth);
             const v8Provider = new GoogleAuthProvider();
             v8Provider.setCustomParameters({ prompt: 'select_account', login_hint: '' });
-            const result = await signInWithPopup(auth, v8Provider);
-            await snimiKupcaUBazu(result.user, paket);
-            
-            if (paket.lemonLink) {
-                window.location.href = paket.lemonLink;
-            } else {
-                setShowPaymentModal(paket); 
-            }
-        } catch (error) { v8Toast.error("Login canceled."); }
+            await signInWithPopup(auth, v8Provider);
+            // Nastavlja u Pametnoj Memoriji
+        } catch (error) { 
+            localStorage.removeItem('v8_pending_stock_paket_id');
+            v8Toast.error("Login canceled."); 
+        }
     }
   };
   // KRAJ FUNKCIJE: prijavaIKupovina
@@ -284,7 +377,7 @@ const V8StockBerza = () => {
           "https://tvoj-cloudinary-link.com/rim-primer2.jpg"
         ],
         zipLink: "https://drive.google.com/...",
-        lemonLink: "https://store.lemonsqueezy.com/..."
+        lemonLink: ""
       },
       {
         nazivEn: "VIKINGS: RAGNAR'S WRATH",
@@ -297,7 +390,7 @@ const V8StockBerza = () => {
         previewUrl: "https://tvoj-cloudinary-link.com/slika-vikinga.jpg", 
         primeri: [],
         zipLink: "https://drive.google.com/...",
-        lemonLink: "https://store.lemonsqueezy.com/..."
+        lemonLink: ""
       }
     ];
 
@@ -318,19 +411,22 @@ const V8StockBerza = () => {
   };
   // KRAJ FUNKCIJE: napuniBazuMasovno
 
-  // 🔥 OVDE JE BILA GREŠKA: Zamenjen motion.div sa običnim div-om da se ekran ne zaglavi van monitora 🔥
   return (
-    <div className="min-h-screen bg-[#050505] font-sans text-white pt-32 pb-24 px-6">
+    <div className="min-h-screen bg-[#050505] font-sans text-white pt-32 pb-24 px-6 relative">
       <style>{`
         @keyframes spin-gradient { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .v8-premium-card { position: relative; border-radius: 2rem; padding: 2px; overflow: hidden; background: #0a0a0a; }
         .v8-premium-card::before { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent 0%, transparent 50%, #ea580c 70%, #3b82f6 85%, #ea580c 100%); animation: spin-gradient 3.5s linear infinite; z-index: 0; }
         .v8-card-content { position: relative; background: #0a0a0a; border-radius: 1.9rem; z-index: 1; height: 100%; display: flex; flex-direction: column; }
-        
         .v8-bundle-card::before { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent 0%, transparent 50%, #3b82f6 70%, #8b5cf6 85%, #3b82f6 100%); animation: spin-gradient 3.5s linear infinite; z-index: 0; }
       `}</style>
 
+      {/* V8 LIGHTBOX (STARI) */}
       <FullScreenLightbox imageUrl={fullScreenImageUrl} onClose={() => setFullScreenImageUrl(null)} />
+      
+      {/* V8 NOVI NEZAVISNI MODALI KOJI 100% RADE */}
+      <V8PaymentModal paket={showPaymentModal} onClose={() => setShowPaymentModal(null)} getGlobalCena={getGlobalCena} />
+      <V8InjectorModal isOpen={showInjectorConfirm} onClose={() => setShowInjectorConfirm(false)} onConfirm={napuniBazuMasovno} />
 
       <div className="max-w-7xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.2 }} className="relative w-full max-w-7xl mx-auto mb-16 rounded-[3rem] overflow-hidden border border-white/10 shadow-[0_0_60px_rgba(255,140,0,0.15)]">
@@ -339,22 +435,18 @@ const V8StockBerza = () => {
             <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#050505] via-transparent to-[#050505]"></div>
 
             <div className="relative z-10 text-center py-20 px-6">
-                
-                {/* V8 DINAMIČKI NASLOVI */}
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter mb-4 text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)] transition-all">
                     {activeTab === 'premium' && (<>V8 33MP <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500 drop-shadow-none">MASTERWORK ASSETS</span></>)}
                     {activeTab === 'bundles' && (<>V8 33MP MASTER <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500 drop-shadow-none">STOCK BUNDLES</span></>)}
                     {activeTab === 'standard' && (<>V8 PREMIUM <span className="text-[#FF8C00]">STOCK MARKET</span></>)}
                 </h1>
                 
-                {/* V8 DINAMIČKI TEKSTOVI */}
                 <p className="text-zinc-200 font-bold uppercase tracking-[0.3em] text-[10px] md:text-[12px] max-w-4xl mx-auto leading-relaxed mb-10 drop-shadow-lg bg-black/30 p-3 rounded-lg backdrop-blur-sm transition-all">
                     {activeTab === 'premium' && "PURE UNADULTERATED PIXELS. 33.2 MEGAPIXELS OF MASTERWORK RESOLUTION. ZERO COMPROMISE FOR LUXURY BRANDS."}
                     {activeTab === 'bundles' && "ENTER THE MILLION-DOLLAR VAULT. OVER 60 IMAGES IN STUNNING 33.2 MEGAPIXELS. YOU ARE NOT JUST BUYING IMAGES. YOU ARE ACQUIRING A MULTI-MILLION DOLLAR CINEMATIC PRODUCTION, RENDERED WITH IMPOSSIBLE PRECISION. FOR ELITE AGENCIES AND VISIONARY DIRECTORS ONLY."}
                     {activeTab === 'standard' && "THE ULTIMATE ARSENAL OF ROYALTY-FREE AI ASSETS FOR HIGH-END PRODUCTION AND VISIONARY CREATORS."}
                 </p>
                 
-                {/* V8 3-WAY DUGMIĆI */}
                 <div className="flex justify-center relative z-10">
                     <div className="bg-[#050505]/80 backdrop-blur-md border border-white/10 p-1.5 rounded-full inline-flex flex-wrap items-center justify-center shadow-xl gap-1">
                         <button onClick={() => setActiveTab('standard')} className={`px-6 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 ${activeTab === 'standard' ? 'bg-zinc-800 text-white shadow-md border border-white/10' : 'text-zinc-400 hover:text-white'}`}>Standard Assets</button>
@@ -373,7 +465,6 @@ const V8StockBerza = () => {
               <Zap className="w-6 h-6" /> {editingPaketId ? 'EDIT PACKAGE' : 'ADD NEW ZIP PACKAGE'}
             </h2>
             
-            {/* V8 INJECTOR DUGME (PALI CUSTOM MODAL) */}
             <button 
               type="button" 
               onClick={() => setShowInjectorConfirm(true)} 
@@ -393,8 +484,6 @@ const V8StockBerza = () => {
               <div className="flex flex-col gap-6 md:col-span-2">
                   <div className="flex flex-col gap-2"><label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase"><Wallet size={14} /> PRICE (USD)</label><input type="text" value={novaCena} onChange={(e)=>setNovaCena(e.target.value)} placeholder="E.g. 49.99" className="bg-black border border-white/10 p-4 rounded-xl text-[13px] font-bold text-white outline-none focus:border-[#FF8C00] transition-all" /></div>
                   <div className="flex flex-col gap-2"><label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase"><MonitorPlay size={14} /> FORMAT</label>
-                      
-                      {/* V8 DINAMIČKA FORMA ZA FORMAT */}
                       {activeTab === 'bundles' ? (
                           <div className="grid grid-cols-1 gap-2">
                               <label className="cursor-pointer p-3 rounded-xl border-2 transition-all text-center font-black text-[9px] uppercase bg-gradient-to-r from-blue-600 to-indigo-500 border-blue-400 text-white shadow-[0_0_15px_rgba(59,130,246,0.4)] flex items-center justify-center gap-2">
@@ -521,77 +610,6 @@ const V8StockBerza = () => {
           )}
         </div>
       </div>
-
-      <AnimatePresence>
-        {showPaymentModal && (
-          <div className="fixed inset-0 z-[9000] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 30 }} className="bg-[#0a0a0a] border border-orange-500/40 rounded-[2.5rem] max-w-md w-full relative text-zinc-100 font-sans shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden">
-              <button onClick={() => setShowPaymentModal(null)} className="absolute top-5 right-5 bg-white/5 p-2 rounded-full text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10 transition-all z-10"><X size={20} strokeWidth={3} /></button>
-              
-              <div className="p-10 flex flex-col items-center">
-                <div className="w-16 h-16 rounded-full bg-orange-600/10 flex items-center justify-center mb-4 border border-orange-500/30 shadow-[0_0_20px_rgba(234,88,12,0.2)]">
-                   <DownloadCloud className="w-8 h-8 text-orange-500" />
-                </div>
-                
-                <h3 className="text-[18px] font-black uppercase tracking-widest mb-2 text-white text-center">Digital Asset Checkout</h3>
-                <p className="text-[10px] text-orange-400 font-black uppercase tracking-widest mb-8 text-center">{showPaymentModal.nazivEn}</p>
-                
-                <div className="w-full bg-[#050505] border border-white/10 rounded-2xl p-6 space-y-4 text-[13px] font-mono shadow-inner mb-8">
-                  <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Provider:</span><span className="font-bold text-white text-right">V8 Vault</span></div>
-                  <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Support:</span><span className="font-bold text-white text-[11px]">aitoolsprosmart@gmail.com</span></div>
-                  <div className="flex justify-between pt-2 items-center"><span className="text-zinc-500 uppercase">Total (One-Time):</span><span className="font-black text-white text-[22px] drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">${getGlobalCena(showPaymentModal.cena)}</span></div>
-                </div>
-                
-                <div className="w-full bg-[#050505] border border-orange-500/30 rounded-2xl p-6 text-center shadow-[0_0_20px_rgba(234,88,12,0.15)] relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-                  <p className="text-[11px] md:text-[12px] text-zinc-300 font-black uppercase tracking-widest mb-4">Please contact support to complete your one-time purchase:</p>
-                  <a href="mailto:aitoolsprosmart@gmail.com" className="flex items-center justify-center gap-2 w-full bg-white text-black hover:bg-orange-500 hover:text-white py-3.5 rounded-xl font-black text-[12px] uppercase tracking-widest transition-all cursor-pointer shadow-lg">
-                      Request Checkout Link
-                  </a>
-                  <span className="block mt-4 text-[9px] text-zinc-500 uppercase font-bold tracking-widest">System unlocks your download automatically after checkout! 🚀</span>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* 🔥 NOVI CUSTOM MODAL ZA INJEKCIJU 🔥 */}
-      <AnimatePresence>
-        {showInjectorConfirm && (
-          <div className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }} 
-              animate={{ opacity: 1, scale: 1, y: 0 }} 
-              exit={{ opacity: 0, scale: 0.9, y: 20 }} 
-              className="bg-[#0a0a0a] border border-red-500/50 rounded-[2.5rem] max-w-md w-full relative shadow-[0_0_80px_rgba(220,38,38,0.2)] overflow-hidden p-10 text-center"
-            >
-              <div className="mx-auto w-20 h-20 bg-red-600/10 border border-red-500/30 rounded-full flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(220,38,38,0.4)]">
-                <AlertCircle className="w-10 h-10 text-red-500 animate-pulse" />
-              </div>
-              <h3 className="text-2xl font-black uppercase text-white tracking-widest mb-3">SYSTEM OVERRIDE</h3>
-              <p className="text-zinc-400 font-bold text-[11px] uppercase tracking-widest mb-8 leading-relaxed">
-                You are about to inject multiple premium assets directly into the live V8 database. <br/><span className="text-red-500 mt-2 block">Are you sure you want to ignite this process?</span>
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button 
-                  onClick={() => setShowInjectorConfirm(false)} 
-                  className="px-6 py-4 rounded-xl font-black text-[11px] uppercase tracking-widest bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all w-full border border-white/5"
-                >
-                  ABORT
-                </button>
-                <button 
-                  onClick={napuniBazuMasovno} 
-                  className="px-6 py-4 rounded-xl font-black text-[11px] uppercase tracking-widest bg-red-600 text-white hover:bg-red-500 transition-all w-full shadow-[0_0_20px_rgba(220,38,38,0.5)] flex items-center justify-center gap-2"
-                >
-                  <Zap size={14} /> IGNITE INJECTION
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
     </div>
   );
 };

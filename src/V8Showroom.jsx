@@ -315,12 +315,17 @@ const V8Showroom = () => {
                 </div>
             </motion.div>
 
-            {/* FILTERI SA INDIVIDUALNIM BOJAMA */}
+            {/* FILTERI SA INDIVIDUALNIM BOJAMA (SA V8 POZADINOM) */}
             <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.5 }}
-                className="flex flex-wrap justify-center gap-3 mb-16 max-w-6xl mx-auto relative z-10"
+                className="flex flex-wrap justify-center items-center gap-3 mb-16 max-w-6xl mx-auto relative z-10 py-12 px-6 rounded-[2.5rem] border border-[#FF8C00]/20 shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden"
+                style={{
+                    backgroundImage: `linear-gradient(to bottom, rgba(5,5,5,0.5), rgba(5,5,5,0.85)), url('/v8-dugmici-bg.jpg.png')`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                }}
             >
                 {filters.map((filter) => {
                     const isActive = activeFilter === filter.name;
