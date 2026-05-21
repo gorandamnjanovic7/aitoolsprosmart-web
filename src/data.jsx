@@ -11,6 +11,7 @@ import sl4Img from './sl4.webp';
 import sl5Img from './sl5.webp';
 import sl6Img from './sl6.webp';
 import mojLogo from './logo.png';
+import macroHelmet from './praetorian-macro.jpg';
 
 // Napomena: Ako si slike stavio direktno u 'src' a ne u 'assets' folder, 
 // onda izbriši '/assets' iz putanje (npr. import sl1Img from './sl1.jpg';)
@@ -21,7 +22,16 @@ import mojLogo from './logo.png';
 export const bannerUrl = sl1Img; // Koristimo novu Obsidian sliku umesto starog zmaja
 export const logoUrl = mojLogo; // NAPOMENA: Proveri da li negde na samom vrhu fajla imaš import za mojLogo! 
 
+// ============================================================================
+// POČETAK: BANNER_DATA NIZ (PODACI ZA NASLOVNI KARUSEL)
+// ============================================================================
 export const BANNER_DATA = [
+  { 
+    image: macroHelmet, // Tvoja 45MP Macro zver
+    badge: "LANCZOS 45MP MACRO-PROTOCOL", 
+    title: "45MP CINEMATIC SUPREMACY", 
+    subtitle: "Experience absolute textural fidelity. Extreme macro-resolution and perfect sRGB grading, engineered for elite Hollywood-tier visual assets." 
+  },
   { 
     image: sl1Img, // Fluid Obsidian
     badge: "V8 CORE ARCHITECTURE", 
@@ -29,7 +39,7 @@ export const BANNER_DATA = [
     subtitle: "Uncompromising aesthetic precision. Fluid dynamic rendering designed for ultra-luxury brand positioning." 
   },
   { 
-    image: sl2Img, // Roman Helmet
+    image: sl2Img, // Roman Helmet (Cela kaciga)
     badge: "HISTORICAL MASTERWORK", 
     title: "CINEMATIC 33.2MP REALISM", 
     subtitle: "Unleash Hollywood-grade historical textures. Perfect lighting and material accuracy for elite visual storytelling." 
@@ -39,12 +49,6 @@ export const BANNER_DATA = [
     badge: "VISIONARY ENVIRONMENTS", 
     title: "ARCHITECTURAL SUPREMACY", 
     subtitle: "Design the future of business. Hyper-realistic interior generation for visionary agencies and real estate titans." 
-  },
-  { 
-    image: sl4Img, // Neon Protocol
-    badge: "CREATIVE PROTOCOL", 
-    title: "NEON INTELLIGENCE MATRIX", 
-    subtitle: "Harness raw AI processing power. Generate unparalleled macro textures and elemental forces for disruptive campaigns." 
   },
   { 
     image: sl5Img, // V8 Hypercar
@@ -58,13 +62,16 @@ export const BANNER_DATA = [
     title: "GOURMET KINETICS", 
     subtitle: "Microsecond macro capture simulations. Absolute perfection for high-end Food & Beverage commercial assets." 
   },
-{
+  {
     image: "/banner-v8-fluid.webp",
     badge: "V8 MASTERWORK EDITION",
     title: "BEYOND PIXELS",
     subtitle: "Experience 33.2 Megapixel resolution and hyper-realistic cinematic motion. Designed exclusively for top-tier agencies."
   }
 ];
+// ============================================================================
+// KRAJ: BANNER_DATA NIZA
+// ============================================================================
 export const formatExternalLink = (url) => { if (!url) return '#'; if (!url.startsWith('http://') && !url.startsWith('https://')) return `https://${url}`; return url; };
 export const extractSys = (desc) => { if (!desc) return { d: '', s: {} }; const m = desc.match(/\[SYS\]([\s\S]*?)\[\/SYS\]/i); if (!m) return { d: desc, s: {} }; try { return { d: desc.replace(m[0], '').trim(), s: JSON.parse(m[1]) }; } catch { return { d: desc, s: {} }; } };
 export const renderDescription = (text) => { if (!text) return null; const { d } = extractSys(text); return <div className="w-full text-left"><p className="text-zinc-400 text-sm md:text-base leading-relaxed mb-6 whitespace-pre-wrap font-sans">{d}</p></div>; };
