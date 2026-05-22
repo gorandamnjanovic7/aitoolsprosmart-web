@@ -354,22 +354,42 @@ export default function SingleProductPage({ apps = [] }) {
                       ) : (<div className="text-zinc-500 text-[10px] uppercase font-bold p-3 border border-white/5 rounded-xl">Asset link is not configured</div>)}
                     </div>
                   </div>
+                // POČETAK ZAMENE
+
                 ) : (
-                  <div className="bg-[#050505] border border-orange-500/40 p-5 rounded-2xl shadow-[0_0_20px_rgba(234,88,12,0.1)] relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 bg-orange-600 text-white text-[8px] font-black uppercase tracking-widest px-4 py-1.5 rounded-bl-xl z-10 shadow-lg">ONE-TIME PURCHASE 🌐</div>
-                    <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mb-4 mt-2 flex items-center justify-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.8)]"></span> Secure Digital Checkout</p>
+                  <div
+                    onMouseMove={(e) => {
+                      const card = e.currentTarget;
+                      const rect = card.getBoundingClientRect();
+                      const x = e.clientX - rect.left - rect.width / 2;
+                      const y = e.clientY - rect.top - rect.height / 2;
+                      const tiltX = (y / rect.height) * -15; 
+                      const tiltY = (x / rect.width) * 15;
+                      card.style.transform = `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale3d(1.02, 1.02, 1.02)`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+                    }}
+                    style={{ transition: 'transform 0.1s ease-out' }}
+                    className="bg-[#050505] border border-orange-500/40 p-5 rounded-2xl shadow-[0_0_20px_rgba(234,88,12,0.1)] relative overflow-hidden group hover:shadow-[0_0_40px_rgba(234,88,12,0.3)] hover:border-orange-500/80 will-change-transform z-10"
+                  >
+                    {/* HOLOGRAFSKI SJAJ KOJI PRATI MIŠA */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+
+                    <div className="absolute top-0 right-0 bg-orange-600 text-white text-[8px] font-black uppercase tracking-widest px-4 py-1.5 rounded-bl-xl z-20 shadow-lg">ONE-TIME PURCHASE 🌐</div>
+                    <p className="relative z-20 text-[10px] text-zinc-400 font-bold uppercase tracking-widest mb-4 mt-2 flex items-center justify-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.8)]"></span> Secure Digital Checkout</p>
                     
-                    <div className="flex justify-center gap-2 mb-6">
+                    <div className="relative z-20 flex justify-center gap-2 mb-6">
                         <span className="bg-white/5 border border-white/10 text-zinc-400 text-[9px] px-2 py-1 rounded uppercase font-black tracking-widest">16:9</span>
                         <span className="bg-white/5 border border-white/10 text-zinc-400 text-[9px] px-2 py-1 rounded uppercase font-black tracking-widest">9:16</span>
                         <span className="bg-white/5 border border-white/10 text-zinc-400 text-[9px] px-2 py-1 rounded uppercase font-black tracking-widest">21:9</span>
                     </div>
 
-                    <div className="flex flex-col gap-3">
+                    <div className="relative z-20 flex flex-col gap-3">
                       <button onClick={(e) => { e.preventDefault(); handlePaymentGlobal(`Standard Download - ${app.name}`, cenaStandard); }} className="w-full py-4 rounded-xl flex items-center justify-between px-5 bg-white/5 border border-white/10 hover:border-orange-500/50 hover:bg-orange-500/10 text-white font-black text-[11px] md:text-[12px] uppercase tracking-widest transition-all"><span className="flex items-center gap-2"><DownloadCloud className="w-4 h-4 text-orange-500" /> Standard Download</span><span className="text-orange-400">${cenaStandard}</span></button>
                       <button onClick={(e) => { e.preventDefault(); handlePaymentGlobal(`Premium Bundle - ${app.name}`, cenaPremium); }} className="w-full py-4 rounded-xl flex items-center justify-between px-5 bg-gradient-to-r from-orange-600/20 to-amber-600/20 border border-orange-500/40 hover:from-orange-600 hover:to-amber-600 text-white font-black text-[11px] md:text-[12px] uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(234,88,12,0.2)] hover:shadow-[0_0_25px_rgba(234,88,12,0.6)]"><span className="flex items-center gap-2"><Award className="w-4 h-4 text-amber-400" /> Premium Bundle</span><span className="text-white drop-shadow-md">${cenaPremium}</span></button>
                     </div>
-                    <p className="text-[9px] text-zinc-500 uppercase tracking-widest mt-6 text-center leading-relaxed font-bold px-2">After checkout, the system will automatically unlock your instant digital download access here.</p>
+                    <p className="relative z-20 text-[9px] text-zinc-500 uppercase tracking-widest mt-6 text-center leading-relaxed font-bold px-2">After checkout, the system will automatically unlock your instant digital download access here.</p>
                   </div>
                 )}
               </div>

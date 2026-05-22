@@ -31,6 +31,9 @@ import V8DatabaseAdmin from "./V8DatabaseAdmin";
 import V8AdminDashboard from "./V8AdminDashboard";
 import V8OptimizerPage from './V8OptimizerPage'; 
 import V8PromptEngine from './V8PromptEngine';
+import UgcAvatar from './UgcAvatar';
+import VaultTransition from './VaultTransition';
+import V8IdleProtocol from './V8IdleProtocol';
 
 // UI COMPONENTS
 import V8RadarCursor from './V8RadarCursor';
@@ -259,6 +262,8 @@ function AppContent({ appsData, refreshData }) {
       <SmartScrollButton />
       <VisitorCounter />
       <V8ContactWidget />
+      {/* Naš novi AI prezenter */}
+      <UgcAvatar />
       <V8Footer />
     </div>
   );
@@ -283,6 +288,9 @@ export default function App() {
   return (
     <HelmetProvider>
       <Router>
+        {/* V8 MASTERWORK OVERLAYS */}
+        <VaultTransition />
+        <V8IdleProtocol />
         <AppContent appsData={appsData} refreshData={refreshData} />
       </Router>
     </HelmetProvider>
