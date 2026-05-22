@@ -9,7 +9,7 @@ import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from
 import { v8Toast } from './App';
 import { motion } from 'framer-motion';
 
-// POČETAK FUNKCIJE: FullScreenLightbox (TVOJ ORIGINAL - RADI PERFEKTNO)
+// POČETAK FUNKCIJE: FullScreenLightbox
 const FullScreenLightbox = ({ imageUrl, onClose }) => {
     useEffect(() => {
         if (imageUrl) {
@@ -39,7 +39,7 @@ const FullScreenLightbox = ({ imageUrl, onClose }) => {
 };
 // KRAJ FUNKCIJE: FullScreenLightbox
 
-// POČETAK FUNKCIJE: V8PaymentModal (NOVI NEZAVISNI MODAL - BLINDIRAN)
+// POČETAK FUNKCIJE: V8PaymentModal
 const V8PaymentModal = ({ paket, onClose, getGlobalCena }) => {
     useEffect(() => {
         if (paket) document.body.style.overflow = 'hidden';
@@ -77,7 +77,7 @@ const V8PaymentModal = ({ paket, onClose, getGlobalCena }) => {
 };
 // KRAJ FUNKCIJE: V8PaymentModal
 
-// POČETAK FUNKCIJE: V8InjectorModal (NOVI NEZAVISNI MODAL - BLINDIRAN)
+// POČETAK FUNKCIJE: V8InjectorModal
 const V8InjectorModal = ({ isOpen, onClose, onConfirm }) => {
     useEffect(() => {
         if (isOpen) document.body.style.overflow = 'hidden';
@@ -430,7 +430,16 @@ const V8StockBerza = () => {
 
       <div className="max-w-7xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.2 }} className="relative w-full max-w-7xl mx-auto mb-16 rounded-[3rem] overflow-hidden border border-white/10 shadow-[0_0_60px_rgba(255,140,0,0.15)]">
-            <div className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-70" style={{ backgroundImage: "url('/v8-stok/v8-stock-hero.jpg.webp')" }}></div>
+            
+            <div 
+                className="absolute inset-0 z-0 bg-cover bg-no-repeat transition-all duration-700" 
+                style={{ 
+                    backgroundImage: activeTab === 'bundles' ? "url('/v8-stock/v8-master-bg.jpg')" : "url('/v8-stock/v8-stock-hero.webp')",
+                    backgroundPosition: activeTab === 'bundles' ? "center 25%" : "center", 
+                    opacity: activeTab === 'bundles' ? 0.95 : 0.7 
+                }}
+            ></div>
+            
             <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050505]/20 via-[#050505]/70 to-[#050505]"></div>
             <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#050505] via-transparent to-[#050505]"></div>
 
