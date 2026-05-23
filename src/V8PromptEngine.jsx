@@ -1,482 +1,427 @@
 // POČETAK FAJLA: V8PromptEngine.jsx
-import React, { useState, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom'; 
-import { Upload, FileImage, Clock, Wand2, MonitorPlay, Smartphone, Settings2, X, Diamond, Lock, DownloadCloud } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import MagneticButton from './MagneticButton'; 
+import React, { useMemo, useState, useEffect } from "react";
+import { Copy, Download, RefreshCw, Zap, Lock, AlertTriangle, ShieldCheck } from "lucide-react";
+import { auth, db } from './firebase'; // PRILAGODI PUTANJU AKO TREBA
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from "firebase/auth";
+import { v8Toast } from './App'; // PRILAGODI PUTANJU AKO TREBA
 
-// 🔥 DODATO: Firebase importi za kupovinu i auth
-import { db, auth } from './firebase';
-import { doc, getDoc, collection, addDoc, serverTimestamp, setDoc } from 'firebase/firestore';
-import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
+const DEFAULT_CATEGORIES = [
+  // --- ORIGINALNI V8 CORE ---
+  "Luxury abstract sculpture",
+  "Ancient Roman epic scene",
+  "Michelin fine dining",
+  "Chocolate dessert macro",
+  "Blue cocktail splash reference",
+  "Red liquid splash reference",
+  "Supercar with drone",
+  "Luxury Swiss watch",
 
-// 🔥 NEUNIŠTIVI MODAL ZA CHECKOUT (IZVUČEN NAPOLJE KAO KOD ENHANCERA) 🔥
-const V8EngineCheckoutModal = ({ isOpen, onClose, engineName }) => {
-  useEffect(() => {
-    if (isOpen) document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
-  }, [isOpen]);
+  // --- MYTHOLOGY & HISTORY (Epic Scale) ---
+  "Fierce Viking warrior in battle",
+  "Ancient Aztec golden city aerial",
+  "Spartan gladiator in arena dust",
+  "Samurai commander cinematic portrait",
 
-  if (!isOpen) return null;
+  // --- HIGH-PERFORMANCE AUTOMOTIVE ---
+  "Hypercar drifting on neon street",
+  "Luxury SUV in snowy mountain pass",
+  "Matte black motorcycle studio shot",
+  "Classic vintage race car macro detail",
 
-  return createPortal(
-    <div className="fixed inset-0 z-[9999999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
-      <div className="bg-[#0a0a0a] border border-orange-500/40 rounded-[2.5rem] max-w-md w-full relative text-zinc-100 font-sans shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden m-auto">
-        <button onClick={onClose} className="absolute top-5 right-5 bg-white/5 p-2 rounded-full text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10 transition-all z-10"><X size={20} strokeWidth={3} /></button>
-        
-        <div className="p-10 flex flex-col items-center">
-          <div className="w-16 h-16 rounded-full bg-orange-600/10 flex items-center justify-center mb-4 border border-orange-500/30 shadow-[0_0_20px_rgba(234,88,12,0.2)]">
-             <DownloadCloud className="w-8 h-8 text-orange-500" />
-          </div>
-          
-          <h3 className="text-[18px] font-black uppercase tracking-widest mb-2 text-white text-center">Digital Asset Checkout</h3>
-          <p className="text-[10px] text-orange-400 font-black uppercase tracking-widest mb-8 text-center text-balance px-4">{`V8 PRO LICENSE: ${engineName}`}</p>
-          
-          <div className="w-full bg-[#050505] border border-white/10 rounded-2xl p-6 space-y-4 text-[13px] font-mono shadow-inner mb-8">
-            <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Provider:</span><span className="font-bold text-white text-right">V8 Vault</span></div>
-            <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Support:</span><span className="font-bold text-white text-[11px]">aitoolsprosmart@gmail.com</span></div>
-            <div className="flex justify-between pt-2 items-center"><span className="text-zinc-500 uppercase">Total (One-Time):</span><span className="font-black text-white text-[22px] drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">$149.00</span></div>
-          </div>
-          
-          <div className="w-full bg-[#050505] border border-orange-500/30 rounded-2xl p-6 text-center shadow-[0_0_20px_rgba(234,88,12,0.15)] relative overflow-hidden group">
-            <p className="text-[11px] md:text-[12px] text-zinc-300 font-black uppercase tracking-widest mb-4">Please contact support to complete your one-time purchase:</p>
-            <a href="mailto:aitoolsprosmart@gmail.com" className="flex items-center justify-center gap-2 w-full bg-white text-black hover:bg-orange-500 hover:text-white py-3.5 rounded-xl font-black text-[12px] uppercase tracking-widest transition-all cursor-pointer shadow-lg">
-                Request Checkout Link
-            </a>
-            <span className="block mt-4 text-[9px] text-zinc-500 uppercase font-bold tracking-widest">System unlocks your generator automatically after checkout! 🚀</span>
-          </div>
-        </div>
-      </div>
-    </div>,
-    document.body
-  );
+  // --- DARK PREMIUM TECH & PRODUCT ---
+  "Dark obsidian smartphone with glowing edges",
+  "Premium dark cosmetics glass bottle",
+  "Minimalist black leather designer bag",
+  "Matte black luxury headphones",
+
+  // --- MACRO ELEMENTS & FOOD ---
+  "Golden coffee beans splashing in espresso",
+  "Smoky whiskey glass with glowing ice cube",
+  "Dark marble and liquid gold texture",
+  "Gourmet sushi premium macro photography",
+
+  // --- ARCHITECTURE & LIFESTYLE ---
+  "Luxury modern villa with infinity pool",
+  "High-fashion editorial neon lighting",
+  "First-class private jet interior",
+  "Cinematic cyberpunk street level"
+];
+
+const DEFAULT_DETAILS = [
+  // --- ORIGINALNI V8 CORE ---
+  "An impossible luxury abstract sculpture made of black obsidian, smoked glass, liquid chrome and polished gold ribbons, floating in a dark premium studio with dramatic spotlighting, realistic reflections, micro-scratches and gallery-grade composition, unbranded, no text.",
+  "A breathtaking ancient Roman epic scene with a heroic commander in ornate bronze and gold armor, red cape, plumed helmet, elite legionaries behind him, imperial architecture, cinematic sunlight, Hollywood-scale historical realism, clean, no logos.",
+  "A Michelin-star luxury gourmet plate on matte black ceramic, premium seafood, delicate sauce dots, microgreens, edible flowers, edible gold accents, shallow depth of field, restaurant-grade macro photography, clean, no text.",
+  "A decadent layered chocolate cake with rich dark sponge, thick glossy ganache slowly dripping over the edges, moist texture, chocolate shavings, warm moody dessert lighting, premium bakery macro detail, unbranded.",
+  "A premium blue cocktail in a crystal martini glass with sparkling bubbles, frozen splash above the rim, orange wedge garnish, frosty tabletop, dark blue-and-amber bar lighting, hyper-realistic beverage photography, clean.",
+  "A dramatic crimson-red liquid splash explosion frozen mid-air, glossy translucent droplets, suspended liquid sheets, black moody background, sharp high-speed macro photography, luxury commercial splash-art energy, unbranded.",
+  "An unbranded futuristic supercar racing on a dramatic mountain highway, a professional drone flying above it, aggressive aerodynamic body, glossy carbon reflections, dust particles, golden-hour light, premium automotive advertising look.",
+  "A luxury Swiss-style wristwatch inspired by ultra-premium dress-watch design, rose-gold case, dark elegant dial, polished sapphire crystal, leather strap, macro product photography, dark black-and-gold studio background, zero text/logos.",
+
+  // --- MYTHOLOGY & HISTORY ---
+  "Fierce Viking warrior in battle, rugged armor, cinematic fur and leather textures, dramatic lighting, epic frozen landscape, ultra-realistic action, clean, no text, no branding.",
+  "Aerial view of ancient Aztec golden city, monumental pyramids, lush jungle environment, sunlight streaming through clouds, epic historical scale, hyper-realistic, unbranded, no logos.",
+  "Spartan gladiator in arena dust, bronze helmet, intense cinematic lighting, high-contrast, historical grit, ultra-detailed skin textures, clean commercial composition, no text.",
+  "Samurai commander cinematic portrait, intricate traditional armor, soft studio rim light, moody atmosphere, cinematic color grade, hyper-realistic details, zero logos, no text.",
+
+  // --- HIGH-PERFORMANCE AUTOMOTIVE ---
+  "Hypercar drifting on neon street, wet asphalt reflections, motion blur, glowing lights, unbranded automotive design, high-end commercial aesthetic, zero branding, clean.",
+  "Luxury SUV in snowy mountain pass, dramatic wide-angle shot, cinematic cold lighting, pristine nature, unbranded modern vehicle, premium advertising finish, zero text, clean.",
+  "Matte black motorcycle studio shot, dramatic rim lighting, sharp metallic details, dark background, unbranded custom build, premium product photography, zero text/logos.",
+  "Classic vintage race car macro detail, polished chrome and worn leather textures, vintage cinematic vibe, shallow depth of field, clean composition, unbranded, no text.",
+
+  // --- DARK PREMIUM TECH & PRODUCT ---
+  "Dark obsidian smartphone with glowing edges, bezel-less screen, sleek glass finish, premium dark environment, macro product lighting, futuristic tech aesthetic, clean, no logos.",
+  "Premium dark cosmetics glass bottle, elegant fluid texture, dark gold accents, luxury studio lighting, high-end skincare aesthetic, clean commercial shot, zero text/branding.",
+  "Minimalist black leather designer bag, premium texture, dark elegant studio light, sharp details, luxury fashion photography, unbranded, no logos, clean composition.",
+  "Matte black luxury headphones, premium metal and leather finish, moody studio light, sharp macro details, high-end audio tech vibe, clean composition, unbranded, no logos.",
+
+  // --- MACRO ELEMENTS & FOOD ---
+  "Golden coffee beans splashing in espresso, rich liquid swirls, cinematic warm light, dark moody background, premium culinary photography, macro detail, clean, no text.",
+  "Smoky whiskey glass with glowing ice cube, premium crystal clarity, moody atmospheric light, macro detail, sophisticated bar aesthetic, unbranded, no watermarks, clean.",
+  "Dark marble and liquid gold texture, elegant fluid abstract art, dramatic shadows, premium luxury material aesthetic, macro photography, unbranded, zero logos.",
+  "Gourmet sushi premium macro photography, artistic arrangement, delicate textures, dark slate background, professional culinary lighting, clean aesthetic, no text.",
+
+  // --- ARCHITECTURE & LIFESTYLE ---
+  "Luxury modern villa with infinity pool, twilight sky, architectural perfection, warm interior glow, cinematic framing, elite property photography, clean, no text.",
+  "High-fashion editorial neon lighting, moody dark atmosphere, clean composition, professional aesthetic, zero branding, zero logos, cinematic lighting.",
+  "First-class private jet interior, leather textures, warm ambient lighting, premium luxury travel lifestyle, clean wide-angle shot, unbranded, zero logos.",
+  "Cinematic cyberpunk street level, dark futuristic urban vibe, wet reflective surfaces, neon rim lighting, high-end motion picture aesthetic, clean, no text."
+];
+
+const STYLE_PRESETS = {
+  "Nano Banana 2 / Pro": {
+    label: "Nano Banana 2 / Pro",
+    suffix: "ultra-detailed, premium commercial realism, clean prompt structure, strong subject separation, high-end cinematic lighting, anti-plastic realism"
+  },
+  "Universal Image Generator": {
+    label: "Universal Image Generator",
+    suffix: "photorealistic, high-resolution, clean composition, premium advertising polish, realistic materials, sharp details"
+  },
+  "Stock Contributor Safe": {
+    label: "Stock Contributor Safe",
+    suffix: "stock-ready, no brands, no logos, no text, no copyrighted marks, no watermark, commercially clean composition, realistic premium finish"
+  }
 };
 
+const CAMERA_PRESETS = [
+  "shot on ARRI Alexa 65 with Panavision anamorphic optics, cinematic highlight rolloff",
+  "RED V-RAPTOR 8K look with Zeiss Supreme Prime lens character, crisp commercial sharpness",
+  "Sony Venice 2 color science with Leica Summilux rendering, natural micro-contrast",
+  "IMAX-inspired framing with premium optical depth, soft halation and controlled reflections",
+  "Hasselblad medium-format commercial photography look, rich tonal depth, fine material texture",
+  "Phase One studio advertising look, ultra-clean detail, premium product-lighting precision"
+];
 
-const V8PromptEngine = ({ engineName = "SEEDANCE 2.0" }) => {
-  // POČETAK FUNKCIJE: V8PromptEngine
-  const [promptText, setPromptText] = useState('');
-  const [duration, setDuration] = useState('5s');
-  const [aspectRatio, setAspectRatio] = useState('16:9');
-  const [arLocked, setArLocked] = useState(false); 
+function seededRandom(seed) {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+
+function pick(arr, seed) {
+  return arr[Math.floor(seededRandom(seed) * arr.length) % arr.length];
+}
+
+function autoDescription(category, index, seed) {
+  const c = category.toLowerCase();
+  const camera = pick(CAMERA_PRESETS, seed + index * 31);
+  if (c.includes("abstract") || c.includes("sculpture") || c.includes("art")) return `${category}, a unique luxury abstract object made from black glass, smoky crystal, brushed titanium, liquid chrome and polished gold accents, dramatic dark studio lighting, elegant reflections, gallery-grade composition, realistic surface imperfections, ${camera}.`;
+  if (c.includes("roman") || c.includes("rim") || c.includes("empire") || c.includes("warrior")) return `${category}, a cinematic ancient imperial scene with elite Roman characters, ornate armor, red fabric accents, plumed helmets, monumental stone architecture, warm sunlight, dust atmosphere, historically inspired epic realism, ${camera}.`;
+  if (c.includes("michelin") || c.includes("fine dining") || c.includes("gourmet") || c.includes("food")) return `${category}, ultra-premium gourmet plating on a matte black ceramic dish, delicate sauce work, microgreens, edible flowers, refined culinary textures, shallow depth of field, luxury restaurant macro photography, ${camera}.`;
+  if (c.includes("chocolate") || c.includes("dessert") || c.includes("cake")) return `${category}, decadent luxury dessert with rich layers, glossy dripping glaze, realistic moist texture, elegant crumbs, warm cinematic highlights, premium bakery close-up, shallow depth of field, ${camera}.`;
+  if (c.includes("cocktail") || c.includes("drink") || c.includes("beverage") || c.includes("blue")) return `${category}, premium beverage photograph with crystal glass clarity, dynamic frozen splash, floating droplets, citrus garnish, glossy reflections, dark luxury bar background, high-speed commercial drink photography, ${camera}.`;
+  if (c.includes("liquid") || c.includes("splash") || c.includes("red")) return `${category}, dramatic macro fluid artwork with glossy suspended droplets, translucent liquid sheets, explosive motion frozen in time, deep black background, high-speed photography feel, ultra-realistic fluid physics, ${camera}.`;
+  if (c.includes("supercar") || c.includes("hypercar") || c.includes("car") || c.includes("auto")) return `${category}, an unbranded futuristic performance car in a cinematic road scene, visible drone flying above, aggressive aerodynamic body, glossy reflections, dust atmosphere, golden-hour lighting, luxury automotive campaign look, ${camera}.`;
+  if (c.includes("watch") || c.includes("swiss") || c.includes("timepiece")) return `${category}, ultra-luxury wristwatch macro photography, polished premium case, dark elegant dial, visible mechanical complications, sapphire reflections, leather strap, black-and-gold studio lighting, refined product-advertising finish, ${camera}.`;
+  return `${category}, ultra-detailed premium commercial image with cinematic lighting, realistic materials, elegant composition, deep blacks, controlled highlights, subtle imperfections, anti-plastic realism, ${camera}.`;
+}
+
+function makeSinglePrompt({ categories, details, seed, aspectRatio, presetName, strictNoBrand, includeNegative }) {
+  const preset = STYLE_PRESETS[presetName] || STYLE_PRESETS["Nano Banana 2 / Pro"];
+  const descriptions = categories.map((cat, i) => {
+    const manual = (details[i] || "").trim();
+    return manual.length > 0 ? manual : autoDescription(cat, i, seed);
+  });
+  const brandLock = strictNoBrand
+    ? "All panels must be clean commercial-safe visuals: no visible logos, no readable brand names, no trademark marks, no readable license plates, no text, no captions."
+    : "Avoid random text, captions, watermarks and messy symbols.";
+  const negative = includeNegative
+    ? `\n\nNEGATIVE PROMPT:\nno duplicate panels, no repeated subjects, no repeated compositions, no near-duplicates, no extra panels, no missing panels, no broken grid, no distorted layout, no UI, no browser interface, no app screenshot elements, no captions, no typography, no random letters, no watermark, no signature, no visible logos, no readable brand names, no low resolution, no blurry details, no plastic CGI look.`
+    : "";
+
+  return `Create a single premium cinematic collage image in a strict 2-row by 4-column grid, exactly 8 panels total, equal-size panels, clean thin separators, ${aspectRatio} aspect ratio. The final image must look like a luxury commercial advertising board, not an app screenshot.\n\nCRITICAL CONTROL LOCK:\nAll 8 panels must be visually different. No duplicated panels. No near-duplicates. No repeated subjects. No repeated compositions. Each panel must have a unique subject, unique framing, unique lighting mood and unique visual identity. ${brandLock}\n\nROW 1, PANEL 1 — ${categories[0]}:\n${descriptions[0]}\n\nROW 1, PANEL 2 — ${categories[1]}:\n${descriptions[1]}\n\nROW 1, PANEL 3 — ${categories[2]}:\n${descriptions[2]}\n\nROW 1, PANEL 4 — ${categories[3]}:\n${descriptions[3]}\n\nROW 2, PANEL 1 — ${categories[4]}:\n${descriptions[4]}\n\nROW 2, PANEL 2 — ${categories[5]}:\n${descriptions[5]}\n\nROW 2, PANEL 3 — ${categories[6]}:\n${descriptions[6]}\n\nROW 2, PANEL 4 — ${categories[7]}:\n${descriptions[7]}\n\nGLOBAL STYLE:\n${preset.suffix}, cohesive premium collage, cinematic realism, realistic reflections, subtle film grain, deep blacks, controlled highlights, luxury black-and-gold color grade, sharp but not oversharpened, expensive editorial finish.${negative}`;
+}
+
+function makeVariations(options) {
+  return Array.from({ length: options.count }, (_, i) => {
+    const prompt = makeSinglePrompt({ ...options, seed: options.seed + i * 101 });
+    return `PROMPT ${i + 1}\n${prompt}`;
+  }).join("\n\n------------------------------------------------------------\n\n");
+}
+
+export default function V8PromptEngine() {
+  const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
+  const [details, setDetails] = useState(DEFAULT_DETAILS);
+  const [seed, setSeed] = useState(2026);
+  const [aspectRatio, setAspectRatio] = useState("16:9");
+  const [presetName, setPresetName] = useState("Nano Banana 2 / Pro");
+  const [count, setCount] = useState(5);
+  const [strictNoBrand, setStrictNoBrand] = useState(true);
+  const [includeNegative, setIncludeNegative] = useState(true);
+  const [copied, setCopied] = useState(false);
   
-  // Drag & Drop state
-  const [dragActive, setDragActive] = useState(false);
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
-  const [imageDescription, setImageDescription] = useState(''); 
-  
-  const [isGenerating, setIsGenerating] = useState(false);
-  const inputRef = useRef(null);
+  // V8 FIREBASE STATE
+  const [user, setUser] = useState(null);
+  const [isVIP, setIsVIP] = useState(false);
+  const [promptsUsed, setPromptsUsed] = useState(0);
+  const [isLocked, setIsLocked] = useState(true); // Locked until verified
+  const PROMPT_LIMIT = 3000;
 
-  // 🔥 DODATO: State za Modal i Korisnika 🔥
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
-
-  // Logika za međusobno isključivanje polja
-  const isImageModeActive = !!imageFile || imageDescription.length > 0;
-  const isTextModeActive = promptText.length > 0;
-
-  // 🔥 DODATO: Praćenje Auth stanja 🔥
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (user) => {
-      if (user) {
-          setCurrentUser(user);
-      } else { 
-          setCurrentUser(null); 
+    const unsub = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        const email = currentUser.email.toLowerCase();
+        
+        // ADMIN CHECK
+        if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
+           setIsVIP(true);
+           setIsLocked(false);
+           return;
+        }
+
+        // VIP CHECK
+        try {
+          const docRef = doc(db, "vip_users", email);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists() && docSnap.data().unlockedApps) {
+            const unlocked = docSnap.data().unlockedApps;
+            // OTVARA AKO IMA PROMPT ENGINE ILI FULL ACCESS
+            if (unlocked.includes('V8_PROMPT_ENGINE') || unlocked.includes('FULL_ACCESS')) {
+               setIsVIP(true);
+               // Očitaj potrošnju
+               const used = docSnap.data().promptsUsed || 0;
+               setPromptsUsed(used);
+               if (used >= PROMPT_LIMIT) setIsLocked(true); else setIsLocked(false);
+            }
+          }
+        } catch (e) { console.error("VIP check failed", e); }
+      } else {
+        setUser(null); setIsVIP(false); setIsLocked(true);
       }
     });
     return () => unsub();
   }, []);
 
-  // 🔥 V8 PAMETNA MEMORIJA (Automatski otvara modal posle logina na ovoj stranici) 🔥
-  useEffect(() => {
-    const checkPendingPurchase = async () => {
-      const pendingEngine = localStorage.getItem('v8_pending_engine_checkout');
+  const output = useMemo(() => {
+    return makeVariations({ categories, details, seed, aspectRatio, presetName, count, strictNoBrand, includeNegative });
+  }, [categories, details, seed, aspectRatio, presetName, count, strictNoBrand, includeNegative]);
 
-      if (auth.currentUser && pendingEngine === engineName) {
-        localStorage.removeItem('v8_pending_engine_checkout'); // Obrisati odmah
-        
-        try {
-            const imePaketa = `V8 PRO LICENSE: ${engineName}`;
-            const cenaPaketa = "149.00"; 
+  const updateCategory = (index, value) => setCategories(prev => { const next = [...prev]; next[index] = value; return next; });
+  const updateDetail = (index, value) => setDetails(prev => { const next = [...prev]; next[index] = value; return next; });
 
-            await addDoc(collection(db, "v8_kupci"), {
-                ime: auth.currentUser.displayName || "Client", email: auth.currentUser.email, uid: auth.currentUser.uid,
-                zeliPaket: imePaketa, cenaPaketa: cenaPaketa, vreme: serverTimestamp(), isPaid: false
-            });
-
-            await setDoc(doc(db, "posetioci", auth.currentUser.uid), { 
-                ime: auth.currentUser.displayName || "Client", email: auth.currentUser.email, 
-                vremePrijave: serverTimestamp(), zainteresovanZa: imePaketa, identitet: "V8-Engine-Client" 
-            }, { merge: true });
-
-            setShowPaymentModal(true); // PALI MODAL AUTOMATSKI!
-        } catch (err) {
-            console.error("V8 PENDING ERROR", err);
-        }
+  const recordUsage = async () => {
+      if (user && isVIP && user.email !== "damnjanovicgoran7@gmail.com" && user.email !== "aitoolsprosmart@gmail.com") {
+          const newUsage = promptsUsed + count;
+          setPromptsUsed(newUsage);
+          try {
+              await setDoc(doc(db, "vip_users", user.email.toLowerCase()), { promptsUsed: newUsage }, { merge: true });
+              if (newUsage >= PROMPT_LIMIT) setIsLocked(true);
+          } catch(e) { console.error("Failed to update limit", e); }
       }
-    };
-    
-    // Mali delay da sačekamo Auth da setuje usera
-    const timer = setTimeout(() => { checkPendingPurchase(); }, 1000);
-    return () => clearTimeout(timer);
-  }, [engineName]);
-
-
-  const handleDrag = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
-    else if (e.type === "dragleave") setDragActive(false);
   };
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    if (!isTextModeActive && e.dataTransfer.files && e.dataTransfer.files[0]) {
-      ucitajSliku(e.dataTransfer.files[0]);
-    }
+  const copyOutput = async () => {
+    if (isLocked) { v8Toast.error("Engine Locked or Quota Exceeded."); return; }
+    await navigator.clipboard.writeText(output);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1400);
+    recordUsage();
   };
 
-  const handleChange = (e) => {
-    e.preventDefault();
-    if (!isTextModeActive && e.target.files && e.target.files[0]) {
-      ucitajSliku(e.target.files[0]);
-    }
+  const downloadTxt = () => {
+    if (isLocked) { v8Toast.error("Engine Locked or Quota Exceeded."); return; }
+    const blob = new Blob([output], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `V8-grid-pack-${count}-prompts-seed-${seed}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    recordUsage();
   };
 
-  const ucitajSliku = (file) => {
-    setImageFile(file);
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result);
-      
-      const img = new Image();
-      img.onload = () => {
-        if (img.width >= img.height) {
-          setAspectRatio('16:9');
-        } else {
-          setAspectRatio('9:16');
-        }
-        setArLocked(true); 
-      };
-      img.src = reader.result;
-    };
-    reader.readAsDataURL(file);
-  };
+  const reset = () => { setCategories(DEFAULT_CATEGORIES); setDetails(DEFAULT_DETAILS); setSeed(2026); setAspectRatio("16:9"); setPresetName("Nano Banana 2 / Pro"); setCount(5); setStrictNoBrand(true); setIncludeNegative(true); };
+  const clearDetails = () => setDetails(new Array(8).fill(""));
+  const randomSeed = () => setSeed(Math.floor(Math.random() * 999999));
 
-  const obrisiSliku = () => {
-    setImageFile(null);
-    setImagePreview(null);
-    setImageDescription('');
-    setArLocked(false); 
-  };
-
-  const generisiMasterPrompt = async () => {
-    setIsGenerating(true);
-    
-    const formData = new FormData();
-    formData.append('engine', engineName); 
-    formData.append('text', isImageModeActive ? imageDescription : promptText);
-    formData.append('duration', duration);
-    formData.append('aspectRatio', aspectRatio);
-    
-    if (imageFile) {
-      formData.append('image', imageFile);
-    }
-
-    try {
-      const response = await fetch('https://aitoolsprosmart-becend-production.up.railway.app/api/v8-generate', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) throw new Error("V8 Server Error");
-
-      const data = await response.json();
-      console.log("V8 MASTER PROMPT REZULTAT:", data);
-      alert("Prompts generated successfully! Check Console."); 
-      
-    } catch (error) {
-      console.error("V8 Engine failure:", error);
-      alert("Greška na serveru, proveri konekciju.");
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const pokreniKupovinu = async () => {
-    const imePaketa = `V8 PRO LICENSE: ${engineName}`;
-    const cenaPaketa = "149.00"; // U dolarima
-
-    try {
-      let user = currentUser || auth.currentUser;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-
-      if (!user) {
-          // PAMTI PRE LOGINA DA BI OTVORIO MODAL ODMAH POSLE LOGINA
-          localStorage.setItem('v8_pending_engine_checkout', engineName);
-
-          const v8Provider = new GoogleAuthProvider();
-          v8Provider.setCustomParameters({ prompt: 'select_account' });
-          await signInWithPopup(auth, v8Provider);
-          return;
-      }
-
-      if (user) {
-          await addDoc(collection(db, "v8_kupci"), {
-              ime: user.displayName || "Client", email: user.email, uid: user.uid,
-              zeliPaket: imePaketa, cenaPaketa: cenaPaketa, vreme: serverTimestamp(), isPaid: false
-          });
-
-          await setDoc(doc(db, "posetioci", user.uid), { 
-              ime: user.displayName || "Client", email: user.email, 
-              vremePrijave: serverTimestamp(), zainteresovanZa: imePaketa, identitet: "V8-Engine-Client" 
-          }, { merge: true });
-
-          setShowPaymentModal(true);
-      }
-    } catch (err) {
-        localStorage.removeItem('v8_pending_engine_checkout');
-        console.error("V8 PAYMENT ERROR:", err);
-    }
-  };
+  // PAYWALL RENDER
+  if (!user || (!isVIP && !isLocked)) {
+      return (
+        <div className="min-h-screen bg-[#050505] flex items-center justify-center pt-32 pb-20 px-6 font-sans">
+            <div className="max-w-md w-full bg-[#0a0a0a] border border-orange-500/40 rounded-3xl p-10 text-center shadow-[0_0_50px_rgba(234,88,12,0.15)] relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-600 to-amber-500"></div>
+                <Lock className="w-16 h-16 text-orange-500 mx-auto mb-6 opacity-80" />
+                <h2 className="text-2xl font-black uppercase text-white tracking-widest mb-2">V8 PROMPT ENGINE</h2>
+                <p className="text-zinc-400 font-bold uppercase text-[10px] tracking-widest mb-8">Access restricted to Premium Lifetime Members.</p>
+                <div className="bg-black/50 border border-white/10 p-5 rounded-2xl mb-8 text-left">
+                    <p className="text-zinc-300 text-xs leading-relaxed mb-4">The ultimate mass-production text engine for cinematic grids. Value: <strong className="text-white">$250</strong>.</p>
+                    <p className="text-orange-400 text-xs font-bold bg-orange-500/10 p-3 rounded-lg border border-orange-500/20">Unlocked FREE when you purchase any V8 Masterwork Bundle from the Stock Market.</p>
+                </div>
+                {!user ? (
+                   <button onClick={() => signInWithPopup(auth, provider)} className="w-full py-4 bg-zinc-800 hover:bg-orange-600 text-white font-black uppercase tracking-widest rounded-xl transition-all text-xs">Verify Account</button>
+                ) : (
+                   <a href="/stock" className="block w-full py-4 bg-orange-600 hover:bg-orange-500 text-white font-black uppercase tracking-widest rounded-xl transition-all text-xs shadow-[0_0_20px_rgba(234,88,12,0.4)]">Browse Master Bundles</a>
+                )}
+            </div>
+        </div>
+      );
+  }
 
   return (
-    <div className="bg-[#050505] p-8 md:p-12 rounded-[2.5rem] border border-[#FF8C00]/30 shadow-[0_0_50px_rgba(255,140,0,0.1)] max-w-5xl mx-auto mt-10 relative overflow-hidden">
-      
-      {/* --- POČETAK: HERO BOX --- */}
-      <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1 }}
-          className="relative w-full mx-auto mb-12 rounded-[2.5rem] overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(255,140,0,0.15)]"
-      >
-          {/* Pozadina */}
-          <div 
-              className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-50"
-              style={{ backgroundImage: "url('/v8_py/v8_py_pozadina.webp')" }} 
-          ></div>
-          
-          <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050505]/40 via-[#050505]/80 to-[#050505]"></div>
-          <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#050505]/80 via-transparent to-[#050505]/80"></div>
-
-          <div className="relative z-10 py-16 px-6 text-center flex flex-col items-center">
-              <div className="inline-block bg-orange-600/10 border border-orange-500/30 px-5 py-2 rounded-full text-orange-400 font-black uppercase tracking-[0.3em] text-[10px] mb-6 animate-pulse shadow-[0_0_20px_rgba(234,88,12,0.2)] backdrop-blur-sm">
-                V8 CORE // CINEMATIC GENERATOR
-              </div>
-              
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-black italic uppercase tracking-tighter text-white mb-6 drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)] flex items-center justify-center gap-4 flex-wrap">
-                {engineName === "KLING 3.0" ? <Settings2 className="text-red-500 w-12 h-12 md:w-16 md:h-16 drop-shadow-[0_0_15px_rgba(239,68,68,0.8)]" /> : <MonitorPlay className="text-green-500 w-12 h-12 md:w-16 md:h-16 drop-shadow-[0_0_15px_rgba(34,197,94,0.8)]" />}
-                {engineName} <span className="text-transparent bg-clip-text bg-gradient-to-b from-orange-500 to-amber-600 drop-shadow-none">ENGINE</span>
-              </h1>
-              
-              {/* 🔥 BRUTALNI PODNASLOVI 🔥 */}
-              {engineName === "KLING 3.0" ? (
-                <p className="text-zinc-200 font-bold uppercase tracking-[0.3em] text-[10px] md:text-[11px] max-w-3xl mx-auto leading-relaxed drop-shadow-lg bg-black/60 p-5 rounded-2xl backdrop-blur-md border-l-2 border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.15)]">
-                  Command hyper-realistic physics and flawless kinetic motion. Inject secret meta-tokens to generate CGI-rivaling masterpieces. 
-                  <span className="text-white font-black italic block mt-2 tracking-widest text-[11px] md:text-[12px]">$100,000 PRODUCTION VALUE IN A SINGLE CLICK.</span>
-                </p>
-              ) : (
-                <p className="text-zinc-200 font-bold uppercase tracking-[0.3em] text-[10px] md:text-[11px] max-w-3xl mx-auto leading-relaxed drop-shadow-lg bg-black/60 p-5 rounded-2xl backdrop-blur-md border-l-2 border-green-500 shadow-[0_0_20px_rgba(34,197,94,0.15)]">
-                  Engineer Hollywood-grade cinematography. Harness ARRI Alexa lighting, Leica Summilux optics, and Vogue-level editorial aesthetics. 
-                  <span className="text-white font-black italic block mt-2 tracking-widest text-[11px] md:text-[12px]">THE ULTIMATE DIRECTOR'S TOOLKIT FOR CINEMATIC PERFECTION.</span>
-                </p>
-              )}
-          </div>
-      </motion.div>
-      {/* --- KRAJ: HERO BOX --- */}
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 relative z-10 mb-16">
+    <div className="min-h-screen bg-[#050505] pt-32 pb-20 px-4 md:px-8 text-white font-sans">
+      <div className="mx-auto max-w-7xl space-y-8">
         
-        {/* LEVA KOLONA: Tekst i Slika */}
-        <div className="flex flex-col gap-8">
-          
-          {/* 1. DRAG & DROP ZONA + OPIS */}
-          <div className={`flex flex-col gap-3 transition-all ${isTextModeActive ? 'opacity-40 pointer-events-none grayscale' : ''}`}>
-            <label className="text-[#FF8C00] font-black text-[11px] tracking-widest uppercase flex items-center gap-2">
-              <FileImage size={14} /> 1. IMAGE-TO-VIDEO MODE
-            </label>
-            
-            <div 
-              className={`relative border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-center transition-all ${dragActive ? 'border-[#FF8C00] bg-[#FF8C00]/10' : 'border-white/20 bg-black/50 hover:border-[#FF8C00]/50'} ${imagePreview ? 'border-solid border-[#FF8C00]/50 p-2' : 'h-48'}`}
-              onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
-            >
-              <input ref={inputRef} type="file" accept="image/*" onChange={handleChange} className="hidden" disabled={isTextModeActive} />
-              
-              {imagePreview ? (
-                <div className="relative w-full h-48 group rounded-xl overflow-hidden">
-                  <img src={imagePreview} alt="Uploaded prep" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
-                    {/* CRVENI X ZA BRISANJE SLIKE */}
-                    <button onClick={obrisiSliku} className="bg-red-600/90 text-white p-3 rounded-full hover:bg-red-500 transition-all shadow-[0_0_20px_rgba(220,38,38,0.6)] hover:scale-110">
-                      <X size={28} strokeWidth={3} />
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center gap-3 cursor-pointer" onClick={() => !isTextModeActive && inputRef.current.click()}>
-                  <div className="bg-white/5 p-4 rounded-full">
-                    <Upload className="w-8 h-8 text-zinc-400" />
-                  </div>
-                  <div>
-                    <p className="text-white font-bold text-sm">
-                      {isTextModeActive ? 'LOCKED (Text Mode Active)' : 'Drag & Drop your reference image here'}
-                    </p>
-                    {!isTextModeActive && <p className="text-zinc-500 text-xs mt-1">or click to browse files</p>}
-                  </div>
-                </div>
-              )}
+        {/* V8 HEADER */}
+        <div className="rounded-[2.5rem] border border-orange-500/30 bg-[#0a0a0a] p-8 shadow-[0_0_40px_rgba(234,88,12,0.1)] relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-orange-600/10 rounded-full blur-[80px] pointer-events-none"></div>
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between relative z-10">
+            <div>
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-500/40 bg-orange-500/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-orange-400 shadow-inner">
+                <Zap size={12} className="animate-pulse" /> V8 PROMPT ENGINE
+              </div>
+              <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-white uppercase italic">
+                GRID COLLAGE <span className="text-orange-500">FACTORY</span>
+              </h1>
+              <p className="mt-4 max-w-2xl text-zinc-400 text-sm md:text-base font-medium">
+                The ultimate text-generation algorithm for cinematic advertising panels. Generates perfect prompt variations ready for deployment.
+              </p>
             </div>
+            <div className="flex flex-col items-end gap-4">
+              {/* V8 LIMIT COUNTER */}
+              <div className="flex items-center gap-3 bg-black/60 border border-white/10 px-4 py-2 rounded-xl">
+                 <ShieldCheck className="w-4 h-4 text-green-500" />
+                 <div className="flex flex-col items-end">
+                    <span className="text-[9px] text-zinc-500 font-black uppercase tracking-widest">Monthly Quota</span>
+                    <span className="text-xs font-mono font-bold text-white"><span className={promptsUsed > 2500 ? "text-red-500" : "text-green-400"}>{promptsUsed}</span> / {PROMPT_LIMIT}</span>
+                 </div>
+              </div>
 
-            {/* Kratak opis slike + CRVENI X */}
-            <div className="relative mt-1">
-              <input 
-                type="text"
-                value={imageDescription}
-                onChange={(e) => setImageDescription(e.target.value)}
-                disabled={isTextModeActive}
-                placeholder="Briefly describe what happens to this image..."
-                className="bg-black/50 border border-white/10 p-4 pr-12 rounded-xl text-[13px] text-white outline-none focus:border-[#FF8C00] transition-all w-full shadow-inner disabled:bg-black/80"
-              />
-              {imageDescription && !isTextModeActive && (
-                <button 
-                  onClick={() => setImageDescription('')} 
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 hover:text-red-400 bg-red-500/10 hover:bg-red-500/20 p-1.5 rounded-full transition-all"
-                  title="Clear description"
-                >
-                  <X size={16} strokeWidth={3} />
+              <div className="flex flex-wrap gap-3">
+                <button onClick={copyOutput} disabled={isLocked} className={`flex items-center gap-2 rounded-xl px-6 py-3.5 font-black text-[11px] uppercase tracking-widest transition-all ${isLocked ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed' : 'bg-orange-600 text-white hover:bg-orange-500 shadow-[0_0_20px_rgba(234,88,12,0.4)] hover:shadow-[0_0_30px_rgba(234,88,12,0.6)]'}`}>
+                  <Copy size={16} /> {copied ? "COPIED TO CLIPBOARD!" : "COPY PROMPTS"}
                 </button>
-              )}
+                <button onClick={downloadTxt} disabled={isLocked} className={`flex items-center gap-2 rounded-xl px-6 py-3.5 font-black text-[11px] uppercase tracking-widest transition-all ${isLocked ? 'bg-zinc-900 text-zinc-700 cursor-not-allowed border border-white/5' : 'bg-white text-black hover:bg-zinc-200 shadow-xl'}`}>
+                  <Download size={16} /> DOWNLOAD TXT
+                </button>
+              </div>
             </div>
           </div>
-
-          {/* 2. TEXT INPUT ZONA + CRVENI X */}
-          <div className="flex flex-col gap-3">
-            <label className={`font-black text-[11px] tracking-widest uppercase flex items-center gap-2 transition-colors ${isImageModeActive ? 'text-zinc-600' : 'text-[#FF8C00]'}`}>
-              <Wand2 size={14} /> 2. TEXT-TO-VIDEO VISION
-            </label>
-            <div className="relative">
-              <textarea 
-                value={promptText}
-                onChange={(e) => setPromptText(e.target.value)}
-                disabled={isImageModeActive}
-                placeholder={isImageModeActive ? "LOCKED: You are using Image-to-Video mode. Please clear the image above to use pure text mode." : "Describe the action... (e.g. A hyper-realistic Roman legion marching through heavy rain...)"}
-                className={`bg-black/50 border p-5 pr-12 rounded-2xl text-[14px] text-white outline-none resize-none h-32 transition-all w-full shadow-inner ${isImageModeActive ? 'border-red-900/30 opacity-40 cursor-not-allowed bg-black/80' : 'border-white/10 focus:border-[#FF8C00]'}`}
-              />
-              {promptText && !isImageModeActive && (
-                <button 
-                  onClick={() => setPromptText('')} 
-                  className="absolute right-3 top-4 text-red-500 hover:text-red-400 bg-red-500/10 hover:bg-red-500/20 p-1.5 rounded-full transition-all"
-                  title="Clear text"
-                >
-                  <X size={16} strokeWidth={3} />
-                </button>
-              )}
-            </div>
-          </div>
-
         </div>
 
-        {/* DESNA KOLONA: Parametri i Dugme */}
-        <div className="flex flex-col gap-8">
-          
-          {/* TRAJANJE VIDEA */}
-          <div className="flex flex-col gap-3">
-            <label className="text-zinc-400 font-black text-[11px] tracking-widest uppercase flex items-center gap-2">
-              <Clock size={14} /> 3. VIDEO DURATION
-            </label>
-            <div className="grid grid-cols-4 gap-2">
-              {['3s', '5s', '10s', '15s'].map((sec) => (
-                <button 
-                  key={sec} onClick={() => setDuration(sec)}
-                  className={`py-3 rounded-xl font-black text-[12px] transition-all border ${duration === sec ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00] shadow-[0_0_15px_rgba(255,140,0,0.2)]' : 'bg-black border-white/10 text-zinc-500 hover:border-white/30 hover:text-white'}`}
-                >
-                  {sec}
-                </button>
+        {isLocked && promptsUsed >= PROMPT_LIMIT && (
+            <div className="w-full bg-red-900/20 border border-red-500/50 rounded-2xl p-6 flex items-center justify-center gap-4 text-red-500">
+                <AlertTriangle className="w-8 h-8 animate-pulse" />
+                <span className="font-black uppercase tracking-widest text-sm">V8 QUOTA EXCEEDED. ENGINE LOCKED UNTIL NEXT MONTH.</span>
+            </div>
+        )}
+
+        <div className="grid gap-8 lg:grid-cols-[400px_1fr]">
+          {/* LEVI PANEL: CONTROLS */}
+          <div className="space-y-6">
+            <div className="rounded-[2rem] border border-white/10 bg-[#0a0a0a] p-6 shadow-2xl">
+              <h2 className="mb-6 text-lg font-black uppercase tracking-widest text-white border-b border-white/10 pb-4">Engine Parameters</h2>
+
+              <div className="grid gap-5">
+                <label className="space-y-2">
+                  <span className="block text-[10px] font-black uppercase tracking-widest text-orange-500">BATCH COUNT (VARIATIONS)</span>
+                  <input type="number" min="1" max="50" value={count} onChange={(e) => setCount(Math.max(1, Math.min(50, Number(e.target.value || 1))))} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3.5 text-white font-mono outline-none focus:border-orange-500 transition-colors" />
+                </label>
+
+                <label className="space-y-2">
+                  <span className="block text-[10px] font-black uppercase tracking-widest text-orange-500">ALGORITHM SEED</span>
+                  <input type="number" value={seed} onChange={(e) => setSeed(Number(e.target.value || 0))} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3.5 text-white font-mono outline-none focus:border-orange-500 transition-colors" />
+                </label>
+
+                <label className="space-y-2">
+                  <span className="block text-[10px] font-black uppercase tracking-widest text-orange-500">ASPECT RATIO</span>
+                  <select value={aspectRatio} onChange={(e) => setAspectRatio(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3.5 text-white font-bold uppercase outline-none focus:border-orange-500 transition-colors cursor-pointer">
+                    <option value="16:9">16:9 (Landscape)</option>
+                    <option value="21:9">21:9 (Cinematic)</option>
+                    <option value="4:3">4:3 (Standard)</option>
+                    <option value="1:1">1:1 (Square)</option>
+                    <option value="9:16">9:16 (Portrait)</option>
+                  </select>
+                </label>
+
+                <label className="space-y-2">
+                  <span className="block text-[10px] font-black uppercase tracking-widest text-orange-500">PRESET STYLE</span>
+                  <select value={presetName} onChange={(e) => setPresetName(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3.5 text-white font-bold uppercase outline-none focus:border-orange-500 transition-colors cursor-pointer">
+                    {Object.keys(STYLE_PRESETS).map((name) => (<option key={name} value={name}>{name.toUpperCase()}</option>))}
+                  </select>
+                </label>
+
+                <label className="flex items-center gap-3 rounded-xl border border-white/10 bg-black p-4 text-[11px] font-black uppercase tracking-widest text-zinc-300 cursor-pointer hover:border-orange-500/50 transition-colors">
+                  <input type="checkbox" checked={strictNoBrand} onChange={(e) => setStrictNoBrand(e.target.checked)} className="accent-orange-500 w-4 h-4" />
+                  NO BRAND / TEXT LOCK
+                </label>
+
+                <label className="flex items-center gap-3 rounded-xl border border-white/10 bg-black p-4 text-[11px] font-black uppercase tracking-widest text-zinc-300 cursor-pointer hover:border-orange-500/50 transition-colors">
+                  <input type="checkbox" checked={includeNegative} onChange={(e) => setIncludeNegative(e.target.checked)} className="accent-orange-500 w-4 h-4" />
+                  NEGATIVE PROMPT
+                </label>
+
+                <div className="grid grid-cols-2 gap-3 mt-4">
+                  <button onClick={randomSeed} className="rounded-xl bg-zinc-900 border border-white/5 px-4 py-3 font-black text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all flex items-center justify-center gap-2"><RefreshCw size={12} /> SEED</button>
+                  <button onClick={clearDetails} className="rounded-xl bg-zinc-900 border border-white/5 px-4 py-3 font-black text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all">CLEAR DESC</button>
+                  <button onClick={reset} className="col-span-2 rounded-xl bg-zinc-800 border border-white/10 px-4 py-3 font-black text-[10px] uppercase tracking-widest text-white hover:bg-orange-600 transition-all shadow-lg">SYSTEM RESET</button>
+                </div>
+              </div>
+            </div>
+            
+            <div className="rounded-[2rem] border border-blue-500/30 bg-blue-900/10 p-6 text-xs text-blue-200 font-medium leading-relaxed">
+              <span className="font-black text-blue-400 uppercase tracking-widest block mb-2 text-[10px]">V8 AUTOMATION</span>
+              Leave panel descriptions empty to trigger the V8 Auto-Algorithm. It will detect your category and inject premium cinematic lighting and camera metadata automatically.
+            </div>
+          </div>
+
+          {/* SREDNJI PANEL: INPUT */}
+          <div className="rounded-[2rem] border border-white/10 bg-[#0a0a0a] p-6 shadow-2xl">
+            <h2 className="mb-6 text-lg font-black uppercase tracking-widest text-white border-b border-white/10 pb-4">Grid Layout (8 Panels)</h2>
+            <div className="grid gap-6">
+              {categories.map((category, index) => (
+                <div key={index} className="rounded-2xl border border-white/5 bg-[#050505] p-5 relative group hover:border-orange-500/30 transition-colors">
+                  <div className="absolute top-0 right-0 bg-white/5 text-zinc-500 text-[8px] font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest">
+                    PANEL {index + 1} • ROW {index < 4 ? "1" : "2"}
+                  </div>
+                  
+                  <label className="mb-2 block text-[9px] font-black uppercase tracking-widest text-orange-500">SUBJECT CATEGORY</label>
+                  <input value={category} onChange={(e) => updateCategory(index, e.target.value)} className="mb-4 w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-white font-bold outline-none focus:border-orange-500 transition-colors" placeholder={`Subject for panel ${index + 1}`} />
+                  
+                  <label className="mb-2 block text-[9px] font-black uppercase tracking-widest text-orange-500">MANUAL DESCRIPTION (OPTIONAL)</label>
+                  <textarea value={details[index]} onChange={(e) => updateDetail(index, e.target.value)} className="min-h-[100px] w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-sm text-zinc-300 leading-relaxed outline-none focus:border-orange-500 transition-colors resize-none custom-scrollbar" placeholder="V8 Auto-Algorithm is ready..." />
+                </div>
               ))}
             </div>
           </div>
+        </div>
 
-          {/* FORMAT SLIKE */}
-          <div className="flex flex-col gap-3">
-             <label className="text-zinc-400 font-black text-[11px] tracking-widest uppercase flex items-center gap-2">
-               <MonitorPlay size={14} /> 4. ASPECT RATIO {arLocked && <Lock size={12} className="text-red-500 inline ml-1" title="Locked by Image Dimensions" />}
-             </label>
-             <div className="flex gap-2">
-                <button 
-                  onClick={() => !arLocked && setAspectRatio('16:9')} 
-                  disabled={arLocked && aspectRatio !== '16:9'}
-                  className={`flex-1 py-4 rounded-xl font-black text-[11px] uppercase flex items-center justify-center gap-2 transition-all border ${aspectRatio === '16:9' ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]' : 'bg-black border-white/10 text-zinc-500 hover:border-white/30'} ${arLocked && aspectRatio !== '16:9' ? 'opacity-20 cursor-not-allowed bg-black border-transparent' : ''}`}
-                >
-                  <MonitorPlay size={16} /> 16:9 CINEMATIC
-                </button>
-                <button 
-                  onClick={() => !arLocked && setAspectRatio('9:16')} 
-                  disabled={arLocked && aspectRatio !== '9:16'}
-                  className={`flex-1 py-4 rounded-xl font-black text-[11px] uppercase flex items-center justify-center gap-2 transition-all border ${aspectRatio === '9:16' ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]' : 'bg-black border-white/10 text-zinc-500 hover:border-white/30'} ${arLocked && aspectRatio !== '9:16' ? 'opacity-20 cursor-not-allowed bg-black border-transparent' : ''}`}
-                >
-                  <Smartphone size={16} /> 9:16 VERTICAL
-                </button>
-             </div>
-             {arLocked && <p className="text-red-500 text-[10px] uppercase font-bold tracking-wider mt-1 text-right">🔒 AR Locked by source image</p>}
+        {/* DONJI PANEL: OUTPUT */}
+        <div className="rounded-[2.5rem] border border-orange-500/40 bg-[#0a0a0a] p-8 shadow-[0_0_40px_rgba(234,88,12,0.15)] relative mt-10">
+          <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-end md:justify-between border-b border-white/10 pb-4">
+            <div>
+              <h2 className="text-xl font-black uppercase tracking-widest text-white">Engine Output</h2>
+              <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Ready for deployment.</p>
+            </div>
+            <div className="text-[10px] bg-orange-600 text-white px-3 py-1.5 rounded-lg font-black uppercase tracking-widest">{count} BATCHES GENERATED</div>
           </div>
-
-          {/* GENERATE DUGME */}
-          <div className="mt-auto pt-8 border-t border-white/10">
-            <button 
-              onClick={generisiMasterPrompt}
-              disabled={isGenerating || (!promptText && !imageFile)}
-              className="w-full bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white font-black text-[16px] uppercase tracking-widest py-5 rounded-2xl shadow-[0_0_30px_rgba(234,88,12,0.3)] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02]"
-            >
-              {isGenerating ? 'COMPILING META-TOKENS...' : 'GENERATE 5 MASTER PROMPTS'} <Settings2 size={20} className={isGenerating ? "animate-spin" : ""} />
-            </button>
-          </div>
-
+          <textarea value={output} readOnly className="min-h-[600px] w-full rounded-2xl border border-white/10 bg-[#050505] p-6 font-mono text-xs leading-relaxed text-orange-100 outline-none custom-scrollbar shadow-inner" />
         </div>
       </div>
-
-      {/* LIFETIME LICENSE SECTION */}
-      <div className="grid md:grid-cols-3 gap-8 text-left border-t border-white/10 pt-16 relative z-10">
-          <div className="flex flex-col justify-center">
-              <h3 className="text-4xl font-black italic uppercase text-white mb-4">LIFETIME <span className="text-orange-500 font-black">ACCESS</span></h3>
-              <p className="text-zinc-500 font-bold uppercase tracking-[0.3em] text-[10px]">Single purchase. Endless generations. Own the {engineName}.</p>
-          </div>
-          <div className="md:col-span-2 bg-gradient-to-r from-blue-950/40 via-indigo-950/40 to-blue-950/40 border border-blue-500/50 p-10 rounded-[3rem] backdrop-blur-2xl flex flex-col md:flex-row justify-between items-center gap-8 relative overflow-hidden shadow-[0_20px_50px_rgba(59,130,246,0.1)]">
-              <div className="flex items-center gap-6 relative z-10">
-                 <div className="p-4 bg-blue-500/20 rounded-3xl border border-blue-400/30">
-                    <Diamond className="w-14 h-14 text-blue-400 drop-shadow-[0_0_15px_rgba(59,130,246,0.8)] animate-bounce" />
-                 </div>
-                 <div>
-                     <span className="text-orange-500 font-black uppercase text-[11px] tracking-[0.3em]">ONE-TIME PURCHASE</span>
-                     <h4 className="text-white font-black uppercase text-3xl tracking-tighter">V8 <span className="text-blue-400">PRO</span> LICENSE</h4>
-                 </div>
-              </div>
-              <div className="flex flex-col items-center md:items-end relative z-10">
-                  <div className="flex items-end gap-2">
-                      <span className="text-white font-black font-mono text-6xl">$149</span>
-                  </div>
-                  <MagneticButton>
-                      <button 
-                        onClick={pokreniKupovinu} 
-                        className="mt-6 bg-white text-black px-10 py-4 rounded-full font-black uppercase tracking-[0.2em] text-[11px] hover:bg-yellow-400 hover:text-black transition-all shadow-xl flex items-center gap-2"
-                      >
-                          SECURE CHECKOUT 🍋
-                      </button>
-                  </MagneticButton>
-              </div>
-          </div>
-      </div>
-
-      {/* 🔥 POZIV ZA NEZAVISNI MODAL 🔥 */}
-      <V8EngineCheckoutModal isOpen={showPaymentModal} onClose={() => setShowPaymentModal(false)} engineName={engineName} />
-
     </div>
   );
-  // KRAJ FUNKCIJE: V8PromptEngine
-};
-
-export default V8PromptEngine;
+}
 // KRAJ FAJLA: V8PromptEngine.jsx

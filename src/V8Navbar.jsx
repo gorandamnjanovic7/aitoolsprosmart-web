@@ -1,7 +1,7 @@
 // POČETAK FAJLA: V8Navbar.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay } from 'lucide-react';
+import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay, FileText } from 'lucide-react'; // Dodat FileText
 import { motion } from 'framer-motion';
 
 // FIREBASE & TOOLS
@@ -18,7 +18,6 @@ const V8Navbar = ({ handleHomeClick }) => {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   
-  // --- V8 BRZI RADAR ZA LOGIN (Jedino što je menjano u logici) ---
   const [user, setUser] = useState(null);
   const [isVIPInDB, setIsVIPInDB] = useState(false);
 
@@ -44,13 +43,11 @@ const V8Navbar = ({ handleHomeClick }) => {
     return () => unsub();
   }, []);
 
-  // POČETAK: Logika za providnost na skrol
   useEffect(() => {
     const handleScroll = () => { setScrolled(window.scrollY > 50); };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-  // KRAJ: Logika za providnost na skrol
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -84,7 +81,6 @@ const V8Navbar = ({ handleHomeClick }) => {
       >
         <div className="max-w-7xl mx-auto flex justify-between items-center px-4 md:px-8">
           
-          {/* POČETAK: LOGO SEKCIJA */}
           <Link to="/" onClick={handleHomeClick} className="flex items-center gap-3 group shrink-0 mr-4">
             <img src={data.logoUrl} className={`object-contain transition-all duration-500 ${scrolled ? 'h-8 md:h-10' : 'h-10 md:h-12'} animate-pulse group-hover:scale-105`} alt="logo" />
             <div className="flex items-center gap-1.5 whitespace-nowrap">
@@ -92,19 +88,16 @@ const V8Navbar = ({ handleHomeClick }) => {
               <span className={`font-black uppercase tracking-[0.1em] text-orange-500 italic group-hover:text-blue-500 transition-all duration-500 ${scrolled ? 'text-[10px] md:text-[12px]' : 'text-[11px] md:text-[14px]'}`}>PRO SMART</span>
             </div>
           </Link>
-          {/* KRAJ: LOGO SEKCIJA */}
 
           <div className="flex-1 flex items-center justify-end gap-3 font-black uppercase text-[10px] md:text-[11px] tracking-widest whitespace-nowrap">
             
-            {/* POČETAK: HOME DUGME */}
             <MagneticButton>
                <Link to="/" onClick={handleHomeClick} className="hidden lg:flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-emerald-900/30 border border-emerald-500/40 text-emerald-400 hover:text-white hover:bg-emerald-800/50 hover:border-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] cursor-pointer">
                  <Globe className="w-4 h-4" /> Home
                </Link>
             </MagneticButton>
-            {/* KRAJ: HOME DUGME */}
 
-            {/* POČETAK: V8 MASTER TOOLS DROPDOWN */}
+            {/* V8 MASTER TOOLS DROPDOWN */}
             <div className="relative group hidden lg:block">
               <MagneticButton>
                 <button className="flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-red-600/90 via-orange-600/90 to-red-600/90 border border-orange-400 text-white transition-all shadow-[0_0_15px_rgba(249,115,22,0.4)] hover:shadow-[0_0_25px_rgba(249,115,22,0.8)] cursor-pointer relative overflow-hidden">
@@ -118,7 +111,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                 <div className="bg-black/90 backdrop-blur-2xl border border-white/10 border-t-orange-500 border-b-orange-500/30 rounded-2xl p-2 w-64 shadow-[0_30px_60px_rgba(0,0,0,0.9)] flex flex-col gap-1 relative overflow-hidden">
                   <div className="absolute -top-12 -right-12 w-32 h-32 bg-orange-600/30 rounded-full blur-[40px] pointer-events-none z-0"></div>
                   
-                  {/* STAVKA 1: 10X ENHANCER */}
                   <Link to="/enxance" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-orange-500/30">
                     <div className="bg-orange-500/20 p-2 rounded-lg group-hover/item:bg-orange-500/40 transition-colors shadow-[0_0_10px_rgba(249,115,22,0.3)]">
                       <Zap className="w-5 h-5 text-orange-400 transition-transform group-hover/item:scale-110" />
@@ -129,7 +121,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   </Link>
 
-                  {/* STAVKA 2: AI STORE */}
                   <Link to="/#marketplace" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-blue-500/30 mt-1">
                     <div className="bg-blue-500/20 p-2 rounded-lg group-hover/item:bg-blue-500/40 transition-colors shadow-[0_0_10px_rgba(59,130,246,0.3)]">
                       <Award className="w-5 h-5 text-blue-400 transition-transform group-hover/item:scale-110" />
@@ -139,8 +130,18 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Asset Marketplace</span>
                     </div>
                   </Link>
+
+                  {/* NOVO: V8 PROMPT ENGINE */}
+                  <Link to="/prompt-engine" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-yellow-500/30 mt-1">
+                    <div className="bg-yellow-500/20 p-2 rounded-lg group-hover/item:bg-yellow-500/40 transition-colors shadow-[0_0_10px_rgba(234,179,8,0.3)]">
+                      <FileText className="w-5 h-5 text-yellow-400 transition-transform group-hover/item:scale-110" />
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-yellow-400 transition-all drop-shadow-md">PROMPT ENGINE</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Grid Factory Text Gen</span>
+                    </div>
+                  </Link>
                   
-                  {/* STAVKA 3: CINEMATIC OPTIMIZER */}
                   <Link to="/optimizer" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-orange-500/30 mt-1">
                     <div className="bg-orange-500/20 p-2 rounded-lg group-hover/item:bg-orange-500/40 transition-colors shadow-[0_0_10px_rgba(249,115,22,0.3)]">
                       <ImageIcon className="w-5 h-5 text-orange-400 transition-transform group-hover/item:scale-110" />
@@ -151,7 +152,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   </Link>
 
-                  {/* STAVKA 4: SEEDANCE 2.0 ENGINE */}
                   <Link to="/seedance" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-green-500/30 mt-1">
                     <div className="bg-green-500/20 p-2 rounded-lg group-hover/item:bg-green-500/40 transition-colors shadow-[0_0_10px_rgba(34,197,94,0.3)]">
                       <MonitorPlay className="w-5 h-5 text-green-400 transition-transform group-hover/item:scale-110" />
@@ -162,7 +162,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   </Link>
 
-                  {/* STAVKA 5: KLING 3.0 ENGINE */}
                   <Link to="/kling" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-red-500/30 mt-1">
                     <div className="bg-red-500/20 p-2 rounded-lg group-hover/item:bg-red-500/40 transition-colors shadow-[0_0_10px_rgba(239,68,68,0.3)]">
                       <Video className="w-5 h-5 text-red-400 transition-transform group-hover/item:scale-110" />
@@ -175,9 +174,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                 </div>
               </div>
             </div>
-            {/* KRAJ: V8 MASTER TOOLS DROPDOWN */}
 
-            {/* POČETAK: PREMIUM STOCK DROPDOWN */}
+            {/* PREMIUM STOCK DROPDOWN */}
             <div className="relative group hidden lg:block">
               <MagneticButton>
                 <button className="flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-blue-900/30 to-indigo-900/30 border border-blue-500/50 text-blue-300 hover:text-white hover:border-blue-400 transition-all shadow-[0_0_15px_rgba(59,130,246,0.15)] cursor-pointer">
@@ -191,7 +189,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                 <div className="bg-black/80 backdrop-blur-2xl border border-white/10 border-t-blue-500/60 border-b-purple-500/30 rounded-2xl p-2 w-64 shadow-[0_30px_60px_rgba(0,0,0,0.8)] flex flex-col gap-1 relative overflow-hidden">
                   <div className="absolute -top-12 -right-12 w-32 h-32 bg-blue-600/20 rounded-full blur-[40px] pointer-events-none z-0"></div>
                   
-                  {/* STAVKA 1: MASTER STOCK BUNDLES */}
                   <Link to="/stock" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-400 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-blue-500/30">
                     <div className="bg-blue-500/10 p-2 rounded-lg group-hover/item:bg-blue-500/20 transition-colors">
                       <Layers className="w-5 h-5 text-blue-400 transition-transform group-hover/item:scale-110" />
@@ -202,7 +199,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   </Link>
                   
-                  {/* STAVKA 2: SHOWROOM */}
                   <Link to="/showroom" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-400 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-purple-500/30">
                     <div className="bg-purple-500/10 p-2 rounded-lg group-hover/item:bg-purple-500/20 transition-colors">
                       <ImageIcon className="w-5 h-5 text-purple-400 transition-transform group-hover/item:scale-110" />
@@ -215,9 +211,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                 </div>
               </div>
             </div>
-            {/* KRAJ: PREMIUM STOCK DROPDOWN */}
 
-            {/* POČETAK: AUTH LOGIKA (Admin / VIP) */}
+            {/* AUTH LOGIKA */}
             {user ? (
                <div className="flex items-center gap-2 ml-2 border-l border-white/10 pl-4">
                  {isAdmin && (
@@ -254,14 +249,12 @@ const V8Navbar = ({ handleHomeClick }) => {
                  </MagneticButton>
                </div>
             )}
-            {/* KRAJ: AUTH LOGIKA (Admin / VIP) */}
 
           </div>
         </div>
       </nav>
     </div>
   );
-  // KRAJ FUNKCIJE: V8Navbar
 };
 export default V8Navbar;
 // KRAJ FAJLA: V8Navbar.jsx

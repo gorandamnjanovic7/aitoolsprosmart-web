@@ -9,6 +9,90 @@ import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from
 import { v8Toast } from './App';
 import { motion } from 'framer-motion';
 
+const DEFAULT_CATEGORIES = [
+  // --- ORIGINALNI V8 CORE ---
+  "Luxury abstract sculpture",
+  "Ancient Roman epic scene",
+  "Michelin fine dining",
+  "Chocolate dessert macro",
+  "Blue cocktail splash reference",
+  "Red liquid splash reference",
+  "Supercar with drone",
+  "Luxury Swiss watch",
+
+  // --- MYTHOLOGY & HISTORY (Epic Scale) ---
+  "Fierce Viking warrior in battle",
+  "Ancient Aztec golden city aerial",
+  "Spartan gladiator in arena dust",
+  "Samurai commander cinematic portrait",
+
+  // --- HIGH-PERFORMANCE AUTOMOTIVE ---
+  "Hypercar drifting on neon street",
+  "Luxury SUV in snowy mountain pass",
+  "Matte black motorcycle studio shot",
+  "Classic vintage race car macro detail",
+
+  // --- DARK PREMIUM TECH & PRODUCT ---
+  "Dark obsidian smartphone with glowing edges",
+  "Premium dark cosmetics glass bottle",
+  "Minimalist black leather designer bag",
+  "Matte black luxury headphones",
+
+  // --- MACRO ELEMENTS & FOOD ---
+  "Golden coffee beans splashing in espresso",
+  "Smoky whiskey glass with glowing ice cube",
+  "Dark marble and liquid gold texture",
+  "Gourmet sushi premium macro photography",
+
+  // --- ARCHITECTURE & LIFESTYLE ---
+  "Luxury modern villa with infinity pool",
+  "High-fashion editorial neon lighting",
+  "First-class private jet interior",
+  "Cinematic cyberpunk street level"
+];
+
+const DEFAULT_DETAILS = [
+  // --- ORIGINALNI V8 CORE ---
+  "An impossible luxury abstract sculpture made of black obsidian, smoked glass, liquid chrome and polished gold ribbons, floating in a dark premium studio with dramatic spotlighting, realistic reflections, micro-scratches and gallery-grade composition.",
+  "A breathtaking ancient Roman epic scene with a heroic commander in ornate bronze and gold armor, red cape, plumed helmet, elite legionaries behind him, imperial architecture, dust in the air, cinematic sunlight and Hollywood-scale historical realism.",
+  "A Michelin-star luxury gourmet plate on matte black ceramic, premium seafood, delicate sauce dots, microgreens, edible flowers, edible gold accents, shallow depth of field and restaurant-grade macro food photography.",
+  "A decadent layered chocolate cake with rich dark sponge, thick glossy ganache slowly dripping over the edges, moist texture, chocolate shavings, warm moody dessert lighting and premium bakery macro detail.",
+  "A premium blue cocktail in a crystal martini glass with sparkling bubbles, frozen splash above the rim, orange wedge garnish, cinnamon stick, frosty tabletop, dark blue-and-amber bar lighting and hyper-realistic beverage photography.",
+  "A dramatic crimson-red liquid splash explosion frozen mid-air, glossy translucent droplets, suspended liquid sheets, black moody background, sharp high-speed macro photography and luxury commercial splash-art energy.",
+  "An unbranded futuristic supercar racing on a dramatic mountain highway, a visible professional drone flying above it, aggressive aerodynamic body, glossy carbon reflections, dust particles, golden-hour light and premium automotive advertising style.",
+  "A luxury Swiss-style wristwatch inspired by ultra-premium dress-watch design, rose-gold case, dark elegant dial, visible complications, polished sapphire crystal, leather strap, macro product photography and a dark black-and-gold studio background.",
+
+  // --- MYTHOLOGY & HISTORY (Epic Scale) ---
+  "Fierce Viking warrior in battle, cinematic lighting, ultra-realistic.",
+  "Ancient Aztec golden city aerial, monumental, epic scale.",
+  "Spartan gladiator in arena dust, historical realism, epic.",
+  "Samurai commander cinematic portrait, intricate details.",
+
+  // --- HIGH-PERFORMANCE AUTOMOTIVE ---
+  "Hypercar drifting on neon street, motion blur, cinematic.",
+  "Luxury SUV in snowy mountain pass, cold atmosphere.",
+  "Matte black motorcycle studio shot, rim lighting.",
+  "Classic vintage race car macro detail, chrome textures.",
+
+  // --- DARK PREMIUM TECH & PRODUCT ---
+  "Dark obsidian smartphone with glowing edges, futuristic.",
+  "Premium dark cosmetics glass bottle, elegant.",
+  "Minimalist black leather designer bag, luxury texture.",
+  "Matte black luxury headphones, sharp macro detail.",
+
+  // --- MACRO ELEMENTS & FOOD ---
+  "Golden coffee beans splashing in espresso, liquid art.",
+  "Smoky whiskey glass with glowing ice cube, dark.",
+  "Dark marble and liquid gold texture, elegant.",
+  "Gourmet sushi premium macro photography, artistic.",
+
+  // --- ARCHITECTURE & LIFESTYLE ---
+  "Luxury modern villa with infinity pool, twilight.",
+  "High-fashion editorial neon lighting, moody.",
+  "First-class private jet interior, luxury leather.",
+  "Cinematic cyberpunk street level, reflective neon."
+];
+
 // POČETAK FUNKCIJE: FullScreenLightbox
 const FullScreenLightbox = ({ imageUrl, onClose }) => {
     useEffect(() => {
@@ -241,11 +325,35 @@ const V8StockBerza = () => {
   const snimiKupcaUBazu = async (user, paket) => {
       try {
           const imePaketa = paket.nazivEn || "Premium Package";
+          // 1. Zapiši kupca u bazu (kao i do sada)
           await addDoc(collection(db, "v8_kupci"), {
               ime: user.displayName || "Client", email: user.email, uid: user.uid,
               zeliPaket: imePaketa, cenaPaketa: paket.cena, vreme: serverTimestamp(), isPaid: false
           });
-      } catch (error) { console.error(error); }
+
+          // 2. PROVERA: Ako je Masterwork Bundle, otključaj Prompt Engine
+          if (paket.format && paket.format.toUpperCase().includes('MASTERWORK BUNDLE')) {
+              const userRef = doc(db, "vip_users", user.email.toLowerCase());
+              const userSnap = await getDoc(userRef);
+              
+              if (userSnap.exists()) {
+                  const data = userSnap.data();
+                  const unlocked = data.unlockedApps || [];
+                  if (!unlocked.includes('V8_PROMPT_ENGINE')) {
+                      await updateDoc(userRef, {
+                          unlockedApps: [...unlocked, 'V8_PROMPT_ENGINE']
+                      });
+                      v8Toast.success("V8 PROMPT ENGINE UNLOCKED!");
+                  }
+              } else {
+                  await setDoc(userRef, {
+                      unlockedApps: ['V8_PROMPT_ENGINE'],
+                      promptsUsed: 0
+                  });
+                  v8Toast.success("V8 PROMPT ENGINE UNLOCKED!");
+              }
+          }
+      } catch (error) { console.error("Greška pri dodeljivanju pristupa:", error); }
   };
   // KRAJ FUNKCIJE: snimiKupcaUBazu
 
@@ -557,9 +665,9 @@ const V8StockBerza = () => {
             })
             .map(paket => (
             <div key={paket.id} className={`w-full md:w-[calc(50%-1.5rem)] group transition-all duration-500 hover:scale-[1.02] shadow-[0_0_30px_rgba(255,140,0,0.15)] flex flex-col ${activeTab === 'bundles' ? 'v8-bundle-card v8-premium-card' : 'v8-premium-card'}`}>
-              <div className="v8-card-content p-5 md:p-6">
+              <div className="v8-card-content p-5 md:p-6 flex flex-col h-full">
                 
-                <div className={`${getAspectClass(paket.format)} relative rounded-2xl overflow-hidden mb-4 bg-black border border-white/5 shadow-inner`}>
+                <div className={`${getAspectClass(paket.format)} relative rounded-2xl overflow-hidden mb-4 bg-black border border-white/5 shadow-inner shrink-0`}>
                   {paket.volume && (<div className={`absolute top-0 left-0 px-3 py-1.5 rounded-br-xl rounded-tl-2xl font-black text-[10px] uppercase tracking-widest z-20 shadow-lg border-b border-r ${activeTab === 'bundles' ? 'bg-blue-600 text-white border-blue-400' : 'bg-[#FF8C00] text-black border-[#FF8C00]/50'}`}>{paket.volume}</div>)}
                   
                   <div className="absolute top-2 right-2 flex flex-col gap-1.5 items-end z-20">
@@ -567,15 +675,11 @@ const V8StockBerza = () => {
                       {(paket.kategorijaEn || paket.kategorija) && (<div className={`bg-black/80 backdrop-blur-md px-3 py-1 rounded-lg font-black text-[9px] uppercase tracking-wider shadow-lg border ${activeTab === 'bundles' ? 'border-purple-400/50 text-purple-400' : 'border-blue-400/50 text-blue-400'}`}>{paket.kategorijaEn || paket.kategorija}</div>)}
                   </div>
 
-                  {paket.previewUrl && paket.previewUrl.match(/\.(mp4|webm|mov)$/i) ? (
-                    <video preload="none" src={`${paket.previewUrl}#t=0.001`} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-500" muted loop playsInline onMouseOver={e => e.target.play()} onMouseOut={e => e.target.pause()} />
-                  ) : (
-                    <img loading="lazy" src={paket.previewUrl} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-500" alt={paket.nazivEn} />
-                  )}
+                  <img loading="lazy" src={paket.previewUrl} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-500" alt={paket.nazivEn} />
                 </div>
                 
                 {paket.primeri && paket.primeri.length > 0 && (
-                    <div className={`grid gap-3 mb-6 ${paket.primeri.length > 4 ? 'grid-cols-3' : 'grid-cols-4'}`}>
+                    <div className={`grid gap-3 mb-4 shrink-0 ${paket.primeri.length > 4 ? 'grid-cols-3' : 'grid-cols-4'}`}>
                         {paket.primeri.map((imgUrl, idx) => (
                             <div key={idx} className="aspect-square rounded-xl overflow-hidden border border-white/10 bg-zinc-900 shadow-xl relative cursor-pointer" onClick={() => setFullScreenImageUrl(imgUrl)}>
                                 <img loading="lazy" src={imgUrl} className="w-full h-full object-cover opacity-70 hover:opacity-100 transition-all duration-300" alt="V8 Preview" />
@@ -584,24 +688,28 @@ const V8StockBerza = () => {
                     </div>
                 )}
                 
-                <div className="flex items-center gap-3 mb-3">
-                  {paket.tip === 'Video' ? <Video className={`w-5 h-5 ${activeTab === 'bundles' ? 'text-blue-400' : 'text-[#FF8C00]'}`} /> : <ImageIcon className={`w-5 h-5 ${activeTab === 'bundles' ? 'text-blue-400' : 'text-[#FF8C00]'}`} />}
-                  <h3 className="text-[18px] md:text-[20px] font-black uppercase text-white tracking-widest">{paket.nazivEn || "PREMIUM ASSETS"}</h3>
+                <div className="flex-1 flex flex-col">
+                  <div className="flex items-center gap-3 mb-2 shrink-0">
+                    {paket.tip === 'Video' ? <Video className={`w-5 h-5 ${activeTab === 'bundles' ? 'text-blue-400' : 'text-[#FF8C00]'}`} /> : <ImageIcon className={`w-5 h-5 ${activeTab === 'bundles' ? 'text-blue-400' : 'text-[#FF8C00]'}`} />}
+                    <h3 className="text-[18px] md:text-[20px] font-black uppercase text-white tracking-widest leading-tight">{paket.nazivEn || "PREMIUM ASSETS"}</h3>
+                  </div>
+                  
+                  <p className="text-zinc-400 text-[11px] uppercase font-black mb-4 flex-1 leading-relaxed tracking-wider whitespace-pre-wrap">{paket.opisEn}</p>
                 </div>
                 
-                <p className="text-zinc-400 text-[11px] uppercase font-black mb-6 flex-1 leading-relaxed tracking-wider whitespace-pre-wrap">{paket.opisEn}</p>
-                
-                <div className={`flex items-center justify-between mt-auto pt-5 border-t ${activeTab === 'bundles' ? 'border-blue-500/30' : 'border-[#FF8C00]/30'}`}>
-                  <span className="text-2xl font-black text-white">${getGlobalCena(paket.cena)}</span>
-                  {isAdmin ? (
-                    <a href={paket.zipLink} target="_blank" rel="noopener noreferrer" className="bg-green-600 hover:bg-green-500 text-white px-6 py-3.5 rounded-xl font-black text-[11px] uppercase tracking-widest flex items-center gap-2">DOWNLOAD <Download className="w-4 h-4" /></a>
-                  ) : (
-                      <button onClick={() => prijavaIKupovina(paket)} className={`hover:scale-105 text-white px-6 py-3.5 rounded-xl font-black text-[11px] uppercase tracking-widest flex items-center gap-2 transition-all ${activeTab === 'bundles' ? 'bg-gradient-to-r from-blue-600 to-indigo-500 shadow-[0_0_15px_rgba(59,130,246,0.4)]' : 'bg-gradient-to-r from-orange-600 to-amber-500 shadow-[0_0_15px_rgba(234,88,12,0.4)]'}`}>GET LICENSE <Zap className="w-4 h-4" /></button>
-                  )}
+                <div className="mt-auto shrink-0 bg-[#050505] p-4 -mx-2 -mb-2 rounded-xl border border-white/5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl font-black text-white drop-shadow-md">${getGlobalCena(paket.cena)}</span>
+                    {isAdmin ? (
+                      <a href={paket.zipLink} target="_blank" rel="noopener noreferrer" className="bg-green-600 hover:bg-green-500 text-white px-5 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest flex items-center gap-2 shadow-lg">DOWNLOAD <Download className="w-4 h-4" /></a>
+                    ) : (
+                        <button onClick={() => prijavaIKupovina(paket)} className={`hover:scale-105 text-white px-5 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest flex items-center gap-2 transition-all shadow-lg ${activeTab === 'bundles' ? 'bg-gradient-to-r from-blue-600 to-indigo-500 shadow-[0_0_15px_rgba(59,130,246,0.4)]' : 'bg-gradient-to-r from-orange-600 to-amber-500 shadow-[0_0_15px_rgba(234,88,12,0.4)]'}`}>GET LICENSE <Zap className="w-4 h-4" /></button>
+                    )}
+                  </div>
                 </div>
                 
                 {isAdmin && (
-                  <div className="mt-5 pt-4 border-t border-red-900/30 flex items-center gap-3">
+                  <div className="mt-4 pt-4 border-t border-red-900/30 flex items-center gap-3 shrink-0">
                     <button onClick={() => startEditPaket(paket)} className="w-full py-3 bg-zinc-800 text-zinc-300 rounded-xl text-[10px] font-black uppercase hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center gap-2">Edit <Pencil size={14} /></button>
                     <button onClick={() => obrisiPaket(paket.id)} className="w-full py-3 bg-red-900/30 text-red-500 rounded-xl text-[10px] font-black uppercase hover:bg-red-600 transition-all">Remove</button>
                   </div>
