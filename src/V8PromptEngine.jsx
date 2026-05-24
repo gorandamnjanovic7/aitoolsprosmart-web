@@ -1,10 +1,10 @@
 // POČETAK FAJLA: V8PromptEngine.jsx
 import React, { useMemo, useState, useEffect } from "react";
 import { Copy, Download, RefreshCw, Zap, Lock, AlertTriangle, ShieldCheck } from "lucide-react";
-import { auth, db } from './firebase'; // PRILAGODI PUTANJU AKO TREBA
+import { auth, db } from './firebase'; 
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from "firebase/auth";
-import { v8Toast } from './App'; // PRILAGODI PUTANJU AKO TREBA
+import { v8Toast } from './App'; 
 
 const DEFAULT_CATEGORIES = [
   // --- ORIGINALNI V8 CORE ---
@@ -123,6 +123,18 @@ function pick(arr, seed) {
   return arr[Math.floor(seededRandom(seed) * arr.length) % arr.length];
 }
 
+// 🎯 Funkcija za nasumično mešanje niza
+function seededShuffle(array, seed) {
+  let s = seed;
+  const shuffled = [...array];
+  for (let k = shuffled.length - 1; k > 0; k--) {
+    s = Math.sin(s) * 10000;
+    const r = Math.floor((s - Math.floor(s)) * (k + 1));
+    [shuffled[k], shuffled[r]] = [shuffled[r], shuffled[k]];
+  }
+  return shuffled;
+}
+
 function autoDescription(category, index, seed) {
   const c = category.toLowerCase();
   const camera = pick(CAMERA_PRESETS, seed + index * 31);
@@ -143,21 +155,49 @@ function makeSinglePrompt({ categories, details, seed, aspectRatio, presetName, 
     const manual = (details[i] || "").trim();
     return manual.length > 0 ? manual : autoDescription(cat, i, seed);
   });
+  
   const brandLock = strictNoBrand
     ? "All panels must be clean commercial-safe visuals: no visible logos, no readable brand names, no trademark marks, no readable license plates, no text, no captions."
     : "Avoid random text, captions, watermarks and messy symbols.";
+  
+  // Nema \n ispred NEGATIVE PROMPT, spajamo u jedan red
   const negative = includeNegative
-    ? `\n\nNEGATIVE PROMPT:\nno duplicate panels, no repeated subjects, no repeated compositions, no near-duplicates, no extra panels, no missing panels, no broken grid, no distorted layout, no UI, no browser interface, no app screenshot elements, no captions, no typography, no random letters, no watermark, no signature, no visible logos, no readable brand names, no low resolution, no blurry details, no plastic CGI look.`
+    ? " NEGATIVE PROMPT: no duplicate panels, no repeated subjects, no repeated compositions, no near-duplicates, no extra panels, no missing panels, no broken grid, no distorted layout, no UI, no browser interface, no app screenshot elements, no captions, no typography, no random letters, no watermark, no signature, no visible logos, no readable brand names, no low resolution, no blurry details, no plastic CGI look."
     : "";
 
-  return `Create a single premium cinematic collage image in a strict 2-row by 4-column grid, exactly 8 panels total, equal-size panels, clean thin separators, ${aspectRatio} aspect ratio. The final image must look like a luxury commercial advertising board, not an app screenshot.\n\nCRITICAL CONTROL LOCK:\nAll 8 panels must be visually different. No duplicated panels. No near-duplicates. No repeated subjects. No repeated compositions. Each panel must have a unique subject, unique framing, unique lighting mood and unique visual identity. ${brandLock}\n\nROW 1, PANEL 1 — ${categories[0]}:\n${descriptions[0]}\n\nROW 1, PANEL 2 — ${categories[1]}:\n${descriptions[1]}\n\nROW 1, PANEL 3 — ${categories[2]}:\n${descriptions[2]}\n\nROW 1, PANEL 4 — ${categories[3]}:\n${descriptions[3]}\n\nROW 2, PANEL 1 — ${categories[4]}:\n${descriptions[4]}\n\nROW 2, PANEL 2 — ${categories[5]}:\n${descriptions[5]}\n\nROW 2, PANEL 3 — ${categories[6]}:\n${descriptions[6]}\n\nROW 2, PANEL 4 — ${categories[7]}:\n${descriptions[7]}\n\nGLOBAL STYLE:\n${preset.suffix}, cohesive premium collage, cinematic realism, realistic reflections, subtle film grain, deep blacks, controlled highlights, luxury black-and-gold color grade, sharp but not oversharpened, expensive editorial finish.${negative}`;
+  // 🎯 SVE U JEDNOM REDU: String je kompletno očišćen od Enter (\n) tastera
+  return `Create a single premium cinematic collage image in a strict 2-row by 4-column grid, exactly 8 panels total, equal-size panels, clean thin separators, ${aspectRatio} aspect ratio. The final image must look like a luxury commercial advertising board, not an app screenshot. CRITICAL CONTROL LOCK: All 8 panels must be visually different. No duplicated panels. No near-duplicates. No repeated subjects. No repeated compositions. Each panel must have a unique subject, unique framing, unique lighting mood and unique visual identity. ${brandLock} ROW 1, PANEL 1 — ${categories[0]}: ${descriptions[0]} ROW 1, PANEL 2 — ${categories[1]}: ${descriptions[1]} ROW 1, PANEL 3 — ${categories[2]}: ${descriptions[2]} ROW 1, PANEL 4 — ${categories[3]}: ${descriptions[3]} ROW 2, PANEL 1 — ${categories[4]}: ${descriptions[4]} ROW 2, PANEL 2 — ${categories[5]}: ${descriptions[5]} ROW 2, PANEL 3 — ${categories[6]}: ${descriptions[6]} ROW 2, PANEL 4 — ${categories[7]}: ${descriptions[7]} GLOBAL STYLE: ${preset.suffix}, cohesive premium collage, cinematic realism, realistic reflections, subtle film grain, deep blacks, controlled highlights, luxury black-and-gold color grade, sharp but not oversharpened, expensive editorial finish.${negative}`;
 }
 
+// 🎯 NOVI "SMART POOL" ALGORITAM ZA 100% RAZLIČITE PROMPTOVE
 function makeVariations(options) {
+  let pool = [];
+  let shuffleCounter = 0;
+  
   return Array.from({ length: options.count }, (_, i) => {
-    const prompt = makeSinglePrompt({ ...options, seed: options.seed + i * 101 });
-    return `PROMPT ${i + 1}\n${prompt}`;
-  }).join("\n\n------------------------------------------------------------\n\n");
+    const currentSeed = options.seed + i * 101;
+    
+    // Ako se "bazen" isprazni (ima ispod 8 elemenata), mešamo ponovo celih 28 kategorija i dodajemo ih
+    while(pool.length < 8) {
+       const allIndices = Array.from({ length: options.categories.length }, (_, idx) => idx);
+       const shuffled = seededShuffle(allIndices, options.seed + shuffleCounter * 999);
+       pool = pool.concat(shuffled);
+       shuffleCounter++;
+    }
+    
+    // Uzimamo tačno sledećih 8 iz bazena (tako da sledeći prompt garantovano nema iste slike)
+    const selectedIndices = pool.splice(0, 8);
+    
+    const selectedCategories = selectedIndices.map(idx => options.categories[idx]);
+    const selectedDetails = selectedIndices.map(idx => options.details[idx]);
+
+    return makeSinglePrompt({ 
+        ...options, 
+        categories: selectedCategories,
+        details: selectedDetails,
+        seed: currentSeed 
+    });
+  });
 }
 
 export default function V8PromptEngine() {
@@ -166,16 +206,17 @@ export default function V8PromptEngine() {
   const [seed, setSeed] = useState(2026);
   const [aspectRatio, setAspectRatio] = useState("16:9");
   const [presetName, setPresetName] = useState("Nano Banana 2 / Pro");
-  const [count, setCount] = useState(5);
+  const [count, setCount] = useState(100);
   const [strictNoBrand, setStrictNoBrand] = useState(true);
   const [includeNegative, setIncludeNegative] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [copiedStates, setCopiedStates] = useState({});
   
   // V8 FIREBASE STATE
   const [user, setUser] = useState(null);
   const [isVIP, setIsVIP] = useState(false);
   const [promptsUsed, setPromptsUsed] = useState(0);
-  const [isLocked, setIsLocked] = useState(true); // Locked until verified
+  const [isLocked, setIsLocked] = useState(true);
   const PROMPT_LIMIT = 3000;
 
   useEffect(() => {
@@ -184,23 +225,19 @@ export default function V8PromptEngine() {
         setUser(currentUser);
         const email = currentUser.email.toLowerCase();
         
-        // ADMIN CHECK
         if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
            setIsVIP(true);
            setIsLocked(false);
            return;
         }
 
-        // VIP CHECK
         try {
           const docRef = doc(db, "vip_users", email);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists() && docSnap.data().unlockedApps) {
             const unlocked = docSnap.data().unlockedApps;
-            // OTVARA AKO IMA PROMPT ENGINE ILI FULL ACCESS
             if (unlocked.includes('V8_PROMPT_ENGINE') || unlocked.includes('FULL_ACCESS')) {
                setIsVIP(true);
-               // Očitaj potrošnju
                const used = docSnap.data().promptsUsed || 0;
                setPromptsUsed(used);
                if (used >= PROMPT_LIMIT) setIsLocked(true); else setIsLocked(false);
@@ -214,9 +251,12 @@ export default function V8PromptEngine() {
     return () => unsub();
   }, []);
 
-  const output = useMemo(() => {
+  const outputArray = useMemo(() => {
     return makeVariations({ categories, details, seed, aspectRatio, presetName, count, strictNoBrand, includeNegative });
   }, [categories, details, seed, aspectRatio, presetName, count, strictNoBrand, includeNegative]);
+
+  // Za Copy All i Download - spaja ih da budu čitljivi u TXT fajlu
+  const outputTextAll = outputArray.map((p, i) => `PROMPT ${i + 1}\n${p}`).join("\n\n------------------------------------------------------------\n\n");
 
   const updateCategory = (index, value) => setCategories(prev => { const next = [...prev]; next[index] = value; return next; });
   const updateDetail = (index, value) => setDetails(prev => { const next = [...prev]; next[index] = value; return next; });
@@ -234,7 +274,7 @@ export default function V8PromptEngine() {
 
   const copyOutput = async () => {
     if (isLocked) { v8Toast.error("Engine Locked or Quota Exceeded."); return; }
-    await navigator.clipboard.writeText(output);
+    await navigator.clipboard.writeText(outputTextAll);
     setCopied(true);
     setTimeout(() => setCopied(false), 1400);
     recordUsage();
@@ -242,7 +282,7 @@ export default function V8PromptEngine() {
 
   const downloadTxt = () => {
     if (isLocked) { v8Toast.error("Engine Locked or Quota Exceeded."); return; }
-    const blob = new Blob([output], { type: "text/plain;charset=utf-8" });
+    const blob = new Blob([outputTextAll], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -254,11 +294,19 @@ export default function V8PromptEngine() {
     recordUsage();
   };
 
-  const reset = () => { setCategories(DEFAULT_CATEGORIES); setDetails(DEFAULT_DETAILS); setSeed(2026); setAspectRatio("16:9"); setPresetName("Nano Banana 2 / Pro"); setCount(5); setStrictNoBrand(true); setIncludeNegative(true); };
-  const clearDetails = () => setDetails(new Array(8).fill(""));
+  // Funkcija za pojedinačno kopiranje prompta sa kartice
+  const copySingle = async (index, text) => {
+    if (isLocked) { v8Toast.error("Engine Locked or Quota Exceeded."); return; }
+    await navigator.clipboard.writeText(text);
+    setCopiedStates(prev => ({ ...prev, [index]: true }));
+    setTimeout(() => setCopiedStates(prev => ({ ...prev, [index]: false })), 2000);
+    v8Toast.success(`Prompt ${index + 1} copied!`);
+  };
+
+  const reset = () => { setCategories(DEFAULT_CATEGORIES); setDetails(DEFAULT_DETAILS); setSeed(2026); setAspectRatio("16:9"); setPresetName("Nano Banana 2 / Pro"); setCount(100); setStrictNoBrand(true); setIncludeNegative(true); };
+  const clearDetails = () => setDetails(new Array(28).fill(""));
   const randomSeed = () => setSeed(Math.floor(Math.random() * 999999));
 
-  // PAYWALL RENDER
   if (!user || (!isVIP && !isLocked)) {
       return (
         <div className="min-h-screen bg-[#050505] flex items-center justify-center pt-32 pb-20 px-6 font-sans">
@@ -301,7 +349,6 @@ export default function V8PromptEngine() {
               </p>
             </div>
             <div className="flex flex-col items-end gap-4">
-              {/* V8 LIMIT COUNTER */}
               <div className="flex items-center gap-3 bg-black/60 border border-white/10 px-4 py-2 rounded-xl">
                  <ShieldCheck className="w-4 h-4 text-green-500" />
                  <div className="flex flex-col items-end">
@@ -312,7 +359,7 @@ export default function V8PromptEngine() {
 
               <div className="flex flex-wrap gap-3">
                 <button onClick={copyOutput} disabled={isLocked} className={`flex items-center gap-2 rounded-xl px-6 py-3.5 font-black text-[11px] uppercase tracking-widest transition-all ${isLocked ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed' : 'bg-orange-600 text-white hover:bg-orange-500 shadow-[0_0_20px_rgba(234,88,12,0.4)] hover:shadow-[0_0_30px_rgba(234,88,12,0.6)]'}`}>
-                  <Copy size={16} /> {copied ? "COPIED TO CLIPBOARD!" : "COPY PROMPTS"}
+                  <Copy size={16} /> {copied ? "COPIED TO CLIPBOARD!" : "COPY ALL PROMPTS"}
                 </button>
                 <button onClick={downloadTxt} disabled={isLocked} className={`flex items-center gap-2 rounded-xl px-6 py-3.5 font-black text-[11px] uppercase tracking-widest transition-all ${isLocked ? 'bg-zinc-900 text-zinc-700 cursor-not-allowed border border-white/5' : 'bg-white text-black hover:bg-zinc-200 shadow-xl'}`}>
                   <Download size={16} /> DOWNLOAD TXT
@@ -322,15 +369,7 @@ export default function V8PromptEngine() {
           </div>
         </div>
 
-        {isLocked && promptsUsed >= PROMPT_LIMIT && (
-            <div className="w-full bg-red-900/20 border border-red-500/50 rounded-2xl p-6 flex items-center justify-center gap-4 text-red-500">
-                <AlertTriangle className="w-8 h-8 animate-pulse" />
-                <span className="font-black uppercase tracking-widest text-sm">V8 QUOTA EXCEEDED. ENGINE LOCKED UNTIL NEXT MONTH.</span>
-            </div>
-        )}
-
         <div className="grid gap-8 lg:grid-cols-[400px_1fr]">
-          {/* LEVI PANEL: CONTROLS */}
           <div className="space-y-6">
             <div className="rounded-[2rem] border border-white/10 bg-[#0a0a0a] p-6 shadow-2xl">
               <h2 className="mb-6 text-lg font-black uppercase tracking-widest text-white border-b border-white/10 pb-4">Engine Parameters</h2>
@@ -338,7 +377,7 @@ export default function V8PromptEngine() {
               <div className="grid gap-5">
                 <label className="space-y-2">
                   <span className="block text-[10px] font-black uppercase tracking-widest text-orange-500">BATCH COUNT (VARIATIONS)</span>
-                  <input type="number" min="1" max="50" value={count} onChange={(e) => setCount(Math.max(1, Math.min(50, Number(e.target.value || 1))))} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3.5 text-white font-mono outline-none focus:border-orange-500 transition-colors" />
+                  <input type="number" min="1" max="100" value={count} onChange={(e) => setCount(Math.max(1, Math.min(100, Number(e.target.value || 1))))} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3.5 text-white font-mono outline-none focus:border-orange-500 transition-colors" />
                 </label>
 
                 <label className="space-y-2">
@@ -388,14 +427,13 @@ export default function V8PromptEngine() {
             </div>
           </div>
 
-          {/* SREDNJI PANEL: INPUT */}
           <div className="rounded-[2rem] border border-white/10 bg-[#0a0a0a] p-6 shadow-2xl">
-            <h2 className="mb-6 text-lg font-black uppercase tracking-widest text-white border-b border-white/10 pb-4">Grid Layout (8 Panels)</h2>
+            <h2 className="mb-6 text-lg font-black uppercase tracking-widest text-white border-b border-white/10 pb-4">Grid Layout (Pool of 28 Panels)</h2>
             <div className="grid gap-6">
               {categories.map((category, index) => (
                 <div key={index} className="rounded-2xl border border-white/5 bg-[#050505] p-5 relative group hover:border-orange-500/30 transition-colors">
                   <div className="absolute top-0 right-0 bg-white/5 text-zinc-500 text-[8px] font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest">
-                    PANEL {index + 1} • ROW {index < 4 ? "1" : "2"}
+                    PANEL ID: {index + 1}
                   </div>
                   
                   <label className="mb-2 block text-[9px] font-black uppercase tracking-widest text-orange-500">SUBJECT CATEGORY</label>
@@ -418,7 +456,29 @@ export default function V8PromptEngine() {
             </div>
             <div className="text-[10px] bg-orange-600 text-white px-3 py-1.5 rounded-lg font-black uppercase tracking-widest">{count} BATCHES GENERATED</div>
           </div>
-          <textarea value={output} readOnly className="min-h-[600px] w-full rounded-2xl border border-white/10 bg-[#050505] p-6 font-mono text-xs leading-relaxed text-orange-100 outline-none custom-scrollbar shadow-inner" />
+          
+          {/* 🎯 KARTICE SA DUGMETOM ZA KOPIRANJE ZA SVAKI PROMPT POSEBNO */}
+          <div className="space-y-4 max-h-[800px] overflow-y-auto custom-scrollbar pr-2">
+            {outputArray.map((promptText, i) => (
+               <div key={i} className="bg-[#050505] border border-white/5 rounded-2xl p-4 hover:border-orange-500/30 transition-colors relative">
+                  <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-3">
+                     <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">PROMPT #{i + 1}</span>
+                     <button 
+                        onClick={() => copySingle(i, promptText)}
+                        className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase transition-all ${copiedStates[i] ? 'bg-orange-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'}`}
+                     >
+                        {copiedStates[i] ? 'COPIED!' : 'COPY PROMPT'}
+                     </button>
+                  </div>
+                  <textarea 
+                     readOnly 
+                     value={promptText} 
+                     className="w-full bg-transparent font-mono text-[11px] text-zinc-300 resize-none outline-none custom-scrollbar min-h-[120px]" 
+                  />
+               </div>
+            ))}
+          </div>
+
         </div>
       </div>
     </div>

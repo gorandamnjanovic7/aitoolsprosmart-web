@@ -34,6 +34,8 @@ import V8PromptEngine from './V8PromptEngine';
 import UgcAvatar from './UgcAvatar';
 import VaultTransition from './VaultTransition';
 import V8IdleProtocol from './V8IdleProtocol';
+import V8CinematicText from './V8CinematicText';
+import CinematikPromptEngine from './CinematikPromptEngine';
 
 
 // UI COMPONENTS
@@ -241,11 +243,19 @@ function AppContent({ appsData, refreshData }) {
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<V8PageWrapper><HomePage apps={appsData} /></V8PageWrapper>} />
             <Route path="/optimizer" element={<V8PageWrapper><V8OptimizerPage /></V8PageWrapper>} />
-            {/* TVOJE DVE NOVE V8 MAŠINE */}
-            <Route path="/seedance" element={<V8PageWrapper><V8PromptEngine engineName="SEEDANCE 2.0" /></V8PageWrapper>} />
-            <Route path="/kling" element={<V8PageWrapper><V8PromptEngine engineName="KLING 3.0" /></V8PageWrapper>} />
-            {/* DODAJ OVO ISPOD */}
-<Route path="/prompt-engine" element={<V8PageWrapper><V8PromptEngine engineName="V8 GRID PROMPT FACTORY" /></V8PageWrapper>} />
+            <Route path="/prompt-engine" element={<V8PageWrapper><V8PromptEngine /></V8PageWrapper>} />
+           
+            {/* V8 CINEMATIC ENGINE (Seedance & Kling integrisani) */}
+            <Route path="/seedance" element={
+              <V8PageWrapper>
+                <CinematikPromptEngine initialEngine="SEEDANCE 2.0" />
+              </V8PageWrapper>
+            } />
+            <Route path="/kling" element={
+              <V8PageWrapper>
+                <CinematikPromptEngine initialEngine="KLING 3.0" />
+              </V8PageWrapper>
+            } />
             <Route path="/enxance" element={<V8PageWrapper><V8Enhancer10x /></V8PageWrapper>} />
             <Route path="/promo" element={<V8PageWrapper><V8Promo10xPage /></V8PageWrapper>} />
             <Route path="/app/:id" element={<V8PageWrapper><SingleProductPage apps={appsData} /></V8PageWrapper>} />
