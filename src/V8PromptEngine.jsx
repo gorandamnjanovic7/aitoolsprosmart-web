@@ -4,7 +4,7 @@ import { Copy, RefreshCw, Zap, Lock, ShieldCheck, FileText, FileJson, Trash2, La
 import { auth, db } from './firebase'; 
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from "firebase/auth";
-import { v8Toast } from './App'; 
+import { v8Toast } from './v8Utils'; 
 
 // 🎯 GLAVNI PREKIDAČ ZA ODRŽAVANJE 🎯
 // Stavi na 'false' kada želiš da otključaš stranicu klijentima

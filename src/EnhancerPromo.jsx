@@ -6,7 +6,7 @@ import { Zap, PlayCircle, Timer, DownloadCloud, X, CheckCircle } from 'lucide-re
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
 import { doc, getDoc, onSnapshot, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from './firebase';
-import { v8Toast } from './App';
+import { v8Toast } from './v8Utils';
 import V8Reveal from './V8Reveal';
 import V8CinematicText from './V8CinematicText';
 import { motion, AnimatePresence } from 'framer-motion';

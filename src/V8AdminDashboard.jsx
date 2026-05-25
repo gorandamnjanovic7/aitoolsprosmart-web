@@ -7,7 +7,7 @@ import {
   Link as LinkIcon, Layers, Film, Sparkles, Flame, Crown, Rocket, 
   Star, Camera, Droplets, Hexagon, Globe 
 } from 'lucide-react';
-import { v8Toast } from './App';
+import { v8Toast } from './v8Utils';
 
 // 🔥 FIREBASE IMPORTS 🔥
 import { db } from './firebase';

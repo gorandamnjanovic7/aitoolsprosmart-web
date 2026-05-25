@@ -6,7 +6,7 @@ import { Sparkles, Download, Zap, ShieldCheck, X, Image as ImageIcon, Video, Fol
 import { db, auth } from './firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
-import { v8Toast } from './App';
+import { v8Toast } from './v8Utils';
 import { motion } from 'framer-motion';
 
 const DEFAULT_CATEGORIES = [

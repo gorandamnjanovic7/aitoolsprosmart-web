@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { HelmetProvider } from 'react-helmet-async';
 import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay,  CheckCircle, ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ScanOverlay from './ScanOverlay'; // Uvezi komponentu
 
 // FIREBASE
 import { db, auth } from './firebase';
@@ -36,6 +37,7 @@ import VaultTransition from './VaultTransition';
 import V8IdleProtocol from './V8IdleProtocol';
 import V8CinematicText from './V8CinematicText';
 import CinematikPromptEngine from './CinematikPromptEngine';
+
 
 // UI COMPONENTS
 import V8RadarCursor from './V8RadarCursor';
@@ -72,18 +74,21 @@ export const v8Toast = {
   subscribe: (l) => { v8Toast.listeners.push(l); return () => v8Toast.listeners = v8Toast.listeners.filter(cb => cb !== l); }
 };
 
-// --- V8 CINEMATIC PAGE TRANSITION ---
+// --- V8 SUPERCOMPUTER SCAN TRANSITION ---
 const V8PageWrapper = ({ children }) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, filter: "blur(12px)", y: 20, scale: 0.98 }}
-      animate={{ opacity: 1, filter: "blur(0px)", y: 0, scale: 1 }}
-      exit={{ opacity: 0, filter: "blur(12px)", y: -20, scale: 0.98 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="w-full h-full origin-center"
-    >
-      {children}
-    </motion.div>
+    <>
+      <ScanOverlay />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ delay: 0.8, duration: 0.4 }} // Čeka da linija prođe, pa se pojavljuje
+        className="w-full h-full origin-center relative z-10"
+      >
+        {children}
+      </motion.div>
+    </>
   );
 };
 
@@ -309,7 +314,6 @@ export default function App() {
     <HelmetProvider>
       <Router>
         {/* V8 MASTERWORK OVERLAYS */}
-        <VaultTransition />
         <V8IdleProtocol />
         <AppContent appsData={appsData} refreshData={refreshData} />
       </Router>

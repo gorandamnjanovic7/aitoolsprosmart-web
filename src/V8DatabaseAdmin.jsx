@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, Zap, Download, ShieldCheck, RefreshCcw, Diamond, AlertTriangle, Clock } from 'lucide-react';
-import { v8Toast } from './App';
+import { v8Toast } from './v8Utils';
 import MagneticButton from './MagneticButton';
 import navBg from './navbar-bg.webp'; // Koristimo istu pozadinu za konzistentnost
 

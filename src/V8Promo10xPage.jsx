@@ -5,7 +5,7 @@ import { signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from
 import { db, auth } from './firebase';
 import { Crown, CheckCircle, Zap, Play, Rocket, TrendingUp, Cpu, Crosshair, DownloadCloud, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion'; 
-import { v8Toast } from './App';
+import { v8Toast } from './v8Utils';
 import { createPortal } from 'react-dom';
 
 // POČETAK KOMPONENTE: RippleButton

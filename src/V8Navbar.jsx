@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 import { auth, provider, db } from './firebase';
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from 'firebase/firestore';
-import { v8Toast } from './App';
+import { v8Toast } from './v8Utils';
 import * as data from './data';
 import navBg from './navbar-bg.webp';
 import MagneticButton from './MagneticButton';

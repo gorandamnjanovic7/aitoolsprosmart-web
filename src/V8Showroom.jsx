@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
     Play, Zap, Layers, MonitorSmartphone, Globe, Utensils, Droplets, 
-    Cpu, Hexagon, Film, Shield, Building2, Aperture, Gem, Waves, Loader2
+    Cpu, Hexagon, Film, Shield, Building2, Aperture, Gem, Waves
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,21 +15,19 @@ import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 const V8Showroom = () => {
     const navigate = useNavigate();
     
-    // 🔥 FIX: Učitavamo poslednji aktivni filter iz localStorage, ili 'ALL' ako ne postoji 🔥
+    // Učitavamo poslednji aktivni filter
     const [activeFilter, setActiveFilter] = useState(() => {
         const savedFilter = localStorage.getItem('v8_showroom_filter');
         return savedFilter || 'ALL';
     });
     
-    // 🔥 NOVI STATE ZA NOVE FAJLOVE IZ BAZE 🔥
     const [firebaseItems, setFirebaseItems] = useState([]);
 
-    // 🔥 FIX: Snimamo u localStorage svaki put kada se filter promeni 🔥
     useEffect(() => {
         localStorage.setItem('v8_showroom_filter', activeFilter);
     }, [activeFilter]);
 
-    // --- POČETAK: TVOJI STARI HARDKODOVANI ITEMI ---
+    // --- POČETAK: HARDKODOVANI ITEMI ---
     const hardcodedItems = [
         // --- LUXURY CULINARY ---
         { id: 101, type: 'image', category: 'LUXURY CULINARY', format: '16:9', title: 'Gourmet Seafood Tartare', url: '/v8_hrana/h_1.webp' },
@@ -178,9 +176,8 @@ const V8Showroom = () => {
         { id: 45, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Deep Sea Leviathan Watch', url: '/okean/u_09.webp' },
         { id: 46, type: 'image', category: 'UNDERWATER MARINE LIFE', format: '16:9', title: 'Oceanic Trench Exploration', url: '/okean/u_010.webp' },
     ];
-    // --- KRAJ: TVOJI STARI HARDKODOVANI ITEMI ---
+    // --- KRAJ: HARDKODOVANI ITEMI ---
 
-    // POČETAK FUNKCIJE: useEffect (Fetch Firebase Items)
     useEffect(() => {
         const q = query(collection(db, "v8_showroom_baza"), orderBy("createdAt", "desc"));
         const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -189,12 +186,9 @@ const V8Showroom = () => {
         });
         return () => unsubscribe();
     }, []);
-    // KRAJ FUNKCIJE: useEffect (Fetch Firebase Items)
 
-    // 🔥 OVDE SPAJAMO NOVE FAJLOVE (IZ BAZE) SA TVOJIM STARIM (IZ KODA) 🔥
     const showcaseItems = [...firebaseItems, ...hardcodedItems];
 
-    // POČETAK FUNKCIJE: filters array
     const filters = [
         { 
             name: 'ALL', icon: Globe, 
@@ -263,16 +257,13 @@ const V8Showroom = () => {
             glow: 'drop-shadow-[0_0_8px_rgba(14,165,233,0.8)]'
         }
     ];
-    // KRAJ FUNKCIJE: filters array
 
     const filteredItems = activeFilter === 'ALL' ? showcaseItems : showcaseItems.filter(item => item.category === activeFilter);
 
-    // POČETAK FUNKCIJE: handleOpenStore
     const handleOpenStore = () => {
         window.scrollTo(0, 0); 
         navigate('/stock');    
     };
-    // KRAJ FUNKCIJE: handleOpenStore
     
     return (
         <div className="min-h-screen bg-[#050505] pt-32 pb-24 px-6 font-sans text-white overflow-hidden">
@@ -315,7 +306,7 @@ const V8Showroom = () => {
                 </div>
             </motion.div>
 
-            {/* FILTERI SA INDIVIDUALNIM BOJAMA (SA V8 POZADINOM) */}
+            {/* FILTERI */}
             <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -353,8 +344,8 @@ const V8Showroom = () => {
                 })}
             </motion.div>
 
-            {/* MASONRY GALERIJA */}
-            <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6 max-w-7xl mx-auto">
+            {/* 🔥 3D MASONRY GALERIJA 🔥 */}
+            <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8 max-w-7xl mx-auto" style={{ perspective: "1500px" }}>
                 <AnimatePresence>
                     {filteredItems.map((item, index) => (
                         <motion.div 
@@ -363,32 +354,55 @@ const V8Showroom = () => {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true, margin: "-50px" }}
                             transition={{ duration: 0.6, delay: (index % 10) * 0.05 }}
+                            whileHover={{ scale: 1.03, rotateX: 2, rotateY: -2, y: -10 }}
                             onClick={() => navigate('/media', { state: { item } })}
-                            className="relative group rounded-3xl overflow-hidden bg-[#0a0a0a] border border-white/5 cursor-pointer break-inside-avoid transform transition-transform duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(255,140,0,0.15)] z-50"
+                            className="relative group cursor-pointer break-inside-avoid z-50"
+                            style={{ transformStyle: "preserve-3d" }}
                         >
-                            <div className="absolute inset-0 bg-gradient-to-tr from-[#FF8C00]/0 via-[#FF8C00]/0 to-[#FF8C00]/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-30"></div>
+                            {/* 🎯 3D KUTIJA (FRAME PROIZVODA) 🎯 */}
+                            <div className="relative w-full rounded-[2rem] bg-gradient-to-b from-[#151515] to-[#050505] border border-zinc-800 p-3 shadow-[0_15px_30px_rgba(0,0,0,0.9)] transition-all duration-500 group-hover:border-orange-500/40 group-hover:shadow-[0_25px_60px_-10px_rgba(255,140,0,0.35)]">
+                                
+                                {/* GLOSSY ODSJAJ PREKO KUTIJE */}
+                                <div className="absolute inset-0 z-30 pointer-events-none rounded-[2rem] bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
 
-                            <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
-                                <span className="bg-black/80 backdrop-blur-md border border-white/10 text-white px-3 py-1.5 rounded-lg font-black text-[9px] uppercase tracking-wider flex items-center gap-1.5">
-                                    <MonitorSmartphone size={12} className="text-[#FF8C00]" /> {item.format}
-                                </span>
-                            </div>
-                            <div className="absolute top-4 right-4 z-20">
-                                <span className="bg-blue-900/90 backdrop-blur-md border border-red-600 text-red-500 px-3 py-1.5 rounded-lg font-black text-[9px] uppercase tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.8)]">
-                                    {item.type === 'video' ? 'CINEMATIC VIDEO' : '33MP IMAGE'}
-                                </span>
-                            </div>
+                                {/* 🎯 TVOJ LOGO - GORE LEVO (ZAMENI SRC SA SVOJIM LOGOOM) 🎯 */}
+                                <div className="absolute top-5 left-5 z-40 w-8 h-8 md:w-10 md:h-10 opacity-70 group-hover:opacity-100 transition-opacity duration-500">
+                                    <img 
+                                        src="/logo.png" 
+                                        alt="Brand Logo" 
+                                        className="w-full h-full object-contain drop-shadow-[0_0_10px_rgba(255,140,0,0.3)]"
+                                    />
+                                </div>
 
-                            <div className="relative w-full h-full overflow-hidden">
-                                {item.type === 'video' ? (
-                                    <>
+                                {/* V8 PREMIUM PEČAT */}
+                                <div className="absolute -top-3 -right-3 z-40 bg-gradient-to-br from-[#FF8C00] to-amber-700 text-black font-black text-[9px] uppercase tracking-widest px-4 py-1.5 rounded-full border-2 border-[#050505] shadow-[0_0_20px_rgba(255,140,0,0.6)] transform rotate-12 group-hover:rotate-0 transition-transform duration-500">
+                                    V8 Edition
+                                </div>
+
+                                {/* MEDIJA KONTEJNER */}
+                                <div className="relative rounded-xl overflow-hidden border border-white/5 bg-black mb-3">
+                                    
+                                    {/* Video Indikator */}
+                                    {item.type === 'video' && (
+                                        <div className="absolute top-3 right-3 z-20">
+                                            <span className="bg-red-900/90 backdrop-blur-md border border-red-500 text-red-100 px-2.5 py-1 rounded-md font-black text-[8px] uppercase tracking-widest flex items-center gap-1 shadow-[0_0_15px_rgba(220,38,38,0.8)]">
+                                                <Film size={10} /> CINEMATIC
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    {/* Play Dugme za Video */}
+                                    {item.type === 'video' && (
                                         <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40 group-hover:bg-transparent transition-all">
-                                            <div className="w-16 h-16 bg-[#FF8C00] rounded-full flex items-center justify-center text-black pl-1 shadow-[0_0_30px_rgba(255,140,0,0.5)] group-hover:scale-110 transition-transform">
-                                                <Play size={24} fill="currentColor" />
+                                            <div className="w-14 h-14 bg-[#FF8C00] rounded-full flex items-center justify-center text-black pl-1 shadow-[0_0_30px_rgba(255,140,0,0.5)] group-hover:scale-110 transition-transform">
+                                                <Play size={20} fill="currentColor" />
                                             </div>
                                         </div>
-                                        
-                                        {item.url.includes('LINK_') ? (
+                                    )}
+                                    
+                                    {/* Učitavanje fajla */}
+                                    {item.type === 'video' ? (
+                                        item.url.includes('LINK_') ? (
                                             <div className={`w-full bg-zinc-900 flex items-center justify-center text-zinc-700 font-black tracking-widest ${item.format === '9:16' ? 'aspect-[9/16]' : 'aspect-video'}`}>
                                                 {item.format} VIDEO PLACEHOLDER
                                             </div>
@@ -398,26 +412,36 @@ const V8Showroom = () => {
                                                 preload="metadata" 
                                                 muted
                                                 controls={false} 
-                                                className={`w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out ${item.format === '9:16' ? 'aspect-[9/16]' : 'aspect-video'}`}
+                                                className={`w-full object-cover transition-transform duration-700 ease-in-out ${item.format === '9:16' ? 'aspect-[9/16]' : 'aspect-video'}`}
                                                 onContextMenu={(e) => e.preventDefault()} 
                                             />
-                                        )}
-                                    </>
-                                ) : (
-                                    <img 
-                                        src={item.url.includes('LINK_') ? `https://placehold.co/1920x1080/0a0a0a/444?text=${item.title}` : item.url} 
-                                        alt={item.title} 
-                                        loading="lazy" 
-                                        className="w-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out" 
-                                        onContextMenu={(e) => e.preventDefault()} 
-                                        onDragStart={(e) => e.preventDefault()} 
-                                    />
-                                )}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10"></div>
-                            </div>
-                            <div className="absolute bottom-0 left-0 w-full p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 z-20">
-                                <h3 className="text-xl font-black text-white uppercase tracking-widest mb-1">{item.title}</h3>
-                                <p className="text-[#FF8C00] font-bold text-[10px] uppercase tracking-[0.2em]">{item.category}</p>
+                                        )
+                                    ) : (
+                                        <img 
+                                            src={item.url.includes('LINK_') ? `https://placehold.co/1920x1080/0a0a0a/444?text=${item.title}` : item.url} 
+                                            alt={item.title} 
+                                            loading="lazy" 
+                                            className="w-full object-cover transition-transform duration-700 ease-in-out" 
+                                            onContextMenu={(e) => e.preventDefault()} 
+                                            onDragStart={(e) => e.preventDefault()} 
+                                        />
+                                    )}
+                                </div>
+
+                                {/* PODACI O PROIZVODU (DNO KUTIJE) */}
+                                <div className="px-2 pb-1 pt-1 flex justify-between items-end relative z-20">
+                                    <div>
+                                        <h3 className="text-[15px] md:text-[17px] font-black text-white uppercase tracking-widest mb-1 group-hover:text-[#FF8C00] transition-colors line-clamp-1">{item.title}</h3>
+                                        <p className="text-zinc-500 font-bold text-[9px] uppercase tracking-[0.2em] flex items-center gap-1.5">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-zinc-700 group-hover:bg-[#FF8C00] transition-colors"></span>
+                                            {item.category}
+                                        </p>
+                                    </div>
+                                    <div className="bg-black/80 rounded px-2 py-1.5 border border-zinc-800 flex items-center gap-1.5 shadow-inner">
+                                        <MonitorSmartphone size={10} className="text-[#FF8C00]" />
+                                        <span className="text-zinc-400 text-[8px] font-black">{item.format}</span>
+                                    </div>
+                                </div>
                             </div>
                         </motion.div>
                     ))}

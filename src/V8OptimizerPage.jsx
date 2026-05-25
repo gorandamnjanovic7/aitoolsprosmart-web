@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom'; 
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, Zap, Download, ShieldCheck, RefreshCcw, Diamond, AlertTriangle, Clock, FileImage, X, DownloadCloud, Lock, CheckCircle, Info } from 'lucide-react';
-import { v8Toast } from './App';
+import { v8Toast } from './v8Utils';
 import MagneticButton from './MagneticButton';
 import navBg from './navbar-bg.webp'; 
 

@@ -15,7 +15,7 @@ import { collection, getDocs, doc, getDoc, setDoc, serverTimestamp, onSnapshot, 
 
 // DATA & TOAST
 import * as data from './data';
-import { v8Toast } from './App';
+import { v8Toast } from './v8Utils';
 
 // --- V8 SENZOR ZA AUTOMATSKU DETEKCIJU SERVERA ---
 const BASE_BACKEND_URL = window.location.hostname === 'localhost' 

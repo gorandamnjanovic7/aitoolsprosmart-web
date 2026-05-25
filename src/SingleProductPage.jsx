@@ -19,7 +19,7 @@ import { doc, getDoc, setDoc, serverTimestamp, collection, addDoc } from 'fireba
 
 // DATA & GLOBAL
 import * as data from './data';
-import { v8Toast } from './App'; 
+import { v8Toast } from './v8Utils'; 
 import mojBaner from './moj-baner.png'; 
 
 const getRibbonStyle = (index) => {
