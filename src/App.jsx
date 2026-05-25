@@ -37,7 +37,6 @@ import V8IdleProtocol from './V8IdleProtocol';
 import V8CinematicText from './V8CinematicText';
 import CinematikPromptEngine from './CinematikPromptEngine';
 
-
 // UI COMPONENTS
 import V8RadarCursor from './V8RadarCursor';
 import V8Navbar from './V8Navbar';
@@ -228,56 +227,64 @@ function AppContent({ appsData, refreshData }) {
   const handleHomeClick = (e) => { if (location.pathname === '/') { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); window.history.replaceState(null, '', '/'); } };
 
   return (
-    <div key={authVersion} className="min-h-screen bg-[#050505] text-zinc-100 flex flex-col font-sans relative pb-20 lg:pb-0 text-left">
-      <V8RadarCursor />
-      <V8ToastContainer />
+    /* 🎯 GLAVNI KONTEJNER SA HIGGSFIELD POZADINOM 🎯 */
+    <div key={authVersion} className="min-h-screen text-zinc-100 font-sans relative text-left bg-[url('/v8-supercomputer-bg.jpg')] bg-cover bg-center bg-fixed bg-no-repeat">
       
-      <AnimatePresence>
-        {isBooting && <FullScreenBoot key="boot" onComplete={() => { setIsBooting(false); window.scrollTo(0,0); }} />}
-      </AnimatePresence>
-      
-      <V8Navbar handleHomeClick={handleHomeClick} />
-      
-      <div className="flex-1 text-left pt-20">
-        <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
-          <Routes location={location} key={location.pathname}>
-            <Route path="/" element={<V8PageWrapper><HomePage apps={appsData} /></V8PageWrapper>} />
-            <Route path="/optimizer" element={<V8PageWrapper><V8OptimizerPage /></V8PageWrapper>} />
-            <Route path="/prompt-engine" element={<V8PageWrapper><V8PromptEngine /></V8PageWrapper>} />
-           
-            {/* V8 CINEMATIC ENGINE (Seedance & Kling integrisani) */}
-            <Route path="/seedance" element={
-              <V8PageWrapper>
-                <CinematikPromptEngine initialEngine="SEEDANCE 2.0" />
-              </V8PageWrapper>
-            } />
-            <Route path="/kling" element={
-              <V8PageWrapper>
-                <CinematikPromptEngine initialEngine="KLING 3.0" />
-              </V8PageWrapper>
-            } />
-            <Route path="/enxance" element={<V8PageWrapper><V8Enhancer10x /></V8PageWrapper>} />
-            <Route path="/promo" element={<V8PageWrapper><V8Promo10xPage /></V8PageWrapper>} />
-            <Route path="/app/:id" element={<V8PageWrapper><SingleProductPage apps={appsData} /></V8PageWrapper>} />
-            <Route path="/trezor" element={<V8PageWrapper><TrezorPage apps={appsData} /></V8PageWrapper>} />
-            <Route path="/admin" element={<V8PageWrapper><V8DatabaseAdmin apps={appsData} refreshData={refreshData} /></V8PageWrapper>} />
-            <Route path="/dashboard" element={<V8PageWrapper><V8AdminDashboard /></V8PageWrapper>} />
-            <Route path="/stock" element={<V8PageWrapper><V8StockBerza /></V8PageWrapper>} />
-            <Route path="/showroom" element={<V8PageWrapper><V8Showroom /></V8PageWrapper>} />
-            <Route path="/terms" element={<V8PageWrapper><V8Terms /></V8PageWrapper>} />
-            <Route path="/privacy" element={<V8PageWrapper><V8Privacy /></V8PageWrapper>} />
-            <Route path="/refund" element={<V8PageWrapper><V8Refund /></V8PageWrapper>} />
-            <Route path="/media" element={<V8PageWrapper><V8MediaViewer /></V8PageWrapper>} />
-          </Routes>
+      {/* 🎯 NOVI RADIALNI OVERLAY: Sredina 95% mračna, ivice samo 30% mračne. Manji blur da bi slika bila oštrija. 🎯 */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(5,5,5,0.95)_30%,_rgba(5,5,5,0.3)_100%)] backdrop-blur-[1px] pointer-events-none z-0"></div>
+
+      {/* 🎯 Sadržaj aplikacije izdignut iznad pozadine (z-10) 🎯 */}
+      <div className="relative z-10 flex flex-col min-h-screen w-full pb-20 lg:pb-0">
+        <V8RadarCursor />
+        <V8ToastContainer />
+        
+        <AnimatePresence>
+          {isBooting && <FullScreenBoot key="boot" onComplete={() => { setIsBooting(false); window.scrollTo(0,0); }} />}
         </AnimatePresence>
+        
+        <V8Navbar handleHomeClick={handleHomeClick} />
+        
+        <div className="flex-1 text-left pt-20">
+          <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
+            <Routes location={location} key={location.pathname}>
+              <Route path="/" element={<V8PageWrapper><HomePage apps={appsData} /></V8PageWrapper>} />
+              <Route path="/optimizer" element={<V8PageWrapper><V8OptimizerPage /></V8PageWrapper>} />
+              <Route path="/prompt-engine" element={<V8PageWrapper><V8PromptEngine /></V8PageWrapper>} />
+             
+              {/* V8 CINEMATIC ENGINE (Seedance & Kling integrisani) */}
+              <Route path="/seedance" element={
+                <V8PageWrapper>
+                  <CinematikPromptEngine initialEngine="SEEDANCE 2.0" />
+                </V8PageWrapper>
+              } />
+              <Route path="/kling" element={
+                <V8PageWrapper>
+                  <CinematikPromptEngine initialEngine="KLING 3.0" />
+                </V8PageWrapper>
+              } />
+              <Route path="/enxance" element={<V8PageWrapper><V8Enhancer10x /></V8PageWrapper>} />
+              <Route path="/promo" element={<V8PageWrapper><V8Promo10xPage /></V8PageWrapper>} />
+              <Route path="/app/:id" element={<V8PageWrapper><SingleProductPage apps={appsData} /></V8PageWrapper>} />
+              <Route path="/trezor" element={<V8PageWrapper><TrezorPage apps={appsData} /></V8PageWrapper>} />
+              <Route path="/admin" element={<V8PageWrapper><V8DatabaseAdmin apps={appsData} refreshData={refreshData} /></V8PageWrapper>} />
+              <Route path="/dashboard" element={<V8PageWrapper><V8AdminDashboard /></V8PageWrapper>} />
+              <Route path="/stock" element={<V8PageWrapper><V8StockBerza /></V8PageWrapper>} />
+              <Route path="/showroom" element={<V8PageWrapper><V8Showroom /></V8PageWrapper>} />
+              <Route path="/terms" element={<V8PageWrapper><V8Terms /></V8PageWrapper>} />
+              <Route path="/privacy" element={<V8PageWrapper><V8Privacy /></V8PageWrapper>} />
+              <Route path="/refund" element={<V8PageWrapper><V8Refund /></V8PageWrapper>} />
+              <Route path="/media" element={<V8PageWrapper><V8MediaViewer /></V8PageWrapper>} />
+            </Routes>
+          </AnimatePresence>
+        </div>
+        
+        <SmartScrollButton />
+        <VisitorCounter />
+        <V8ContactWidget />
+        {/* Naš novi AI prezenter */}
+        <UgcAvatar />
+        <V8Footer />
       </div>
-      
-      <SmartScrollButton />
-      <VisitorCounter />
-      <V8ContactWidget />
-      {/* Naš novi AI prezenter */}
-      <UgcAvatar />
-      <V8Footer />
     </div>
   );
 }

@@ -1,13 +1,16 @@
 // POČETAK FAJLA: V8PromptEngine.jsx
-import React, { useMemo, useState, useEffect } from "react";
-import { Copy, Download, RefreshCw, Zap, Lock, AlertTriangle, ShieldCheck } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Copy, RefreshCw, Zap, Lock, ShieldCheck, FileText, FileJson, Trash2, LayoutGrid } from "lucide-react";
 import { auth, db } from './firebase'; 
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from "firebase/auth";
 import { v8Toast } from './App'; 
 
+// 🎯 GLAVNI PREKIDAČ ZA ODRŽAVANJE 🎯
+// Stavi na 'false' kada želiš da otključaš stranicu klijentima
+const UNDER_CONSTRUCTION = true; 
+
 const DEFAULT_CATEGORIES = [
-  // --- ORIGINALNI V8 CORE ---
   "Luxury abstract sculpture",
   "Ancient Roman epic scene",
   "Michelin fine dining",
@@ -16,32 +19,22 @@ const DEFAULT_CATEGORIES = [
   "Red liquid splash reference",
   "Supercar with drone",
   "Luxury Swiss watch",
-
-  // --- MYTHOLOGY & HISTORY (Epic Scale) ---
   "Fierce Viking warrior in battle",
   "Ancient Aztec golden city aerial",
   "Spartan gladiator in arena dust",
   "Samurai commander cinematic portrait",
-
-  // --- HIGH-PERFORMANCE AUTOMOTIVE ---
   "Hypercar drifting on neon street",
   "Luxury SUV in snowy mountain pass",
   "Matte black motorcycle studio shot",
   "Classic vintage race car macro detail",
-
-  // --- DARK PREMIUM TECH & PRODUCT ---
   "Dark obsidian smartphone with glowing edges",
   "Premium dark cosmetics glass bottle",
   "Minimalist black leather designer bag",
   "Matte black luxury headphones",
-
-  // --- MACRO ELEMENTS & FOOD ---
   "Golden coffee beans splashing in espresso",
   "Smoky whiskey glass with glowing ice cube",
   "Dark marble and liquid gold texture",
   "Gourmet sushi premium macro photography",
-
-  // --- ARCHITECTURE & LIFESTYLE ---
   "Luxury modern villa with infinity pool",
   "High-fashion editorial neon lighting",
   "First-class private jet interior",
@@ -49,7 +42,6 @@ const DEFAULT_CATEGORIES = [
 ];
 
 const DEFAULT_DETAILS = [
-  // --- ORIGINALNI V8 CORE ---
   "An impossible luxury abstract sculpture made of black obsidian, smoked glass, liquid chrome and polished gold ribbons, floating in a dark premium studio with dramatic spotlighting, realistic reflections, micro-scratches and gallery-grade composition, unbranded, no text.",
   "A breathtaking ancient Roman epic scene with a heroic commander in ornate bronze and gold armor, red cape, plumed helmet, elite legionaries behind him, imperial architecture, cinematic sunlight, Hollywood-scale historical realism, clean, no logos.",
   "A Michelin-star luxury gourmet plate on matte black ceramic, premium seafood, delicate sauce dots, microgreens, edible flowers, edible gold accents, shallow depth of field, restaurant-grade macro photography, clean, no text.",
@@ -58,35 +50,25 @@ const DEFAULT_DETAILS = [
   "A dramatic crimson-red liquid splash explosion frozen mid-air, glossy translucent droplets, suspended liquid sheets, black moody background, sharp high-speed macro photography, luxury commercial splash-art energy, unbranded.",
   "An unbranded futuristic supercar racing on a dramatic mountain highway, a professional drone flying above it, aggressive aerodynamic body, glossy carbon reflections, dust particles, golden-hour light, premium automotive advertising look.",
   "A luxury Swiss-style wristwatch inspired by ultra-premium dress-watch design, rose-gold case, dark elegant dial, polished sapphire crystal, leather strap, macro product photography, dark black-and-gold studio background, zero text/logos.",
-
-  // --- MYTHOLOGY & HISTORY ---
   "Fierce Viking warrior in battle, rugged armor, cinematic fur and leather textures, dramatic lighting, epic frozen landscape, ultra-realistic action, clean, no text, no branding.",
   "Aerial view of ancient Aztec golden city, monumental pyramids, lush jungle environment, sunlight streaming through clouds, epic historical scale, hyper-realistic, unbranded, no logos.",
   "Spartan gladiator in arena dust, bronze helmet, intense cinematic lighting, high-contrast, historical grit, ultra-detailed skin textures, clean commercial composition, no text.",
   "Samurai commander cinematic portrait, intricate traditional armor, soft studio rim light, moody atmosphere, cinematic color grade, hyper-realistic details, zero logos, no text.",
-
-  // --- HIGH-PERFORMANCE AUTOMOTIVE ---
   "Hypercar drifting on neon street, wet asphalt reflections, motion blur, glowing lights, unbranded automotive design, high-end commercial aesthetic, zero branding, clean.",
-  "Luxury SUV in snowy mountain pass, dramatic wide-angle shot, cinematic cold lighting, pristine nature, unbranded modern vehicle, premium advertising finish, zero text, clean.",
+  "Luxury SUV in snowy mountain pass, dramatic vertical shot, cinematic cold lighting, pristine nature, unbranded modern vehicle, premium advertising finish, zero text, clean.",
   "Matte black motorcycle studio shot, dramatic rim lighting, sharp metallic details, dark background, unbranded custom build, premium product photography, zero text/logos.",
   "Classic vintage race car macro detail, polished chrome and worn leather textures, vintage cinematic vibe, shallow depth of field, clean composition, unbranded, no text.",
-
-  // --- DARK PREMIUM TECH & PRODUCT ---
   "Dark obsidian smartphone with glowing edges, bezel-less screen, sleek glass finish, premium dark environment, macro product lighting, futuristic tech aesthetic, clean, no logos.",
   "Premium dark cosmetics glass bottle, elegant fluid texture, dark gold accents, luxury studio lighting, high-end skincare aesthetic, clean commercial shot, zero text/branding.",
   "Minimalist black leather designer bag, premium texture, dark elegant studio light, sharp details, luxury fashion photography, unbranded, no logos, clean composition.",
   "Matte black luxury headphones, premium metal and leather finish, moody studio light, sharp macro details, high-end audio tech vibe, clean composition, unbranded, no logos.",
-
-  // --- MACRO ELEMENTS & FOOD ---
   "Golden coffee beans splashing in espresso, rich liquid swirls, cinematic warm light, dark moody background, premium culinary photography, macro detail, clean, no text.",
   "Smoky whiskey glass with glowing ice cube, premium crystal clarity, moody atmospheric light, macro detail, sophisticated bar aesthetic, unbranded, no watermarks, clean.",
   "Dark marble and liquid gold texture, elegant fluid abstract art, dramatic shadows, premium luxury material aesthetic, macro photography, unbranded, zero logos.",
   "Gourmet sushi premium macro photography, artistic arrangement, delicate textures, dark slate background, professional culinary lighting, clean aesthetic, no text.",
-
-  // --- ARCHITECTURE & LIFESTYLE ---
-  "Luxury modern villa with infinity pool, twilight sky, architectural perfection, warm interior glow, cinematic framing, elite property photography, clean, no text.",
+  "Luxury modern villa with infinity pool, twilight sky, architectural perfection, warm interior glow, cinematic vertical framing, elite property photography, clean, no text.",
   "High-fashion editorial neon lighting, moody dark atmosphere, clean composition, professional aesthetic, zero branding, zero logos, cinematic lighting.",
-  "First-class private jet interior, leather textures, warm ambient lighting, premium luxury travel lifestyle, clean wide-angle shot, unbranded, zero logos.",
+  "First-class private jet interior, leather textures, warm ambient lighting, premium luxury travel lifestyle, portrait framing, unbranded, zero logos.",
   "Cinematic cyberpunk street level, dark futuristic urban vibe, wet reflective surfaces, neon rim lighting, high-end motion picture aesthetic, clean, no text."
 ];
 
@@ -106,24 +88,28 @@ const STYLE_PRESETS = {
 };
 
 const CAMERA_PRESETS = [
-  "shot on ARRI Alexa 65 with Panavision anamorphic optics, cinematic highlight rolloff",
-  "RED V-RAPTOR 8K look with Zeiss Supreme Prime lens character, crisp commercial sharpness",
-  "Sony Venice 2 color science with Leica Summilux rendering, natural micro-contrast",
-  "IMAX-inspired framing with premium optical depth, soft halation and controlled reflections",
-  "Hasselblad medium-format commercial photography look, rich tonal depth, fine material texture",
-  "Phase One studio advertising look, ultra-clean detail, premium product-lighting precision"
+  "shot on ARRI Alexa 65 with Panavision anamorphic optics",
+  "RED V-RAPTOR 8K look with Zeiss Supreme Prime lens character",
+  "Sony Venice 2 color science with Leica Summilux rendering",
+  "IMAX-inspired framing with premium optical depth",
+  "Hasselblad medium-format commercial photography look",
+  "Phase One studio advertising look, ultra-clean detail"
 ];
 
+// POČETAK FUNKCIJE: seededRandom
 function seededRandom(seed) {
   const x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+// KRAJ FUNKCIJE: seededRandom
 
+// POČETAK FUNKCIJE: pick
 function pick(arr, seed) {
   return arr[Math.floor(seededRandom(seed) * arr.length) % arr.length];
 }
+// KRAJ FUNKCIJE: pick
 
-// 🎯 Funkcija za nasumično mešanje niza
+// POČETAK FUNKCIJE: seededShuffle
 function seededShuffle(array, seed) {
   let s = seed;
   const shuffled = [...array];
@@ -134,7 +120,9 @@ function seededShuffle(array, seed) {
   }
   return shuffled;
 }
+// KRAJ FUNKCIJE: seededShuffle
 
+// POČETAK FUNKCIJE: autoDescription
 function autoDescription(category, index, seed) {
   const c = category.toLowerCase();
   const camera = pick(CAMERA_PRESETS, seed + index * 31);
@@ -148,8 +136,10 @@ function autoDescription(category, index, seed) {
   if (c.includes("watch") || c.includes("swiss") || c.includes("timepiece")) return `${category}, ultra-luxury wristwatch macro photography, polished premium case, dark elegant dial, visible mechanical complications, sapphire reflections, leather strap, black-and-gold studio lighting, refined product-advertising finish, ${camera}.`;
   return `${category}, ultra-detailed premium commercial image with cinematic lighting, realistic materials, elegant composition, deep blacks, controlled highlights, subtle imperfections, anti-plastic realism, ${camera}.`;
 }
+// KRAJ FUNKCIJE: autoDescription
 
-function makeSinglePrompt({ categories, details, seed, aspectRatio, presetName, strictNoBrand, includeNegative }) {
+// POČETAK FUNKCIJE: makeSinglePrompt
+function makeSinglePrompt({ categories, details, seed, presetName, strictNoBrand, includeNegative }) {
   const preset = STYLE_PRESETS[presetName] || STYLE_PRESETS["Nano Banana 2 / Pro"];
   const descriptions = categories.map((cat, i) => {
     const manual = (details[i] || "").trim();
@@ -157,27 +147,27 @@ function makeSinglePrompt({ categories, details, seed, aspectRatio, presetName, 
   });
   
   const brandLock = strictNoBrand
-    ? "All panels must be clean commercial-safe visuals: no visible logos, no readable brand names, no trademark marks, no readable license plates, no text, no captions."
+    ? "All panels must be clean commercial-safe visuals: no visible logos, no readable brand names, no trademark marks, no text, no captions."
     : "Avoid random text, captions, watermarks and messy symbols.";
   
-  // Nema \n ispred NEGATIVE PROMPT, spajamo u jedan red
+  const gridLock = "CRITICAL GRID FORMAT: Every single panel must be one solid, unbroken image. Do NOT split, divide, or stack multiple images inside a single panel. No horizontal strips, no letterboxing, no borders within panels. Each panel fills its entire cell completely.";
+  
   const negative = includeNegative
-    ? " NEGATIVE PROMPT: no duplicate panels, no repeated subjects, no repeated compositions, no near-duplicates, no extra panels, no missing panels, no broken grid, no distorted layout, no UI, no browser interface, no app screenshot elements, no captions, no typography, no random letters, no watermark, no signature, no visible logos, no readable brand names, no low resolution, no blurry details, no plastic CGI look."
+    ? " NEGATIVE PROMPT: split panels, divided panels, stacked images in one slot, horizontal strips, letterboxing, inner borders, multiple sub-images per panel, duplicate panels, repeated subjects, repeated compositions, extra panels, missing panels, broken grid, distorted layout, UI, browser interface, app screenshot elements, captions, typography, random letters, watermark, signature, visible logos, readable brand names, low resolution, blurry details, plastic CGI look."
     : "";
 
-  // 🎯 SVE U JEDNOM REDU: String je kompletno očišćen od Enter (\n) tastera
-  return `Create a single premium cinematic collage image in a strict 2-row by 4-column grid, exactly 8 panels total, equal-size panels, clean thin separators, ${aspectRatio} aspect ratio. The final image must look like a luxury commercial advertising board, not an app screenshot. CRITICAL CONTROL LOCK: All 8 panels must be visually different. No duplicated panels. No near-duplicates. No repeated subjects. No repeated compositions. Each panel must have a unique subject, unique framing, unique lighting mood and unique visual identity. ${brandLock} ROW 1, PANEL 1 — ${categories[0]}: ${descriptions[0]} ROW 1, PANEL 2 — ${categories[1]}: ${descriptions[1]} ROW 1, PANEL 3 — ${categories[2]}: ${descriptions[2]} ROW 1, PANEL 4 — ${categories[3]}: ${descriptions[3]} ROW 2, PANEL 1 — ${categories[4]}: ${descriptions[4]} ROW 2, PANEL 2 — ${categories[5]}: ${descriptions[5]} ROW 2, PANEL 3 — ${categories[6]}: ${descriptions[6]} ROW 2, PANEL 4 — ${categories[7]}: ${descriptions[7]} GLOBAL STYLE: ${preset.suffix}, cohesive premium collage, cinematic realism, realistic reflections, subtle film grain, deep blacks, controlled highlights, luxury black-and-gold color grade, sharp but not oversharpened, expensive editorial finish.${negative}`;
+  return `Create a single premium cinematic collage image in a strict 2-row by 4-column grid (exactly 8 equal-size panels), with a strict 16:9 aspect ratio. Optimized exclusively for Google Nano Banana 2 engine. CRITICAL CONTROL LOCK: All 8 panels MUST be 100% visually different and unique. No duplicated images, no repeated subjects, no repeated camera angles or compositions anywhere in the grid. Each panel must represent a completely distinct visual identity. ${gridLock} ${brandLock} Panel descriptions: 1) ${descriptions[0]}. 2) ${descriptions[1]}. 3) ${descriptions[2]}. 4) ${descriptions[3]}. 5) ${descriptions[4]}. 6) ${descriptions[5]}. 7) ${descriptions[6]}. 8) ${descriptions[7]}. GLOBAL STYLE: ${preset.suffix}, cohesive premium collage, cinematic realism, realistic reflections, subtle film grain, deep blacks, controlled highlights, luxury black-and-gold color grade, sharp but not oversharpened, expensive editorial finish.${negative}`;
 }
+// KRAJ FUNKCIJE: makeSinglePrompt
 
-// 🎯 NOVI "SMART POOL" ALGORITAM ZA 100% RAZLIČITE PROMPTOVE
+// POČETAK FUNKCIJE: makeVariations
 function makeVariations(options) {
   let pool = [];
   let shuffleCounter = 0;
   
-  return Array.from({ length: options.count }, (_, i) => {
+  return Array.from({ length: 100 }, (_, i) => {
     const currentSeed = options.seed + i * 101;
     
-    // Ako se "bazen" isprazni (ima ispod 8 elemenata), mešamo ponovo celih 28 kategorija i dodajemo ih
     while(pool.length < 8) {
        const allIndices = Array.from({ length: options.categories.length }, (_, idx) => idx);
        const shuffled = seededShuffle(allIndices, options.seed + shuffleCounter * 999);
@@ -185,9 +175,7 @@ function makeVariations(options) {
        shuffleCounter++;
     }
     
-    // Uzimamo tačno sledećih 8 iz bazena (tako da sledeći prompt garantovano nema iste slike)
     const selectedIndices = pool.splice(0, 8);
-    
     const selectedCategories = selectedIndices.map(idx => options.categories[idx]);
     const selectedDetails = selectedIndices.map(idx => options.details[idx]);
 
@@ -199,20 +187,21 @@ function makeVariations(options) {
     });
   });
 }
+// KRAJ FUNKCIJE: makeVariations
 
+
+// POČETAK FUNKCIJE: V8PromptEngine
 export default function V8PromptEngine() {
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
   const [details, setDetails] = useState(DEFAULT_DETAILS);
   const [seed, setSeed] = useState(2026);
-  const [aspectRatio, setAspectRatio] = useState("16:9");
   const [presetName, setPresetName] = useState("Nano Banana 2 / Pro");
-  const [count, setCount] = useState(100);
   const [strictNoBrand, setStrictNoBrand] = useState(true);
   const [includeNegative, setIncludeNegative] = useState(true);
-  const [copied, setCopied] = useState(false);
+  
+  const [generatedPrompts, setGeneratedPrompts] = useState([]);
   const [copiedStates, setCopiedStates] = useState({});
   
-  // V8 FIREBASE STATE
   const [user, setUser] = useState(null);
   const [isVIP, setIsVIP] = useState(false);
   const [promptsUsed, setPromptsUsed] = useState(0);
@@ -224,13 +213,9 @@ export default function V8PromptEngine() {
       if (currentUser) {
         setUser(currentUser);
         const email = currentUser.email.toLowerCase();
-        
         if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
-           setIsVIP(true);
-           setIsLocked(false);
-           return;
+           setIsVIP(true); setIsLocked(false); return;
         }
-
         try {
           const docRef = doc(db, "vip_users", email);
           const docSnap = await getDoc(docRef);
@@ -251,19 +236,12 @@ export default function V8PromptEngine() {
     return () => unsub();
   }, []);
 
-  const outputArray = useMemo(() => {
-    return makeVariations({ categories, details, seed, aspectRatio, presetName, count, strictNoBrand, includeNegative });
-  }, [categories, details, seed, aspectRatio, presetName, count, strictNoBrand, includeNegative]);
-
-  // Za Copy All i Download - spaja ih da budu čitljivi u TXT fajlu
-  const outputTextAll = outputArray.map((p, i) => `PROMPT ${i + 1}\n${p}`).join("\n\n------------------------------------------------------------\n\n");
-
   const updateCategory = (index, value) => setCategories(prev => { const next = [...prev]; next[index] = value; return next; });
   const updateDetail = (index, value) => setDetails(prev => { const next = [...prev]; next[index] = value; return next; });
 
   const recordUsage = async () => {
       if (user && isVIP && user.email !== "damnjanovicgoran7@gmail.com" && user.email !== "aitoolsprosmart@gmail.com") {
-          const newUsage = promptsUsed + count;
+          const newUsage = promptsUsed + 100;
           setPromptsUsed(newUsage);
           try {
               await setDoc(doc(db, "vip_users", user.email.toLowerCase()), { promptsUsed: newUsage }, { merge: true });
@@ -272,44 +250,114 @@ export default function V8PromptEngine() {
       }
   };
 
-  const copyOutput = async () => {
-    if (isLocked) { v8Toast.error("Engine Locked or Quota Exceeded."); return; }
-    await navigator.clipboard.writeText(outputTextAll);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1400);
-    recordUsage();
+  const handleGenerate100 = () => {
+      if (isLocked) { v8Toast.error("Engine Locked or Quota Exceeded."); return; }
+      const newPrompts = makeVariations({ categories, details, seed, presetName, strictNoBrand, includeNegative });
+      setGeneratedPrompts(newPrompts);
+      setCopiedStates({});
+      recordUsage();
+      v8Toast.success("100 Unique Prompts Generated!");
   };
 
+  const handleRegenerate100 = () => {
+      if (isLocked) { v8Toast.error("Engine Locked or Quota Exceeded."); return; }
+      const newSeed = Math.floor(Math.random() * 999999);
+      setSeed(newSeed);
+      const newPrompts = makeVariations({ categories, details, seed: newSeed, presetName, strictNoBrand, includeNegative });
+      setGeneratedPrompts(newPrompts);
+      setCopiedStates({});
+      recordUsage();
+      v8Toast.success("Regenerated 100 New Prompts!");
+  };
+
+  const clearPrompts = () => {
+      setGeneratedPrompts([]);
+      setCopiedStates({});
+  };
+
+  const outputTextAll = generatedPrompts.map((p, i) => `PROMPT ${i + 1}\n${p}`).join("\n\n------------------------------------------------------------\n\n");
+
   const downloadTxt = () => {
-    if (isLocked) { v8Toast.error("Engine Locked or Quota Exceeded."); return; }
+    if (isLocked || generatedPrompts.length === 0) return;
     const blob = new Blob([outputTextAll], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `V8-grid-pack-${count}-prompts-seed-${seed}.txt`;
+    a.download = `V8-grid-pack-100-prompts-seed-${seed}.txt`;
     document.body.appendChild(a);
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-    recordUsage();
   };
 
-  // Funkcija za pojedinačno kopiranje prompta sa kartice
+  const downloadJson = () => {
+    if (isLocked || generatedPrompts.length === 0) return;
+    const jsonObj = generatedPrompts.map((p, i) => ({ id: i+1, prompt: p }));
+    const blob = new Blob([JSON.stringify(jsonObj, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `V8-grid-pack-100-prompts-seed-${seed}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
   const copySingle = async (index, text) => {
     if (isLocked) { v8Toast.error("Engine Locked or Quota Exceeded."); return; }
     await navigator.clipboard.writeText(text);
     setCopiedStates(prev => ({ ...prev, [index]: true }));
-    setTimeout(() => setCopiedStates(prev => ({ ...prev, [index]: false })), 2000);
     v8Toast.success(`Prompt ${index + 1} copied!`);
   };
 
-  const reset = () => { setCategories(DEFAULT_CATEGORIES); setDetails(DEFAULT_DETAILS); setSeed(2026); setAspectRatio("16:9"); setPresetName("Nano Banana 2 / Pro"); setCount(100); setStrictNoBrand(true); setIncludeNegative(true); };
   const clearDetails = () => setDetails(new Array(28).fill(""));
-  const randomSeed = () => setSeed(Math.floor(Math.random() * 999999));
+
+
+  // 🎯 AKO JE AKTIVNO ODRŽAVANJE, PRIKAZUJEMO SAMO OVAJ EKRAN BEZ OSTATKA FORME 🎯
+  if (UNDER_CONSTRUCTION) {
+    return (
+      <div className="min-h-[75vh] w-full flex items-center justify-center px-4 font-sans py-20">
+        <div className="bg-gradient-to-br from-[#0a1930] to-[#040b16] border border-blue-500/50 rounded-[2.5rem] p-10 md:p-14 max-w-2xl w-full text-center shadow-[0_0_80px_rgba(59,130,246,0.3)] relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/20 rounded-full blur-[80px] pointer-events-none"></div>
+            
+            <div className="mx-auto w-20 h-20 bg-blue-500/10 rounded-full flex items-center justify-center mb-6 border border-blue-400/30 shadow-[0_0_30px_rgba(59,130,246,0.3)]">
+                <Lock className="w-10 h-10 text-blue-400" />
+            </div>
+
+            <h2 className="text-3xl md:text-4xl font-black uppercase text-white tracking-widest mb-4 drop-shadow-md">
+                SYSTEM <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">UPDATING</span>
+            </h2>
+            
+            <p className="text-blue-200 text-sm md:text-base font-medium leading-relaxed mb-8 max-w-lg mx-auto">
+                This module is currently in the final stages of development and will be deployed shortly. 
+                The engine is exclusively engineered for mass prompt generation in the premium <strong>2x4 Grid format</strong> (8 panels), perfectly optimized for Google Nano Banana 2.
+            </p>
+
+            <div className="mx-auto bg-black/60 p-5 rounded-2xl border border-blue-500/30 w-fit shadow-inner mb-8">
+                <p className="text-[10px] font-black uppercase tracking-widest text-blue-400 mb-4 text-center">2x4 Layout Format</p>
+                <div className="grid grid-cols-4 grid-rows-2 gap-2">
+                    {[...Array(8)].map((_, i) => (
+                        <div key={i} className="w-12 h-8 bg-blue-500/20 border border-blue-500/40 rounded-md flex items-center justify-center shadow-[0_0_10px_rgba(59,130,246,0.2)]">
+                            <span className="text-[10px] font-black text-blue-300 opacity-60">{i+1}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div className="inline-block bg-blue-500/10 border border-blue-500/30 px-6 py-2.5 rounded-full text-blue-300 font-black uppercase tracking-[0.2em] text-[11px] animate-pulse">
+                DEPLOYMENT PENDING...
+            </div>
+        </div>
+      </div>
+    );
+  }
+  // 🎯 KRAJ ODRŽAVANJA 🎯
+
 
   if (!user || (!isVIP && !isLocked)) {
       return (
-        <div className="min-h-screen bg-[#050505] flex items-center justify-center pt-32 pb-20 px-6 font-sans">
+        <div className="min-h-[75vh] flex items-center justify-center px-6 font-sans">
             <div className="max-w-md w-full bg-[#0a0a0a] border border-orange-500/40 rounded-3xl p-10 text-center shadow-[0_0_50px_rgba(234,88,12,0.15)] relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-600 to-amber-500"></div>
                 <Lock className="w-16 h-16 text-orange-500 mx-auto mb-6 opacity-80" />
@@ -319,19 +367,15 @@ export default function V8PromptEngine() {
                     <p className="text-zinc-300 text-xs leading-relaxed mb-4">The ultimate mass-production text engine for cinematic grids. Value: <strong className="text-white">$250</strong>.</p>
                     <p className="text-orange-400 text-xs font-bold bg-orange-500/10 p-3 rounded-lg border border-orange-500/20">Unlocked FREE when you purchase any V8 Masterwork Bundle from the Stock Market.</p>
                 </div>
-                {!user ? (
-                   <button onClick={() => signInWithPopup(auth, provider)} className="w-full py-4 bg-zinc-800 hover:bg-orange-600 text-white font-black uppercase tracking-widest rounded-xl transition-all text-xs">Verify Account</button>
-                ) : (
-                   <a href="/stock" className="block w-full py-4 bg-orange-600 hover:bg-orange-500 text-white font-black uppercase tracking-widest rounded-xl transition-all text-xs shadow-[0_0_20px_rgba(234,88,12,0.4)]">Browse Master Bundles</a>
-                )}
             </div>
         </div>
       );
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] pt-32 pb-20 px-4 md:px-8 text-white font-sans">
-      <div className="mx-auto max-w-7xl space-y-8">
+    <div className="min-h-screen pt-10 pb-20 px-4 md:px-8 text-white font-sans relative">
+      
+      <div className="mx-auto max-w-7xl space-y-8 relative z-10">
         
         {/* V8 HEADER */}
         <div className="rounded-[2.5rem] border border-orange-500/30 bg-[#0a0a0a] p-8 shadow-[0_0_40px_rgba(234,88,12,0.1)] relative overflow-hidden">
@@ -345,7 +389,7 @@ export default function V8PromptEngine() {
                 GRID COLLAGE <span className="text-orange-500">FACTORY</span>
               </h1>
               <p className="mt-4 max-w-2xl text-zinc-400 text-sm md:text-base font-medium">
-                The ultimate text-generation algorithm for cinematic advertising panels. Generates perfect prompt variations ready for deployment.
+                The ultimate text-generation algorithm strictly optimized for Google Nano Banana 2. Fixed at 16:9 cinematic aspect ratio.
               </p>
             </div>
             <div className="flex flex-col items-end gap-4">
@@ -355,15 +399,6 @@ export default function V8PromptEngine() {
                     <span className="text-[9px] text-zinc-500 font-black uppercase tracking-widest">Monthly Quota</span>
                     <span className="text-xs font-mono font-bold text-white"><span className={promptsUsed > 2500 ? "text-red-500" : "text-green-400"}>{promptsUsed}</span> / {PROMPT_LIMIT}</span>
                  </div>
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                <button onClick={copyOutput} disabled={isLocked} className={`flex items-center gap-2 rounded-xl px-6 py-3.5 font-black text-[11px] uppercase tracking-widest transition-all ${isLocked ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed' : 'bg-orange-600 text-white hover:bg-orange-500 shadow-[0_0_20px_rgba(234,88,12,0.4)] hover:shadow-[0_0_30px_rgba(234,88,12,0.6)]'}`}>
-                  <Copy size={16} /> {copied ? "COPIED TO CLIPBOARD!" : "COPY ALL PROMPTS"}
-                </button>
-                <button onClick={downloadTxt} disabled={isLocked} className={`flex items-center gap-2 rounded-xl px-6 py-3.5 font-black text-[11px] uppercase tracking-widest transition-all ${isLocked ? 'bg-zinc-900 text-zinc-700 cursor-not-allowed border border-white/5' : 'bg-white text-black hover:bg-zinc-200 shadow-xl'}`}>
-                  <Download size={16} /> DOWNLOAD TXT
-                </button>
               </div>
             </div>
           </div>
@@ -376,24 +411,13 @@ export default function V8PromptEngine() {
 
               <div className="grid gap-5">
                 <label className="space-y-2">
-                  <span className="block text-[10px] font-black uppercase tracking-widest text-orange-500">BATCH COUNT (VARIATIONS)</span>
-                  <input type="number" min="1" max="100" value={count} onChange={(e) => setCount(Math.max(1, Math.min(100, Number(e.target.value || 1))))} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3.5 text-white font-mono outline-none focus:border-orange-500 transition-colors" />
-                </label>
-
-                <label className="space-y-2">
                   <span className="block text-[10px] font-black uppercase tracking-widest text-orange-500">ALGORITHM SEED</span>
                   <input type="number" value={seed} onChange={(e) => setSeed(Number(e.target.value || 0))} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3.5 text-white font-mono outline-none focus:border-orange-500 transition-colors" />
                 </label>
 
-                <label className="space-y-2">
-                  <span className="block text-[10px] font-black uppercase tracking-widest text-orange-500">ASPECT RATIO</span>
-                  <select value={aspectRatio} onChange={(e) => setAspectRatio(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3.5 text-white font-bold uppercase outline-none focus:border-orange-500 transition-colors cursor-pointer">
-                    <option value="16:9">16:9 (Landscape)</option>
-                    <option value="21:9">21:9 (Cinematic)</option>
-                    <option value="4:3">4:3 (Standard)</option>
-                    <option value="1:1">1:1 (Square)</option>
-                    <option value="9:16">9:16 (Portrait)</option>
-                  </select>
+                <label className="space-y-2 opacity-50 cursor-not-allowed">
+                  <span className="block text-[10px] font-black uppercase tracking-widest text-orange-500">ASPECT RATIO (LOCKED)</span>
+                  <input type="text" value="16:9 (Cinematic)" disabled className="w-full rounded-xl border border-white/10 bg-black px-4 py-3.5 text-white font-bold uppercase outline-none" />
                 </label>
 
                 <label className="space-y-2">
@@ -413,10 +437,8 @@ export default function V8PromptEngine() {
                   NEGATIVE PROMPT
                 </label>
 
-                <div className="grid grid-cols-2 gap-3 mt-4">
-                  <button onClick={randomSeed} className="rounded-xl bg-zinc-900 border border-white/5 px-4 py-3 font-black text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all flex items-center justify-center gap-2"><RefreshCw size={12} /> SEED</button>
-                  <button onClick={clearDetails} className="rounded-xl bg-zinc-900 border border-white/5 px-4 py-3 font-black text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all">CLEAR DESC</button>
-                  <button onClick={reset} className="col-span-2 rounded-xl bg-zinc-800 border border-white/10 px-4 py-3 font-black text-[10px] uppercase tracking-widest text-white hover:bg-orange-600 transition-all shadow-lg">SYSTEM RESET</button>
+                <div className="grid grid-cols-1 mt-4">
+                  <button onClick={clearDetails} className="rounded-xl bg-zinc-900 border border-white/5 px-4 py-3 font-black text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all">CLEAR ALL DESCRIPTIONS</button>
                 </div>
               </div>
             </div>
@@ -449,39 +471,73 @@ export default function V8PromptEngine() {
 
         {/* DONJI PANEL: OUTPUT */}
         <div className="rounded-[2.5rem] border border-orange-500/40 bg-[#0a0a0a] p-8 shadow-[0_0_40px_rgba(234,88,12,0.15)] relative mt-10">
-          <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-end md:justify-between border-b border-white/10 pb-4">
-            <div>
-              <h2 className="text-xl font-black uppercase tracking-widest text-white">Engine Output</h2>
-              <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Ready for deployment.</p>
-            </div>
-            <div className="text-[10px] bg-orange-600 text-white px-3 py-1.5 rounded-lg font-black uppercase tracking-widest">{count} BATCHES GENERATED</div>
-          </div>
           
-          {/* 🎯 KARTICE SA DUGMETOM ZA KOPIRANJE ZA SVAKI PROMPT POSEBNO */}
-          <div className="space-y-4 max-h-[800px] overflow-y-auto custom-scrollbar pr-2">
-            {outputArray.map((promptText, i) => (
-               <div key={i} className="bg-[#050505] border border-white/5 rounded-2xl p-4 hover:border-orange-500/30 transition-colors relative">
-                  <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-3">
-                     <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">PROMPT #{i + 1}</span>
-                     <button 
-                        onClick={() => copySingle(i, promptText)}
-                        className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase transition-all ${copiedStates[i] ? 'bg-orange-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'}`}
-                     >
-                        {copiedStates[i] ? 'COPIED!' : 'COPY PROMPT'}
-                     </button>
-                  </div>
-                  <textarea 
-                     readOnly 
-                     value={promptText} 
-                     className="w-full bg-transparent font-mono text-[11px] text-zinc-300 resize-none outline-none custom-scrollbar min-h-[120px]" 
-                  />
-               </div>
-            ))}
-          </div>
-
+          {generatedPrompts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <Zap className="w-16 h-16 text-zinc-700 mb-6" />
+              <h2 className="text-2xl font-black text-zinc-500 uppercase tracking-widest mb-8">SYSTEM STANDBY</h2>
+              <button 
+                onClick={handleGenerate100} 
+                disabled={isLocked} 
+                className="bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white font-black uppercase tracking-widest py-5 px-12 rounded-2xl shadow-[0_0_30px_rgba(234,88,12,0.3)] transition-all flex items-center justify-center gap-3 hover:scale-[1.02]"
+              >
+                 GENERATE 100 PROMPTS
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-white/10 pb-6">
+                <div>
+                  <h2 className="text-xl font-black uppercase tracking-widest text-white flex items-center gap-3">
+                    <span className="bg-green-500 text-black px-3 py-1 rounded-lg text-xs font-black">100</span>
+                    PROMPTS DEPLOYED
+                  </h2>
+                </div>
+                
+                {/* TOOLBAR ZA EXPORT I KONTROLU */}
+                <div className="flex flex-wrap items-center gap-3">
+                  <button onClick={handleRegenerate100} className="flex items-center gap-2 bg-orange-600 hover:bg-orange-500 text-white px-5 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(234,88,12,0.4)]">
+                     <RefreshCw size={14} /> REGENERATE 100 PROMPTS
+                  </button>
+                  <div className="w-px h-8 bg-white/10 mx-2"></div>
+                  <button onClick={downloadTxt} title="Export as TXT" className="p-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-all border border-white/5">
+                     <FileText size={18} />
+                  </button>
+                  <button onClick={downloadJson} title="Export as JSON" className="p-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-all border border-white/5">
+                     <FileJson size={18} />
+                  </button>
+                  <button onClick={clearPrompts} title="Clear All" className="p-3 bg-red-900/20 hover:bg-red-600 text-red-500 hover:text-white rounded-xl transition-all border border-red-500/30">
+                     <Trash2 size={18} className="animate-pulse" />
+                  </button>
+                </div>
+              </div>
+              
+              <div className="space-y-4 max-h-[800px] overflow-y-auto custom-scrollbar pr-2">
+                {generatedPrompts.map((promptText, i) => (
+                   <div key={i} className="bg-[#050505] border border-white/5 rounded-2xl p-4 hover:border-orange-500/30 transition-colors relative group">
+                      <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-3">
+                         <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">PROMPT #{i + 1}</span>
+                         <button 
+                            onClick={() => copySingle(i, promptText)}
+                            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[9px] font-black uppercase transition-all shadow-lg ${copiedStates[i] ? 'bg-green-500 text-black shadow-[0_0_15px_rgba(34,197,94,0.4)]' : 'bg-orange-600 text-white hover:bg-orange-500'}`}
+                         >
+                            <Copy size={12} /> {copiedStates[i] ? 'COPIED!' : 'COPY PROMPT'}
+                         </button>
+                      </div>
+                      <textarea 
+                         readOnly 
+                         value={promptText} 
+                         className="w-full bg-transparent font-mono text-[11px] text-zinc-300 resize-none outline-none custom-scrollbar min-h-[140px]" 
+                      />
+                   </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
   );
 }
+// KRAJ FUNKCIJE: V8PromptEngine
 // KRAJ FAJLA: V8PromptEngine.jsx
