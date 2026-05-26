@@ -89,13 +89,14 @@ const V8OptimizerPage = () => {
   const [isVIP, setIsVIP] = useState(false);
   const [credits, setCredits] = useState(0); 
   const [showPaymentModal, setShowPaymentModal] = useState(null);
-  const [lemonLink, setLemonLink] = useState("");
+  const [paddleLink, setPaddleLink] = useState(""); // IZMENJENO
   const [isCheckingAccess, setIsCheckingAccess] = useState(true);
 
   // --- V8 FIREBASE AUTH & CREDIT LISTENER ---
   useEffect(() => {
-    const unsubLemon = onSnapshot(doc(db, "v8_settings", "lemon_checkout"), (docSnap) => {
-        if (docSnap.exists()) setLemonLink(docSnap.data().optimizer || "");
+    // IZMENJENO: Sada slušamo paddle_checkout
+    const unsubPaddle = onSnapshot(doc(db, "v8_settings", "paddle_checkout"), (docSnap) => {
+        if (docSnap.exists()) setPaddleLink(docSnap.data().optimizer || "");
     });
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -130,7 +131,7 @@ const V8OptimizerPage = () => {
       }
     });
 
-    return () => { unsubscribe(); unsubLemon(); };
+    return () => { unsubscribe(); unsubPaddle(); };
   }, []);
 
   // 🔥 V8 PAMETNA MEMORIJA ZA OPTIMIZER (Opaljuje modal nakon logina) 🔥
@@ -161,8 +162,8 @@ const V8OptimizerPage = () => {
                 return; 
             }
 
-            if (lemonLink && lemonLink.includes("http")) {
-                window.location.href = lemonLink;
+            if (paddleLink && paddleLink.includes("http")) { // IZMENJENO
+                window.location.href = paddleLink;
             } else {
                 setShowPaymentModal({ tip: pendingTip, cena: pendingCena });
             }
@@ -174,7 +175,7 @@ const V8OptimizerPage = () => {
     
     const timer = setTimeout(() => { checkPendingPurchase(); }, 1000);
     return () => clearTimeout(timer);
-  }, [lemonLink]);
+  }, [paddleLink]); // IZMENJENO
 
   // --- V8 BLINDIRANA FUNKCIJA ZA KUPITI KREDITE (PLAĆANJE) ---
   const handlePaymentV8 = async (e) => {
@@ -215,8 +216,8 @@ const V8OptimizerPage = () => {
                 return; 
             }
 
-            if (lemonLink && lemonLink.includes("http")) {
-                window.location.href = lemonLink;
+            if (paddleLink && paddleLink.includes("http")) { // IZMENJENO
+                window.location.href = paddleLink;
             } else {
                 setShowPaymentModal({ tip: tipPaketa, cena: cenaPaketa });
             }
@@ -558,9 +559,9 @@ const V8OptimizerPage = () => {
                     <MagneticButton>
                         <button 
                           onClick={handlePaymentV8}
-                          className="mt-6 bg-white text-black px-10 py-4 rounded-full font-black uppercase tracking-[0.2em] text-[11px] hover:bg-yellow-400 hover:text-black transition-all shadow-xl flex items-center gap-2"
+                          className="mt-6 bg-white text-black px-10 py-4 rounded-full font-black uppercase tracking-[0.2em] text-[11px] hover:bg-orange-500 hover:text-white transition-all shadow-xl flex items-center gap-2"
                         >
-                            SECURE CHECKOUT 🍋
+                            <Zap size={16} /> SECURE CHECKOUT
                         </button>
                     </MagneticButton>
                 </div>

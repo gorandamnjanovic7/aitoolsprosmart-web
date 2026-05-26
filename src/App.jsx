@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
-import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay,  CheckCircle, ChevronUp } from 'lucide-react';
+import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay, CheckCircle, ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import ScanOverlay from './ScanOverlay'; // Uvezi komponentu
+import ScanOverlay from './ScanOverlay'; 
 
 // FIREBASE
 import { db, auth } from './firebase';
@@ -19,7 +19,7 @@ import HomePage from './HomePage';
 import V8Enhancer10x from './V8Enhancer10x';
 import V8Promo10xPage from './V8Promo10xPage'; 
 import V8ContactWidget from './V8ContactWidget';
-import V8StockBerza from './V8StockBerza';
+import V8StockBerza from './componentsStockBerza/V8StockBerza';
 import V8Showroom from './V8Showroom'; 
 import VisitorCounter from './VisitorCounter';
 import SingleProductPage from './SingleProductPage';
@@ -37,7 +37,6 @@ import VaultTransition from './VaultTransition';
 import V8IdleProtocol from './V8IdleProtocol';
 import V8CinematicText from './V8CinematicText';
 import CinematikPromptEngine from './CinematikPromptEngine';
-
 
 // UI COMPONENTS
 import V8RadarCursor from './V8RadarCursor';
@@ -74,7 +73,6 @@ export const v8Toast = {
   subscribe: (l) => { v8Toast.listeners.push(l); return () => v8Toast.listeners = v8Toast.listeners.filter(cb => cb !== l); }
 };
 
-// --- V8 SUPERCOMPUTER SCAN TRANSITION ---
 const V8PageWrapper = ({ children }) => {
   return (
     <>
@@ -83,7 +81,7 @@ const V8PageWrapper = ({ children }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ delay: 0.8, duration: 0.4 }} // Čeka da linija prođe, pa se pojavljuje
+        transition={{ delay: 0.8, duration: 0.4 }} 
         className="w-full h-full origin-center relative z-10"
       >
         {children}
@@ -114,7 +112,6 @@ const V8ToastContainer = () => {
   );
 };
 
-// --- TVOJ ORIGINALNI LOADER SA KRUGOVIMA ---
 const FullScreenBoot = ({ onComplete }) => {
   const [progress, setProgress] = useState(0);
   const [isIgniting, setIsIgniting] = useState(false);
@@ -172,16 +169,25 @@ const FullScreenBoot = ({ onComplete }) => {
   );
 };
 
+// --- POPRAVLJEN SMART SCROLL BUTTON ---
 const SmartScrollButton = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  
   useEffect(() => { 
     const checkScroll = () => setIsScrolled(window.scrollY > 400); 
     window.addEventListener('scroll', checkScroll); 
     return () => window.removeEventListener('scroll', checkScroll); 
   }, []);
-  const handleAction = () => { window.scrollTo({ top: isScrolled ? 0 : document.body.scrollHeight, behavior: 'smooth' }); };
+  
+  const handleAction = () => { 
+    // Popravljeno računanje visine da uvek radi savršeno
+    const targetHeight = isScrolled ? 0 : Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+    window.scrollTo({ top: targetHeight, behavior: 'smooth' }); 
+  };
+  
   return (
-    <button onClick={handleAction} className="fixed bottom-10 right-6 z-[5000] flex flex-col items-center group transition-all duration-500">
+    // Pomereno na bottom-[150px] da ga Avatar i Chat ne preklapaju
+    <button onClick={handleAction} className="fixed bottom-[150px] right-6 z-[9999] flex flex-col items-center group transition-all duration-500">
       <div className={`w-1.5 rounded-full transition-all duration-700 flex items-center justify-center ${isScrolled ? 'bg-orange-500 shadow-[0_0_12px_rgba(249,115,22,0.8)] h-16' : 'bg-white/20 h-10 hover:bg-white/40'}`}>
         <div className={`transition-transform duration-700 text-white ${isScrolled ? 'rotate-0' : 'rotate-180'}`}><ChevronUp size={14} strokeWidth={4} /></div>
       </div>
@@ -189,7 +195,6 @@ const SmartScrollButton = () => {
   );
 };
 
-// --- APP CONTENT COMPONENT ---
 function AppContent({ appsData, refreshData }) {
   const [isBooting, setIsBooting] = useState(true);
   const location = useLocation();
@@ -197,7 +202,6 @@ function AppContent({ appsData, refreshData }) {
   const entryTime = useRef(Date.now());
   const [authVersion, setAuthVersion] = useState(0); 
 
-  // Forsiranje re-rendera kada se korisnik prijavi/odjavi
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, () => {
         setAuthVersion(v => v + 1);
@@ -232,13 +236,15 @@ function AppContent({ appsData, refreshData }) {
   const handleHomeClick = (e) => { if (location.pathname === '/') { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); window.history.replaceState(null, '', '/'); } };
 
   return (
-    /* 🎯 GLAVNI KONTEJNER SA HIGGSFIELD POZADINOM 🎯 */
     <div key={authVersion} className="min-h-screen text-zinc-100 font-sans relative text-left bg-[url('/v8-supercomputer-bg.jpg')] bg-cover bg-center bg-fixed bg-no-repeat">
       
-      {/* 🎯 NOVI RADIALNI OVERLAY: Sredina 95% mračna, ivice samo 30% mračne. Manji blur da bi slika bila oštrija. 🎯 */}
+      {/* CSS TRIK ZA POPRAVKU PREKLAPANJA PLIVAJUĆIH WIDGETA */}
+      <style>{`
+        .force-left-widget > div { right: auto !important; left: 1.5rem !important; }
+      `}</style>
+
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(5,5,5,0.95)_30%,_rgba(5,5,5,0.3)_100%)] backdrop-blur-[1px] pointer-events-none z-0"></div>
 
-      {/* 🎯 Sadržaj aplikacije izdignut iznad pozadine (z-10) 🎯 */}
       <div className="relative z-10 flex flex-col min-h-screen w-full pb-20 lg:pb-0">
         <V8RadarCursor />
         <V8ToastContainer />
@@ -255,18 +261,8 @@ function AppContent({ appsData, refreshData }) {
               <Route path="/" element={<V8PageWrapper><HomePage apps={appsData} /></V8PageWrapper>} />
               <Route path="/optimizer" element={<V8PageWrapper><V8OptimizerPage /></V8PageWrapper>} />
               <Route path="/prompt-engine" element={<V8PageWrapper><V8PromptEngine /></V8PageWrapper>} />
-             
-              {/* V8 CINEMATIC ENGINE (Seedance & Kling integrisani) */}
-              <Route path="/seedance" element={
-                <V8PageWrapper>
-                  <CinematikPromptEngine initialEngine="SEEDANCE 2.0" />
-                </V8PageWrapper>
-              } />
-              <Route path="/kling" element={
-                <V8PageWrapper>
-                  <CinematikPromptEngine initialEngine="KLING 3.0" />
-                </V8PageWrapper>
-              } />
+              <Route path="/seedance" element={<V8PageWrapper><CinematikPromptEngine initialEngine="SEEDANCE 2.0" /></V8PageWrapper>} />
+              <Route path="/kling" element={<V8PageWrapper><CinematikPromptEngine initialEngine="KLING 3.0" /></V8PageWrapper>} />
               <Route path="/enxance" element={<V8PageWrapper><V8Enhancer10x /></V8PageWrapper>} />
               <Route path="/promo" element={<V8PageWrapper><V8Promo10xPage /></V8PageWrapper>} />
               <Route path="/app/:id" element={<V8PageWrapper><SingleProductPage apps={appsData} /></V8PageWrapper>} />
@@ -283,11 +279,19 @@ function AppContent({ appsData, refreshData }) {
           </AnimatePresence>
         </div>
         
+        {/* --- KONTROLA PLIVAJUĆIH WIDGETA --- */}
         <SmartScrollButton />
-        <VisitorCounter />
+        
+        {/* Kontakt ostaje desno */}
         <V8ContactWidget />
-        {/* Naš novi AI prezenter */}
+        {/* Avatar ostaje desno */}
         <UgcAvatar />
+
+        {/* Brojač poseta forsiramo u DONJI LEVI ugao da se ne sudara sa avatarom */}
+        <div className="force-left-widget">
+          <VisitorCounter />
+        </div>
+
         <V8Footer />
       </div>
     </div>
@@ -313,7 +317,6 @@ export default function App() {
   return (
     <HelmetProvider>
       <Router>
-        {/* V8 MASTERWORK OVERLAYS */}
         <V8IdleProtocol />
         <AppContent appsData={appsData} refreshData={refreshData} />
       </Router>
