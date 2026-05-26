@@ -14,7 +14,7 @@ import { doc, getDoc, collection, addDoc, query, orderBy, getDocs } from 'fireba
 import * as data from './data';
 import './App.css'; 
 
-// --- SVE TVOJE STRANICE ---
+// SVE TVOJE STRANICE
 import HomePage from './HomePage';
 import V8Enhancer10x from './V8Enhancer10x';
 import V8Promo10xPage from './V8Promo10xPage'; 
@@ -38,7 +38,6 @@ import V8IdleProtocol from './V8IdleProtocol';
 import V8CinematicText from './V8CinematicText';
 import CinematikPromptEngine from './CinematikPromptEngine';
 
-// UI COMPONENTS
 import V8RadarCursor from './V8RadarCursor';
 import V8Navbar from './V8Navbar';
 import V8Footer from './V8Footer';
@@ -53,18 +52,23 @@ const MOJA_IP = "213.196.99.10";
 let globalUserIp = "";
 const currentSessionId = Math.random().toString(36).substring(2, 15);
 
+// POCETAK FUNKCIJE: fetchUserIp
 const fetchUserIp = async () => {
   try {
     const res = await fetch('https://api.ipify.org?format=json');
     const d = await res.json(); globalUserIp = d.ip;
   } catch (err) {}
 };
+// KRAJ FUNKCIJE: fetchUserIp
+
 fetchUserIp();
 
+// POCETAK FUNKCIJE: logAnalyticsEvent
 export const logAnalyticsEvent = async (type, details) => {
   if (globalUserIp === MOJA_IP || globalUserIp === "") return; 
   try { await addDoc(collection(db, "analytics"), { type, ...details, timestamp: Date.now(), sessionId: currentSessionId }); } catch (err) {}
 };
+// KRAJ FUNKCIJE: logAnalyticsEvent
 
 export const v8Toast = {
   listeners: [],
@@ -73,6 +77,7 @@ export const v8Toast = {
   subscribe: (l) => { v8Toast.listeners.push(l); return () => v8Toast.listeners = v8Toast.listeners.filter(cb => cb !== l); }
 };
 
+// POCETAK FUNKCIJE: V8PageWrapper
 const V8PageWrapper = ({ children }) => {
   return (
     <>
@@ -89,7 +94,9 @@ const V8PageWrapper = ({ children }) => {
     </>
   );
 };
+// KRAJ FUNKCIJE: V8PageWrapper
 
+// POCETAK FUNKCIJE: V8ToastContainer
 const V8ToastContainer = () => {
   const [toasts, setToasts] = useState([]);
   useEffect(() => {
@@ -111,7 +118,9 @@ const V8ToastContainer = () => {
     </div>
   );
 };
+// KRAJ FUNKCIJE: V8ToastContainer
 
+// POCETAK FUNKCIJE: FullScreenBoot
 const FullScreenBoot = ({ onComplete }) => {
   const [progress, setProgress] = useState(0);
   const [isIgniting, setIsIgniting] = useState(false);
@@ -132,17 +141,9 @@ const FullScreenBoot = ({ onComplete }) => {
   }, [onComplete]);
 
   return (
-    <motion.div 
-      className="fixed inset-0 z-[9999] bg-[#050505] flex flex-col items-center justify-center overflow-hidden"
-      exit={{ opacity: 0, scale: 1.05, filter: "blur(15px)" }} 
-      transition={{ duration: 0.8, ease: "easeInOut" }}
-    >
+    <motion.div className="fixed inset-0 z-[9999] bg-[#050505] flex flex-col items-center justify-center overflow-hidden" exit={{ opacity: 0, scale: 1.05, filter: "blur(15px)" }} transition={{ duration: 0.8, ease: "easeInOut" }}>
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <motion.div 
-          animate={{ scale: isIgniting ? 4 : [1, 1.2, 1], opacity: isIgniting ? 0 : [0.05, 0.15, 0.05] }}
-          transition={{ duration: isIgniting ? 0.8 : 2, repeat: isIgniting ? 0 : Infinity }}
-          className="w-96 h-96 bg-orange-600 rounded-full blur-[100px]"
-        />
+        <motion.div animate={{ scale: isIgniting ? 4 : [1, 1.2, 1], opacity: isIgniting ? 0 : [0.05, 0.15, 0.05] }} transition={{ duration: isIgniting ? 0.8 : 2, repeat: isIgniting ? 0 : Infinity }} className="w-96 h-96 bg-orange-600 rounded-full blur-[100px]" />
       </div>
       <div className="relative z-10 flex flex-col items-center">
         <div className="relative w-48 h-48 flex items-center justify-center mb-12">
@@ -168,8 +169,9 @@ const FullScreenBoot = ({ onComplete }) => {
     </motion.div>
   );
 };
+// KRAJ FUNKCIJE: FullScreenBoot
 
-// --- POPRAVLJEN SMART SCROLL BUTTON ---
+// POCETAK FUNKCIJE: SmartScrollButton
 const SmartScrollButton = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   
@@ -180,13 +182,11 @@ const SmartScrollButton = () => {
   }, []);
   
   const handleAction = () => { 
-    // Popravljeno računanje visine da uvek radi savršeno
     const targetHeight = isScrolled ? 0 : Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
     window.scrollTo({ top: targetHeight, behavior: 'smooth' }); 
   };
   
   return (
-    // Pomereno na bottom-[150px] da ga Avatar i Chat ne preklapaju
     <button onClick={handleAction} className="fixed bottom-[150px] right-6 z-[9999] flex flex-col items-center group transition-all duration-500">
       <div className={`w-1.5 rounded-full transition-all duration-700 flex items-center justify-center ${isScrolled ? 'bg-orange-500 shadow-[0_0_12px_rgba(249,115,22,0.8)] h-16' : 'bg-white/20 h-10 hover:bg-white/40'}`}>
         <div className={`transition-transform duration-700 text-white ${isScrolled ? 'rotate-0' : 'rotate-180'}`}><ChevronUp size={14} strokeWidth={4} /></div>
@@ -194,7 +194,9 @@ const SmartScrollButton = () => {
     </button>
   );
 };
+// KRAJ FUNKCIJE: SmartScrollButton
 
+// POCETAK FUNKCIJE: AppContent
 function AppContent({ appsData, refreshData }) {
   const [isBooting, setIsBooting] = useState(true);
   const location = useLocation();
@@ -238,9 +240,23 @@ function AppContent({ appsData, refreshData }) {
   return (
     <div key={authVersion} className="min-h-screen text-zinc-100 font-sans relative text-left bg-[url('/v8-supercomputer-bg.jpg')] bg-cover bg-center bg-fixed bg-no-repeat">
       
-      {/* CSS TRIK ZA POPRAVKU PREKLAPANJA PLIVAJUĆIH WIDGETA */}
+      {/* AGRESIVNI OVERRIDE ZA BROJAC POSETA - PONIŠTAVA NJEGOVE CSS KLASE I ZAKUCAVA GA LEVO */}
       <style>{`
-        .force-left-widget > div { right: auto !important; left: 1.5rem !important; }
+        #v8-counter-container {
+          position: fixed !important;
+          bottom: 2rem !important;
+          left: 1.5rem !important;
+          z-index: 9999 !important;
+          display: block !important;
+        }
+        #v8-counter-container > * {
+          position: relative !important;
+          right: auto !important;
+          left: auto !important;
+          bottom: auto !important;
+          top: auto !important;
+          margin: 0 !important;
+        }
       `}</style>
 
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(5,5,5,0.95)_30%,_rgba(5,5,5,0.3)_100%)] backdrop-blur-[1px] pointer-events-none z-0"></div>
@@ -279,16 +295,12 @@ function AppContent({ appsData, refreshData }) {
           </AnimatePresence>
         </div>
         
-        {/* --- KONTROLA PLIVAJUĆIH WIDGETA --- */}
         <SmartScrollButton />
-        
-        {/* Kontakt ostaje desno */}
         <V8ContactWidget />
-        {/* Avatar ostaje desno */}
         <UgcAvatar />
 
-        {/* Brojač poseta forsiramo u DONJI LEVI ugao da se ne sudara sa avatarom */}
-        <div className="force-left-widget">
+        {/* BROJAC POSETA STAVLJEN U NOVI KONTEJNER */}
+        <div id="v8-counter-container">
           <VisitorCounter />
         </div>
 
@@ -297,10 +309,13 @@ function AppContent({ appsData, refreshData }) {
     </div>
   );
 }
+// KRAJ FUNKCIJE: AppContent
 
+// POCETAK FUNKCIJE: App
 export default function App() {
   const [appsData, setAppsData] = useState([]);
 
+  // POCETAK FUNKCIJE: refreshData
   const refreshData = useCallback(async () => {
     try {
       const q = query(collection(db, "v8_products"), orderBy("createdAt", "desc"));
@@ -311,6 +326,7 @@ export default function App() {
       setAppsData([]);
     }
   }, []);
+  // KRAJ FUNKCIJE: refreshData
 
   useEffect(() => { refreshData(); }, [refreshData]);
 
@@ -323,3 +339,4 @@ export default function App() {
     </HelmetProvider>
   );
 }
+// KRAJ FUNKCIJE: App
