@@ -69,6 +69,9 @@ const V8StockBerza = () => {
   const [fullScreenImageUrl, setFullScreenImageUrl] = useState(null);
   
   const [activeTab, setActiveTab] = useState('premium');
+  
+  // DRŽIMO STANJE OTVORENOG MENIJA
+  const [otvorenOpis, setOtvorenOpis] = useState(null);
 
   const [noviNazivEn, setNoviNazivEn] = useState('');
   const [noviVolume, setNoviVolume] = useState('');
@@ -120,6 +123,9 @@ const V8StockBerza = () => {
   useEffect(() => {
     if (activeTab === 'bundles') setNoviFormat('33.2MP MASTERWORK BUNDLE');
     else setNoviFormat('16:9, 9:16 & 21:9 (BUNDLE)');
+    
+    // Zatvaramo otvoreni meni prilikom promene taba
+    setOtvorenOpis(null); 
   }, [activeTab]);
   // KRAJ FUNKCIJE: Komentarišem uvek kraj funkcije
 
@@ -273,8 +279,135 @@ const V8StockBerza = () => {
   const premiumPaketi = paketi.filter(p => { const formatString = (p.format || "").toUpperCase(); return formatString.includes('MASTERWORK') && !formatString.includes('MASTERWORK BUNDLE'); });
   const bundlePaketi = paketi.filter(p => (p.format || "").toUpperCase().includes('MASTERWORK BUNDLE'));
 
+//POZADINE
+const pozadine = {
+  standard: "url('/standard-bg.webp')",
+  premium: "url('/premium-bg.webp')",
+  bundles: "url('/bundles-bg.webp')"  // <--- ZLATNI TREZOR
+};
+// KARAJ POZADINE
+
+// POČETAK FUNKCIJE: Komentarišem uvek početak funkcije
+// POČETAK FUNKCIJE: Komentarišem uvek početak funkcije
+// Centralizovana funkcija koja vraća interaktivni V8 Manifest za bilo koji tab
+const renderV8Manifest = (rezolucija) => {
+    const specifikacije = [
+        { 
+          t: `1. ${rezolucija} Upscale`, 
+          d: "Industrial-grade precision for 8K.", 
+          insight: `Utilizing precision LANCZOS interpolation, images are scaled to a native ${rezolucija} resolution, eliminating blurriness and jagged artifacts.` 
+        },
+        { 
+          t: "2. Contributor Cleanup", 
+          d: "MedianFilter for pristine surfaces.", 
+          insight: "An advanced MedianFilter systematically wipes out digital noise and compression artifacts, ensuring a pristine base image." 
+        },
+        { 
+          t: "3. Premium Sharpness", 
+          d: "Unsharp Mask for micro-contrast.", 
+          insight: "A surgically calibrated Unsharp Mask algorithm tuned to 1.15 radius accentuates textures without creating artificial halo lines." 
+        },
+        { 
+          t: "4. Color Grading", 
+          d: "Luminance matrices for impact.", 
+          insight: "Advanced Color Enhancement matrices adjust Luminance and Chrominance so colors pop naturally for high-end advertising." 
+        },
+        { 
+          t: "5. Highlight Rolloff", 
+          d: "NumPy processing for details.", 
+          insight: "Custom NumPy matrix processing applies a smooth rolloff to prevent blown-out whites and retain intricate highlight textures." 
+        },
+        { 
+          t: "6. Shadow Depth", 
+          d: "3D richness and true blacks.", 
+          insight: "NumPy matrix processing compresses dark values to create 'true blacks' that retain tactile 3D dimension and subtle information." 
+        },
+        { 
+          t: "7. sRGB Standard", 
+          d: "ICC profile accuracy.", 
+          insight: "Strict conversion to the sRGB ICC profile ensures color accuracy across all digital devices and professional reference monitors." 
+        },
+        { 
+          t: "8. Product AD Polish", 
+          d: "Final high-conversion refinement.", 
+          insight: "Localized contrast adjustments ensure the viewer's eye is drawn immediately to the primary subject for commercial impact." 
+        },
+        { 
+          t: "9. Anti-plastic Realism", 
+          d: "Organic film grain integration.", 
+          insight: "Signature Gaussian Noise distribution breaks artificial AI smoothness, creating an authentic, tangible photographic look." 
+        },
+        { 
+          t: "10. 100% IP SAFE", 
+          d: "Zero text, watermarks, or logos. Fully production-ready.", 
+          insight: "This manifest is your Trust Signal. The assets are fully production-ready for elite agencies the moment they are downloaded." 
+        },
+      ];
+
+      return (
+        <div className="w-full max-w-5xl mx-auto mb-8 bg-black/40 border border-white/5 rounded-[2rem] p-8 md:p-10">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-[0.2em] text-white">V8 MASTER ENGINE</h2>
+            <p className="text-[12px] md:text-[14px] text-blue-400 font-bold uppercase tracking-[0.3em] mt-3 italic">Technical Specifications</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
+            {specifikacije.map((item, i) => {
+              const isOpen = otvorenOpis === i;
+              return (
+                <div 
+                  key={i} 
+                  onClick={() => setOtvorenOpis(isOpen ? null : i)}
+                  className={`bg-white/5 border p-6 rounded-2xl transition-all duration-500 cursor-pointer relative overflow-hidden group ${
+                    isOpen ? 'border-orange-500/50 shadow-[0_0_15px_rgba(249,115,22,0.1)]' : 'border-white/5 hover:border-white/20'
+                  }`}
+                >
+                  <div className="relative z-10 flex justify-between items-center">
+                    <div>
+                      <h4 className={`text-[13px] md:text-[15px] font-black uppercase transition-colors duration-300 flex items-center gap-3 mb-2 ${isOpen ? 'text-orange-400' : 'text-blue-400'}`}>
+                        <span className={`text-lg transition-colors duration-300 ${isOpen ? 'text-orange-500' : 'text-blue-600/60'}`}>🔷</span> 
+                        {item.t}
+                      </h4>
+                      <p className={`text-[11px] md:text-[13px] font-medium leading-relaxed transition-colors duration-300 ${isOpen ? 'text-white' : 'text-zinc-400'}`}>
+                        {item.d}
+                      </p>
+                    </div>
+                    
+                    {/* OVDJE JE PROMENJENA STRELICA - Jaka plava i narandžasta sa glow efektom */}
+                    <div className={`ml-4 text-xs md:text-sm font-black transition-all duration-500 ${isOpen ? 'rotate-180 text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]' : 'text-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.8)] group-hover:text-blue-400'}`}>
+                      ▼
+                    </div>
+                    {/* KRAJ PROMENE ZA STRELICU */}
+
+                  </div>
+                  <div className={`grid transition-all duration-500 ease-in-out relative z-10 ${isOpen ? 'grid-rows-[1fr] mt-4 opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                    <div className="overflow-hidden">
+                      <div className="pt-4 border-t border-white/10">
+                        <p className="text-[11px] md:text-[12px] text-zinc-300 font-mono leading-relaxed border-l-2 border-orange-500 pl-3">
+                          <span className="text-orange-400 font-bold">Tech Insight:</span> {item.insight}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className={`absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent transition-opacity duration-500 ${isOpen ? 'opacity-100' : 'opacity-0'}`}></div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+}
+// KRAJ FUNKCIJE: Komentarišem uvek kraj funkcije
+
   return (
-    <div className="min-h-screen bg-[#050505] font-sans text-white pt-32 pb-24 px-6 relative">
+    <div 
+  className="min-h-screen bg-[#050505] font-sans text-white pt-32 pb-24 px-6 relative transition-all duration-1000 ease-in-out"
+  style={{ 
+    backgroundImage: pozadine[activeTab] || "none",
+    backgroundSize: 'cover', 
+    backgroundPosition: 'center',
+    backgroundAttachment: 'fixed'
+  }}
+>
       <style>{`
         @keyframes spin-gradient { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .v8-premium-card { position: relative; border-radius: 2rem; padding: 2px; overflow: hidden; background: #0a0a0a; }
@@ -292,19 +425,19 @@ const V8StockBerza = () => {
             <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050505]/20 via-[#050505]/70 to-[#050505]"></div>
             <div className="relative z-10 text-center py-20 px-6">
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter mb-4 text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)] transition-all">
-                    {activeTab === 'premium' && (<>V8 33MP <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500 drop-shadow-none">MASTERWORK ASSETS</span></>)}
+                    {activeTab === 'premium' && (<>V8 33MP <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500 drop-shadow-none">PRODUCTION-READY ASSETS</span></>)}
                     {activeTab === 'bundles' && (<>V8 45MP EXTREME MASTER <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500 drop-shadow-none">STOCK BUNDLES</span></>)}
                     {activeTab === 'standard' && (<>V8 PREMIUM <span className="text-[#FF8C00]">STOCK MARKET</span></>)}
                 </h1>
 
                <p className="text-zinc-200 font-bold uppercase tracking-[0.2em] text-[10px] md:text-[12px] max-w-4xl mx-auto leading-relaxed mb-10 drop-shadow-lg bg-black/30 p-4 rounded-lg backdrop-blur-sm transition-all">
-    {activeTab === 'premium' && "PURE UNADULTERATED PIXELS. 45MP OF MASTERWORK RESOLUTION. ZERO COMPROMISE FOR LUXURY BRANDS."}
+    {activeTab === 'premium' && "33MP OF FLAWLESS DETAIL. HOLLYWOOD BLOCKBUSTER QUALITY MEETS 100% COMMERCIALLY SECURE VISUALS. THE ULTIMATE ARSENAL FOR HIGH-END CREATORS."}
     
     {activeTab === 'bundles' && (
-        <>
-            THE DEFINITIVE <span className="text-[#FF8C00]">45MP</span> MASTERWORK ARSENAL. BUILT FOR HIGH-END PRODUCTION. ENGINEERED FOR VISIONARY CREATORS AND SCALABLE COMMERCIAL CAMPAIGNS.
-        </>
-    )}
+    <>
+        THE DEFINITIVE <span className="text-[#FF8C00]">45MP</span> PRODUCTION-READY ARSENAL. BUILT FOR HIGH-END PRODUCTION. ENGINEERED FOR VISIONARY CREATORS AND SCALABLE, 100% IP-SAFE COMMERCIAL CAMPAIGNS.
+    </>
+)}
     
     {activeTab === 'standard' && "THE ULTIMATE ARSENAL OF ROYALTY-FREE AI ASSETS FOR HIGH-END PRODUCTION AND VISIONARY CREATORS."}
 </p>
@@ -456,56 +589,23 @@ const V8StockBerza = () => {
         {/* OVDE SE RENDERUJU KOMPONENTE NA OSNOVU TABA */}
         <div className="flex flex-wrap justify-center gap-12 max-w-5xl mx-auto">
           {activeTab === 'standard' && (
+            <>
+              {renderV8Manifest("16MP")}
               <V8StandardAssets paketi={standardPaketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} />
+            </>
           )}
           
           {activeTab === 'premium' && (
+            <>
+              {renderV8Manifest("33.2MP")}
               <V8PremiumAssets paketi={premiumPaketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} />
+            </>
           )}
           
           {activeTab === 'bundles' && (
             <>
-              {/* 1. V8 MASTER ENGINE SADA IDE PRVI SA ZNAČAJNO VEĆIM TEKSTOM */}
-              <div className="w-full max-w-5xl mx-auto mb-8 bg-black/40 border border-white/5 rounded-[2rem] p-8 md:p-10">
-                <div className="text-center mb-10">
-                  <h2 className="text-3xl md:text-4xl font-black uppercase tracking-[0.2em] text-white">V8 MASTER ENGINE</h2>
-                  <p className="text-[12px] md:text-[14px] text-blue-400 font-bold uppercase tracking-[0.3em] mt-3 italic">Technical Specifications</p>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {[
-                    { t: "1. 45MP Upscale", d: "Industrial-grade precision for 8K." },
-                    { t: "2. Contributor Cleanup", d: "MedianFilter for pristine surfaces." },
-                    { t: "3. Premium Sharpness", d: "Unsharp Mask for micro-contrast." },
-                    { t: "4. Color Grading", d: "Luminance matrices for impact." },
-                    { t: "5. Highlight Rolloff", d: "NumPy processing for details." },
-                    { t: "6. Shadow Depth", d: "3D richness and true blacks." },
-                    { t: "7. sRGB Standard", d: "ICC profile accuracy." },
-                    { t: "8. AD Polish", d: "Final high-conversion refinement." },
-                    { t: "9. Anti-plastic Realism", d: "Organic film grain integration." },
-                    { t: "10. 100% IP SAFE", d: "Zero text, watermarks, or logos. Fully production-ready." },
-                  ].map((item, i) => (
-                    <div key={i} className="bg-white/5 border border-white/5 p-6 rounded-2xl hover:border-blue-500/30 transition-all group">
-                      <h4 className="text-[13px] md:text-[15px] font-black uppercase text-blue-400 flex items-center gap-3 mb-2">
-                        <span className="text-blue-600/60 text-lg">🔷</span> {item.t}
-                      </h4>
-                      <p className="text-[11px] md:text-[13px] text-zinc-400 font-medium leading-relaxed group-hover:text-zinc-200">{item.d}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* 2. BUNDLES KOMPONENTA (SA KRUNOM) SADA IDE ISPOD SPECIFIKACIJA */}
-              <V8MasterBundles 
-                paketi={bundlePaketi} 
-                isAdmin={isAdmin} 
-                getGlobalCena={getGlobalCena} 
-                getAspectClass={getAspectClass} 
-                prijavaIKupovina={prijavaIKupovina} 
-                startEditPaket={startEditPaket} 
-                obrisiPaket={obrisiPaket} 
-                setFullScreenImageUrl={setFullScreenImageUrl} 
-              />
+              {renderV8Manifest("45MP")}
+              <V8MasterBundles paketi={bundlePaketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} />
             </>
           )}
         </div>
