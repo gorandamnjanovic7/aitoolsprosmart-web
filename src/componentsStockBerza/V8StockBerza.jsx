@@ -14,7 +14,7 @@ import V8StandardAssets from './V8StandardAssets';
 import V8PremiumAssets from './V8PremiumAssets';
 import V8MasterBundles from './V8MasterBundles';
 
-// POČETAK FUNKCIJE: FullScreenLightbox
+// POČETAK FUNKCIJE: Komentarišem početak svake funkcije
 const FullScreenLightbox = ({ imageUrl, onClose }) => {
     useEffect(() => {
         if (imageUrl) document.body.style.overflow = 'hidden';
@@ -30,9 +30,9 @@ const FullScreenLightbox = ({ imageUrl, onClose }) => {
         </div>, document.body
     );
 };
-// KRAJ FUNKCIJE: FullScreenLightbox
+// KRAJ FUNKCIJE: Komentarišem kraj svake funkcije
 
-// POČETAK FUNKCIJE: V8PaymentModal
+// POČETAK FUNKCIJE: Komentarišem početak svake funkcije
 const V8PaymentModal = ({ paket, onClose, getGlobalCena }) => {
     useEffect(() => {
         if (paket) document.body.style.overflow = 'hidden';
@@ -54,7 +54,7 @@ const V8PaymentModal = ({ paket, onClose, getGlobalCena }) => {
         </div>, document.body
     );
 };
-// KRAJ FUNKCIJE: V8PaymentModal
+// KRAJ FUNKCIJE: Komentarišem kraj svake funkcije
 
 // Glavna Komponenta
 const V8StockBerza = () => {
@@ -123,15 +123,25 @@ const V8StockBerza = () => {
   }, [activeTab]);
   // KRAJ FUNKCIJE: Komentarišem uvek kraj funkcije
 
-  // POČETAK FUNKCIJE: Komentarišem uvek početak funkcije
+ // POČETAK: Automatsko setovanje moćnih V8 opisa u admin formi
   useEffect(() => {
-    if (noviFormat === '16:9 ONLY (SINGLE)') { setNoviOpisEn("PACKAGE CONTENTS: PREMIUM AI VISUALS IN ULTRA-WIDE 16:9 ONLY..."); } 
-    else if (noviFormat === '16:9, 9:16 & 21:9 (BUNDLE)') { setNoviOpisEn("PACKAGE CONTENTS: PREMIUM AI VISUALS IN 3 FORMATS..."); } 
-    else if (noviFormat === 'ALL FORMATS (16:9, 9:16, 21:9, 1:1)') { setNoviOpisEn("PACKAGE CONTENTS: 80 PREMIUM AI VISUALS..."); } 
-    else if (noviFormat === '16:9 & 9:16 (33.2MP MASTERWORK)') { setNoviOpisEn("V8 MASTERWORK BUNDLE: COMPLETE COLLECTION OF 20 PREMIUM VISUALS..."); }
-    else if (noviFormat === '33.2MP MASTERWORK BUNDLE') { setNoviOpisEn("V8 MASTERWORK BUNDLE: COMPLETE COLLECTION OF 60 PREMIUM VISUALS..."); }
+    if (noviFormat === '16:9 ONLY (SINGLE)') { 
+        setNoviOpisEn("PACKAGE CONTENTS: 20 PREMIUM AI VISUALS IN ULTRA-WIDE 16:9. PERFECT FOR WEBSITES AND YT. VALUE OVER $250. FLAWLESS TEXTURES, ZERO BRANDING, IP-SAFE. DESIGNED EXCLUSIVELY FOR LUXURY BRANDS."); 
+    } 
+    else if (noviFormat === '16:9, 9:16 & 21:9 (BUNDLE)') { 
+        setNoviOpisEn("PACKAGE CONTENTS: 60 PREMIUM AI VISUALS IN 3 FORMATS (16:9, 9:16, 21:9). COMPLETE BUNDLE FOR ALL PLATFORMS. THE ULTIMATE V8 COLLECTION. FLAWLESS TEXTURES, ZERO BRANDING, IP-SAFE. DESIGNED EXCLUSIVELY FOR LUXURY BRANDS AND HIGH-END COMMERCIAL CAMPAIGNS."); 
+    } 
+    else if (noviFormat === 'ALL FORMATS (16:9, 9:16, 21:9, 1:1)') { 
+        setNoviOpisEn("PACKAGE CONTENTS: 80 PREMIUM AI VISUALS IN 4 RESOLUTIONS (16:9, 9:16, 1:1, 21:9). COMPLETE PACKAGE FOR ALL PLATFORMS. THE ULTIMATE V8 COLLECTION. FLAWLESS TEXTURES, ZERO BRANDING, IP-SAFE."); 
+    } 
+    else if (noviFormat === '16:9 & 9:16 (33MP MASTERWORK)') { 
+        setNoviOpisEn("V8 MASTERWORK SINGLE: COMPLETE COLLECTION OF 20 PREMIUM VISUALS IN 33.2 MEGAPIXELS (8K UHD) RESOLUTION. INCLUDES BOTH 16:9 AND 9:16 ASPECT RATIOS. FLAWLESS TEXTURES, ZERO BRANDING, IP-SAFE. DESIGNED EXCLUSIVELY FOR LUXURY BRANDS AND HIGH-END COMMERCIAL CAMPAIGNS."); 
+    }
+    else if (noviFormat === '33.2MP MASTERWORK BUNDLE') { 
+        setNoviOpisEn("V8 MASTERWORK BUNDLE: COMPLETE COLLECTION OF 60 PREMIUM VISUALS IN 33.2 MEGAPIXELS (8K UHD) RESOLUTION. INCLUDES 16:9, 9:16 AND 21:9 ASPECT RATIOS. FLAWLESS TEXTURES, ZERO BRANDING, IP-SAFE. THE DEFINITIVE CHOICE FOR HIGH-END COMMERCIAL CAMPAIGNS."); 
+    }
   }, [noviFormat]);
-  // KRAJ FUNKCIJE: Komentarišem uvek kraj funkcije
+  // KRAJ: Automatsko setovanje moćnih V8 opisa
 
   // POČETAK FUNKCIJE: Komentarišem uvek početak funkcije
   const fetchPaketi = async () => {
@@ -177,19 +187,6 @@ const V8StockBerza = () => {
   // KRAJ FUNKCIJE: Komentarišem uvek kraj funkcije
 
   // POČETAK FUNKCIJE: Komentarišem uvek početak funkcije
-  const dodajPaket = async (e) => {
-    e.preventDefault();
-    if (!previewUrl || !zipLink) { v8Toast.error("Image & ZIP needed!"); return; }
-    const paketData = { nazivEn: noviNazivEn.trim(), volume: noviVolume, format: noviFormat, kategorijaEn: novaKategorijaEn.trim(), cena: novaCena, tip: noviTip, opisEn: noviOpisEn, previewUrl, zipLink, paddleLink, primeri: primeriUrls, updatedAt: serverTimestamp() };
-    try {
-        if (editingPaketId) { await updateDoc(doc(db, "v8_stock_paketi", editingPaketId), paketData); v8Toast.success("Updated!"); } 
-        else { await addDoc(collection(db, "v8_stock_paketi"), { ...paketData, createdAt: serverTimestamp() }); v8Toast.success("Added!"); }
-        stoziEdit(); fetchPaketi();
-    } catch (error) { v8Toast.error(error.message); }
-  };
-  // KRAJ FUNKCIJE: Komentarišem uvek kraj funkcije
-
-  // POČETAK FUNKCIJE: Komentarišem uvek početak funkcije
   const handleUploadPreview = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -223,6 +220,31 @@ const V8StockBerza = () => {
   };
   // KRAJ FUNKCIJE: Komentarišem uvek kraj funkcije
 
+  // POČETAK FUNKCIJE: Brisanje glavne slike
+  const removeMainImage = () => {
+    setPreviewUrl('');
+  };
+  // KRAJ FUNKCIJE
+
+  // POČETAK FUNKCIJE: Brisanje thumbnaila
+  const removeThumbnail = (indexToRemove) => {
+    setPrimeriUrls(prev => prev.filter((_, idx) => idx !== indexToRemove));
+  };
+  // KRAJ FUNKCIJE
+
+  // POČETAK FUNKCIJE: Komentarišem uvek početak funkcije
+  const dodajPaket = async (e) => {
+    e.preventDefault();
+    if (!previewUrl || !zipLink) { v8Toast.error("Image & ZIP needed!"); return; }
+    const paketData = { nazivEn: noviNazivEn.trim(), volume: noviVolume, format: noviFormat, kategorijaEn: novaKategorijaEn.trim(), cena: novaCena, tip: noviTip, opisEn: noviOpisEn, previewUrl, zipLink, paddleLink, primeri: primeriUrls, updatedAt: serverTimestamp() };
+    try {
+        if (editingPaketId) { await updateDoc(doc(db, "v8_stock_paketi", editingPaketId), paketData); v8Toast.success("Updated!"); } 
+        else { await addDoc(collection(db, "v8_stock_paketi"), { ...paketData, createdAt: serverTimestamp() }); v8Toast.success("Added!"); }
+        stoziEdit(); fetchPaketi();
+    } catch (error) { v8Toast.error(error.message); }
+  };
+  // KRAJ FUNKCIJE: Komentarišem uvek kraj funkcije
+
   // POČETAK FUNKCIJE: Komentarišem uvek početak funkcije
   const startEditPaket = (paket) => { setEditingPaketId(paket.id); setNoviNazivEn(paket.nazivEn || ''); setNoviVolume(paket.volume || ''); setNoviFormat(paket.format || '16:9, 9:16 & 21:9 (BUNDLE)'); setNovaKategorijaEn(paket.kategorijaEn || ''); setNovaCena(paket.cena || '49.99'); setNoviOpisEn(paket.opisEn || ''); setPreviewUrl(paket.previewUrl || ''); setZipLink(paket.zipLink || ''); setPaddleLink(paket.paddleLink || ''); setPrimeriUrls(paket.primeri || []); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   // KRAJ FUNKCIJE: Komentarišem uvek kraj funkcije
@@ -244,7 +266,10 @@ const V8StockBerza = () => {
   // KRAJ FUNKCIJE: Komentarišem uvek kraj funkcije
 
   // FILTRIRANJE PRE NEGO ŠTO POŠALJEMO CHILD KOMPONENTAMA
-  const standardPaketi = paketi.filter(p => !(p.format || "").toUpperCase().includes('MASTERWORK'));
+  const standardPaketi = paketi.filter(p => 
+  !(p.format || "").toUpperCase().includes('MASTERWORK') && 
+  !(p.nazivEn || "").toUpperCase().includes('WATCHES')
+);
   const premiumPaketi = paketi.filter(p => { const formatString = (p.format || "").toUpperCase(); return formatString.includes('MASTERWORK') && !formatString.includes('MASTERWORK BUNDLE'); });
   const bundlePaketi = paketi.filter(p => (p.format || "").toUpperCase().includes('MASTERWORK BUNDLE'));
 
@@ -268,10 +293,23 @@ const V8StockBerza = () => {
             <div className="relative z-10 text-center py-20 px-6">
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter mb-4 text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)] transition-all">
                     {activeTab === 'premium' && (<>V8 33MP <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500 drop-shadow-none">MASTERWORK ASSETS</span></>)}
-                    {activeTab === 'bundles' && (<>V8 33MP MASTER <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500 drop-shadow-none">STOCK BUNDLES</span></>)}
+                    {activeTab === 'bundles' && (<>V8 45MP EXTREME MASTER <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500 drop-shadow-none">STOCK BUNDLES</span></>)}
                     {activeTab === 'standard' && (<>V8 PREMIUM <span className="text-[#FF8C00]">STOCK MARKET</span></>)}
                 </h1>
-                
+
+               <p className="text-zinc-200 font-bold uppercase tracking-[0.2em] text-[10px] md:text-[12px] max-w-4xl mx-auto leading-relaxed mb-10 drop-shadow-lg bg-black/30 p-4 rounded-lg backdrop-blur-sm transition-all">
+    {activeTab === 'premium' && "PURE UNADULTERATED PIXELS. 45MP OF MASTERWORK RESOLUTION. ZERO COMPROMISE FOR LUXURY BRANDS."}
+    
+    {activeTab === 'bundles' && (
+        <>
+            THE DEFINITIVE <span className="text-[#FF8C00]">45MP</span> MASTERWORK ARSENAL. BUILT FOR HIGH-END PRODUCTION. ENGINEERED FOR VISIONARY CREATORS AND SCALABLE COMMERCIAL CAMPAIGNS.
+        </>
+    )}
+    
+    {activeTab === 'standard' && "THE ULTIMATE ARSENAL OF ROYALTY-FREE AI ASSETS FOR HIGH-END PRODUCTION AND VISIONARY CREATORS."}
+</p>
+
+
                 <div className="flex justify-center relative z-10 mt-10">
                     <div className="bg-[#050505]/80 backdrop-blur-md border border-white/10 p-1.5 rounded-full inline-flex flex-wrap items-center justify-center shadow-xl gap-1">
                         <button onClick={() => setActiveTab('standard')} className={`px-6 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 ${activeTab === 'standard' ? 'bg-zinc-800 text-white shadow-md border border-white/10' : 'text-zinc-400 hover:text-white'}`}>Standard Assets</button>
@@ -282,42 +320,134 @@ const V8StockBerza = () => {
             </div>
         </motion.div>
 
+        {/* FORMA ZA ADMINA */}
         {isAdmin && (
           <form onSubmit={dodajPaket} className="bg-[#0a0a0a] border-2 border-[#FF8C00]/50 rounded-[2.5rem] p-8 mb-16 shadow-[0_0_30px_rgba(255,140,0,0.1)] max-w-4xl mx-auto">
-            <h2 className="text-xl font-black text-[#FF8C00] uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-[#FF8C00]/20 pb-4"><Zap className="w-6 h-6" /> {editingPaketId ? 'EDIT PACKAGE' : 'ADD NEW ZIP PACKAGE'}</h2>
+            <h2 className="text-xl font-black text-[#FF8C00] uppercase tracking-widest mb-8 flex items-center gap-2 border-b border-[#FF8C00]/20 pb-4">
+              <Zap className="w-6 h-6" /> {editingPaketId ? 'EDIT PACKAGE' : 'ADD NEW ZIP PACKAGE'}
+            </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div className="flex flex-col gap-2 md:col-span-1"><label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase"><Type size={14} /> PACKAGE TITLE</label><input type="text" value={noviNazivEn} onChange={(e)=>setNoviNazivEn(e.target.value)} placeholder="E.g. Roman History" className="bg-black border border-[#FF8C00]/50 p-4 rounded-xl text-[14px] font-black text-white w-full outline-none focus:border-[#FF8C00] transition-all" required /></div>
-                <div className="flex flex-col gap-2 md:col-span-1"><label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase"><Layers size={14} /> CATEGORY</label><input type="text" value={novaKategorijaEn} onChange={(e)=>setNovaKategorijaEn(e.target.value)} placeholder="E.g. History" className="bg-black border border-[#FF8C00]/50 p-4 rounded-xl text-[14px] font-black text-white w-full outline-none focus:border-[#FF8C00] transition-all" required /></div>
-                <div className="flex flex-col gap-2 md:col-span-1"><label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase"><FolderArchive size={14} /> COLLECTION (VOLUME)</label><input type="text" placeholder="E.g. VOL 1" value={noviVolume} onChange={(e) => setNoviVolume(e.target.value)} className="bg-black text-white border border-white/10 p-4 rounded-xl text-[13px] font-black outline-none focus:border-[#FF8C00] transition-all" /></div>
+                <div className="flex flex-col gap-2 md:col-span-1">
+                    <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
+                        <Type size={14} /> PACKAGE TITLE
+                    </label>
+                    <input type="text" value={noviNazivEn} onChange={(e)=>setNoviNazivEn(e.target.value)} placeholder="E.g. Roman History" className="bg-black border border-[#FF8C00]/50 p-4 rounded-xl text-[14px] font-black text-white w-full outline-none focus:border-[#FF8C00] transition-all" required />
+                </div>
+                
+                <div className="flex flex-col gap-2 md:col-span-1">
+                    <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
+                        <Layers size={14} /> CATEGORY
+                    </label>
+                    <input type="text" value={novaKategorijaEn} onChange={(e)=>setNovaKategorijaEn(e.target.value)} placeholder="E.g. Abstract" className="bg-black border border-[#FF8C00]/50 p-4 rounded-xl text-[14px] font-black text-white w-full outline-none focus:border-[#FF8C00] transition-all" required />
+                </div>
+
+                <div className="flex flex-col gap-2 md:col-span-1">
+                    <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
+                        <FolderArchive size={14} /> COLLECTION (VOLUME)
+                    </label>
+                    <input type="text" placeholder="E.g. VOL 1" value={noviVolume} onChange={(e) => setNoviVolume(e.target.value)} className="bg-black text-white border border-white/10 p-4 rounded-xl text-[13px] font-black outline-none focus:border-[#FF8C00] transition-all" />
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-              <div className="flex flex-col gap-2 md:col-span-1"><label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase"><FileText size={14} /> DESCRIPTION</label><textarea value={noviOpisEn} onChange={(e)=>setNoviOpisEn(e.target.value)} placeholder="Package contents..." rows={4} className="bg-black border border-white/10 p-4 rounded-xl text-[12px] font-bold text-white w-full outline-none resize-none focus:border-[#FF8C00] transition-all h-full" required /></div>
+              <div className="flex flex-col gap-2 md:col-span-1">
+                  <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
+                      <FileText size={14} /> DESCRIPTION
+                  </label>
+                  <textarea value={noviOpisEn} onChange={(e)=>setNoviOpisEn(e.target.value)} placeholder="Package contents..." rows={4} className="bg-black border border-white/10 p-4 rounded-xl text-[12px] font-bold text-white w-full outline-none resize-none focus:border-[#FF8C00] transition-all h-full" required />
+              </div>
+
               <div className="flex flex-col gap-6 md:col-span-2">
-                  <div className="flex flex-col gap-2"><label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase"><Wallet size={14} /> PRICE (USD)</label><input type="text" value={novaCena} onChange={(e)=>setNovaCena(e.target.value)} placeholder="E.g. 49.99" className="bg-black border border-white/10 p-4 rounded-xl text-[13px] font-bold text-white outline-none focus:border-[#FF8C00] transition-all" /></div>
-                  <div className="flex flex-col gap-2"><label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase"><MonitorPlay size={14} /> FORMAT</label>
-                      <select value={noviFormat} onChange={(e) => setNoviFormat(e.target.value)} className="bg-black border border-white/10 p-4 rounded-xl text-[13px] font-bold text-white w-full outline-none focus:border-[#FF8C00]">
-                          <option value="16:9, 9:16 & 21:9 (BUNDLE)">16:9, 9:16 & 21:9</option>
-                          <option value="16:9 ONLY (SINGLE)">16:9 ONLY</option>
-                          <option value="ALL FORMATS (16:9, 9:16, 21:9, 1:1)">ALL FORMATS</option>
-                          <option value="16:9 & 9:16 (33.2MP MASTERWORK)">33.2MP MASTERWORK SINGLE</option>
-                          <option value="33.2MP MASTERWORK BUNDLE">33.2MP MASTERWORK BUNDLE</option>
-                      </select>
+                  <div className="flex flex-col gap-2">
+                      <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
+                          <Wallet size={14} /> PRICE (USD)
+                      </label>
+                      <input type="text" value={novaCena} onChange={(e)=>setNovaCena(e.target.value)} placeholder="E.g. 49.99" className="bg-black border border-white/10 p-4 rounded-xl text-[13px] font-bold text-white outline-none focus:border-[#FF8C00] transition-all" />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                      <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
+                          <MonitorPlay size={14} /> FORMAT
+                      </label>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                          {['16:9 ONLY (SINGLE)', '16:9, 9:16 & 21:9 (BUNDLE)', 'ALL FORMATS (16:9, 9:16, 21:9, 1:1)', '33.2MP MASTERWORK SINGLE', '33.2MP MASTERWORK BUNDLE'].map((fmt) => (
+                              <label key={fmt} className={`cursor-pointer p-3 rounded-xl border-2 transition-all text-center font-black text-[9px] uppercase flex items-center justify-center ${noviFormat === fmt ? (fmt.includes('MASTERWORK') ? 'bg-gradient-to-r from-orange-600 to-amber-500 border-[#FF8C00] text-white shadow-[0_0_15px_rgba(234,88,12,0.4)]' : 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]') : 'bg-black border-white/10 text-zinc-500 hover:border-[#FF8C00]/50'}`}>
+                                  <input type="radio" name="format" value={fmt} checked={noviFormat === fmt} onChange={(e) => setNoviFormat(e.target.value)} className="hidden" />
+                                  {fmt.replace(' (16:9, 9:16, 21:9, 1:1)', '')}
+                              </label>
+                          ))}
+                      </div>
                   </div>
               </div>
             </div>
 
             <div className="border-t border-white/10 pt-6 mt-2">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div className="flex flex-col gap-2"><label className="flex items-center gap-2 text-blue-400 font-black text-[11px] tracking-widest uppercase"><LinkIcon size={14} /> GOOGLE DRIVE</label><input type="url" value={zipLink} onChange={(e)=>setZipLink(e.target.value)} placeholder="https://drive.google.com/..." className="bg-black border border-blue-500/50 p-4 rounded-xl text-[13px] text-white w-full outline-none font-bold focus:border-blue-400 transition-all" required /></div>
-                    <div className="flex flex-col gap-2"><label className="flex items-center gap-2 text-yellow-400 font-black text-[11px] tracking-widest uppercase"><Zap size={14} /> PADDLE LINK</label><input type="url" value={paddleLink} onChange={(e)=>setPaddleLink(e.target.value)} placeholder="https://buy.paddle.com/..." className="bg-black border border-yellow-500/50 p-4 rounded-xl text-[13px] text-white w-full outline-none font-bold focus:border-yellow-400 transition-all" /></div>
+                    <div className="flex flex-col gap-2">
+                        <label className="flex items-center gap-2 text-blue-400 font-black text-[11px] tracking-widest uppercase">
+                            <LinkIcon size={14} /> GOOGLE DRIVE (DELIVERY)
+                        </label>
+                        <input type="url" value={zipLink} onChange={(e)=>setZipLink(e.target.value)} placeholder="https://drive.google.com/..." className="bg-black border border-blue-500/50 p-4 rounded-xl text-[13px] text-white w-full outline-none font-bold focus:border-blue-400 transition-all" required />
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <label className="flex items-center gap-2 text-yellow-400 font-black text-[11px] tracking-widest uppercase">
+                            <Zap size={14} /> PADDLE CHECKOUT LINK
+                        </label>
+                        <input type="url" value={paddleLink} onChange={(e)=>setPaddleLink(e.target.value)} placeholder="https://buy.paddle.com/..." className="bg-black border border-yellow-500/50 p-4 rounded-xl text-[13px] text-white w-full outline-none font-bold focus:border-yellow-400 transition-all" />
+                    </div>
                 </div>
 
-                <div className="flex flex-wrap gap-4 items-end mt-4">
-                    <div className="flex flex-col gap-2"><label className="flex items-center gap-2 text-zinc-400 font-black text-[10px] tracking-widest uppercase"><ImageIcon size={12} /> MAIN IMAGE</label><label className="bg-zinc-900 hover:bg-[#FF8C00] text-white hover:text-black font-black border border-white/10 hover:border-[#FF8C00] px-6 py-4 rounded-xl text-[11px] uppercase cursor-pointer flex items-center gap-2"><ImageIcon size={16} /> {isUploading ? 'UPLOADING...' : 'ADD PREVIEW'}<input type="file" onChange={handleUploadPreview} className="hidden" /></label></div>
-                    <div className="flex flex-col gap-2"><label className="flex items-center gap-2 text-zinc-400 font-black text-[10px] tracking-widest uppercase"><Images size={12} /> GALLERY</label><label className="bg-zinc-900 hover:bg-[#FF8C00] text-white hover:text-black font-black border border-white/10 hover:border-[#FF8C00] px-6 py-4 rounded-xl text-[11px] uppercase cursor-pointer flex items-center gap-2"><Images size={16} /> {isUploadingPrimer ? 'UPLOADING...' : `ADD THUMBNAILS (${primeriUrls.length}/6)`}<input type="file" multiple onChange={handleUploadPrimeri} className="hidden" /></label></div>
-                    <button type="submit" className="ml-auto px-8 py-4 rounded-xl font-black text-[13px] tracking-widest uppercase bg-[#FF8C00] hover:bg-orange-500 text-black flex items-center gap-2"><Zap size={18} /> {editingPaketId ? 'SAVE CHANGES' : 'SAVE PACKAGE'}</button>
+                <div className="flex flex-col gap-4">
+                  {(previewUrl || primeriUrls.length > 0) && (
+                    <div className="flex flex-wrap gap-4 p-4 bg-white/5 rounded-xl border border-white/10">
+                      {previewUrl && (
+                        <div className="relative w-20 h-20 rounded-lg overflow-hidden border-2 border-[#FF8C00] shadow-[0_0_15px_rgba(255,140,0,0.4)] group">
+                          <span className="absolute top-0 left-0 bg-[#FF8C00] text-black text-[9px] font-black px-2 py-0.5 z-10">MAIN</span>
+                          <button type="button" onClick={removeMainImage} className="absolute top-1 right-1 bg-red-600/90 hover:bg-red-500 text-white rounded-full p-1 z-20 transition-all opacity-0 group-hover:opacity-100 shadow-md">
+                            <X size={12} strokeWidth={3} />
+                          </button>
+                          <img src={previewUrl} alt="Main" className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                      {primeriUrls.map((url, idx) => (
+                        <div key={idx} className="w-20 h-20 rounded-lg overflow-hidden border border-white/20 relative group">
+                          <span className="absolute bottom-0 right-0 bg-black/80 text-white text-[8px] font-black px-1.5 py-0.5 z-10">PREVIEW</span>
+                          <button type="button" onClick={() => removeThumbnail(idx)} className="absolute top-1 right-1 bg-red-600/90 hover:bg-red-500 text-white rounded-full p-1 z-20 transition-all opacity-0 group-hover:opacity-100 shadow-md">
+                            <X size={12} strokeWidth={3} />
+                          </button>
+                          <img src={url} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap gap-4 items-end">
+                    <div className="flex flex-col gap-2">
+                        <label className="flex items-center gap-2 text-zinc-400 font-black text-[10px] tracking-widest uppercase">
+                            <ImageIcon size={12} /> MAIN IMAGE
+                        </label>
+                        <label className="bg-zinc-900 hover:bg-[#FF8C00] text-white hover:text-black border border-white/10 hover:border-[#FF8C00] px-6 py-4 rounded-xl font-black text-[11px] uppercase cursor-pointer transition-all flex items-center gap-2"> 
+                          <ImageIcon size={16} /> {isUploading ? 'UPLOADING...' : 'ADD PREVIEW'} 
+                          <input type="file" onChange={handleUploadPreview} className="hidden" /> 
+                        </label>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <label className="flex items-center gap-2 text-zinc-400 font-black text-[10px] tracking-widest uppercase">
+                            <Images size={12} /> GALLERY IMAGES
+                        </label>
+                        <label className="bg-zinc-900 hover:bg-[#FF8C00] text-white hover:text-black border border-white/10 hover:border-[#FF8C00] px-6 py-4 rounded-xl font-black text-[11px] uppercase cursor-pointer transition-all flex items-center gap-2"> 
+                          <Images size={16} /> {isUploadingPrimer ? 'UPLOADING...' : `ADD THUMBNAILS (${primeriUrls.length}/${activeTab === 'bundles' ? 6 : 4})`} 
+                          <input type="file" multiple onChange={handleUploadPrimeri} className="hidden" /> 
+                        </label>
+                    </div>
+
+                    <button type="submit" className="ml-auto px-8 py-4 rounded-xl font-black text-[13px] tracking-widest uppercase bg-[#FF8C00] hover:bg-orange-500 text-black transition-all shadow-[0_0_20px_rgba(255,140,0,0.5)] flex items-center gap-2 hover:scale-105"> 
+                      <Zap size={18} /> {editingPaketId ? 'SAVE CHANGES' : 'SAVE PACKAGE'} 
+                    </button>
+                  </div>
                 </div>
             </div>
           </form>
@@ -328,11 +458,55 @@ const V8StockBerza = () => {
           {activeTab === 'standard' && (
               <V8StandardAssets paketi={standardPaketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} />
           )}
+          
           {activeTab === 'premium' && (
               <V8PremiumAssets paketi={premiumPaketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} />
           )}
+          
           {activeTab === 'bundles' && (
-              <V8MasterBundles paketi={bundlePaketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} />
+            <>
+              {/* 1. V8 MASTER ENGINE SADA IDE PRVI SA ZNAČAJNO VEĆIM TEKSTOM */}
+              <div className="w-full max-w-5xl mx-auto mb-8 bg-black/40 border border-white/5 rounded-[2rem] p-8 md:p-10">
+                <div className="text-center mb-10">
+                  <h2 className="text-3xl md:text-4xl font-black uppercase tracking-[0.2em] text-white">V8 MASTER ENGINE</h2>
+                  <p className="text-[12px] md:text-[14px] text-blue-400 font-bold uppercase tracking-[0.3em] mt-3 italic">Technical Specifications</p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {[
+                    { t: "1. 45MP Upscale", d: "Industrial-grade precision for 8K." },
+                    { t: "2. Contributor Cleanup", d: "MedianFilter for pristine surfaces." },
+                    { t: "3. Premium Sharpness", d: "Unsharp Mask for micro-contrast." },
+                    { t: "4. Color Grading", d: "Luminance matrices for impact." },
+                    { t: "5. Highlight Rolloff", d: "NumPy processing for details." },
+                    { t: "6. Shadow Depth", d: "3D richness and true blacks." },
+                    { t: "7. sRGB Standard", d: "ICC profile accuracy." },
+                    { t: "8. AD Polish", d: "Final high-conversion refinement." },
+                    { t: "9. Anti-plastic Realism", d: "Organic film grain integration." },
+                    { t: "10. 100% IP SAFE", d: "Zero text, watermarks, or logos. Fully production-ready." },
+                  ].map((item, i) => (
+                    <div key={i} className="bg-white/5 border border-white/5 p-6 rounded-2xl hover:border-blue-500/30 transition-all group">
+                      <h4 className="text-[13px] md:text-[15px] font-black uppercase text-blue-400 flex items-center gap-3 mb-2">
+                        <span className="text-blue-600/60 text-lg">🔷</span> {item.t}
+                      </h4>
+                      <p className="text-[11px] md:text-[13px] text-zinc-400 font-medium leading-relaxed group-hover:text-zinc-200">{item.d}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 2. BUNDLES KOMPONENTA (SA KRUNOM) SADA IDE ISPOD SPECIFIKACIJA */}
+              <V8MasterBundles 
+                paketi={bundlePaketi} 
+                isAdmin={isAdmin} 
+                getGlobalCena={getGlobalCena} 
+                getAspectClass={getAspectClass} 
+                prijavaIKupovina={prijavaIKupovina} 
+                startEditPaket={startEditPaket} 
+                obrisiPaket={obrisiPaket} 
+                setFullScreenImageUrl={setFullScreenImageUrl} 
+              />
+            </>
           )}
         </div>
       </div>

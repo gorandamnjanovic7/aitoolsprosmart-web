@@ -8,7 +8,7 @@ import { doc, getDoc, onSnapshot, collection, addDoc, serverTimestamp } from 'fi
 import { auth, db } from './firebase';
 import { v8Toast } from './v8Utils';
 import V8Reveal from './V8Reveal';
-import V8CinematicText from './V8CinematicText';
+import V8CinematicText from './v8-ui-components/V8CinematicText';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // POČETAK FUNKCIJE: RippleButton

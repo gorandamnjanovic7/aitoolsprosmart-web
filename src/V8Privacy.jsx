@@ -20,7 +20,7 @@ const V8Privacy = () => {
                     </div>
                     
                     <div className="space-y-6 text-zinc-400 text-sm md:text-base font-medium leading-relaxed">
-                        <p><strong>1. DATA WE COLLECT:</strong> We collect necessary information to process your digital orders, including your email address and payment status. We do NOT store your credit card information directly; all payments are processed securely by Lemon Squeezy (our Merchant of Record).</p>
+                        <p><strong>1. DATA WE COLLECT:</strong> We collect necessary information to process your digital orders, including your email address and payment status. We do NOT store your credit card information directly; all payments are processed securely through our authorized, industry-standard payment processing partners.</p>
                         
                         <p><strong>2. HOW WE USE YOUR DATA:</strong> Your email is used exclusively to deliver digital products, grant access to the VIP Vault, and send important updates regarding your purchases.</p>
                         

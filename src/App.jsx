@@ -23,7 +23,7 @@ import V8StockBerza from './componentsStockBerza/V8StockBerza';
 import V8Showroom from './V8Showroom'; 
 import VisitorCounter from './VisitorCounter';
 import SingleProductPage from './SingleProductPage';
-import V8MediaViewer from './V8MediaViewer';
+import V8MediaViewer from './v8-ui-components/V8MediaViewer'; 
 import V8Terms from './V8Terms';
 import V8Privacy from './V8Privacy';
 import V8Refund from './V8Refund';
@@ -33,12 +33,12 @@ import V8AdminDashboard from "./V8AdminDashboard";
 import V8OptimizerPage from './V8OptimizerPage'; 
 import V8PromptEngine from './V8PromptEngine';
 import UgcAvatar from './UgcAvatar';
-import VaultTransition from './VaultTransition';
-import V8IdleProtocol from './V8IdleProtocol';
-import V8CinematicText from './V8CinematicText';
+import VaultTransition from './v8-ui-components/VaultTransition'; // AŽURIRANO
+import V8IdleProtocol from './v8-ui-components/V8IdleProtocol'; 
+import V8CinematicText from './v8-ui-components/V8CinematicText'; 
 import CinematikPromptEngine from './CinematikPromptEngine';
 
-import V8RadarCursor from './V8RadarCursor';
+import V8RadarCursor from './v8-ui-components/V8RadarCursor'; 
 import V8Navbar from './V8Navbar';
 import V8Footer from './V8Footer';
 
@@ -240,11 +240,11 @@ function AppContent({ appsData, refreshData }) {
   return (
     <div key={authVersion} className="min-h-screen text-zinc-100 font-sans relative text-left bg-[url('/v8-supercomputer-bg.jpg')] bg-cover bg-center bg-fixed bg-no-repeat">
       
-      {/* AGRESIVNI OVERRIDE ZA BROJAC POSETA - PONIŠTAVA NJEGOVE CSS KLASE I ZAKUCAVA GA LEVO */}
+      {/* AGRESIVNI OVERRIDE ZA BROJAC POSETA - PODIGNUT DA NE PREKLAPA KONTAKT */}
       <style>{`
         #v8-counter-container {
           position: fixed !important;
-          bottom: 2rem !important;
+          bottom: 120px !important;
           left: 1.5rem !important;
           z-index: 9999 !important;
           display: block !important;

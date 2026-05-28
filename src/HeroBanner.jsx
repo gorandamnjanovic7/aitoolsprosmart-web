@@ -1,24 +1,48 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { MatrixRain, BANNER_DATA } from './data';
 
 const HeroBanner = ({ setIsBannerHovered }) => {
   const [activeSlide, setActiveSlide] = useState(0); 
   const [isHovered, setIsHovered] = useState(false);
+  const timerRef = useRef(null);
 
-  const nextSlide = useCallback(() => setActiveSlide(s => (s + 1) % (BANNER_DATA?.length || 1)), []);
-  const prevSlide = () => setActiveSlide(s => (s - 1 + (BANNER_DATA?.length || 1)) % (BANNER_DATA?.length || 1));
+  const nextSlide = useCallback(() => {
+    setActiveSlide(s => (s + 1) % (BANNER_DATA?.length || 1));
+  }, []);
+
+  const prevSlide = useCallback(() => {
+    setActiveSlide(s => (s - 1 + (BANNER_DATA?.length || 1)) % (BANNER_DATA?.length || 1));
+  }, []);
   
+  // Glavna kontrola tajmera - sada je bulletproof
   useEffect(() => { 
-    if (isHovered) return;
-    const t = setInterval(nextSlide, 7000); 
-    return () => clearInterval(t); 
-  }, [nextSlide, isHovered]);
+    // Uvek prvo ubijamo stari tajmer da nema dupliranja
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    // Ako miš NIJE na baneru, tek onda vrti slike
+    if (!isHovered) {
+      timerRef.current = setInterval(() => {
+        nextSlide();
+      }, 7000); 
+    }
+
+    // Cleanup kad se komponenta osveži
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [isHovered, nextSlide]);
 
   const handleMouseEnter = () => { 
     setIsHovered(true); 
     if(setIsBannerHovered) setIsBannerHovered(true); 
   };
+  
   const handleMouseLeave = () => { 
     setIsHovered(false); 
     if(setIsBannerHovered) setIsBannerHovered(false); 
@@ -28,8 +52,11 @@ const HeroBanner = ({ setIsBannerHovered }) => {
     <div 
       id="home-banner" 
       className="relative w-full h-[85vh] flex items-end overflow-hidden bg-black text-white border-b-2 border-orange-500/60 shadow-[0_20px_50px_rgba(234,88,12,0.15)]"
+      // Koristimo i Mouse i Pointer evente da garantovano uhvati hover
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onPointerEnter={handleMouseEnter}
+      onPointerLeave={handleMouseLeave}
     >
       <div className="absolute inset-0 z-0 bg-black">
         {(BANNER_DATA || []).map((item, idx) => (

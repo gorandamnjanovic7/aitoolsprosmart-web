@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Image as ImageIcon, ArrowRight } from 'lucide-react';
 import V8Reveal from './V8Reveal';
 import V8TiltCard from './V8TiltCard';
-import V8CinematicText from './V8CinematicText';
+import V8CinematicText from './v8-ui-components/V8CinematicText';
 
 // ============================================================================
 // POČETAK: StockBundles KOMPONENTA
