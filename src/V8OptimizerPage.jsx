@@ -324,6 +324,21 @@ const V8OptimizerPage = () => {
   };
   // KRAJ FUNKCIJE: processImage
 
+// POČETAK FUNKCIJE: Renderovanje V8 Cinematic Pozadine
+  const renderCinematicBackground = () => {
+    return (
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 bg-[#050505]/75 z-10 mix-blend-multiply transition-opacity duration-1000"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/60 via-transparent to-[#050505] z-10"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-transparent to-[#050505] z-10"></div>
+        <video autoPlay loop muted playsInline className="w-full h-full object-cover scale-[1.02]">
+          <source src="/v8-core.webm" type="video/webm" />
+        </video>
+      </div>
+    );
+  };
+  // KRAJ FUNKCIJE: Renderovanje V8 Cinematic Pozadine
+
   return (
     <div className="min-h-screen pt-28 pb-20 px-6 flex flex-col items-center bg-[#050505] relative text-white">
       
@@ -355,15 +370,11 @@ const V8OptimizerPage = () => {
             transition={{ duration: 1, delay: 0.2 }}
             className="relative w-full max-w-7xl mx-auto mb-16 rounded-[3rem] overflow-hidden border border-white/10 shadow-[0_0_60px_rgba(255,140,0,0.15)]"
         >
-            <div 
-                className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-60"
-                style={{ backgroundImage: "url('/v8_py/v8_py_pozadina.webp')" }} 
-            ></div>
-            
-            <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050505]/30 via-[#050505]/70 to-[#050505]"></div>
-            <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#050505] via-transparent to-[#050505]"></div>
+            {/* AKTIVACIJA V8 CINEMATIC POZADINE */}
+            {renderCinematicBackground()}
 
             <div className="relative z-10 py-24 px-6 text-center">
+            
                 <div className="inline-block bg-orange-600/10 border border-orange-500/30 px-5 py-2 rounded-full text-orange-400 font-black uppercase tracking-[0.3em] text-[10px] mb-8 animate-pulse shadow-[0_0_20px_rgba(234,88,12,0.2)] backdrop-blur-sm">
                   V8 AUTOMATION // ENTERPRISE OPTIMIZER MODE
                 </div>

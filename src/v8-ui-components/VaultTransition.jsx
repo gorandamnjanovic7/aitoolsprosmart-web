@@ -8,41 +8,48 @@ const VaultTransition = () => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Kada klijent promeni stranicu, zalupimo "vrata sefa"
+    // Okida se na svaku promenu stranice
     setIsVisible(true);
-    // Posle 800ms (dovoljno da React učita novu stranicu u pozadini), otvaramo ih
+    
+    // Tajmer drastično produžen na 2.8 sekundi za onaj spori, teški V8 efekat
     const timer = setTimeout(() => {
       setIsVisible(false);
-    }, 800);
+    }, 2800);
     
     return () => clearTimeout(timer);
-  }, [location.pathname]); // Okidač je svaka promena URL-a
+  }, [location.pathname]);
 
   return (
     <AnimatePresence>
       {isVisible && (
-        <div className="fixed inset-0 z-[9999999] pointer-events-none flex flex-col">
-          {/* Gornja vrata sefa */}
-          <motion.div
-            initial={{ y: "-100%" }}
-            animate={{ y: "0%" }}
-            exit={{ y: "-100%" }}
-            transition={{ duration: 0.4, ease: "easeInOut" }}
-            className="h-1/2 w-full bg-[#050505] border-b-[4px] border-orange-500 shadow-[0_30px_60px_rgba(234,88,12,0.2)] flex items-end justify-center pb-8"
-          >
-             <span className="text-orange-500/70 font-black tracking-[1.5em] text-[10px] uppercase drop-shadow-[0_0_8px_rgba(234,88,12,0.8)]">V8 SECURE</span>
-          </motion.div>
+        <div className="fixed inset-0 z-[9999999] pointer-events-none overflow-hidden">
           
-          {/* Donja vrata sefa */}
+          {/* 1. MRAČNA ZAVESA KOJA SE SPUŠTA (Otkriva ekran tačno iza lasera) */}
           <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: "0%" }}
-            exit={{ y: "100%" }}
-            transition={{ duration: 0.4, ease: "easeInOut" }}
-            className="h-1/2 w-full bg-[#050505] border-t-[4px] border-orange-500 shadow-[0_-30px_60px_rgba(234,88,12,0.2)] flex items-start justify-center pt-8"
+            initial={{ height: "100%" }}
+            animate={{ height: "0%" }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 2.5, ease: "linear" }}
+            className="absolute bottom-0 w-full bg-[#050505] backdrop-blur-2xl"
+          />
+
+          {/* 2. SPORI V8 SKENER LASER (Prati vrh zavese) */}
+          <motion.div
+            initial={{ top: "0%", opacity: 0 }}
+            animate={{ top: "100%", opacity: [0, 1, 1, 0] }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 2.5, ease: "linear" }}
+            className="absolute left-0 w-full h-[3px] bg-orange-500 flex justify-center items-center"
+            style={{
+              boxShadow: '0 0 30px 10px rgba(249,115,22,0.9), 0 0 60px 20px rgba(249,115,22,0.4)'
+            }}
           >
-             <span className="text-orange-500/70 font-black tracking-[1.5em] text-[10px] uppercase drop-shadow-[0_0_8px_rgba(234,88,12,0.8)]">CONNECTION</span>
+            {/* V8 tekst u centru lasera koji "učitava" stranicu */}
+            <span className="text-orange-500 font-black tracking-[1.2em] text-[10px] uppercase drop-shadow-[0_0_12px_rgba(234,88,12,1)] bg-[#050505] px-6 py-1.5 rounded-full border border-orange-500/50">
+              V8 SYSTEM RENDER
+            </span>
           </motion.div>
+
         </div>
       )}
     </AnimatePresence>
