@@ -49,7 +49,7 @@ const V8Footer = () => {
            
            {/* Dodat blagi drop-shadow da bi se tekst lako citao preko videa */}
            <div className="text-zinc-400 font-medium text-[9px] mt-2 max-w-4xl text-center leading-relaxed px-4 drop-shadow-lg">
-              <strong>COMPLIANCE NOTICE:</strong> AI TOOLS PRO SMART exclusively develops and sells ready-made digital products (software templates, AI prompt libraries, and premium stock assets). We do not offer custom client services, consulting, or agency work. All purchases are instant digital downloads.
+              <strong>COMPLIANCE NOTICE:</strong> AI TOOLS PRO SMART exclusively develops and sells AI software infrastructure, proprietary prompt engineering logic, and SaaS access to AI generation tools. We do not sell third-party copyrighted images or traditional stock assets. All outputs are generated strictly via our proprietary AI engines. We do not offer custom client services, consulting, or agency work. All purchases are instant digital access.
            </div>
 
            <div className="flex flex-wrap justify-center items-center gap-4 text-zinc-600 font-black text-[9px] uppercase tracking-[0.3em] mt-4 mb-2">
