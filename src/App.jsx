@@ -37,6 +37,7 @@ import VaultTransition from './v8-ui-components/VaultTransition'; // AŽURIRANO
 import V8IdleProtocol from './v8-ui-components/V8IdleProtocol'; 
 import V8CinematicText from './v8-ui-components/V8CinematicText'; 
 import CinematikPromptEngine from './CinematikPromptEngine';
+import V8JsonExtractorPage from './V8JsonExtractorPage';
 
 import V8RadarCursor from './v8-ui-components/V8RadarCursor'; 
 import V8Navbar from './V8Navbar';
@@ -276,6 +277,7 @@ function AppContent({ appsData, refreshData }) {
             <Routes location={location} key={location.pathname}>
               <Route path="/" element={<V8PageWrapper><HomePage apps={appsData} /></V8PageWrapper>} />
               <Route path="/optimizer" element={<V8PageWrapper><V8OptimizerPage /></V8PageWrapper>} />
+              <Route path="/extractor" element={<V8PageWrapper><V8JsonExtractorPage /></V8PageWrapper>} />
               <Route path="/prompt-engine" element={<V8PageWrapper><V8PromptEngine /></V8PageWrapper>} />
               <Route path="/seedance" element={<V8PageWrapper><CinematikPromptEngine initialEngine="SEEDANCE 2.0" /></V8PageWrapper>} />
               <Route path="/kling" element={<V8PageWrapper><CinematikPromptEngine initialEngine="KLING 3.0" /></V8PageWrapper>} />

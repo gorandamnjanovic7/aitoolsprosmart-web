@@ -1,7 +1,7 @@
 // POČETAK FAJLA: V8Navbar.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay, FileText } from 'lucide-react'; // Dodat FileText
+import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay, FileText, Code } from 'lucide-react'; // Dodat Code
 import { motion } from 'framer-motion';
 
 // FIREBASE & TOOLS
@@ -131,7 +131,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   </Link>
 
-                  {/* NOVO: V8 PROMPT ENGINE */}
                   <Link to="/prompt-engine" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-yellow-500/30 mt-1">
                     <div className="bg-yellow-500/20 p-2 rounded-lg group-hover/item:bg-yellow-500/40 transition-colors shadow-[0_0_10px_rgba(234,179,8,0.3)]">
                       <FileText className="w-5 h-5 text-yellow-400 transition-transform group-hover/item:scale-110" />
@@ -149,6 +148,17 @@ const V8Navbar = ({ handleHomeClick }) => {
                     <div className="flex flex-col text-left">
                       <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-orange-400 transition-all drop-shadow-md">V8 OPTIMIZER</span>
                       <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Cinematic Image Processor</span>
+                    </div>
+                  </Link>
+
+                  {/* 🔥 NOVO: JSON EXTRACTOR DUGME (Tačno ispod V8 Optimizera) 🔥 */}
+                  <Link to="/extractor" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-cyan-500/30 mt-1">
+                    <div className="bg-cyan-500/20 p-2 rounded-lg group-hover/item:bg-cyan-500/40 transition-colors shadow-[0_0_10px_rgba(6,182,212,0.3)]">
+                      <Code className="w-5 h-5 text-cyan-400 transition-transform group-hover/item:scale-110" />
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-cyan-400 transition-all drop-shadow-md">JSON EXTRACTOR</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Visual DNA Reverse Engine</span>
                     </div>
                   </Link>
 

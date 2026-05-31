@@ -1,19 +1,25 @@
 // POČETAK FAJLA: CinematikPromptEngine.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom'; 
-import { Upload, FileImage, Clock, Wand2, MonitorPlay, Smartphone, Settings2, X, Diamond, Lock, DownloadCloud, Zap, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { Upload, FileImage, Clock, Wand2, MonitorPlay, Smartphone, Settings2, X, Diamond, Lock, DownloadCloud, Zap, ShieldCheck, AlertTriangle, Copy, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import MagneticButton from './MagneticButton'; 
 
 import { db, auth } from './firebase';
 import { doc, getDoc, collection, addDoc, serverTimestamp, setDoc, onSnapshot, updateDoc, increment } from 'firebase/firestore';
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
+// OBAVEZNO: Definisan BASE_BACKEND_URL
+const BASE_BACKEND_URL = window.location.hostname === 'localhost' 
+  ? "http://localhost:8000" 
+  : "https://aitoolsprosmart-becend-production.up.railway.app";
+
 const V8EngineCheckoutModal = ({ isOpen, onClose, currentEngine }) => {
+  // --- POČETAK FUNKCIJE: V8EngineCheckoutModal_useEffect ---
   useEffect(() => {
     if (isOpen) document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
+  // --- KRAJ FUNKCIJE: V8EngineCheckoutModal_useEffect ---
 
   if (!isOpen) return null;
 
@@ -53,9 +59,11 @@ const V8EngineCheckoutModal = ({ isOpen, onClose, currentEngine }) => {
 const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
   const [currentEngine, setCurrentEngine] = useState(initialEngine);
 
+  // --- POČETAK FUNKCIJE: setInitialEngine_useEffect ---
   useEffect(() => {
     setCurrentEngine(initialEngine);
   }, [initialEngine]);
+  // --- KRAJ FUNKCIJE: setInitialEngine_useEffect ---
 
   const [promptText, setPromptText] = useState('');
   const [duration, setDuration] = useState('5s');
@@ -68,9 +76,13 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
   const [imageDescription, setImageDescription] = useState(''); 
   
   const [isGenerating, setIsGenerating] = useState(false);
+  
+  // Memorija za dobijene promptove iz Pythona
+  const [generatedPrompts, setGeneratedPrompts] = useState(null); 
+  const [copiedIndex, setCopiedIndex] = useState(null);
+
   const inputRef = useRef(null);
 
-  // 🔥 V8 AUTH & CREDIT STATE 🔥
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [isVIP, setIsVIP] = useState(false);
@@ -81,7 +93,7 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
   const isImageModeActive = !!imageFile || imageDescription.length > 0;
   const isTextModeActive = promptText.length > 0;
 
-  // 🔥 FIREBASE LISTENER SA 24H COOLDOWN PROTOKOLOM 🔥
+  // --- POČETAK FUNKCIJE: AuthListener_useEffect ---
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) { 
@@ -103,13 +115,11 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
                 let currentCredits = data.promptCredits !== undefined ? data.promptCredits : 1000;
                 let cooldownStart = data.engineCooldownStartedAt ? data.engineCooldownStartedAt.toMillis() : null;
                 
-                // --- 24H COOLDOWN LOGIKA ---
                 if (cooldownStart) {
                    const now = Date.now();
-                   const passed24h = (now - cooldownStart) >= (24 * 60 * 60 * 1000); // 24 Sata
+                   const passed24h = (now - cooldownStart) >= (24 * 60 * 60 * 1000); 
                    
                    if (passed24h) {
-                      // Hlađenje završeno - Resetuj kredite na 1000 i obriši blokadu
                       await updateDoc(docRef, { 
                           promptCredits: 1000, 
                           engineCooldownStartedAt: null 
@@ -117,7 +127,6 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
                       currentCredits = 1000;
                       setCooldownTime(null);
                    } else {
-                      // Motor se još hladi
                       setCooldownTime(cooldownStart + (24 * 60 * 60 * 1000));
                    }
                 } else {
@@ -141,8 +150,9 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
     });
     return () => unsubscribe();
   }, []);
+  // --- KRAJ FUNKCIJE: AuthListener_useEffect ---
 
-  // 🔥 PAMTI KLIK PRE LOGINA 🔥
+  // --- POČETAK FUNKCIJE: PendingPurchaseCheck_useEffect ---
   useEffect(() => {
     const checkPendingPurchase = async () => {
       const pendingEngine = localStorage.getItem('v8_pending_engine_checkout');
@@ -168,23 +178,31 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
     const timer = setTimeout(() => { checkPendingPurchase(); }, 1000);
     return () => clearTimeout(timer);
   }, []);
+  // --- KRAJ FUNKCIJE: PendingPurchaseCheck_useEffect ---
 
+  // --- POČETAK FUNKCIJE: handleDrag ---
   const handleDrag = (e) => {
     e.preventDefault(); e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
     else if (e.type === "dragleave") setDragActive(false);
   };
+  // --- KRAJ FUNKCIJE: handleDrag ---
 
+  // --- POČETAK FUNKCIJE: handleDrop ---
   const handleDrop = (e) => {
     e.preventDefault(); e.stopPropagation(); setDragActive(false);
     if (!isTextModeActive && e.dataTransfer.files && e.dataTransfer.files[0]) ucitajSliku(e.dataTransfer.files[0]);
   };
+  // --- KRAJ FUNKCIJE: handleDrop ---
 
+  // --- POČETAK FUNKCIJE: handleChange ---
   const handleChange = (e) => {
     e.preventDefault();
     if (!isTextModeActive && e.target.files && e.target.files[0]) ucitajSliku(e.target.files[0]);
   };
+  // --- KRAJ FUNKCIJE: handleChange ---
 
+  // --- POČETAK FUNKCIJE: ucitajSliku ---
   const ucitajSliku = (file) => {
     setImageFile(file);
     const reader = new FileReader();
@@ -199,36 +217,54 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
     };
     reader.readAsDataURL(file);
   };
+  // --- KRAJ FUNKCIJE: ucitajSliku ---
 
+  // --- POČETAK FUNKCIJE: obrisiSliku ---
   const obrisiSliku = () => {
     setImageFile(null); setImagePreview(null); setImageDescription(''); setArLocked(false); 
   };
+  // --- KRAJ FUNKCIJE: obrisiSliku ---
 
+  // --- POČETAK FUNKCIJE: copyPrompt ---
+  const copyPrompt = (text, index, type) => {
+    navigator.clipboard.writeText(text);
+    setCopiedIndex(`${index}-${type}`);
+    setTimeout(() => setCopiedIndex(null), 2000);
+  };
+  // --- KRAJ FUNKCIJE: copyPrompt ---
+
+  // --- POČETAK FUNKCIJE: generisiMasterPrompt ---
   const generisiMasterPrompt = async () => {
-    // Provera za kredite i cooldown
     if (credits <= 0 && isVIP) {
         alert("ENGINE COOLING: You have 0 prompts left. Please wait for the 24h reset cycle.");
         return;
     }
 
     setIsGenerating(true);
+    setGeneratedPrompts(null); 
+
     const formData = new FormData();
     formData.append('engine', currentEngine); 
     formData.append('text', isImageModeActive ? imageDescription : promptText);
     formData.append('duration', duration);
     formData.append('aspectRatio', aspectRatio);
     
-    if (imageFile) { formData.append('image', imageFile); }
+    if (imageFile) { 
+      formData.append('image', imageFile); 
+    }
 
     try {
-      const response = await fetch('https://aitoolsprosmart-becend-production.up.railway.app/api/v8-generate', {
+      const response = await fetch(`${BASE_BACKEND_URL}/api/v8-generate`, {
         method: 'POST', body: formData,
       });
       if (!response.ok) throw new Error("V8 Server Error");
-      const data = await response.json();
-      console.log("V8 MASTER PROMPT REZULTAT:", data);
       
-      // 🔥 ODUZIMANJE KREDITA I AKTIVACIJA 24H COOLDOWNA 🔥
+      const data = await response.json();
+      
+      if(data) {
+          setGeneratedPrompts(data);
+      }
+      
       if (auth.currentUser) {
           const email = auth.currentUser.email.toLowerCase();
           if (email !== "damnjanovicgoran7@gmail.com" && email !== "aitoolsprosmart@gmail.com") {
@@ -236,7 +272,6 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
               const novaKolicina = credits - 1;
               
               if (novaKolicina <= 0) {
-                  // Upisujemo serverTimestamp kada padne na 0
                   await updateDoc(docRef, { 
                       promptCredits: 0,
                       engineCooldownStartedAt: serverTimestamp() 
@@ -246,8 +281,6 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
               }
           }
       }
-
-      alert("Prompts generated successfully! Check Console."); 
     } catch (error) {
       console.error("V8 Engine failure:", error);
       alert("Greška na serveru, proveri konekciju.");
@@ -255,7 +288,9 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
       setIsGenerating(false);
     }
   };
+  // --- KRAJ FUNKCIJE: generisiMasterPrompt ---
 
+  // --- POČETAK FUNKCIJE: pokreniKupovinu ---
   const pokreniKupovinu = async () => {
     const imePaketa = `V8 PRO LICENSE: ${currentEngine}`;
     const cenaPaketa = "250.00"; 
@@ -288,6 +323,7 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
         console.error("V8 PAYMENT ERROR:", err);
     }
   };
+  // --- KRAJ FUNKCIJE: pokreniKupovinu ---
 
   return (
     <div className="bg-[#050505] p-8 md:p-12 rounded-[2.5rem] border border-[#FF8C00]/30 shadow-[0_0_50px_rgba(255,140,0,0.1)] max-w-5xl mx-auto mt-28 relative overflow-hidden">
@@ -311,7 +347,7 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
         </div>
       )}
 
-      {/* 🔥 V8 ENGINE SWITCHER - UVEK VIDLJIV SVIMA 🔥 */}
+      {/* 🔥 V8 ENGINE SWITCHER 🔥 */}
       <div className="flex flex-wrap justify-center gap-4 mb-8 relative z-20 mt-8">
           <button 
               onClick={() => setCurrentEngine("SEEDANCE 2.0")}
@@ -319,11 +355,12 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
           >
               <MonitorPlay size={16} /> SEEDANCE 2.0
           </button>
+          
           <button 
-              onClick={() => setCurrentEngine("LUMA 3.0")}
-              className={`px-8 py-3.5 rounded-full font-black text-[11px] tracking-widest uppercase transition-all flex items-center gap-2 ${currentEngine === "LUMA 3.0" ? 'bg-red-500 text-white shadow-[0_0_20px_rgba(239,68,68,0.4)]' : 'bg-[#0a0a0a] border border-white/10 text-zinc-400 hover:text-white hover:border-white/30'}`}
+              onClick={() => setCurrentEngine("KILING 3.0")}
+              className={`px-8 py-3.5 rounded-full font-black text-[11px] tracking-widest uppercase transition-all flex items-center gap-2 ${currentEngine !== "SEEDANCE 2.0" ? 'bg-orange-500 text-white shadow-[0_0_20px_rgba(234,88,12,0.4)]' : 'bg-[#0a0a0a] border border-white/10 text-zinc-400 hover:text-white hover:border-white/30'}`}
           >
-              <Settings2 size={16} /> LUMA 3.0
+              <Settings2 size={16} /> KILING 3.0
           </button>
       </div>
 
@@ -342,24 +379,34 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
                 V8 CORE // CINEMATIC GENERATOR
               </div>
               
+              {/* --- POČETAK FUNKCIJE: ispis_naslova_i_podnaslova --- */}
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-black italic uppercase tracking-tighter text-white mb-6 drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)] flex items-center justify-center gap-4 flex-wrap">
-                {currentEngine === "LUMA 3.0" ? <Settings2 className="text-red-500 w-12 h-12 md:w-16 md:h-16 drop-shadow-[0_0_15px_rgba(239,68,68,0.8)]" /> : <MonitorPlay className="text-green-500 w-12 h-12 md:w-16 md:h-16 drop-shadow-[0_0_15px_rgba(34,197,94,0.8)]" />}
-                {currentEngine} <span className="text-transparent bg-clip-text bg-gradient-to-b from-orange-500 to-amber-600 drop-shadow-none">ENGINE</span>
+                {currentEngine !== "SEEDANCE 2.0" ? <Settings2 className="text-orange-500 w-12 h-12 md:w-16 md:h-16 drop-shadow-[0_0_15px_rgba(234,88,12,0.8)]" /> : <MonitorPlay className="text-green-500 w-12 h-12 md:w-16 md:h-16 drop-shadow-[0_0_15px_rgba(34,197,94,0.8)]" />}
+                {currentEngine} 
+                <span className={`text-xl md:text-3xl font-black not-italic tracking-widest ml-2 px-4 py-1 rounded-full flex items-center border ${currentEngine !== "SEEDANCE 2.0" ? "text-[#FF8C00] drop-shadow-[0_0_15px_rgba(255,140,0,0.6)] border-[#FF8C00]/30 bg-[#FF8C00]/10" : "text-green-500 drop-shadow-[0_0_15px_rgba(34,197,94,0.6)] border-green-500/30 bg-green-500/10"}`}>
+                   // OPTIMIZED FOR FREEPIK
+                </span>
               </h1>
               
-              {currentEngine === "LUMA 3.0" ? (
-                <p className="text-zinc-200 font-bold uppercase tracking-[0.3em] text-[10px] md:text-[11px] max-w-3xl mx-auto leading-relaxed drop-shadow-lg bg-black/60 p-5 rounded-2xl backdrop-blur-md border-l-2 border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.15)]">
+              {currentEngine !== "SEEDANCE 2.0" ? (
+                <p className="text-zinc-200 font-bold uppercase tracking-[0.3em] text-[10px] md:text-[11px] max-w-3xl mx-auto leading-relaxed drop-shadow-lg bg-black/60 p-5 rounded-2xl backdrop-blur-md border-l-2 border-orange-500 shadow-[0_0_20px_rgba(234,88,12,0.15)]">
                   Command hyper-realistic physics and flawless kinetic motion. Inject secret meta-tokens to generate CGI-rivaling masterpieces. 
-                  <span className="text-white font-black italic block mt-2 tracking-widest text-[11px] md:text-[12px]">$100,000 PRODUCTION VALUE IN A SINGLE CLICK.</span>
+                  <span className="text-white font-black italic block mt-3 tracking-widest text-[11px] md:text-[12px]">
+                    $100,000 PRODUCTION VALUE IN A SINGLE CLICK. <br/>
+                    <span className="text-orange-400 not-italic text-[13px] md:text-[15px] drop-shadow-[0_0_8px_rgba(234,88,12,0.8)] mt-1 block">OPTIMIZED FOR FREEPIK STOCK.</span>
+                  </span>
                 </p>
               ) : (
                 <p className="text-zinc-200 font-bold uppercase tracking-[0.3em] text-[10px] md:text-[11px] max-w-3xl mx-auto leading-relaxed drop-shadow-lg bg-black/60 p-5 rounded-2xl backdrop-blur-md border-l-2 border-green-500 shadow-[0_0_20px_rgba(34,197,94,0.15)]">
                   Engineer Hollywood-grade cinematography. Harness ARRI Alexa lighting, Leica Summilux optics, and Vogue-level editorial aesthetics. 
-                  <span className="text-white font-black italic block mt-2 tracking-widest text-[11px] md:text-[12px]">THE ULTIMATE DIRECTOR'S TOOLKIT FOR CINEMATIC PERFECTION.</span>
+                  <span className="text-white font-black italic block mt-3 tracking-widest text-[11px] md:text-[12px]">
+                    THE ULTIMATE DIRECTOR'S TOOLKIT FOR CINEMATIC PERFECTION. <br/>
+                    <span className="text-green-400 not-italic text-[13px] md:text-[15px] drop-shadow-[0_0_8px_rgba(34,197,94,0.8)] mt-1 block">OPTIMIZED FOR FREEPIK STOCK.</span>
+                  </span>
                 </p>
               )}
+              {/* --- KRAJ FUNKCIJE: ispis_naslova_i_podnaslova --- */}
 
-              {/* 🔥 V8 LOKOT SA PREMIUM COPYWRITINGOM (ISPOD HEADERA, ZAKLJUČAVA KONTROLE) 🔥 */}
               {!isVIP && !isCheckingAccess && (
                 <div className="mt-12 p-8 md:p-10 bg-[#050505]/95 backdrop-blur-2xl border border-orange-500/40 rounded-[2.5rem] flex flex-col items-center max-w-4xl mx-auto shadow-[0_30px_80px_rgba(234,88,12,0.25)] relative overflow-hidden">
                    <div className="absolute top-0 right-0 w-64 h-64 bg-orange-600/10 rounded-full blur-[80px] pointer-events-none"></div>
@@ -390,10 +437,8 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
           </div>
       </motion.div>
 
-      {/* KONTROLE - ZASIVLJENE AKO KORISNIK NEMA PRISTUP */}
       <div className={`transition-all duration-500 ${!isVIP ? 'opacity-30 grayscale-[70%] pointer-events-none' : ''}`}>
         
-        {/* COOLDOWN UPOZORENJE (VIDLJIVO AKO JE MOTOR NA HLAĐENJU) */}
         {cooldownTime && (
           <div className="mb-10 bg-red-950/40 border border-red-500/50 rounded-2xl p-6 text-center shadow-inner relative overflow-hidden">
              <div className="absolute inset-0 bg-red-500/10 animate-pulse"></div>
@@ -429,7 +474,7 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
                     <div className="bg-white/5 p-4 rounded-full"><Upload className="w-8 h-8 text-zinc-400" /></div>
                     <div>
                       <p className="text-white font-bold text-sm">{isTextModeActive ? 'LOCKED (Text Mode)' : 'Drag & Drop your reference image here'}</p>
-                      {!isTextModeActive && <p className="text-zinc-500 text-xs mt-1">or click to browse files</p>}
+                      <p className="text-zinc-500 text-xs mt-1">or click to browse files</p>
                     </div>
                   </div>
                 )}
@@ -484,6 +529,52 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
             </div>
           </div>
         </div>
+
+        {/* 🔥 NOVI PRIKAZ REZULTATA: SAMO JEDAN SPOJENI PROMPT IZ JSON-A 🔥 */}
+        <AnimatePresence>
+          {generatedPrompts && generatedPrompts.prompts && generatedPrompts.prompts.length > 0 && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }} 
+              animate={{ opacity: 1, height: 'auto' }} 
+              className="mt-16 border-t border-white/10 pt-16"
+            >
+              <div className="flex items-center gap-4 mb-10 justify-center">
+                 <Wand2 className="text-orange-500 w-8 h-8" />
+                 <h2 className="text-3xl font-black uppercase tracking-widest text-white text-center">GENERATED MASTER PROMPTS</h2>
+              </div>
+              
+              <div className="space-y-8">
+                {generatedPrompts.prompts.map((item, idx) => (
+                  <div key={idx} className="bg-black/60 border border-white/10 rounded-3xl p-6 md:p-8 relative overflow-hidden group shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-orange-500 to-amber-400"></div>
+                    
+                    <h4 className="text-orange-500 font-black tracking-widest text-sm mb-6 flex items-center gap-2">
+                       <Diamond className="w-4 h-4" /> VARIATION {item.number}
+                    </h4>
+
+                    {/* JEDNO POLJE: PROMPT IZ TVOG JSON-A */}
+                    <div>
+                      <div className="flex justify-between items-center mb-3">
+                         <span className="text-zinc-400 font-bold text-[11px] uppercase tracking-widest flex items-center gap-2"><MonitorPlay size={14}/> MERGED CINEMATIC PROMPT:</span>
+                         <button 
+                           onClick={() => copyPrompt(item.prompt, idx, 'prompt')} 
+                           className="text-orange-400 hover:text-white text-[11px] font-black uppercase tracking-widest flex items-center gap-2 bg-orange-500/10 hover:bg-orange-500/20 px-4 py-2 rounded-xl transition-all shadow-inner"
+                         >
+                            {copiedIndex === `${idx}-prompt` ? <CheckCircle size={14} className="text-emerald-400"/> : <Copy size={14}/>} 
+                            {copiedIndex === `${idx}-prompt` ? 'COPIED!' : 'COPY PROMPT'}
+                         </button>
+                      </div>
+                      <div className="text-zinc-300 text-[13px] md:text-[14px] leading-relaxed bg-white/5 border border-white/5 p-5 md:p-6 rounded-2xl font-mono shadow-inner">
+                        {item.prompt}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
       </div>
 
       <V8EngineCheckoutModal isOpen={showPaymentModal} onClose={() => setShowPaymentModal(false)} currentEngine={currentEngine} />
@@ -491,3 +582,4 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
   );
 };
 export default CinematikPromptEngine;
+// KRAJ FAJLA: CinematikPromptEngine.jsx

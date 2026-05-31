@@ -7,7 +7,6 @@ import { v8Toast } from './v8Utils';
 import MagneticButton from './MagneticButton';
 import navBg from './navbar-bg.webp'; 
 
-// 🔥 FIREBASE IMPORTS 🔥
 import { db, auth } from './firebase';
 import { signInWithPopup, onAuthStateChanged, GoogleAuthProvider } from "firebase/auth";
 import { collection, doc, getDoc, setDoc, serverTimestamp, onSnapshot, addDoc, updateDoc, increment } from "firebase/firestore";
@@ -16,15 +15,17 @@ const BASE_BACKEND_URL = window.location.hostname === 'localhost'
   ? "http://localhost:8000" 
   : "https://aitoolsprosmart-becend-production.up.railway.app";
 
-// --- RIPPLE BUTTON KOMPONENTA ---
+// --- POČETAK FUNKCIJE: RippleButton ---
 const RippleButton = ({ children, onClick, disabled, className }) => {
   const [ripples, setRipples] = useState([]);
+  
   const handleClick = (e) => {
     if (disabled) return;
     const rect = e.currentTarget.getBoundingClientRect();
     setRipples([...ripples, { id: Date.now(), x: e.clientX - rect.left, y: e.clientY - rect.top }]);
     if (onClick) onClick(e);
   };
+  
   return (
     <button type="button" onClick={handleClick} disabled={disabled} className={`relative overflow-hidden ${className}`}>
       <span className="relative z-10 flex items-center justify-center">{children}</span>
@@ -36,8 +37,9 @@ const RippleButton = ({ children, onClick, disabled, className }) => {
     </button>
   );
 };
+// --- KRAJ FUNKCIJE: RippleButton ---
 
-// 🔥 V8 CHECKOUT MODAL (NEZAVISNA FUNKCIJA, BEZ ANIMACIJA KOJE RUŠE REACT) 🔥
+// --- POČETAK FUNKCIJE: V8OptimizerCheckoutModal ---
 const V8OptimizerCheckoutModal = ({ data, onClose }) => {
   useEffect(() => {
     if (data) document.body.style.overflow = 'hidden';
@@ -77,24 +79,23 @@ const V8OptimizerCheckoutModal = ({ data, onClose }) => {
     document.body
   );
 };
+// --- KRAJ FUNKCIJE: V8OptimizerCheckoutModal ---
 
-// POČETAK FUNKCIJE: V8OptimizerPage
+// --- POČETAK FUNKCIJE: V8OptimizerPage ---
 const V8OptimizerPage = () => {
   const [files, setFiles] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState(null);
   const [activeLog, setActiveLog] = useState(0);
 
-  // --- V8 KREDITI & AUTH STATE ---
   const [isVIP, setIsVIP] = useState(false);
   const [credits, setCredits] = useState(0); 
   const [showPaymentModal, setShowPaymentModal] = useState(null);
-  const [paddleLink, setPaddleLink] = useState(""); // IZMENJENO
+  const [paddleLink, setPaddleLink] = useState(""); 
   const [isCheckingAccess, setIsCheckingAccess] = useState(true);
 
-  // --- V8 FIREBASE AUTH & CREDIT LISTENER ---
+  // --- POČETAK FUNKCIJE: useEffect (Auth i pretplata) ---
   useEffect(() => {
-    // IZMENJENO: Sada slušamo paddle_checkout
     const unsubPaddle = onSnapshot(doc(db, "v8_settings", "paddle_checkout"), (docSnap) => {
         if (docSnap.exists()) setPaddleLink(docSnap.data().optimizer || "");
     });
@@ -102,15 +103,12 @@ const V8OptimizerPage = () => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         const email = user.email ? user.email.toLowerCase() : "";
-        
-        // Goran i AI Master nalozi imaju beskonačno kredita
         if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
           setIsVIP(true);
           setCredits(9999);
           setIsCheckingAccess(false);
         } else {
           const docRef = doc(db, "vip_users", email);
-          
           const unsubUser = onSnapshot(docRef, (docSnap) => {
              if (docSnap.exists() && docSnap.data().unlockedApps && (docSnap.data().unlockedApps.includes('V8_OPTIMIZER') || docSnap.data().unlockedApps.includes('FULL_ACCESS'))) { 
                 setIsVIP(true); 
@@ -121,7 +119,6 @@ const V8OptimizerPage = () => {
              }
              setIsCheckingAccess(false);
           });
-          
           return () => { unsubUser(); } 
         }
       } else { 
@@ -133,8 +130,9 @@ const V8OptimizerPage = () => {
 
     return () => { unsubscribe(); unsubPaddle(); };
   }, []);
+  // --- KRAJ FUNKCIJE: useEffect (Auth i pretplata) ---
 
-  // 🔥 V8 PAMETNA MEMORIJA ZA OPTIMIZER (Opaljuje modal nakon logina) 🔥
+  // --- POČETAK FUNKCIJE: useEffect (Pametna memorija za kupovinu) ---
   useEffect(() => {
     const checkPendingPurchase = async () => {
       const pendingTip = localStorage.getItem('v8_pending_optimizer_tip');
@@ -156,13 +154,12 @@ const V8OptimizerPage = () => {
             }, { merge: true });
 
             const email = auth.currentUser.email ? auth.currentUser.email.toLowerCase() : "";
-            
             if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
-                v8Toast.success("Master Account: Credits maxed out.");
+                if(typeof v8Toast !== 'undefined') v8Toast.success("Master Account: Credits maxed out.");
                 return; 
             }
 
-            if (paddleLink && paddleLink.includes("http")) { // IZMENJENO
+            if (paddleLink && paddleLink.includes("http")) { 
                 window.location.href = paddleLink;
             } else {
                 setShowPaymentModal({ tip: pendingTip, cena: pendingCena });
@@ -172,12 +169,12 @@ const V8OptimizerPage = () => {
         }
       }
     };
-    
     const timer = setTimeout(() => { checkPendingPurchase(); }, 1000);
     return () => clearTimeout(timer);
-  }, [paddleLink]); // IZMENJENO
+  }, [paddleLink]);
+  // --- KRAJ FUNKCIJE: useEffect (Pametna memorija za kupovinu) ---
 
-  // --- V8 BLINDIRANA FUNKCIJA ZA KUPITI KREDITE (PLAĆANJE) ---
+  // --- POČETAK FUNKCIJE: handlePaymentV8 ---
   const handlePaymentV8 = async (e) => {
     if (e) e.preventDefault();
     try {
@@ -188,10 +185,8 @@ const V8OptimizerPage = () => {
         const cenaPaketa = "200.00";
 
         if (!currentUser) {
-            // Pamti pre logina da bismo opalili useEffect gore
             localStorage.setItem('v8_pending_optimizer_tip', tipPaketa);
             localStorage.setItem('v8_pending_optimizer_cena', cenaPaketa);
-
             const v8Provider = new GoogleAuthProvider();
             v8Provider.setCustomParameters({ prompt: 'select_account' });
             await signInWithPopup(auth, v8Provider);
@@ -210,13 +205,12 @@ const V8OptimizerPage = () => {
             }, { merge: true });
 
             const email = currentUser.email ? currentUser.email.toLowerCase() : "";
-            
             if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
-                v8Toast.success("Master Account: Credits maxed out.");
+                if(typeof v8Toast !== 'undefined') v8Toast.success("Master Account: Credits maxed out.");
                 return; 
             }
 
-            if (paddleLink && paddleLink.includes("http")) { // IZMENJENO
+            if (paddleLink && paddleLink.includes("http")) { 
                 window.location.href = paddleLink;
             } else {
                 setShowPaymentModal({ tip: tipPaketa, cena: cenaPaketa });
@@ -225,11 +219,11 @@ const V8OptimizerPage = () => {
     } catch (err) {
         localStorage.removeItem('v8_pending_optimizer_tip');
         localStorage.removeItem('v8_pending_optimizer_cena');
-        v8Toast.error(err.message || "Sistem je blokirao Google prijavu.");
+        if(typeof v8Toast !== 'undefined') v8Toast.error(err.message || "Sistem je blokirao Google prijavu.");
     }
   };
+  // --- KRAJ FUNKCIJE: handlePaymentV8 ---
 
-  // V8 TERMINAL LOGS
   const v8Logs = [
     "🚀 VISIONARY FACTORY V8 | IGNITING ENGINE...",
     "🔷 1. Contributor quality cleanup (artifact reduction)",
@@ -243,16 +237,17 @@ const V8OptimizerPage = () => {
     "✅ SYSTEM STATUS: 100% | BATCH READY"
   ];
 
+  // --- POČETAK FUNKCIJE: handleUpload ---
   const handleUpload = (e) => {
     const selectedFiles = Array.from(e.target.files);
     
     if (credits === 0 && isVIP) {
-       v8Toast.error("ENGINE COOLING: You have 0 credits. Please wait for your cycle to reset.");
+       if(typeof v8Toast !== 'undefined') v8Toast.error("ENGINE COOLING: You have 0 credits. Please wait for your cycle to reset.");
        return;
     }
 
     if (selectedFiles.length > credits) {
-       v8Toast.error(`V8 QUOTA: You only have ${credits} optimization(s) left in this cycle. Loading only ${credits} image(s).`);
+       if(typeof v8Toast !== 'undefined') v8Toast.error(`V8 QUOTA: You only have ${credits} optimization(s) left in this cycle. Loading only ${credits} image(s).`);
        setFiles(selectedFiles.slice(0, credits)); 
     } else if (selectedFiles.length > 10) {
       if(typeof v8Toast !== 'undefined') v8Toast.error("V8 PRO LIMIT: MAX 10 IMAGES PER BATCH!");
@@ -263,13 +258,14 @@ const V8OptimizerPage = () => {
     setResult(null);
     setActiveLog(0);
   };
+  // --- KRAJ FUNKCIJE: handleUpload ---
 
-  // POČETAK FUNKCIJE: processImage
-  const processImage = async () => {
+  // --- POČETAK FUNKCIJE: processBatch (ISPRAVLJENO DA HVATA ZIP) ---
+  const processBatch = async () => {
     if (files.length === 0) return;
     
     if (credits < files.length) {
-        v8Toast.error(`INSUFFICIENT CREDITS! Need ${files.length}, have ${credits}.`);
+        if(typeof v8Toast !== 'undefined') v8Toast.error(`INSUFFICIENT CREDITS! Need ${files.length}, have ${credits}.`);
         return;
     }
 
@@ -294,15 +290,30 @@ const V8OptimizerPage = () => {
 
         clearInterval(progressInterval);
 
-        if (!response.ok) throw new Error("V8 Server Error");
+        if (!response.ok) {
+            let errorMsg = "V8 Server Error";
+            try {
+                const errorData = await response.json();
+                errorMsg = errorData.error || errorData.details || errorMsg;
+            } catch (jsonErr) {
+                errorMsg = "Server failed to process the request.";
+            }
+            throw new Error(errorMsg);
+        }
 
         const blob = await response.blob();
+        
+        if (blob.type.includes('application/json')) {
+            const text = await blob.text();
+            const json = JSON.parse(text);
+            throw new Error(json.error || "Expected ZIP format, got JSON.");
+        }
+
         const url = window.URL.createObjectURL(blob);
         
         setResult(url); 
         setActiveLog(v8Logs.length); 
         
-        // 🔥 V8 TRANSAKCIJA KREDITA 🔥
         if (auth.currentUser) {
             const email = auth.currentUser.email ? auth.currentUser.email.toLowerCase() : "";
             if (email !== "damnjanovicgoran7@gmail.com" && email !== "aitoolsprosmart@gmail.com") {
@@ -316,15 +327,15 @@ const V8OptimizerPage = () => {
         if(typeof v8Toast !== 'undefined') v8Toast.success(`SUCCESS! Deducted ${files.length} credits.`);
     } catch (error) {
         console.error("Batch failure:", error);
-        if(typeof v8Toast !== 'undefined') v8Toast.error("Optimization failed. Check server logs.");
+        if(typeof v8Toast !== 'undefined') v8Toast.error(`Optimization failed: ${error.message}`);
         setActiveLog(0);
     } finally {
         setIsProcessing(false);
     }
   };
-  // KRAJ FUNKCIJE: processImage
+  // --- KRAJ FUNKCIJE: processBatch ---
 
-// POČETAK FUNKCIJE: Renderovanje V8 Cinematic Pozadine
+  // --- POČETAK FUNKCIJE: renderCinematicBackground ---
   const renderCinematicBackground = () => {
     return (
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
@@ -337,11 +348,43 @@ const V8OptimizerPage = () => {
       </div>
     );
   };
-  // KRAJ FUNKCIJE: Renderovanje V8 Cinematic Pozadine
+  // --- KRAJ FUNKCIJE: renderCinematicBackground ---
 
   return (
     <div className="min-h-screen pt-28 pb-20 px-6 flex flex-col items-center bg-[#050505] relative text-white">
       
+      {/* 🔥 V8 FULLSCREEN LOADER 🔥 */}
+      <AnimatePresence>
+        {isProcessing && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/90 backdrop-blur-xl"
+          >
+            <div className="flex flex-col items-center bg-black/50 p-12 rounded-[3rem] border border-orange-500/30 shadow-[0_0_80px_rgba(234,88,12,0.15)] text-center max-w-lg w-full mx-4">
+              <RefreshCcw className="w-20 h-20 text-orange-500 animate-spin mb-8 drop-shadow-[0_0_20px_rgba(234,88,12,0.8)]" />
+              <h2 className="text-3xl font-black text-white uppercase tracking-[0.3em] mb-4">V8 CORE ACTIVE</h2>
+              <p className="text-orange-400 font-bold uppercase tracking-[0.2em] text-sm animate-pulse mb-8">
+                Optimizing {files.length} Image(s)...
+              </p>
+              
+              <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden mb-6 relative">
+                 <motion.div 
+                    initial={{ width: "0%" }}
+                    animate={{ width: `${(activeLog / v8Logs.length) * 100}%` }}
+                    className="h-full bg-gradient-to-r from-orange-600 to-amber-400 shadow-[0_0_10px_rgba(234,88,12,0.8)]"
+                 />
+              </div>
+
+              <div className="text-emerald-400 font-mono text-[10px] uppercase tracking-widest bg-black/60 w-full p-4 rounded-xl border border-white/5 h-16 flex items-center justify-center">
+                 {v8Logs[activeLog] || "PROCESSING BATCH..."}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* --- 🔥 V8 CREDIT HUD (UI HEADER) 🔥 --- */}
       {isVIP && (
         <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50">
@@ -370,11 +413,9 @@ const V8OptimizerPage = () => {
             transition={{ duration: 1, delay: 0.2 }}
             className="relative w-full max-w-7xl mx-auto mb-16 rounded-[3rem] overflow-hidden border border-white/10 shadow-[0_0_60px_rgba(255,140,0,0.15)]"
         >
-            {/* AKTIVACIJA V8 CINEMATIC POZADINE */}
             {renderCinematicBackground()}
 
             <div className="relative z-10 py-24 px-6 text-center">
-            
                 <div className="inline-block bg-orange-600/10 border border-orange-500/30 px-5 py-2 rounded-full text-orange-400 font-black uppercase tracking-[0.3em] text-[10px] mb-8 animate-pulse shadow-[0_0_20px_rgba(234,88,12,0.2)] backdrop-blur-sm">
                   V8 AUTOMATION // ENTERPRISE OPTIMIZER MODE
                 </div>
@@ -388,7 +429,6 @@ const V8OptimizerPage = () => {
                   <span className="text-white block mt-3 italic font-black">100% Marketplace Compliance.</span>
                 </p>
 
-                {/* 🔥 V8 LOKOT SA PREMIUM COPYWRITINGOM 🔥 */}
                 {!isVIP && !isCheckingAccess && (
                   <div className="mt-12 p-8 md:p-10 bg-[#050505]/95 backdrop-blur-2xl border border-red-500/40 rounded-[2.5rem] flex flex-col items-center max-w-4xl mx-auto shadow-[0_30px_80px_rgba(220,38,38,0.25)] relative overflow-hidden">
                      <div className="absolute top-0 right-0 w-64 h-64 bg-red-600/10 rounded-full blur-[80px] pointer-events-none"></div>
@@ -421,8 +461,7 @@ const V8OptimizerPage = () => {
         </motion.div>
         {/* --- KRAJ: HERO BOX --- */}
 
-
-        {/* --- POČETAK: SREDIŠNJA LISTA SA PULSIRAJUĆIM DIJAMANTIMA --- */}
+        {/* --- POČETAK: SREDIŠNJA LISTA --- */}
         <div className={`flex flex-col items-center justify-center mb-20 relative z-10 transition-all duration-500 ${!isVIP ? 'opacity-30 grayscale-[70%] pointer-events-none' : ''}`}>
           <div className="bg-black/50 border border-white/10 p-8 md:p-10 rounded-[2.5rem] backdrop-blur-2xl shadow-[0_20px_60px_rgba(0,0,0,0.6)] text-left inline-block hover:border-orange-500/30 transition-colors duration-500">
             <div className="flex flex-col gap-4 text-[11px] md:text-[12px] font-black uppercase tracking-widest text-zinc-400">
@@ -440,7 +479,6 @@ const V8OptimizerPage = () => {
         </div>
         {/* --- KRAJ: SREDIŠNJA LISTA --- */}
 
-
         <div className={`grid md:grid-cols-2 gap-10 text-left mb-20 transition-all duration-500 ${!isVIP ? 'opacity-30 grayscale-[70%] pointer-events-none' : ''}`}>
           
           {/* INPUT BOX */}
@@ -452,7 +490,6 @@ const V8OptimizerPage = () => {
               <h2 className="text-2xl font-black uppercase italic tracking-widest text-white">RAW BATCH INPUT</h2>
             </div>
             
-            {/* 🔥 V8 FORMAT PROTOCOL INFO BOX 🔥 */}
             <div className="bg-red-950/40 border border-red-500/30 rounded-2xl p-5 mb-8 shadow-inner">
                <h4 className="text-red-400 text-[10px] font-black uppercase tracking-[0.2em] mb-2 flex items-center gap-2"><AlertTriangle className="w-4 h-4" /> V8 ENGINE FORMAT PROTOCOL</h4>
                <ul className="text-zinc-300 text-[11px] leading-relaxed space-y-2 list-disc pl-4 font-bold">
@@ -467,7 +504,6 @@ const V8OptimizerPage = () => {
                 <div className="flex flex-col items-center text-center px-4">
                   <ShieldCheck className="w-16 h-16 text-emerald-500 mb-3 drop-shadow-[0_0_20px_rgba(16,185,129,0.5)]" />
                   
-                  {/* 🔥 V8 DIGITAL BROJAČ SLIKA 🔥 */}
                   <div className="flex items-center gap-2 mb-1">
                      <span className="text-white font-black text-4xl">{files.length}</span>
                      <span className="text-zinc-500 font-black text-2xl">/</span>
@@ -476,7 +512,6 @@ const V8OptimizerPage = () => {
                   
                   <span className="text-zinc-400 font-bold text-[10px] uppercase tracking-[0.2em] mb-4">IMAGES READY FOR ENGINE</span>
                   
-                  {/* 🔥 V8 COST BADGE 🔥 */}
                   <span className="bg-orange-500/20 border border-orange-500/50 text-orange-400 font-black text-[10px] uppercase tracking-[0.2em] px-4 py-1.5 rounded-full shadow-[0_0_15px_rgba(234,88,12,0.2)]">
                      COST: {files.length} CREDITS
                   </span>
@@ -491,7 +526,7 @@ const V8OptimizerPage = () => {
               <input type="file" className="hidden" onChange={handleUpload} accept="image/*" multiple disabled={!isVIP || credits <= 0} />
             </label>
 
-            <button onClick={processImage} disabled={files.length === 0 || isProcessing || credits < files.length}
+            <button onClick={processBatch} disabled={files.length === 0 || isProcessing || credits < files.length}
               className={`w-full mt-8 py-6 rounded-2xl font-black uppercase tracking-[0.5em] text-[13px] transition-all flex items-center justify-center gap-3 shrink-0 ${
                 files.length === 0 || isProcessing ? 'bg-zinc-900 text-zinc-700 border border-white/5' : 
                 credits < files.length ? 'bg-red-900/50 text-red-500 border border-red-500/50 cursor-not-allowed' :
@@ -503,7 +538,7 @@ const V8OptimizerPage = () => {
             </button>
           </div>
 
-          {/* OUTPUT / TERMINAL BOX WITH DIAMONDS */}
+          {/* OUTPUT BOX */}
           <div className="p-10 rounded-[2.5rem] backdrop-blur-3xl border border-white/5 relative overflow-hidden group shadow-2xl"
                style={{backgroundImage: `linear-gradient(rgba(0,0,0,0.94), rgba(0,0,0,0.94)), url(${navBg})`, backgroundSize: 'cover'}}>
             <div className="flex items-center justify-between mb-10">
@@ -513,7 +548,6 @@ const V8OptimizerPage = () => {
                 </div>
             </div>
 
-            {/* THE TERMINAL LOG */}
             <div className="font-mono text-zinc-400 bg-black/60 border border-white/5 rounded-3xl p-8 h-80 text-[10px] md:text-[11px] tracking-widest uppercase overflow-y-auto shadow-inner leading-relaxed">
               <AnimatePresence>
                 {v8Logs.slice(0, activeLog).map((log, index) => (
@@ -538,16 +572,16 @@ const V8OptimizerPage = () => {
                 <a 
                   href={result} 
                   download="V8_ENTERPRISE_BATCH.zip" 
-                  className="w-full bg-white text-black py-6 px-8 rounded-full font-black uppercase tracking-[0.5em] text-[13px] hover:bg-orange-500 hover:text-white transition-all shadow-2xl inline-block text-center cursor-pointer"
+                  className="w-full bg-white text-black py-6 px-8 rounded-full font-black uppercase tracking-[0.5em] text-[13px] hover:bg-orange-500 hover:text-white transition-all shadow-2xl flex justify-center items-center gap-3 cursor-pointer"
                 >
-                  DOWNLOAD V8 BATCH (.ZIP)
+                  <DownloadCloud className="w-6 h-6" /> DOWNLOAD V8 BATCH (.ZIP)
                 </a>
               </motion.div>
             )}
           </div>
         </div>
 
-        {/* LIFETIME LICENSE SECTION - ROLLING QUOTA */}
+        {/* LIFETIME LICENSE SECTION */}
         <div className="grid md:grid-cols-3 gap-8 text-left border-t border-white/10 pt-20">
             <div className="flex flex-col justify-center">
                 <h3 className="text-4xl font-black italic uppercase text-white mb-4">V8 ROLLING <span className="text-red-500 font-black">QUOTA</span></h3>
@@ -580,7 +614,6 @@ const V8OptimizerPage = () => {
         </div>
       </motion.div>
 
-      {/* POZIV ZA NEZAVISNI MODAL KOJI 100% RADI BEZ CRNOG EKRANA */}
       <V8OptimizerCheckoutModal data={showPaymentModal} onClose={() => setShowPaymentModal(null)} />
 
     </div>
