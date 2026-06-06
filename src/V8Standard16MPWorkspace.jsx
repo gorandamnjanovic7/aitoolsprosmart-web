@@ -1,62 +1,48 @@
 // POČETAK FAJLA: V8Standard16MPWorkspace.jsx
+// Ne zaboravi da ažuriraš svoj React source code link u glavnom repozitorijumu!
+
 import React, { useState, useRef, useEffect } from 'react';
+import { Upload, Code, Images, ShieldCheck, RefreshCcw, Diamond, Copy, CheckCircle, FileImage, Crown, Zap, DownloadCloud, X, ArrowUpCircle, Layers, Archive, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, Zap, Download, ShieldCheck, RefreshCcw, Diamond, AlertTriangle, Clock, FileImage, X, DownloadCloud, Lock, CheckCircle, Info, Maximize, Archive, Layers } from 'lucide-react';
-import { v8Toast } from './v8Utils';
-import MagneticButton from './MagneticButton';
-import navBg from './navbar-bg.webp'; 
 
 import { db, auth } from './firebase';
-import { doc, onSnapshot, updateDoc, increment } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
+import { doc, onSnapshot, collection, query, where, updateDoc, increment } from 'firebase/firestore';
+import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+
+import V8SecureCheckout from './V8SecureCheckout';
 
 const BASE_BACKEND_URL = window.location.hostname === 'localhost' 
   ? "http://localhost:8000" 
   : "https://aitoolsprosmart-becend-production.up.railway.app";
 
-// --- POČETAK FUNKCIJE: RippleButton ---
-const RippleButton = ({ children, onClick, disabled, className }) => {
-  const [ripples, setRipples] = useState([]);
-  
-  const handleClick = (e) => {
-    if (disabled) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    setRipples([...ripples, { id: Date.now(), x: e.clientX - rect.left, y: e.clientY - rect.top }]);
-    if (onClick) onClick(e);
-  };
-  
-  return (
-    <button type="button" onClick={handleClick} disabled={disabled} className={`relative overflow-hidden ${className}`}>
-      <span className="relative z-10 flex items-center justify-center w-full h-full">{children}</span>
-      <AnimatePresence>
-        {ripples.map(r => (
-          <motion.span key={r.id} initial={{ scale: 0, opacity: 0.5 }} animate={{ scale: 4, opacity: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.8, ease: "easeOut" }} className="absolute bg-white/40 rounded-full pointer-events-none z-0" style={{ left: r.x, top: r.y, width: 100, height: 100, marginTop: -50, marginLeft: -50 }} onAnimationComplete={() => setRipples(prev => prev.filter(rip => rip.id !== r.id))} />
-        ))}
-      </AnimatePresence>
-    </button>
-  );
-};
-// --- KRAJ FUNKCIJE: RippleButton ---
-
-// --- POČETAK FUNKCIJE: V8Standard16MPWorkspace ---
+// POČETAK FUNKCIJE: V8Standard16MPWorkspace
 const V8Standard16MPWorkspace = () => {
   const [files, setFiles] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [result, setResult] = useState(null);
+  const [downloadStatus, setDownloadStatus] = useState('idle'); 
+  const [dragActive, setDragActive] = useState(false);
+  const [batchError, setBatchError] = useState(null);
   const [activeLog, setActiveLog] = useState(0);
-
+  
+  const [userEmail, setUserEmail] = useState(null); 
   const [isVIP, setIsVIP] = useState(false);
   const [credits, setCredits] = useState(0); 
+  const [amountPaid, setAmountPaid] = useState(0); 
+  const [currentPlan, setCurrentPlan] = useState('NONE'); 
   const [isCheckingAccess, setIsCheckingAccess] = useState(true);
-  
-  const [otvorenOpis, setOtvorenOpis] = useState(null);
 
   const inputRef = useRef(null);
+  // Postavljamo na 0 da bi prva stavka accordion-a bila odmah vidljiva kupcu
+  const [otvorenOpis, setOtvorenOpis] = useState(0);
+
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [checkoutProduct, setCheckoutProduct] = useState('');
+  const [checkoutPrice, setCheckoutPrice] = useState(0);
 
   const v8Logs = [
     "🚀 VISIONARY FACTORY V9 | IGNITING 16MP ENGINE...",
     "💎 1. 16MP upscale initiated",
-    "💎 2. Blocks mixed aspect-ratio batches",
+    "💎 2. Blocking mixed aspect-ratio batches",
     "💎 3. Mild color + contrast enhancement",
     "💎 4. Applying highlight rolloff",
     "💎 5. PRODUCT AD POLISH active",
@@ -67,85 +53,151 @@ const V8Standard16MPWorkspace = () => {
     "✅ SYSTEM STATUS: 100% | BATCH READY"
   ];
 
-  // Auth & Access Provera
+  // POČETAK FUNKCIJE: handleGoogleLogin
+  const handleGoogleLogin = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error("Login prekinut:", error);
+    }
+  };
+  // KRAJ FUNKCIJE: handleGoogleLogin
+
+  // POČETAK FUNKCIJE: pokreniKupovinu
+  const pokreniKupovinu = async (paketName, fullPrice) => {
+    if (!userEmail) {
+      try {
+        const provider = new GoogleAuthProvider();
+        await signInWithPopup(auth, provider);
+        return; 
+      } catch (error) {
+        console.error("Login prekinut tokom pokušaja kupovine:", error);
+        return;
+      }
+    }
+
+    const razlika = fullPrice - amountPaid;
+    const finalPrice = razlika > 0 ? razlika : fullPrice;
+    const isUpgrade = amountPaid > 0;
+    const naslovCheckouta = isUpgrade ? `16MP Upscale - ${paketName.toUpperCase()} (UPGRADE)` : `16MP Upscale - ${paketName.toUpperCase()}`;
+
+    setCheckoutProduct(naslovCheckouta);
+    setCheckoutPrice(finalPrice);
+    setIsCheckoutOpen(true);
+  };
+  // KRAJ FUNKCIJE: pokreniKupovinu
+
+  // POČETAK FUNKCIJE: useEffect
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const email = user.email ? user.email.toLowerCase() : "";
-        if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
-          setIsVIP(true);
-          setCredits(9999);
-          setIsCheckingAccess(false);
-        } else {
-          const docRef = doc(db, "vip_users", email);
-          const unsubUser = onSnapshot(docRef, (docSnap) => {
-             if (docSnap.exists() && docSnap.data().unlockedApps && (docSnap.data().unlockedApps.includes('V8_OPTIMIZER') || docSnap.data().unlockedApps.includes('FULL_ACCESS'))) { 
-                setIsVIP(true); 
-                setCredits(docSnap.data().optimizerCredits ?? 0); 
-             } else { 
-                setIsVIP(false); 
-                setCredits(0);
-             }
-             setIsCheckingAccess(false);
-          });
-          return () => { unsubUser(); } 
-        }
-      } else { 
-        setIsVIP(false); 
-        setCredits(0);
-        setIsCheckingAccess(false);
+      if (!user) {
+        setUserEmail(null); setIsVIP(false); setCredits(0); setAmountPaid(0); setCurrentPlan('NONE'); setIsCheckingAccess(false);
+        return;
       }
+
+      const email = user.email.toLowerCase();
+      setUserEmail(email);
+
+      if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
+        setIsVIP(true); setCredits(9999); setAmountPaid(550); setCurrentPlan('ENTERPRISE'); setIsCheckingAccess(false);
+        return;
+      }
+
+      const qPay = query(collection(db, "v8_payoneer_requests"), where("clientEmail", "==", email));
+      
+      onSnapshot(qPay, (snap) => {
+        let hasAccess = false; let totalCredits = 0; let maxPaid = 0; let highestPlan = 'NONE';
+
+        snap.docs.forEach(docSnap => {
+          const data = docSnap.data();
+          if (data.status === "paid" || data.status === "PAID") {
+            const productName = data.productName ? data.productName.toUpperCase() : "";
+            
+            if (productName.includes("V8") || productName.includes("16MP")) {
+              hasAccess = true;
+              if (productName.includes("ENTERPRISE")) { if (maxPaid < 550) { maxPaid = 550; highestPlan = 'ENTERPRISE'; } totalCredits = Math.max(totalCredits, 10000); } 
+              else if (productName.includes("PRO")) { if (maxPaid < 250) { maxPaid = 250; highestPlan = 'PRO'; } totalCredits = Math.max(totalCredits, 2000); } 
+              else { if (maxPaid < 150) { maxPaid = 150; highestPlan = 'STARTER'; } totalCredits = Math.max(totalCredits, 500); }
+            }
+          }
+        });
+
+        if (hasAccess) { setIsVIP(true); setCredits(totalCredits); setAmountPaid(maxPaid); setCurrentPlan(highestPlan); } 
+        else { setIsVIP(false); setCredits(0); setAmountPaid(0); setCurrentPlan('NONE'); }
+        setIsCheckingAccess(false);
+      });
     });
 
-    return () => { unsubscribe(); };
+    return () => unsubscribe();
   }, []);
+  // KRAJ FUNKCIJE: useEffect
 
-  const clearWorkspace = (e) => {
-    if(e) { e.preventDefault(); e.stopPropagation(); }
-    setFiles([]);
-    setResult(null);
-    setActiveLog(0);
-    if(typeof v8Toast !== 'undefined') v8Toast.success("Workspace cleared. Ready for next batch.");
+  // POČETAK FUNKCIJE: handleDrag
+  const handleDrag = (e) => {
+    e.preventDefault(); e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
+    else if (e.type === "dragleave") setDragActive(false);
   };
+  // KRAJ FUNKCIJE: handleDrag
 
-  const handleUpload = (e) => {
-    const selectedFiles = Array.from(e.target.files);
+  // POČETAK FUNKCIJE: handleDrop
+  const handleDrop = (e) => {
+    e.preventDefault(); e.stopPropagation(); setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) ucitajSlike(e.dataTransfer.files);
+  };
+  // KRAJ FUNKCIJE: handleDrop
+
+  // POČETAK FUNKCIJE: handleChange
+  const handleChange = (e) => {
+    e.preventDefault();
+    if (e.target.files && e.target.files.length > 0) ucitajSlike(e.target.files);
+  };
+  // KRAJ FUNKCIJE: handleChange
+
+  // POČETAK FUNKCIJE: ucitajSlike
+  const ucitajSlike = async (selectedFiles) => {
+    const fileArray = Array.from(selectedFiles).slice(0, 10);
+    if (fileArray.length === 0) return;
     
-    if (credits === 0 && isVIP) {
-       if(typeof v8Toast !== 'undefined') v8Toast.error("ENGINE COOLING: You have 0 credits.");
-       return;
+    if (credits < fileArray.length && isVIP) {
+      alert(`INSUFFICIENT CREDITS! You are trying to upload ${fileArray.length} images but only have ${credits} credits left.`);
+      return;
     }
 
-    if (selectedFiles.length > credits) {
-       if(typeof v8Toast !== 'undefined') v8Toast.error(`V8 QUOTA: Loading only ${credits} image(s).`);
-       setFiles(selectedFiles.slice(0, credits)); 
-    } else if (selectedFiles.length > 10) {
-      if(typeof v8Toast !== 'undefined') v8Toast.error("V8 PRO LIMIT: MAX 10 IMAGES PER BATCH!");
-      setFiles(selectedFiles.slice(0, 10));
-    } else {
-      setFiles(selectedFiles);
-    }
-    setResult(null);
+    setFiles(fileArray);
+    setDownloadStatus('idle');
+    setBatchError(null);
     setActiveLog(0);
   };
+  // KRAJ FUNKCIJE: ucitajSlike
 
-  const processBatch = async () => {
-    if (files.length === 0) return;
-    
-    if (credits < files.length) {
-        if(typeof v8Toast !== 'undefined') v8Toast.error(`INSUFFICIENT CREDITS! Need ${files.length}.`);
+  // POČETAK FUNKCIJE: obrisiSlike
+  const obrisiSlike = (e) => {
+    if(e) e.stopPropagation(); 
+    setFiles([]); 
+    setDownloadStatus('idle');
+    setBatchError(null);
+    setActiveLog(0);
+  };
+  // KRAJ FUNKCIJE: obrisiSlike
+
+  // POČETAK FUNKCIJE: handleUpscaleAndDownload
+  const handleUpscaleAndDownload = async () => {
+    if (!files || files.length === 0) return;
+    if (credits < files.length && isVIP) {
+        alert("INSUFFICIENT CREDITS! Please wait for refill.");
         return;
     }
 
     setIsProcessing(true);
-    setResult(null);
+    setDownloadStatus('processing');
     setActiveLog(0);
-
+    
     const formData = new FormData();
-    files.forEach((file) => {
-        formData.append('images', file);
-    });
-
+    for (let i = 0; i < files.length; i++) {
+        formData.append('images', files[i]); 
+    }
     const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
 
     try {
@@ -153,46 +205,34 @@ const V8Standard16MPWorkspace = () => {
             setActiveLog(prev => prev < v8Logs.length - 1 ? prev + 1 : prev);
         }, 800);
 
-        const response = await fetch(`${BASE_BACKEND_URL}/api/v8-optimize`, {
-            method: 'POST',
+        const response = await fetch(`${BASE_BACKEND_URL}/api/v8-optimize`, { 
+            method: 'POST', 
             headers: { 'Authorization': `Bearer ${token}` },
-            body: formData,
+            body: formData 
         });
-
+        
         clearInterval(progressInterval);
 
         if (!response.ok) {
-            let errorMsg = "V8 Server Error";
-            try {
-                const errorData = await response.json();
-                errorMsg = errorData.error || errorData.details || errorMsg;
-            } catch (jsonErr) {
-                errorMsg = "Server failed to process the request.";
-            }
-            throw new Error(errorMsg);
+           const errData = await response.json().catch(() => ({}));
+           throw new Error(errData.error || "Serverska greška prilikom generisanja ZIP-a.");
         }
-
+        
         const blob = await response.blob();
-        
-        if (blob.type.includes('application/json')) {
-            const text = await blob.text();
-            const json = JSON.parse(text);
-            throw new Error(json.error || "Expected ZIP format, got JSON.");
-        }
-
         const url = window.URL.createObjectURL(blob);
-        
         const a = document.createElement('a');
         a.href = url;
         a.download = `V8_16MP_Batch_${Date.now()}.zip`;
         document.body.appendChild(a);
         a.click();
+        
         document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
         
-        setResult(url); 
-        setActiveLog(v8Logs.length); 
-        
-        if (auth.currentUser) {
+        setActiveLog(v8Logs.length);
+        setDownloadStatus('success');
+
+        if (auth.currentUser && !isVIP) {
             const email = auth.currentUser.email ? auth.currentUser.email.toLowerCase() : "";
             if (email !== "damnjanovicgoran7@gmail.com" && email !== "aitoolsprosmart@gmail.com") {
                 const docRef = doc(db, "vip_users", email);
@@ -201,98 +241,25 @@ const V8Standard16MPWorkspace = () => {
                 });
             }
         }
-
-        if(typeof v8Toast !== 'undefined') v8Toast.success(`SUCCESS! Deducted ${files.length} credits.`);
-    } catch (error) {
-        console.error("Batch failure:", error);
-        if(typeof v8Toast !== 'undefined') v8Toast.error(`Optimization failed: ${error.message}`);
+        
+    } catch (error) { 
+        alert("Batch Upscale processing failed. Check server logs."); 
+        console.error("V8 FRONTEND ERROR:", error);
+        setDownloadStatus('error');
         setActiveLog(0);
-    } finally {
-        setIsProcessing(false);
+    } finally { 
+        setIsProcessing(false); 
     }
   };
+  // KRAJ FUNKCIJE: handleUpscaleAndDownload
 
-  const renderCinematicBackground = () => {
-    return (
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-[#050505]/75 z-10 mix-blend-multiply transition-opacity duration-1000"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/60 via-transparent to-[#050505] z-10"></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-transparent to-[#050505] z-10"></div>
-        <video autoPlay loop muted playsInline className="w-full h-full object-cover scale-[1.02]">
-          <source src="/v8-core.webm" type="video/webm" />
-        </video>
-      </div>
-    );
-  };
-
-  // 🔥 INTERAKTIVNA ACCORDION LISTA (UMESTO OBIČNIH DIJAMANATA) 🔥
-  const renderV8Manifest = () => {
-      const specifikacije = [
-        { t: "1. 16MP UPSCALE", d: "Industrial-grade precision for upscaling.", insight: "Utilizes precision LANCZOS interpolation, scaling images to a native 16MP resolution while eliminating blurriness." },
-        { t: "2. BLOCKS MIXED BATCHES", d: "Format validation safety.", insight: "Scans all files instantly. If mixed aspect ratios (e.g. 16:9 and 9:16) are detected in one batch, it halts to prevent resolution errors." },
-        { t: "3. MILD COLOR + CONTRAST", d: "Color enhancement matrices.", insight: "Gently boosts Luminance and Chrominance so colors pop naturally, optimized specifically for high-end advertising." },
-        { t: "4. HIGHLIGHT ROLLOFF", d: "NumPy processing for details.", insight: "Applies a smooth rolloff to prevent blown-out whites, retaining intricate highlight textures (like reflections on metal or skin)." },
-        { t: "5. PRODUCT AD POLISH", d: "Final high-conversion refinement.", insight: "Localized contrast adjustments ensure the viewer's eye is drawn immediately to the primary subject." },
-        { t: "6. ANTI-PLASTIC REALISM", d: "Organic film grain integration.", insight: "Adds a highly controlled Gaussian Noise distribution that breaks artificial AI smoothness, creating an authentic photographic look." },
-        { t: "7. 30MB–40MB JPG TARGETING", d: "Intelligent file size optimization.", insight: "Iteratively compresses the file up to 4 times to find the perfect quality-to-size ratio between 30 and 40 Megabytes." },
-        { t: "8. JPG EXPORT ONLY", d: "Universal format compatibility.", insight: "Outputs only industry-standard .JPG files, ensuring immediate compatibility with all major stock platforms without re-saving." },
-        { t: "9. ZIP PACKAGE WITH TXT REPORT", d: "Unified archive output.", insight: "Returns a single master ZIP file containing all processed images plus a detailed forensic text report of the applied transformations." }
-      ];
-
-      return (
-        <div className="w-full max-w-5xl mx-auto mb-16 bg-black/40 border border-white/5 rounded-[2rem] p-8 md:p-10 relative z-10 shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-[0.2em] text-white">BATCH PROCESSOR ENGINE</h2>
-            <p className="text-[12px] md:text-[14px] text-orange-400 font-bold uppercase tracking-[0.3em] mt-3 italic">Technical Specifications V9.0</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
-            {specifikacije.map((item, i) => {
-              const isOpen = otvorenOpis === i;
-              return (
-                <div 
-                  key={i} 
-                  onClick={() => setOtvorenOpis(isOpen ? null : i)} 
-                  className={`bg-white/5 border p-6 rounded-2xl transition-all duration-500 cursor-pointer relative overflow-hidden group ${
-                    isOpen ? 'border-orange-500/50 shadow-[0_0_15px_rgba(249,115,22,0.1)]' : 'border-white/5 hover:border-white/20'
-                  }`}
-                >
-                  <div className="relative z-10 flex justify-between items-center">
-                    <div>
-                      <h4 className={`text-[13px] md:text-[15px] font-black uppercase transition-colors duration-300 flex items-center gap-3 mb-2 ${isOpen ? 'text-orange-400' : 'text-blue-400'}`}>
-                        <span className={`text-lg transition-colors duration-300 ${isOpen ? 'text-orange-500' : 'text-blue-600/60'}`}>💎</span> 
-                        {item.t}
-                      </h4>
-                      <p className={`text-[11px] md:text-[13px] font-medium leading-relaxed transition-colors duration-300 ${isOpen ? 'text-white' : 'text-zinc-400'}`}>
-                        {item.d}
-                      </p>
-                    </div>
-                    <div className={`ml-4 text-xs md:text-sm font-black transition-all duration-500 ${isOpen ? 'rotate-180 text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]' : 'text-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.8)] group-hover:text-blue-400'}`}>
-                      ▼
-                    </div>
-                  </div>
-                  <div className={`grid transition-all duration-500 ease-in-out relative z-10 ${isOpen ? 'grid-rows-[1fr] mt-4 opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-                    <div className="overflow-hidden">
-                      <div className="pt-4 border-t border-white/10">
-                        <p className="text-[11px] md:text-[12px] text-zinc-300 font-mono leading-relaxed border-l-2 border-orange-500 pl-3">
-                          <span className="text-orange-400 font-bold">Tech Insight:</span> {item.insight}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className={`absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent transition-opacity duration-500 ${isOpen ? 'opacity-100' : 'opacity-0'}`}></div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      );
-  };
-
+  // POČETAK FUNKCIJE: renderPricingPlans
   const renderPricingPlans = () => (
     <div className="w-full max-w-5xl mx-auto mt-16 px-4">
       <div className="text-center mb-12">
-        <Lock className="w-12 h-12 text-orange-500 mx-auto mb-6 drop-shadow-[0_0_15px_rgba(234,88,12,0.6)]" />
-        <h2 className="text-4xl font-black text-white uppercase tracking-widest mb-4">LIFETIME ACCESS. <span className="text-orange-500">CHOOSE YOUR V8 PLAN.</span></h2>
+        <h2 className="text-4xl font-black text-white uppercase tracking-widest mb-4">
+          {amountPaid > 0 ? "UPGRADE YOUR ACCESS." : "LIFETIME ACCESS."} <span className="text-orange-500 block md:inline mt-2 md:mt-0">CHOOSE YOUR V8 PLAN.</span>
+        </h2>
         
         <div className="mt-8 bg-[#0a0a0a]/90 border border-white/10 rounded-2xl p-8 text-left space-y-4 shadow-inner max-w-4xl mx-auto">
            <h4 className="text-orange-500 font-black uppercase tracking-[0.2em] text-[13px] border-b border-orange-500/20 pb-3 mb-4 flex items-center gap-2">
@@ -304,278 +271,251 @@ const V8Standard16MPWorkspace = () => {
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-        {/* STARTER TIER */}
-        <div className="bg-[#0a0a0a] border border-blue-500/40 rounded-[2.5rem] p-10 flex flex-col items-center hover:border-blue-500 transition-all duration-300 shadow-[0_0_20px_rgba(59,130,246,0.1)] hover:shadow-[0_0_40px_rgba(59,130,246,0.3)]">
-           <div className="w-16 h-16 rounded-full border border-blue-500/30 flex justify-center items-center mb-6 bg-blue-500/10">
-              <Diamond className="text-blue-500 w-8 h-8"/>
-           </div>
-           <h3 className="text-white font-black text-2xl uppercase tracking-widest">STARTER</h3>
-           <div className="text-blue-400 font-black text-6xl my-6">$50</div>
-           
-           <ul className="text-zinc-300 text-[13px] space-y-4 mb-10 text-left w-full font-bold">
-              <li className="flex items-center gap-3"><CheckCircle className="text-emerald-500 w-5 h-5"/> 200 CREDITS INCLUDED</li>
-              <li className="flex items-center gap-3"><Clock className="text-blue-400 w-5 h-5"/> USE IN 24H OR STRETCH OVER 365 DAYS</li>
-              <li className="flex items-center gap-3"><RefreshCcw className="text-blue-400 w-5 h-5"/> ROLLING QUOTA (NO MONTHLY EXPIRY)</li>
-           </ul>
-           
-           <MagneticButton>
-             <RippleButton 
-               onClick={() => { if(typeof v8Toast !== 'undefined') v8Toast.info("Checkout currently disabled."); }} 
-               className="w-full bg-white text-black py-5 rounded-2xl font-black uppercase tracking-widest text-[14px] hover:bg-blue-500 hover:text-white transition-all shadow-lg"
-             >
-               SELECT STARTER
-             </RippleButton>
-           </MagneticButton>
-        </div>
+      <div className="flex flex-wrap justify-center gap-6 w-full z-10 relative">
+        
+        {amountPaid < 150 && (
+          <div className="w-full md:w-[calc(33.333%-1rem)] max-w-sm bg-[#050505] border border-blue-500/30 rounded-[2rem] p-8 flex flex-col hover:border-blue-500/60 transition-all shadow-xl">
+              <div className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-500/10 mb-6 mx-auto"><Diamond className="w-6 h-6 text-blue-500" /></div>
+              <h3 className="text-xl font-black text-white uppercase text-center">Starter</h3>
+              <span className="text-4xl font-black text-blue-400 my-4 text-center">$150</span>
+              <div className="w-full text-left space-y-3 mb-8 text-[11px] text-zinc-400 font-bold uppercase tracking-widest flex-grow">
+                 <p className="flex items-center gap-2">✅ 500 Credits Included</p>
+                 <p className="flex items-center gap-2">⏳ Use in 24h or stretch over 365 days</p>
+                 <p className="flex items-center gap-2">🔄 Rolling Quota (No expiry)</p>
+              </div>
+              <button onClick={() => pokreniKupovinu('STARTER', 150)} className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-[12px] transition-all shadow-md ${amountPaid > 0 ? 'bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-600 hover:to-blue-400 text-white shadow-[0_0_20px_rgba(59,130,246,0.4)]' : 'bg-zinc-800 text-white hover:bg-blue-500'}`}>
+                 {amountPaid > 0 ? "UPGRADE TO STARTER" : "SELECT STARTER"}
+              </button>
+          </div>
+        )}
 
-        {/* PRO TIER */}
-        <div className="bg-[#0a0a0a] border-2 border-orange-500 rounded-[2.5rem] p-10 flex flex-col items-center shadow-[0_0_40px_rgba(234,88,12,0.2)] transform md:scale-105 relative">
-           <div className="absolute -top-4 bg-orange-500 text-black px-6 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest shadow-lg">Bestseller</div>
-           <div className="w-16 h-16 rounded-full border border-orange-500/30 flex justify-center items-center mb-6 bg-orange-500/10">
-              <Zap className="text-orange-500 w-8 h-8"/>
-           </div>
-           <h3 className="text-white font-black text-2xl uppercase tracking-widest">PRO</h3>
-           <div className="text-orange-500 font-black text-6xl my-6">$150</div>
-           
-           <ul className="text-zinc-300 text-[13px] space-y-4 mb-10 text-left w-full font-bold">
-              <li className="flex items-center gap-3"><CheckCircle className="text-emerald-500 w-5 h-5"/> 1.000 CREDITS INCLUDED</li>
-              <li className="flex items-center gap-3"><Clock className="text-orange-400 w-5 h-5"/> USE IN 24H OR STRETCH OVER 365 DAYS</li>
-              <li className="flex items-center gap-3"><RefreshCcw className="text-orange-400 w-5 h-5"/> ROLLING QUOTA (NO MONTHLY EXPIRY)</li>
-           </ul>
-           
-           <MagneticButton>
-             <RippleButton 
-               onClick={() => { if(typeof v8Toast !== 'undefined') v8Toast.info("Checkout currently disabled."); }} 
-               className="w-full bg-orange-500 text-white py-5 rounded-2xl font-black uppercase tracking-widest text-[14px] hover:bg-orange-400 transition-all shadow-[0_0_20px_rgba(234,88,12,0.4)]"
-             >
-               SELECT PRO
-             </RippleButton>
-           </MagneticButton>
-        </div>
+        {amountPaid < 250 && (
+          <div className="w-full md:w-[calc(33.333%-1rem)] max-w-sm bg-[#050505] border-2 border-orange-500/50 rounded-[2rem] p-8 flex flex-col relative hover:border-orange-500/80 transition-all shadow-[0_0_30px_rgba(234,88,12,0.15)] transform md:scale-105 z-10">
+              <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-orange-600 to-amber-500"></div>
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-orange-500 text-black px-6 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest shadow-lg">Bestseller</div>
+              
+              <div className="w-12 h-12 flex items-center justify-center rounded-full bg-orange-500/10 mb-6 mx-auto mt-2"><Zap className="w-6 h-6 text-orange-500" /></div>
+              <h3 className="text-xl font-black text-white uppercase text-center">Pro</h3>
+              <span className="text-4xl font-black text-orange-500 my-4 text-center flex items-center justify-center gap-3">
+                 $250
+              </span>
+              <div className="w-full text-left space-y-3 mb-8 text-[11px] text-zinc-300 font-bold uppercase tracking-widest flex-grow">
+                 <p className="flex items-center gap-2">✅ 2,000 Credits Included</p>
+                 <p className="flex items-center gap-2">⏳ Use in 24h or stretch over 365 days</p>
+                 <p className="flex items-center gap-2">🔄 Rolling Quota (No expiry)</p>
+              </div>
+              <button onClick={() => pokreniKupovinu('PRO', 250)} className="w-full bg-orange-500 text-white py-5 rounded-2xl font-black uppercase tracking-widest text-[14px] hover:bg-orange-400 transition-all shadow-[0_0_20px_rgba(234,88,12,0.4)]">
+                 {amountPaid > 0 ? "UPGRADE TO PRO" : "SELECT PRO"}
+              </button>
+          </div>
+        )}
+
+        {amountPaid < 550 && (
+          <div className="w-full md:w-[calc(33.333%-1rem)] max-w-sm bg-[#050505] border border-purple-500/30 rounded-[2rem] p-8 flex flex-col hover:border-purple-500/60 transition-all shadow-xl">
+              <div className="w-12 h-12 flex items-center justify-center rounded-full bg-purple-500/10 mb-6 mx-auto"><Crown className="w-6 h-6 text-purple-500" /></div>
+              <h3 className="text-xl font-black text-white uppercase text-center">Enterprise</h3>
+              <span className="text-4xl font-black text-purple-400 my-4 text-center flex items-center justify-center gap-3">
+                 $550
+              </span>
+              <div className="w-full text-left space-y-3 mb-8 text-[11px] text-zinc-400 font-bold uppercase tracking-widest flex-grow">
+                 <p className="flex items-center gap-2">✅ 10,000 Credits Included</p>
+                 <p className="flex items-center gap-2">⏳ Use in 24h or stretch over 365 days</p>
+                 <p className="flex items-center gap-2">🔄 Lifetime Access (Rolling Quota)</p>
+              </div>
+              <button onClick={() => pokreniKupovinu('ENTERPRISE', 550)} className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-[12px] transition-all shadow-md ${amountPaid > 0 ? 'bg-gradient-to-r from-purple-700 to-purple-500 hover:from-purple-600 hover:to-purple-400 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)]' : 'bg-zinc-800 text-white hover:bg-purple-500'}`}>
+                 {amountPaid > 0 ? "UPGRADE TO ENTERPRISE" : "SELECT ENTERPRISE"}
+              </button>
+          </div>
+        )}
       </div>
+
+      {amountPaid > 0 && (
+         <div className="w-full max-w-4xl mx-auto mt-12 bg-gradient-to-r from-blue-900/20 to-blue-800/10 border border-blue-500/30 p-6 md:p-8 rounded-[2rem] flex flex-col md:flex-row items-center justify-center gap-6 shadow-[0_0_30px_rgba(59,130,246,0.15)] relative overflow-hidden">
+           <div className="absolute inset-0 bg-blue-500/5 animate-pulse"></div>
+           <ArrowUpCircle className="w-10 h-10 text-blue-400 flex-shrink-0 relative z-10" />
+           <div className="text-center md:text-left relative z-10">
+              <p className="text-blue-100 text-[14px] md:text-[16px] font-black uppercase tracking-widest mb-1">
+                UPGRADE POLICY: <span className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">PRORATED PRICING ACTIVE.</span>
+              </p>
+              <p className="text-blue-200/80 text-[12px] md:text-[13px] font-bold">
+                System detected an active V8 License (${amountPaid}). You will only pay the exact difference to upgrade.
+              </p>
+           </div>
+         </div>
+       )}
     </div>
   );
+  // KRAJ FUNKCIJE: renderPricingPlans
+
+  // POČETAK FUNKCIJE: renderV8Manifest
+  const renderV8Manifest = () => {
+      const specifikacije = [
+        { t: `1. Batch Processing Up to 10 Files`, d: "Process multiple images in a single run.", insight: `Allows for rapid upscaling and processing of entire campaigns simultaneously, saving hours of manual labor.` },
+        { t: "2. Consistent Style Locking", d: "Maintains visual identity across the entire batch.", insight: "Ensures that if you upload 10 images from the same campaign, they all receive the exact same treatment and output format." },
+        { t: "3. Format Validation Safety", d: "Prevents resolution errors before processing begins.", insight: "The system scans all files instantly. If you mix 16:9 with 9:16, it halts and warns you to ensure perfect batch results." },
+        { t: "4. Unified Archive Output", d: "Outputs a single compiled ZIP archive.", insight: "Instead of managing 10 different files or code snippets, you get one master ZIP file containing the upscaled files." },
+        { t: "5. Credit Protection", d: "Credits are only deducted for successful batch runs.", insight: "If the batch fails midway, the system protects your quota. You only pay for what actually gets processed." },
+        { t: "6. Backend-Ready Architecture", d: "Optimized for Node.js integrations.", insight: "Uses direct HTTP API handling with flexible payload sizes to accommodate up to 10 high-resolution images." }
+      ];
+
+      return (
+        <div className="w-full max-w-5xl mx-auto mb-16 bg-black/40 border border-white/5 rounded-[2rem] p-8 md:p-10 relative z-10 shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-[0.2em] text-white">BATCH PROCESSOR ENGINE</h2>
+            <p className="text-[12px] md:text-[14px] text-orange-400 font-bold uppercase tracking-[0.3em] mt-3 italic">Technical Specifications V3.0</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
+            {specifikacije.map((item, i) => {
+              const isOpen = otvorenOpis === i;
+              return (
+                <div key={i} onClick={() => setOtvorenOpis(isOpen ? null : i)} className={`bg-white/5 border p-6 rounded-2xl transition-all duration-500 cursor-pointer relative overflow-hidden group ${isOpen ? 'border-orange-500/50 shadow-[0_0_15px_rgba(249,115,22,0.1)]' : 'border-white/5 hover:border-white/20'}`}>
+                  <div className="relative z-10 flex justify-between items-center">
+                    <div>
+                      <h4 className={`text-[13px] md:text-[15px] font-black uppercase transition-colors duration-300 flex items-center gap-3 mb-2 ${isOpen ? 'text-orange-400' : 'text-blue-400'}`}>
+                        <span className={`text-lg transition-colors duration-300 ${isOpen ? 'text-orange-500' : 'text-blue-600/60'}`}>💎</span> {item.t}
+                      </h4>
+                      <p className={`text-[11px] md:text-[13px] font-medium leading-relaxed transition-colors duration-300 ${isOpen ? 'text-white' : 'text-zinc-400'}`}>{item.d}</p>
+                    </div>
+                    <div className={`ml-4 text-xs md:text-sm font-black transition-all duration-500 ${isOpen ? 'rotate-180 text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]' : 'text-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.8)] group-hover:text-blue-400'}`}>▼</div>
+                  </div>
+                  <div className={`grid transition-all duration-500 ease-in-out relative z-10 ${isOpen ? 'grid-rows-[1fr] mt-4 opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                    <div className="overflow-hidden">
+                      <div className="pt-4 border-t border-white/10">
+                        <p className="text-[11px] md:text-[12px] text-zinc-300 font-mono leading-relaxed border-l-2 border-orange-500 pl-3"><span className="text-orange-400 font-bold">Tech Insight:</span> {item.insight}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className={`absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent transition-opacity duration-500 ${isOpen ? 'opacity-100' : 'opacity-0'}`}></div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+  };
+  // KRAJ FUNKCIJE: renderV8Manifest
 
   return (
-    <div className="min-h-screen pt-28 pb-20 px-6 flex flex-col items-center bg-[#050505] relative text-white">
+    <div className="bg-[#050505] p-8 md:p-12 rounded-[2.5rem] border border-[#FF8C00]/30 shadow-[0_0_50px_rgba(255,140,0,0.1)] max-w-6xl mx-auto mt-28 relative">
       
       <AnimatePresence>
-        {isProcessing && (
-          <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            exit={{ opacity: 0 }} 
-            className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/90 backdrop-blur-xl"
-          >
-            <div className="flex flex-col items-center bg-black/50 p-12 rounded-[3rem] border border-orange-500/30 shadow-[0_0_80px_rgba(234,88,12,0.15)] text-center max-w-lg w-full mx-4">
-              <RefreshCcw className="w-20 h-20 text-orange-500 animate-spin mb-8 drop-shadow-[0_0_20px_rgba(234,88,12,0.8)]" />
-              <h2 className="text-3xl font-black text-white uppercase tracking-[0.3em] mb-4">V8 CORE ACTIVE</h2>
-              <p className="text-orange-400 font-bold uppercase tracking-[0.2em] text-sm animate-pulse mb-8">
-                Optimizing {files.length} Image(s)...
-              </p>
-              
-              <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden mb-6 relative">
-                 <motion.div 
-                    initial={{ width: "0%" }}
-                    animate={{ width: `${(activeLog / v8Logs.length) * 100}%` }}
-                    className="h-full bg-gradient-to-r from-orange-600 to-amber-400 shadow-[0_0_10px_rgba(234,88,12,0.8)]"
-                 />
-              </div>
-
-              <div className="text-emerald-400 font-mono text-[10px] uppercase tracking-widest bg-black/60 w-full p-4 rounded-xl border border-white/5 h-16 flex items-center justify-center">
-                 {v8Logs[activeLog] || "PROCESSING BATCH..."}
-              </div>
-            </div>
-          </motion.div>
+        {isCheckoutOpen && (
+          <V8SecureCheckout 
+            isOpen={isCheckoutOpen} 
+            onClose={() => setIsCheckoutOpen(false)} 
+            productName={checkoutProduct} 
+            price={checkoutPrice} 
+          />
         )}
       </AnimatePresence>
 
       {isVIP && (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50">
-           <motion.div 
-              initial={{ y: -20, opacity: 0 }} 
-              animate={{ y: 0, opacity: 1 }} 
-              className="bg-black/80 backdrop-blur-xl border border-orange-500/50 px-6 py-2 rounded-full shadow-[0_0_20px_rgba(234,88,12,0.3)] flex items-center gap-4"
-           >
-              <Zap className="w-5 h-5 text-orange-500 animate-pulse" />
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50">
+           <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-black/80 backdrop-blur-xl border border-orange-500/50 px-6 py-2 rounded-full shadow-[0_0_20px_rgba(234,88,12,0.3)] flex items-center gap-4">
+              <Zap className="w-4 h-4 text-orange-500 animate-pulse" />
               <div className="flex flex-col items-center">
-                 <span className="text-[9px] uppercase tracking-[0.2em] font-black text-zinc-400 leading-none">16MP ASSET CREDITS</span>
-                 <span className={`text-[15px] font-black tracking-widest leading-none mt-1 ${credits > 100 ? 'text-emerald-400' : 'text-red-500'}`}>
-                    {credits} AVAIL.
-                 </span>
+                 <span className="text-[9px] uppercase tracking-[0.2em] font-black text-zinc-400 leading-none">EXTRACTOR CREDITS</span>
+                 <span className={`text-[15px] font-black tracking-widest leading-none mt-1 ${credits > 100 ? 'text-emerald-400' : 'text-red-500'}`}>{credits}</span>
               </div>
            </motion.div>
         </div>
       )}
 
-      <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="max-w-6xl w-full text-center mt-10">
-        
-        <motion.div 
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.2 }}
-            className="relative w-full max-w-7xl mx-auto mb-16 rounded-[3rem] overflow-hidden border border-white/10 shadow-[0_0_60px_rgba(255,140,0,0.15)]"
-        >
-            {renderCinematicBackground()}
-
-            <div className="relative z-10 py-24 px-6 text-center">
-                <div className="inline-block bg-orange-600/10 border border-orange-500/30 px-5 py-2 rounded-full text-orange-400 font-black uppercase tracking-[0.3em] text-[10px] mb-8 animate-pulse shadow-[0_0_20px_rgba(234,88,12,0.2)] backdrop-blur-sm">
-                  V8 AUTOMATION // 16MP STANDARD WORKSPACE
-                </div>
-                
-                <h1 className="text-6xl md:text-7xl lg:text-8xl font-black italic uppercase tracking-tighter text-white mb-6 drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)]">
-                  V8 <span className="text-transparent bg-clip-text bg-gradient-to-b from-orange-500 to-amber-600 drop-shadow-none">STANDARD 16MP</span>
-                </h1>
-                
-                <p className="text-zinc-200 font-bold uppercase tracking-[0.4em] text-[11px] md:text-[13px] max-w-3xl mx-auto leading-relaxed drop-shadow-lg bg-black/40 p-6 rounded-2xl backdrop-blur-sm border-l-2 border-orange-500">
-                  Stop wasting hours in Photoshop. Your core transforms AI generations into commercial beasts ready for Adobe Stock, Freepik, and Shutterstock. 
-                  <span className="text-white block mt-3 italic font-black">100% Marketplace Compliance.</span>
-                </p>
-
-                {!isVIP && !isCheckingAccess && (
-                  <div className="mt-12 relative z-20">
-                     {renderPricingPlans()}
-                  </div>
-                )}
-            </div>
-        </motion.div>
-
-        {/* 🔥 OVDE JE SADA NOVA ACCORDION LISTA (MENJA OBIČNE DIJAMANTE) 🔥 */}
-        <div className={`transition-all duration-500 ${!isVIP ? 'opacity-30 grayscale-[70%] pointer-events-none' : ''}`}>
-           {renderV8Manifest()}
-        </div>
-
-        <div className={`grid md:grid-cols-2 gap-10 text-left mb-20 transition-all duration-500 ${!isVIP ? 'opacity-30 grayscale-[70%] pointer-events-none' : ''}`}>
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="relative w-full mx-auto mb-12 rounded-[2.5rem] overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(255,140,0,0.15)]">
+          <div className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-50" style={{ backgroundImage: "url('/v8_py/v8_py_pozadina.webp')" }}></div>
+          <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050505]/40 via-[#050505]/80 to-[#050505]"></div>
           
-          <div className="p-10 rounded-[2.5rem] backdrop-blur-3xl border-2 border-orange-500/40 relative overflow-hidden group shadow-2xl flex flex-col"
-               style={{backgroundImage: `linear-gradient(rgba(0,0,0,0.88), rgba(0,0,0,0.88)), url(${navBg})`, backgroundSize: 'cover'}}>
-            
-            <div className="flex items-center gap-4 mb-8">
-              <Upload className="text-orange-500 w-8 h-8" />
-              <h2 className="text-2xl font-black uppercase italic tracking-widest text-white">RAW BATCH INPUT</h2>
-            </div>
-            
-            <div className="bg-red-950/60 border-2 border-red-500 rounded-2xl p-6 mb-8 shadow-[0_0_20px_rgba(239,68,68,0.2)]">
-               <h4 className="text-red-400 text-[12px] font-black uppercase tracking-[0.2em] mb-3 flex items-center gap-2"><AlertTriangle className="w-5 h-5" /> V8 ENGINE FORMAT PROTOCOL</h4>
-               <ul className="text-zinc-200 text-[12px] leading-relaxed space-y-3 list-disc pl-5 font-bold">
-                  <li>Accepted aspect ratios: <span className="text-white">16:9, 9:16, 21:9 or 1:1</span>.</li>
-                  <li className="text-orange-400 bg-orange-950/50 p-2 rounded-lg border border-orange-500/30">
-                     <span className="font-black">STRICT RULE: NO MIXED BATCHES!</span><br/>
-                     You CANNOT mix formats (e.g., placing 16:9 and 21:9 together in the same upload). All images in a single batch must be the exact same aspect ratio!
-                  </li>
-                  <li>Max <span className="text-white font-black">10 images</span> per processing cycle.</li>
-               </ul>
-            </div>
-
-            <label className="group relative flex flex-col items-center justify-center w-full flex-grow min-h-[220px] border-4 border-dashed border-white/10 rounded-3xl hover:border-orange-500 transition-all cursor-pointer bg-black/40 overflow-hidden">
+          <div className="relative z-10 py-16 px-6 text-center flex flex-col items-center">
+              <div className="inline-block bg-orange-600/10 border border-orange-500/30 px-5 py-2 rounded-full text-orange-400 font-black uppercase tracking-[0.3em] text-[10px] mb-6 animate-pulse shadow-[0_0_20px_rgba(234,88,12,0.2)] backdrop-blur-sm">
+                  V8 CINEMATIC PROTOCOL // 16MP UPSCALE ENGINE
+              </div>
               
-              {files.length > 0 && (
-                <MagneticButton className="absolute top-4 right-4 z-20">
-                  <button
-                    onClick={clearWorkspace}
-                    className="bg-red-950/80 border border-red-500 text-red-500 hover:bg-red-500 hover:text-white p-2 rounded-full transition-all shadow-[0_0_15px_rgba(239,68,68,0.5)] cursor-pointer"
-                    title="Clear Workspace"
-                  >
-                    <X className="w-6 h-6 stroke-[3]" />
-                  </button>
-                </MagneticButton>
-              )}
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-black italic uppercase tracking-tighter text-white mb-6 drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)] flex items-center justify-center gap-4 flex-wrap">
+                  <Images className="text-orange-500 w-12 h-12 md:w-16 md:h-16 drop-shadow-[0_0_15px_rgba(234,88,12,0.8)]" />
+                  16MP <span className="text-transparent bg-clip-text bg-gradient-to-b from-orange-500 to-amber-600 drop-shadow-none">BATCH UPSCALE</span>
+              </h1>
+              
+              <div className="bg-[#050505]/80 backdrop-blur-md border border-orange-500/20 p-8 rounded-[2rem] max-w-4xl mx-auto text-left shadow-2xl mb-8">
+    <h4 className="text-white font-black uppercase tracking-widest text-sm mb-4 border-b border-white/10 pb-4">The Protocol Explained:</h4>
+    <p className="text-zinc-300 text-[13px] leading-relaxed mb-4">The V8 16MP Upscale Engine acts as an <strong>industrial-grade resolution multiplier</strong>. It doesn't just enlarge pixels—it intelligently reconstructs your image by analyzing original lighting vectors, lens optical properties, and structural composition to generate a <strong>flawless high-resolution master file</strong>.</p>
+    <p className="text-zinc-300 text-[13px] leading-relaxed">Once processed, your image achieves <strong>perfect aesthetic clarity</strong>. You can now use these hyper-realistic visuals for premium client presentations, high-end print, and commercial campaigns with zero structure loss or plastic AI artifacts.</p>
+</div>
 
-              {files.length > 0 ? (
-                <div className="flex flex-col items-center text-center px-4">
-                  <ShieldCheck className="w-16 h-16 text-emerald-500 mb-3 drop-shadow-[0_0_20px_rgba(16,185,129,0.5)]" />
-                  
-                  <div className="flex items-center gap-2 mb-1">
-                     <span className="text-white font-black text-4xl">{files.length}</span>
-                     <span className="text-zinc-500 font-black text-2xl">/</span>
-                     <span className="text-zinc-400 font-black text-2xl">{Math.min(10, credits)}</span>
-                  </div>
-                  
-                  <span className="text-zinc-400 font-bold text-[10px] uppercase tracking-[0.2em] mb-4">IMAGES READY FOR ENGINE</span>
-                  
-                  <span className="bg-orange-500/20 border border-orange-500/50 text-orange-400 font-black text-[10px] uppercase tracking-[0.2em] px-4 py-1.5 rounded-full shadow-[0_0_15px_rgba(234,88,12,0.2)]">
-                     COST: {files.length} CREDITS
-                  </span>
-                </div>
-              ) : (
-                <>
-                  <Zap className="w-16 h-16 text-zinc-800 group-hover:text-orange-500 transition-colors mb-6 animate-pulse" />
-                  <span className="text-zinc-500 font-black uppercase tracking-[0.2em] text-[11px] group-hover:text-white transition-colors text-center px-4">DRAG & DROP UP TO 10 IMAGES</span>
-                  <span className="text-orange-500/60 font-bold uppercase tracking-[0.2em] text-[9px] mt-4">Takes 1 credit per image</span>
-                </>
+              {!isCheckingAccess && currentPlan !== 'ENTERPRISE' && (
+                 <div className="mt-12 relative z-20 w-full">
+                    {renderPricingPlans()}
+                 </div>
               )}
-              <input type="file" className="hidden" onChange={handleUpload} accept="image/*" multiple disabled={!isVIP || credits <= 0} />
-            </label>
+          </div>
+      </motion.div>
 
-            <MagneticButton className="mt-8">
-              <RippleButton onClick={processBatch} disabled={files.length === 0 || isProcessing || credits < files.length}
-                className={`w-full py-6 rounded-2xl font-black uppercase tracking-[0.5em] text-[13px] transition-all flex items-center justify-center gap-3 shrink-0 ${
-                  files.length === 0 || isProcessing ? 'bg-zinc-900 text-zinc-700 border border-white/5' : 
-                  credits < files.length ? 'bg-red-900/50 text-red-500 border border-red-500/50 cursor-not-allowed' :
-                  'bg-orange-600 text-white shadow-[0_15px_40px_rgba(234,88,12,0.4)] border border-orange-400 hover:scale-[1.02] cursor-pointer'
-                }`}>
-                
-                {isProcessing ? <RefreshCcw className="w-6 h-6 animate-spin" /> : credits < files.length ? <AlertTriangle className="w-6 h-6" /> : <Zap className="w-6 h-6" />}
-                {isProcessing ? "IGNITING V8 CORE..." : credits < files.length ? "INSUFFICIENT CREDITS" : "START BATCH OPTIMIZATION"}
-              </RippleButton>
-            </MagneticButton>
+      {renderV8Manifest()}
+
+      <div className={`transition-all duration-500 ${!isVIP ? 'opacity-30 grayscale-[70%] pointer-events-none' : ''}`}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 relative z-10 mb-16">
+          <div className="flex flex-col gap-6">
+             <label className="text-[#FF8C00] font-black text-[11px] tracking-widest uppercase flex items-center gap-2">
+               <Layers size={14} /> 1. BATCH UPLOAD (UP TO 10 IMAGES)
+             </label>
+             <div className={`relative border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center text-center transition-all ${dragActive ? 'border-[#FF8C00] bg-[#FF8C00]/10' : 'border-white/20 bg-black/50 hover:border-[#FF8C00]/50'} ${files.length > 0 ? 'border-solid border-[#FF8C00]/50' : 'min-h-[250px]'}`} onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}>
+               <input ref={inputRef} type="file" accept="image/*" multiple onChange={handleChange} className="hidden" />
+               {files.length > 0 ? (
+                 <div className="relative w-full flex justify-center items-center bg-[#050505] group rounded-xl overflow-hidden p-6 border border-orange-500/30">
+                   <div className="text-center">
+                      <Layers className="w-16 h-16 text-orange-500 mb-4 mx-auto animate-pulse" />
+                      <span className="text-2xl font-black text-white">{files.length} / 10 IMAGES BATCHED</span>
+                   </div>
+                   <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                     <button onClick={obrisiSlike} className="bg-red-600/90 text-white p-4 rounded-full hover:bg-red-500 transition-all shadow-[0_0_20px_rgba(220,38,38,0.6)] hover:scale-110 flex items-center gap-2">
+                         <X size={20} strokeWidth={3} /> CLEAR BATCH
+                     </button>
+                   </div>
+                 </div>
+               ) : (
+                 <div className="flex flex-col items-center gap-3 cursor-pointer" onClick={() => inputRef.current.click()}>
+                   <div className="bg-white/5 p-4 rounded-full"><Upload className="w-8 h-8 text-zinc-400" /></div>
+                   <div><p className="text-white font-bold text-sm">Drag & Drop up to 10 images</p><p className="text-zinc-500 text-xs mt-1">or click to browse files</p></div>
+                 </div>
+               )}
+             </div>
           </div>
 
-          <div className="p-10 rounded-[2.5rem] backdrop-blur-3xl border border-white/5 relative overflow-hidden group shadow-2xl"
-               style={{backgroundImage: `linear-gradient(rgba(0,0,0,0.94), rgba(0,0,0,0.94)), url(${navBg})`, backgroundSize: 'cover'}}>
-            <div className="flex items-center justify-between mb-10">
-                <div className="flex items-center gap-4">
-                  <Download className={`w-8 h-8 ${result ? 'text-emerald-500 drop-shadow-[0_0_15px_rgba(16,185,129,0.8)]' : 'text-zinc-700'}`} />
-                  <h2 className={`text-2xl font-black uppercase italic tracking-widest ${result ? 'text-emerald-400' : 'text-zinc-600'}`}>OPTIMIZED OUTPUT</h2>
-                </div>
-            </div>
+          <div className="flex flex-col gap-6">
+             <div className="flex items-center justify-between">
+                <label className="text-emerald-500 font-black text-[11px] tracking-widest uppercase flex items-center gap-2"><Archive size={14} /> 2. WORKFLOW MONITOR</label>
+             </div>
+             
+             <div className="font-mono text-zinc-400 bg-black/50 border border-white/10 rounded-2xl p-6 flex-grow min-h-[300px] text-[11px] md:text-[13px] overflow-y-auto shadow-inner whitespace-pre-wrap leading-relaxed relative">
+               {isProcessing || downloadStatus === 'success' ? (
+                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    {v8Logs.slice(0, activeLog).map((log, index) => (
+                       <div key={index} className="mb-2">
+                          {log.includes('🚀') ? <span className="text-orange-500 font-black">{log}</span> : 
+                           log.includes('💎') ? <span className="text-blue-400">{log}</span> : 
+                           log.includes('✅') ? <span className="text-emerald-400 font-black">{log}</span> : 
+                           <span>{log}</span>}
+                       </div>
+                    ))}
+                 </motion.div>
+               ) : (
+                 <div className="absolute inset-0 flex flex-col items-center justify-center opacity-10">
+                   <Archive className="w-16 h-16 mb-4" />
+                   <span className="font-black text-[10px] tracking-widest uppercase">AWAITING BATCH INIT</span>
+                 </div>
+               )}
+             </div>
 
-            <div className="font-mono text-zinc-400 bg-black/60 border border-white/5 rounded-3xl p-8 h-80 text-[10px] md:text-[11px] tracking-widest uppercase overflow-y-auto shadow-inner leading-relaxed">
-              <AnimatePresence>
-                {v8Logs.slice(0, activeLog).map((log, index) => (
-                  <motion.div key={index} initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} className="mb-2.5 flex items-center gap-2">
-                    {log.includes('🚀') ? <span className="text-orange-500 font-black">{log}</span> : 
-                     log.includes('💎') ? <span className="text-blue-400 drop-shadow-[0_0_5px_rgba(59,130,246,0.5)]">{log}</span> : 
-                     log.includes('✅') ? <span className="text-emerald-400 font-black">{log}</span> : 
-                     <span>{log}</span>}
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-              {!result && !isProcessing && (
-                <div className="h-full flex flex-col items-center justify-center opacity-10">
-                  <FileImage className="w-16 h-16 mb-4" />
-                  <span className="font-black text-[10px]">AWAITING ENGINE START</span>
-                </div>
-              )}
-            </div>
-
-            {result && (
-              <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="mt-10 flex justify-center w-full">
-                <MagneticButton className="w-full">
-                  <a 
-                    href={result} 
-                    download={`V8_16MP_Batch_${Date.now()}.zip`}
-                    className="w-full bg-white text-black py-6 px-8 rounded-full font-black uppercase tracking-[0.5em] text-[13px] hover:bg-orange-500 hover:text-white transition-all shadow-2xl flex justify-center items-center gap-3 cursor-pointer"
-                  >
-                    <DownloadCloud className="w-6 h-6" /> DOWNLOAD V8 BATCH (.ZIP)
-                  </a>
-                </MagneticButton>
-              </motion.div>
-            )}
+             <div className="mt-auto pt-2 flex flex-col gap-4">
+               <button onClick={handleUpscaleAndDownload} disabled={isProcessing || files.length === 0 || credits <= 0} className={`w-full font-black text-[14px] uppercase tracking-widest py-4 rounded-xl transition-all flex items-center justify-center gap-3 ${credits <= 0 ? 'bg-red-900/50 text-red-500 border border-red-500/50 cursor-not-allowed' : 'bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white shadow-[0_0_30px_rgba(234,88,12,0.4)] hover:scale-[1.02]'} disabled:opacity-50`}>
+                 {isProcessing ? <RefreshCcw className="w-5 h-5 animate-spin" /> : <Archive className="w-5 h-5" />}
+                 {isProcessing ? "PROCESSING V9 ENGINE..." : credits <= 0 ? "INSUFFICIENT CREDITS" : "INITIATE 16MP BATCH UPSCALE"}
+               </button>
+             </div>
           </div>
         </div>
-
-        {isVIP && (
-           <div className="border-t border-white/10 pt-20">
-              {renderPricingPlans()}
-           </div>
-        )}
-        
-      </motion.div>
+      </div>
     </div>
   );
 };
-
 export default V8Standard16MPWorkspace;
 // KRAJ FAJLA: V8Standard16MPWorkspace.jsx
