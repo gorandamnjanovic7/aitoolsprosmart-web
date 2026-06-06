@@ -1,3 +1,4 @@
+// POČETAK FAJLA: App.jsx
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
@@ -6,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ScanOverlay from './ScanOverlay'; 
 
 // FIREBASE
-import { db, auth } from './firebase';
+import { db, auth, provider } from './firebase';
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, collection, addDoc, query, orderBy, getDocs } from 'firebase/firestore';
 
@@ -30,18 +31,24 @@ import V8Refund from './V8Refund';
 import TrezorPage from './TrezorPage'; 
 import V8DatabaseAdmin from "./V8DatabaseAdmin";
 import V8AdminDashboard from "./V8AdminDashboard";
-import V8OptimizerPage from './V8OptimizerPage'; 
+import V8Standard16MPWorkspace from "./V8Standard16MPWorkspace";
 import V8PromptEngine from './V8PromptEngine';
 import UgcAvatar from './UgcAvatar';
-import VaultTransition from './v8-ui-components/VaultTransition'; // AŽURIRANO
+import VaultTransition from './v8-ui-components/VaultTransition'; 
 import V8IdleProtocol from './v8-ui-components/V8IdleProtocol'; 
 import V8CinematicText from './v8-ui-components/V8CinematicText'; 
 import CinematikPromptEngine from './CinematikPromptEngine';
 import V8JsonExtractorPage from './V8JsonExtractorPage';
+import V8JsonDeBrendingExtractorPage from './V8JsonDeBrendingExtractorPage'; 
+import V8PayoneerDashboard from './V8PayoneerDashboard';
 
 import V8RadarCursor from './v8-ui-components/V8RadarCursor'; 
 import V8Navbar from './V8Navbar';
 import V8Footer from './V8Footer';
+
+// 🔥 NOVI IMPORTI 🔥
+import V8SecureCheckout from './V8SecureCheckout';
+import V8UnlockModal from './V8UnlockModal'; 
 
 if (typeof window !== 'undefined') {
   if ('scrollRestoration' in window.history) { window.history.scrollRestoration = 'manual'; }
@@ -205,6 +212,21 @@ function AppContent({ appsData, refreshData }) {
   const entryTime = useRef(Date.now());
   const [authVersion, setAuthVersion] = useState(0); 
 
+  // 🔥 GLOBALNI STATE ZA CHECKOUT 🔥
+  const [checkoutData, setCheckoutData] = useState({ isOpen: false, name: '', price: '' });
+
+  // POČETAK FUNKCIJE: handleOpenCheckout
+  const handleOpenCheckout = useCallback((productName, price) => {
+    setCheckoutData({ isOpen: true, name: productName, price });
+  }, []);
+  // KRAJ FUNKCIJE: handleOpenCheckout
+
+  // POČETAK FUNKCIJE: handleCloseCheckout
+  const handleCloseCheckout = useCallback(() => {
+    setCheckoutData({ isOpen: false, name: '', price: '' });
+  }, []);
+  // KRAJ FUNKCIJE: handleCloseCheckout
+
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, () => {
         setAuthVersion(v => v + 1);
@@ -271,22 +293,28 @@ function AppContent({ appsData, refreshData }) {
         </AnimatePresence>
         
         <V8Navbar handleHomeClick={handleHomeClick} />
+
+        {/* 🔥 GLOBALNI MODAL ZA OTKLJUČAVANJE 🔥 */}
+        <V8UnlockModal />
         
         <div className="flex-1 text-left pt-20">
           <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
+            {/* 🔥 PROSLEDJIVANJE openCheckout FUNKCIJE KROZ RUTE 🔥 */}
             <Routes location={location} key={location.pathname}>
-              <Route path="/" element={<V8PageWrapper><HomePage apps={appsData} /></V8PageWrapper>} />
-              <Route path="/optimizer" element={<V8PageWrapper><V8OptimizerPage /></V8PageWrapper>} />
-              <Route path="/extractor" element={<V8PageWrapper><V8JsonExtractorPage /></V8PageWrapper>} />
-              <Route path="/prompt-engine" element={<V8PageWrapper><V8PromptEngine /></V8PageWrapper>} />
-              <Route path="/seedance" element={<V8PageWrapper><CinematikPromptEngine initialEngine="SEEDANCE 2.0" /></V8PageWrapper>} />
-              <Route path="/kling" element={<V8PageWrapper><CinematikPromptEngine initialEngine="KLING 3.0" /></V8PageWrapper>} />
-              <Route path="/enxance" element={<V8PageWrapper><V8Enhancer10x /></V8PageWrapper>} />
-              <Route path="/promo" element={<V8PageWrapper><V8Promo10xPage /></V8PageWrapper>} />
-              <Route path="/app/:id" element={<V8PageWrapper><SingleProductPage apps={appsData} /></V8PageWrapper>} />
+              <Route path="/" element={<V8PageWrapper><HomePage apps={appsData} openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+              <Route path="/v8-standard-16mp" element={<V8PageWrapper><V8Standard16MPWorkspace openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+              <Route path="/extractor" element={<V8PageWrapper><V8JsonExtractorPage openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+              <Route path="/v8-debranding-extractor" element={<V8PageWrapper><V8JsonDeBrendingExtractorPage openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+              <Route path="/prompt-engine" element={<V8PageWrapper><V8PromptEngine openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+              <Route path="/seedance" element={<V8PageWrapper><CinematikPromptEngine initialEngine="SEEDANCE 2.0" openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+              <Route path="/kling" element={<V8PageWrapper><CinematikPromptEngine initialEngine="KLING 3.0" openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+              <Route path="/enxance" element={<V8PageWrapper><V8Enhancer10x openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+              <Route path="/promo" element={<V8PageWrapper><V8Promo10xPage openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+              <Route path="/app/:id" element={<V8PageWrapper><SingleProductPage apps={appsData} openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               <Route path="/trezor" element={<V8PageWrapper><TrezorPage apps={appsData} /></V8PageWrapper>} />
               <Route path="/admin" element={<V8PageWrapper><V8DatabaseAdmin apps={appsData} refreshData={refreshData} /></V8PageWrapper>} />
               <Route path="/dashboard" element={<V8PageWrapper><V8AdminDashboard /></V8PageWrapper>} />
+              <Route path="/admin-payoneer" element={<V8PageWrapper><V8PayoneerDashboard /></V8PageWrapper>} />
               <Route path="/stock" element={<V8PageWrapper><V8StockBerza /></V8PageWrapper>} />
               <Route path="/showroom" element={<V8PageWrapper><V8Showroom /></V8PageWrapper>} />
               <Route path="/terms" element={<V8PageWrapper><V8Terms /></V8PageWrapper>} />
@@ -307,6 +335,18 @@ function AppContent({ appsData, refreshData }) {
         </div>
 
         <V8Footer />
+
+        {/* 🔥 RENDEROVANJE MODALA NA GLOBALNOM NIVOU 🔥 */}
+        <AnimatePresence>
+          {checkoutData.isOpen && (
+            <V8SecureCheckout 
+              productName={checkoutData.name} 
+              price={checkoutData.price} 
+              onClose={handleCloseCheckout} 
+            />
+          )}
+        </AnimatePresence>
+
       </div>
     </div>
   );
@@ -335,7 +375,8 @@ export default function App() {
   return (
     <HelmetProvider>
       <Router>
-        <V8IdleProtocol />
+        {/* 🔥 DODATO 5 MINUTA (300000ms) ZA AKTIVACIJU SCREENSAVERA 🔥 */}
+        <V8IdleProtocol timeout={300000} />
         <AppContent appsData={appsData} refreshData={refreshData} />
       </Router>
     </HelmetProvider>
