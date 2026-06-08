@@ -32,15 +32,17 @@ import TrezorPage from './TrezorPage';
 import V8DatabaseAdmin from "./V8DatabaseAdmin";
 import V8AdminDashboard from "./V8AdminDashboard";
 import V8Standard16MPWorkspace from "./V8Standard16MPWorkspace";
-import V8PromptEngine from './V8PromptEngine';
+import V8GridSystem from './V8GridSystem';
 import UgcAvatar from './UgcAvatar';
 import VaultTransition from './v8-ui-components/VaultTransition'; 
 import V8IdleProtocol from './v8-ui-components/V8IdleProtocol'; 
 import V8CinematicText from './v8-ui-components/V8CinematicText'; 
 import CinematikPromptEngine from './CinematikPromptEngine';
-import V8JsonExtractorPage from './V8JsonExtractorPage';
-import V8JsonDeBrendingExtractorPage from './V8JsonDeBrendingExtractorPage'; 
 import V8PayoneerDashboard from './V8PayoneerDashboard';
+import V8JsonDeBrendingExtractorPage from './V8JsonDeBrendingExtractorPage';
+
+// 🔥 NOVO: Dodat import za DNA Extractor 🔥
+import V8JsonDeExtractorPage from './V8JsonDeExtractorPage';
 
 import V8RadarCursor from './v8-ui-components/V8RadarCursor'; 
 import V8Navbar from './V8Navbar';
@@ -300,12 +302,26 @@ function AppContent({ appsData, refreshData }) {
         <div className="flex-1 text-left pt-20">
           <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
             {/* 🔥 PROSLEDJIVANJE openCheckout FUNKCIJE KROZ RUTE 🔥 */}
-            <Routes location={location} key={location.pathname}>
+           <Routes location={location} key={location.pathname}>
               <Route path="/" element={<V8PageWrapper><HomePage apps={appsData} openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               <Route path="/v8-standard-16mp" element={<V8PageWrapper><V8Standard16MPWorkspace openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
-              <Route path="/extractor" element={<V8PageWrapper><V8JsonExtractorPage openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
-              <Route path="/v8-debranding-extractor" element={<V8PageWrapper><V8JsonDeBrendingExtractorPage openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
-              <Route path="/prompt-engine" element={<V8PageWrapper><V8PromptEngine openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+              
+              {/* 🔥 ISPRAVLJENE RUTE: SVAKA GAĐA SVOJ FAJL 🔥 */}
+              <Route path="/extractor" element={
+                <V8PageWrapper>
+                  <V8JsonDeExtractorPage openCheckout={handleOpenCheckout} />
+                </V8PageWrapper>
+              } />
+              
+              <Route path="/v8-debranding-extractor" element={
+                <V8PageWrapper>
+                  <V8JsonDeBrendingExtractorPage openCheckout={handleOpenCheckout} />
+                </V8PageWrapper>
+              } />
+              
+              {/* 🔥 OVDE JE ZAMENJENO IME U V8GridSystem 🔥 */}
+              <Route path="/grid-system" element={<V8PageWrapper><V8GridSystem openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+              
               <Route path="/seedance" element={<V8PageWrapper><CinematikPromptEngine initialEngine="SEEDANCE 2.0" openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               <Route path="/kling" element={<V8PageWrapper><CinematikPromptEngine initialEngine="KLING 3.0" openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               <Route path="/enxance" element={<V8PageWrapper><V8Enhancer10x openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
