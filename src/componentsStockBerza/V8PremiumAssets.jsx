@@ -1,24 +1,68 @@
 // POČETAK FAJLA: V8PremiumAssets.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ImageIcon, Video, Download, Zap, Pencil } from 'lucide-react';
+import { db, auth } from '../firebase';
+import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 
-const V8PremiumAssets = ({ paketi, isAdmin, getGlobalCena, getAspectClass, prijavaIKupovina, startEditPaket, obrisiPaket, setFullScreenImageUrl }) => {
-  if (paketi.length === 0) return <div className="text-zinc-500 font-bold uppercase w-full text-center py-10">No premium assets found.</div>;
+const V8PremiumAssets = ({ paketi = [], isAdmin, getGlobalCena, getAspectClass, prijavaIKupovina, startEditPaket, obrisiPaket, setFullScreenImageUrl }) => {
+  const [userEmail, setUserEmail] = useState(null);
+  const [kupljeniPaketi, setKupljeniPaketi] = useState([]);
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (user) => {
+      setUserEmail(user ? user.email.toLowerCase() : null);
+    });
+    return () => unsub();
+  }, []);
+
+  // Slušamo v8_payoneer_requests
+  useEffect(() => {
+    if (!userEmail) {
+      setKupljeniPaketi([]);
+      return;
+    }
+
+    const q = query(collection(db, "v8_payoneer_requests"), where("clientEmail", "==", userEmail));
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const kupljeni = snapshot.docs
+        .map(doc => doc.data())
+        .filter(data => data.status === "paid" || data.status === "PAID")
+        .map(data => data.productName ? data.productName.toLowerCase().trim() : "");
+        
+      setKupljeniPaketi(kupljeni);
+    });
+
+    return () => unsubscribe();
+  }, [userEmail]);
+
+  if (!paketi || paketi.length === 0) return <div className="text-zinc-500 font-bold uppercase w-full text-center py-10">No premium assets found.</div>;
 
   return (
     <>
-      {paketi.map(paket => (
+      {paketi.map(paket => {
+        const naziv = paket.nazivEn ? paket.nazivEn.toLowerCase().trim() : "";
+        const volume = paket.volume ? paket.volume.toLowerCase().trim() : "";
+        const tacanNaziv = volume ? `${naziv} - ${volume}` : naziv;
+        
+        // Opuštenija provera (ako baza sadrži deo imena, prolazi)
+        const jeKupljen = kupljeniPaketi.some(k => 
+           k === tacanNaziv || 
+           k.includes(tacanNaziv) || 
+           k === naziv || 
+           k === "full access"
+        );
+
+        return (
         <div key={paket.id} className="w-full md:w-[calc(50%-1.5rem)] group transition-all duration-500 hover:scale-[1.02] shadow-[0_0_30px_rgba(255,140,0,0.15)] flex flex-col v8-premium-card">
           <div className="v8-card-content p-5 md:p-6 flex flex-col h-full">
-            
-            <div className={`${getAspectClass(paket.format)} relative rounded-2xl overflow-hidden mb-4 bg-black border border-white/5 shadow-inner shrink-0`}>
+            <div className={`${getAspectClass(paket.format)} relative rounded-2xl overflow-hidden mb-4 bg-black border border-white/5 shadow-inner shrink-0 cursor-pointer`} onClick={() => setFullScreenImageUrl(paket.previewUrl)}>
               {paket.volume && (<div className="absolute top-0 left-0 px-3 py-1.5 rounded-br-xl rounded-tl-2xl font-black text-[10px] uppercase tracking-widest z-20 shadow-lg border-b border-r bg-[#FF8C00] text-black border-[#FF8C00]/50">{paket.volume}</div>)}
-              
               <div className="absolute top-2 right-2 flex flex-col gap-1.5 items-end z-20">
                   {paket.format && (<div className="bg-black/80 backdrop-blur-md px-3 py-1 rounded-lg font-black text-[9px] uppercase tracking-wider shadow-lg border border-[#FF8C00]/50 text-[#FF8C00]">{paket.format.split('(')[0].trim()}</div>)}
                   {(paket.kategorijaEn || paket.kategorija) && (<div className="bg-black/80 backdrop-blur-md px-3 py-1 rounded-lg font-black text-[9px] uppercase tracking-wider shadow-lg border border-blue-400/50 text-blue-400">{paket.kategorijaEn || paket.kategorija}</div>)}
               </div>
-
               <img loading="lazy" src={paket.previewUrl} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-500" alt={paket.nazivEn} />
             </div>
             
@@ -26,7 +70,7 @@ const V8PremiumAssets = ({ paketi, isAdmin, getGlobalCena, getAspectClass, prija
                 <div className={`grid gap-3 mb-4 shrink-0 ${paket.primeri.length > 4 ? 'grid-cols-3' : 'grid-cols-4'}`}>
                     {paket.primeri.map((imgUrl, idx) => (
                         <div key={idx} className="aspect-square rounded-xl overflow-hidden border border-white/10 bg-zinc-900 shadow-xl relative cursor-pointer" onClick={() => setFullScreenImageUrl(imgUrl)}>
-                            <img loading="lazy" src={imgUrl} className="w-full h-full object-cover opacity-70 hover:opacity-100 transition-all duration-300" alt="V8 Preview" />
+                            <img loading="lazy" src={imgUrl} className="w-full h-full object-cover opacity-70 hover:opacity-100 transition-all duration-300" alt="Preview" />
                         </div>
                     ))}
                 </div>
@@ -43,10 +87,12 @@ const V8PremiumAssets = ({ paketi, isAdmin, getGlobalCena, getAspectClass, prija
             <div className="mt-auto shrink-0 bg-[#050505] p-4 -mx-2 -mb-2 rounded-xl border border-white/5">
               <div className="flex items-center justify-between">
                 <span className="text-2xl font-black text-white drop-shadow-md">${getGlobalCena(paket.cena)}</span>
-                {isAdmin ? (
-                  <a href={paket.zipLink} target="_blank" rel="noopener noreferrer" className="bg-green-600 hover:bg-green-500 text-white px-5 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest flex items-center gap-2 shadow-lg">DOWNLOAD <Download className="w-4 h-4" /></a>
+                {isAdmin || jeKupljen ? (
+                  <a href={paket.zipLink} target="_blank" rel="noopener noreferrer" className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest flex items-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all">DOWNLOAD <Download className="w-4 h-4" /></a>
                 ) : (
-                    <button onClick={() => prijavaIKupovina(paket)} className="hover:scale-105 text-white px-5 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest flex items-center gap-2 transition-all shadow-lg bg-gradient-to-r from-orange-600 to-amber-500 shadow-[0_0_15px_rgba(234,88,12,0.4)]">GET LICENSE <Zap className="w-4 h-4" /></button>
+                    <button onClick={() => prijavaIKupovina(paket)} className="hover:scale-105 text-white px-5 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest flex items-center gap-2 transition-all shadow-lg bg-gradient-to-r from-orange-600 to-amber-500 shadow-[0_0_15px_rgba(234,88,12,0.4)]">
+                      GET LICENSE <Zap className="w-4 h-4" />
+                    </button>
                 )}
               </div>
             </div>
@@ -59,10 +105,10 @@ const V8PremiumAssets = ({ paketi, isAdmin, getGlobalCena, getAspectClass, prija
             )}
           </div>
         </div>
-      ))}
+        );
+      })}
     </>
   );
 };
-
 export default V8PremiumAssets;
 // KRAJ FAJLA: V8PremiumAssets.jsx
