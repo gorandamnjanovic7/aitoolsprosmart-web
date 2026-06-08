@@ -1,0 +1,315 @@
+V8 DE-BRANDING IMAGE DNA ENGINE
+PROFESSIONAL TECHNICAL MANIFEST V2.0
+============================================================
+
+This document describes the technical structure, workflow, and commercial value of the provided Python script.
+
+The script analyzes a reference image and extracts a clean, de-branded cinematic JSON blueprint. Its purpose is to help users recreate the visual style of a branded or logo-heavy image while explicitly removing brand identifiers, logos, text, markers, and commercial branding from the generated prompt structure.
+
+------------------------------------------------------------
+💎 1. V8 De-Branding Visual DNA Extraction
+------------------------------------------------------------
+
+The script takes one image as input and returns a strict JSON description of the image.
+
+The key difference from a normal image analyzer is that this engine focuses on de-branding. It identifies the main object and describes it as a clean, minimalist version stripped of logos, brand names, markers, text, visible trademarks, and commercial branding elements while preserving the object’s visual structure, materials, lighting, composition, and premium cinematic identity.
+
+💎 Technical Insight:
+The script converts the input image into Base64, sends it with a specialized de-branding prompt to a vision model, receives the response, removes markdown code fences if present, and returns clean JSON output for a Node.js server or another backend workflow.
+
+------------------------------------------------------------
+💎 2. Clean Minimalist Object Reconstruction
+------------------------------------------------------------
+
+The core instruction tells the model to identify the main object and describe it as a clean, minimalist version.
+
+This is useful for watches, luxury items, fashion products, product packaging, cars, electronics, jewelry, accessories, premium objects, and branded commercial visuals.
+
+💎 Commercial Value:
+Many AI marketplaces, contributor platforms, and creative workflows need unbranded outputs. This engine helps transform a visual reference into brand-safe creative data while keeping the premium look.
+
+------------------------------------------------------------
+💎 3. Explicit No-Brand / No-Logo / No-Text Lock
+------------------------------------------------------------
+
+The script forces the JSON subject field to include this direction:
+
+clean, minimalist design, stripped of all brand logos, markers, and text
+
+💎 Why this matters:
+A weak prompt might accidentally recreate visible logos or trademark-like markings. This script places the de-branding instruction directly into the subject description, making the final JSON safer for clean AI image generation.
+
+------------------------------------------------------------
+💎 4. Base64 Image Encoding
+------------------------------------------------------------
+
+The script reads the local image file and converts it into Base64 format.
+
+💎 Technical Insight:
+The function encode_image(image_path) opens the image in binary mode and returns a Base64 string. This allows the image to be embedded directly into the OpenAI API request as a data URL.
+
+💎 Practical Benefit:
+No external file hosting is required. The local image can be sent directly to the API request.
+
+------------------------------------------------------------
+💎 5. OpenAI Chat Completions API Request
+------------------------------------------------------------
+
+The script sends the image and prompt to model gpt-4o using a direct HTTPS request with the requests library.
+
+💎 Technical Insight:
+Instead of using the OpenAI Python SDK, this version manually builds the headers and JSON payload, then calls the OpenAI API endpoint through requests.post. This gives the script a backend-friendly structure for Node.js integrations, server routes, and custom hosting flows.
+
+------------------------------------------------------------
+💎 6. Flexible API Key Loading
+------------------------------------------------------------
+
+The script checks two environment variables:
+
+💎 VISION_API_KEY
+💎 OPENAI_API_KEY
+
+If VISION_API_KEY exists, it uses that first. If not, it falls back to OPENAI_API_KEY.
+
+💎 Commercial Value:
+This makes the engine easier to integrate into a real backend or paid tool without hardcoding sensitive credentials.
+
+------------------------------------------------------------
+💎 7. Missing API Key Protection
+------------------------------------------------------------
+
+If no API key exists, the script returns a JSON error:
+
+{"error": "API Key is missing from Server Environment Variables."}
+
+💎 Technical Insight:
+Instead of crashing silently, the script returns a structured error response. This is useful for Node.js servers, frontend apps, and SaaS workflows because the calling system can detect the error and display a proper message.
+
+------------------------------------------------------------
+💎 8. UTF-8 Output Forced for Node.js Communication
+------------------------------------------------------------
+
+The script forces stdout to use UTF-8 encoding.
+
+💎 Technical Insight:
+sys.stdout is wrapped with io.TextIOWrapper using UTF-8. This helps prevent encoding issues when the Python script is called from a Node.js backend, especially when the output contains Serbian text, special characters, JSON strings, or emoji-like symbols.
+
+------------------------------------------------------------
+💎 9. Full V8 Master Prompt Preservation
+------------------------------------------------------------
+
+The script stores the full master prompt in V8_MASTER_PROMPT.
+
+💎 Why this matters:
+For commercial tools, prompt consistency matters. Keeping a stable master prompt gives the engine a repeatable creative identity and more predictable output.
+
+------------------------------------------------------------
+💎 10. Master AI Prompt Engineer and Cinematographer Role
+------------------------------------------------------------
+
+The prompt tells the model to act as a Master AI Prompt Engineer and Cinematographer.
+
+💎 Purpose:
+This pushes the output beyond basic image captioning. The model is instructed to analyze the image through cinematic language, material detail, lighting logic, and prompt-engineering structure.
+
+------------------------------------------------------------
+💎 11. Microscopic Visual Extraction
+------------------------------------------------------------
+
+The prompt asks for microscopic visual extraction.
+
+This means the model should analyze subject detail, materials, surface texture, lighting direction, background structure, camera angle, composition, atmosphere, and cinematic depth.
+
+💎 Commercial Value:
+This helps users recreate the premium look of an image while changing or removing unsafe brand elements.
+
+------------------------------------------------------------
+💎 12. Strict JSON Output
+------------------------------------------------------------
+
+The script instructs the model to output valid JSON only.
+
+💎 Why JSON matters:
+JSON can be reused programmatically in tools, frontends, databases, prompt generators, and automation pipelines.
+
+Structured JSON can be passed into image prompt generators, product ad prompt builders, Flux prompt converters, Midjourney prompt converters, Sora / Kling / Seedance video prompt systems, SaaS dashboards, and automated prompt-pack builders.
+
+------------------------------------------------------------
+💎 13. Subject Field
+------------------------------------------------------------
+
+The JSON must include the key: subject
+
+This field describes the main object or subject in detail, including pose, action, exact materials, carbon fiber, brushed metal, leather, product geometry, surface detail, and clean minimalist de-branded instruction.
+
+💎 De-Branding Value:
+This field is where the engine explicitly states that the object is stripped of logos, markers, text, and branding while preserving structural and material integrity.
+
+------------------------------------------------------------
+💎 14. Environment Field
+------------------------------------------------------------
+
+The JSON must include the key: environment
+
+This field describes the background, foreground, setting, architecture, surrounding nature, or commercial studio context.
+
+💎 Why it matters:
+A premium image is not only the object. The surrounding environment creates the mood, status, and commercial value of the final output.
+
+------------------------------------------------------------
+💎 15. Lighting Field
+------------------------------------------------------------
+
+The JSON must include the key: lighting
+
+This field describes primary light, secondary light, shadow direction, reflections, god rays, neon glow, rim light, softbox mood, and premium highlight behavior.
+
+💎 Commercial Value:
+Lighting is one of the strongest signals of premium production quality. This field helps recreate a high-end studio or cinematic lighting setup without copying the brand.
+
+------------------------------------------------------------
+💎 16. Camera Equipment Field
+------------------------------------------------------------
+
+The JSON must include the key: camera_equipment
+
+This field recommends cinematic gear that matches the image, such as ARRI Alexa 65, Leica Summilux, IMAX 70mm, specific focal length, and depth_of_field_recurse.
+
+💎 Why it matters:
+Camera language improves prompt quality by communicating lens compression, bokeh, depth, sensor feel, and cinematic realism.
+
+------------------------------------------------------------
+💎 17. Color Grading Field
+------------------------------------------------------------
+
+The JSON must include the key: color_grading
+
+This field describes color palette, contrast levels, cinematic grade, commercial tone, luxury mood, warm/cool balance, and highlight/shadow treatment.
+
+------------------------------------------------------------
+💎 18. Atmosphere and Composition Field
+------------------------------------------------------------
+
+The JSON must include the key: atmosphere_and_composition
+
+This field captures camera angle, framing, depth, weather, smoke, fog, motion blur, foreground/background relationship, and cinematic spatial design.
+
+------------------------------------------------------------
+💎 19. Aspect Ratio Field
+------------------------------------------------------------
+
+The JSON must include the key: aspect_ratio
+
+The current prompt sets it to DEFAULT. Future versions can detect and output real formats such as 16:9, 21:9, 9:16, 1:1, or 4:5.
+
+------------------------------------------------------------
+💎 20. Raw JSON Cleanup
+------------------------------------------------------------
+
+The script removes markdown code fences from the model output.
+
+It removes ```json and ``` using bt = chr(96) * 3.
+
+💎 Why this matters:
+AI models sometimes wrap JSON inside markdown formatting. This cleanup makes the output easier for Node.js, JSON parsers, and frontend systems to handle.
+
+------------------------------------------------------------
+💎 21. Direct HTTP API URL Handling
+------------------------------------------------------------
+
+The script builds the API URL as "https://" + "api.openai.com/v1/chat/completions".
+
+💎 Practical Benefit:
+This is a copy/paste protection trick that can prevent some editors from auto-formatting the URL.
+
+------------------------------------------------------------
+💎 22. Node.js Server Compatibility
+------------------------------------------------------------
+
+The script is designed to be called from a Node.js server.
+
+Evidence includes forced UTF-8 stdout, strict JSON output, argparse imagePath input, stdout print result, JSON error responses, and no interactive prompts.
+
+💎 Commercial Value:
+This makes the script suitable as a Python micro-engine behind a JavaScript/React frontend or Railway-hosted backend.
+
+------------------------------------------------------------
+💎 23. Command-Line Argument Support
+------------------------------------------------------------
+
+The script uses argparse and requires --imagePath.
+
+Example:
+
+python v8_debranding_engine.py --imagePath image.jpg
+
+💎 Technical Insight:
+This is cleaner than relying on positional arguments because it is explicit and easier to call from backend systems.
+
+------------------------------------------------------------
+💎 24. Error Handling
+------------------------------------------------------------
+
+The script wraps the API call and JSON extraction in a try/except block.
+
+If something fails, it returns {"error": "..."}.
+
+💎 Why this matters:
+Structured errors are easier for frontends and backend services to display, log, or handle automatically.
+
+------------------------------------------------------------
+💎 25. Backend-Friendly Output
+------------------------------------------------------------
+
+The script prints the final result to stdout.
+
+💎 Technical Insight:
+A Node.js server can spawn the Python process, pass an image path, capture stdout, and return the extracted JSON to the frontend.
+
+------------------------------------------------------------
+💎 26. Best Use Cases
+------------------------------------------------------------
+
+This script is useful for de-branding prompt workflows, clean product recreation, luxury product prompt generation, AI stock image workflows, contributor-safe visual planning, no-logo/no-text/no-brand prompt generation, product advertising concepts, watch and jewelry prompts, automotive prompts, fashion and accessory prompts, agency moodboard translation, SaaS visual analysis tools, Whop / Payhip / marketplace AI tools.
+
+------------------------------------------------------------
+💎 27. Current Limitations
+------------------------------------------------------------
+
+The current version is powerful, but focused.
+
+Current limitations:
+
+💎 processes one image at a time
+💎 does not validate JSON after output
+💎 does not retry failed API calls
+💎 does not detect actual image MIME type
+💎 always sends the image as data:image/jpeg
+💎 does not save output to file automatically
+💎 does not create TXT/CSV reports
+💎 does not batch process folders
+💎 max_tokens is set to 1000, which may be short for very complex images
+💎 no temperature is explicitly set
+💎 no timeout is defined for the HTTP request
+
+------------------------------------------------------------
+💎 28. Recommended PRO Upgrades
+------------------------------------------------------------
+
+For a stronger commercial V2/V3 product, recommended upgrades include real MIME detection, JSON validation before returning output, automatic retry system, request timeout, temperature control, higher max_tokens, batch folder mode, saved JSON files, TXT report, CSV index, ZIP export, product mode, watch mode, automotive mode, fashion mode, no-logo/no-brand/no-text lock presets, frontend-ready response schema, direct prompt generator integration, and Flux / Midjourney / Sora / Kling / Seedance converters.
+
+------------------------------------------------------------
+💎 FINAL TECHNICAL POSITIONING
+------------------------------------------------------------
+
+This script is a V8 De-Branding Image DNA Engine.
+
+It converts a branded or reference image into clean, structured, de-branded cinematic JSON data.
+
+It keeps the visual value of the source image — materials, composition, lighting, camera language, environment, atmosphere, and color grade — while explicitly removing logos, brand markers, visible text, and branding from the creative direction.
+
+This makes it a strong foundation for commercial AI image tools, contributor-safe prompt generation, stock image workflows, product advertising, and premium SaaS visual-intelligence systems.
+
+============================================================
+END OF TECHNICAL MANIFEST V2.0
+============================================================

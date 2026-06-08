@@ -1,15 +1,16 @@
 // POČETAK FAJLA: EnhancerPromo.jsx
 import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom'; 
 import { Link } from 'react-router-dom';
-import { Zap, PlayCircle, Timer, DownloadCloud, X, CheckCircle } from 'lucide-react';
-import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
-import { doc, getDoc, onSnapshot, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { Zap, PlayCircle, Timer, CheckCircle } from 'lucide-react';
+import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from './firebase';
-import { v8Toast } from './v8Utils';
 import V8Reveal from './V8Reveal';
 import V8CinematicText from './v8-ui-components/V8CinematicText';
 import { motion, AnimatePresence } from 'framer-motion';
+
+// 🔥 IMPORT NOVOG, PROFESIONALNOG MODALA ZA KUPCE 🔥
+import V8SecureCheckout from './V8SecureCheckout';
 
 // POČETAK FUNKCIJE: RippleButton
 const RippleButton = ({ children, onClick, disabled, className }) => {
@@ -61,57 +62,14 @@ const CountdownTimer = () => {
 };
 // KRAJ FUNKCIJE: CountdownTimer
 
-// 🔥 NEUNIŠTIVI MODAL BEZ ANIMACIJE KOJA GA OBARA 🔥
-const V8CheckoutModal = ({ isOpen, onClose }) => {
-  useEffect(() => {
-    if (isOpen) document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
-  }, [isOpen]);
-
-  if (!isOpen) return null;
-
-  return createPortal(
-    <div className="fixed inset-0 z-[9999999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
-      <div className="bg-[#0a0a0a] border border-orange-500/40 rounded-[2.5rem] max-w-md w-full relative text-zinc-100 font-sans shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden">
-        <button onClick={onClose} className="absolute top-5 right-5 bg-white/5 p-2 rounded-full text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10 transition-all z-10"><X size={20} strokeWidth={3} /></button>
-        
-        <div className="p-10 flex flex-col items-center">
-          <div className="w-16 h-16 rounded-full bg-orange-600/10 flex items-center justify-center mb-4 border border-orange-500/30 shadow-[0_0_20px_rgba(234,88,12,0.2)]">
-             <DownloadCloud className="w-8 h-8 text-orange-500" />
-          </div>
-          
-          <h3 className="text-[18px] font-black uppercase tracking-widest mb-2 text-white text-center">Digital Asset Checkout</h3>
-          <p className="text-[10px] text-orange-400 font-black uppercase tracking-widest mb-8 text-center">10X ENHANCER LIFETIME</p>
-          
-          <div className="w-full bg-[#050505] border border-white/10 rounded-2xl p-6 space-y-4 text-[13px] font-mono shadow-inner mb-8">
-            <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Provider:</span><span className="font-bold text-white text-right">V8 Vault</span></div>
-            <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Support:</span><span className="font-bold text-white text-[11px]">aitoolsprosmart@gmail.com</span></div>
-            <div className="flex justify-between pt-2 items-center"><span className="text-zinc-500 uppercase">Total (One-Time):</span><span className="font-black text-white text-[22px] drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">$199.99</span></div>
-          </div>
-          
-          <div className="w-full bg-[#050505] border border-orange-500/30 rounded-2xl p-6 text-center shadow-[0_0_20px_rgba(234,88,12,0.15)] relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-            <p className="text-[11px] md:text-[12px] text-zinc-300 font-black uppercase tracking-widest mb-4">Please contact support to complete your one-time purchase:</p>
-            <a href="mailto:aitoolsprosmart@gmail.com" className="flex items-center justify-center gap-2 w-full bg-white text-black hover:bg-orange-500 hover:text-white py-3.5 rounded-xl font-black text-[12px] uppercase tracking-widest transition-all cursor-pointer shadow-lg">
-                Request Checkout Link
-            </a>
-            <span className="block mt-4 text-[9px] text-zinc-500 uppercase font-bold tracking-widest">System unlocks your download automatically after checkout! 🚀</span>
-          </div>
-        </div>
-      </div>
-    </div>,
-    document.body
-  );
-};
-// KRAJ FUNKCIJE: V8CheckoutModal
-
 
 // POČETAK FUNKCIJE: EnhancerPromo
 const EnhancerPromo = () => {
   const [hasEnhancerAccess, setHasEnhancerAccess] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
-  const [lemonLink, setLemonLink] = useState("");
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  
+  // 🔥 NOVI STATE ZA MODAL 🔥
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -132,51 +90,22 @@ const EnhancerPromo = () => {
       } else { setHasEnhancerAccess(false); }
     });
 
-    const unsubLemon = onSnapshot(doc(db, "v8_settings", "lemon"), (docSnap) => {
-      if (docSnap.exists()) {
-          setLemonLink(docSnap.data().checkoutUrl || "");
-      }
-    });
-
-    return () => { unsubscribe(); unsubLemon(); };
+    return () => unsubscribe(); 
   }, []);
 
   // 🔥 V8 MEMORY TOKEN EFEKAT 🔥
-  // Ako se stranica osveži, proveravamo da li je klijent ostavio "zastavicu" za kupovinu!
   useEffect(() => {
     if (currentUser && localStorage.getItem('v8_pending_enhancer_checkout') === 'true') {
-        localStorage.removeItem('v8_pending_enhancer_checkout'); // Odmah brišemo da ne iskače zauvek
-        snimiKupcaUBazu(currentUser);
-        if (lemonLink && lemonLink.includes("http")) {
-            window.location.href = lemonLink;
-        } else {
-            setShowPaymentModal(true); // OTVARAMO MU MODAL AUTOMATSKI!
-        }
+        localStorage.removeItem('v8_pending_enhancer_checkout'); 
+        setIsCheckoutOpen(true); // Odmah otvara Secure modal
     }
-  }, [currentUser, lemonLink]);
-
-  // POČETAK FUNKCIJE: snimiKupcaUBazu
-  const snimiKupcaUBazu = async (user) => {
-      try {
-          await addDoc(collection(db, "v8_kupci"), {
-              ime: user.displayName || "Client", email: user.email, uid: user.uid,
-              zeliPaket: "10X ENHANCER LIFETIME", cenaPaketa: 199.99, vreme: serverTimestamp(), isPaid: false
-          });
-      } catch (error) { console.error("Database error:", error); }
-  };
-  // KRAJ FUNKCIJE: snimiKupcaUBazu
+  }, [currentUser]);
 
   // POČETAK FUNKCIJE: handlePaymentV8
   const handlePaymentV8 = async () => {
     try {
       if (currentUser) {
-          // Ako je VEĆ ulogovan, sve ide glatko i odmah iskače
-          await snimiKupcaUBazu(currentUser);
-          if (lemonLink && lemonLink.includes("http")) {
-              window.location.href = lemonLink; 
-          } else {
-              setShowPaymentModal(true); 
-          }
+          setIsCheckoutOpen(true); 
       } else {
           // Ako NIJE ulogovan, ostavljamo V8 Zastavicu pre logina!
           localStorage.setItem('v8_pending_enhancer_checkout', 'true');
@@ -184,7 +113,6 @@ const EnhancerPromo = () => {
           const v8Provider = new GoogleAuthProvider();
           v8Provider.setCustomParameters({ prompt: 'select_account' });
           await signInWithPopup(auth, v8Provider);
-          // Ostatak posla preuzima onaj novi useEffect gore!
       }
     } catch (error) { 
       // Ako klijent zatvori prozor za login, brišemo zastavicu
@@ -196,6 +124,19 @@ const EnhancerPromo = () => {
 
   return (
     <div id="enhancer" className="relative mb-24 flex flex-col items-center justify-center text-center py-24 scroll-mt-32 overflow-hidden rounded-[3rem] mx-4 lg:mx-0 border border-orange-500/20 shadow-[0_0_40px_rgba(234,88,12,0.15)] group">
+      
+      {/* V8 SECURE CHECKOUT MODAL */}
+      <AnimatePresence>
+        {isCheckoutOpen && (
+          <V8SecureCheckout 
+            isOpen={isCheckoutOpen} 
+            onClose={() => setIsCheckoutOpen(false)} 
+            productName="10X ENHANCER LIFETIME" 
+            price={199.99} 
+          />
+        )}
+      </AnimatePresence>
+
       <div className="absolute inset-0 z-0">
         <img src="https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=1600&q=80" alt="10x Background" className="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-1000" />
         <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-orange-950/40 to-[#050505]"></div>
@@ -231,9 +172,6 @@ const EnhancerPromo = () => {
           )}
         </div>
       </V8Reveal>
-
-      {/* V8 DIGITAL CHECKOUT MODAL (POZIV NEZAVISNE FUNKCIJE) */}
-      <V8CheckoutModal isOpen={showPaymentModal} onClose={() => setShowPaymentModal(false)} />
 
     </div>
   );

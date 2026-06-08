@@ -4,31 +4,45 @@ import { motion } from 'framer-motion';
 import { 
   ShieldAlert, Users, Zap, Image as ImageIcon, CheckCircle, Activity, 
   PlayCircle, Loader2, UploadCloud, Trash2, DollarSign, Calendar, 
-  Link as LinkIcon, Layers, Film, Sparkles, Flame, Crown, Rocket, 
+  Layers, Film, Sparkles, Flame, Crown, Rocket, 
   Star, Camera, Droplets, Hexagon, Globe 
 } from 'lucide-react';
 import { v8Toast } from './v8Utils';
 
 // 🔥 FIREBASE IMPORTS 🔥
-import { db } from './firebase';
+import { db, auth } from './firebase';
 import { collection, query, onSnapshot, orderBy, doc, serverTimestamp, getDoc, setDoc, addDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 
 // 🔧 IMPORT TOOLS
 import * as data from './data'; 
+import V8PayoneerDashboard from './V8PayoneerDashboard';
 
 // POČETAK FUNKCIJE: V8AdminDashboard
 const V8AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState('live_sales');
+  const [activeTab, setActiveTab] = useState('payoneer_blagajna');
   const [sales, setSales] = useState([]);
+  
+  // 🔥 SECURITY GUARD STATE 🔥
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
 
-  // --- LEMON SQUEEZY STATE (DODAT 10X ENHANCER I DEFAULT LINKOVI) ---
-  const [lemonLinks, setLemonLinks] = useState({ 
-    enhancer10x: 'https://store.lemonsqueezy.com/checkout/buy/',
-    optimizer: 'https://store.lemonsqueezy.com/checkout/buy/', 
-    seedance: 'https://store.lemonsqueezy.com/checkout/buy/', 
-    kling: 'https://store.lemonsqueezy.com/checkout/buy/' 
-  });
-  const [isSavingLemon, setIsSavingLemon] = useState(false);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const email = user.email.toLowerCase();
+        // Proveravamo da li je email adminov
+        if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
+          setIsAuthChecking(false); // Sve je ok, otključaj dashboard
+        } else {
+          window.location.href = "/"; // Ulogovan je, ali nije admin - šutiraj na početnu
+        }
+      } else {
+        window.location.href = "/"; // Nije uopšte ulogovan - šutiraj na početnu
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // --- SHOWROOM CMS STATE (UPLOAD) ---
   const [srTitle, setSrTitle] = useState('');
@@ -70,19 +84,20 @@ const V8AdminDashboard = () => {
     { value: 'yellow', label: 'Gold Amber', class: 'bg-yellow-400' }
   ];
 
-  const simulateLemonWebhook = async () => {
+  // (Simulacija koja je sad prebačena za testiranje ručnih unosa)
+  const simulateDirectPurchase = async () => {
     try {
       await addDoc(collection(db, "v8_kupci"), {
         ime: "V8 VIP Client",
         email: "boss@visionary.com",
-        zeliPaket: "10X ENHANCER LIFETIME",
+        zeliPaket: "V8 MASTERWORK",
         cenaPaketa: 199.99 * 117, 
         vreme: serverTimestamp(),
         isPaid: true
       });
-      if(typeof v8Toast !== 'undefined') v8Toast.success("INCOMING SIGNAL: Webhook Received!");
+      if(typeof v8Toast !== 'undefined') v8Toast.success("TEST SIGNAL: Purchase injected!");
     } catch (e) {
-      if(typeof v8Toast !== 'undefined') v8Toast.error("Radar error!");
+      if(typeof v8Toast !== 'undefined') v8Toast.error("Database injection failed!");
     }
   };
 
@@ -106,18 +121,6 @@ const V8AdminDashboard = () => {
         if (promoSnap.exists()) {
           setPromoVideo(promoSnap.data().videoUrl || "");
           setPromoImagesArray(promoSnap.data().images || []);
-        }
-
-        const lemonSnap = await getDoc(doc(db, "v8_settings", "lemon_checkout"));
-        if (lemonSnap.exists()) {
-          const fetchedData = lemonSnap.data();
-          // SPAJA PODATKE IZ BAZE SA DEFAULT LINKOVIMA AKO NEŠTO FALI
-          setLemonLinks(prev => ({
-            enhancer10x: fetchedData.enhancer10x || prev.enhancer10x,
-            optimizer: fetchedData.optimizer || prev.optimizer,
-            seedance: fetchedData.seedance || prev.seedance,
-            kling: fetchedData.kling || prev.kling
-          }));
         }
       } catch (err) {
         console.error("Database fetch error", err);
@@ -169,18 +172,6 @@ const V8AdminDashboard = () => {
       if(typeof v8Toast !== 'undefined') v8Toast.success("Ad Config Deployed!");
     } catch (e) {
       if(typeof v8Toast !== 'undefined') v8Toast.error("Database save error.");
-    }
-  };
-
-  const handleSaveLemon = async () => {
-    setIsSavingLemon(true);
-    try {
-      await setDoc(doc(db, "v8_settings", "lemon_checkout"), lemonLinks);
-      if(typeof v8Toast !== 'undefined') v8Toast.success("SVI LIMUN LINKOVI SU SAČUVANI! 🍋");
-    } catch (error) {
-      if(typeof v8Toast !== 'undefined') v8Toast.error("GREŠKA PRI ČUVANJU!");
-    } finally {
-      setIsSavingLemon(false);
     }
   };
 
@@ -269,6 +260,17 @@ const V8AdminDashboard = () => {
     return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   };
 
+  if (isAuthChecking) {
+    return (
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <ShieldAlert className="w-12 h-12 text-orange-500 animate-pulse" />
+          <h2 className="text-orange-500 font-black uppercase tracking-[0.3em] text-sm">Securing V8 Connection...</h2>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#050505] text-white flex pt-20">
       
@@ -283,13 +285,15 @@ const V8AdminDashboard = () => {
         </div>
 
         <div className="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
-          <button onClick={() => setActiveTab('live_sales')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === 'live_sales' ? 'bg-orange-600/10 text-orange-500 border border-orange-500/30' : 'text-zinc-500 hover:text-white hover:bg-white/5 border border-transparent'}`}>
-            <Activity className="w-4 h-4" /> Live Sales Radar
-            {sales.length > 0 && <span className="ml-auto bg-green-600 text-white text-[9px] px-2 py-0.5 rounded-full">{sales.length}</span>}
+          
+          {/* UBAČEN PAYONEER KAO PRVI, GLAVNI TAB */}
+          <button onClick={() => setActiveTab('payoneer_blagajna')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === 'payoneer_blagajna' ? 'bg-emerald-600/10 text-emerald-500 border border-emerald-500/30' : 'text-zinc-500 hover:text-white hover:bg-white/5 border border-transparent'}`}>
+            <DollarSign className="w-4 h-4" /> Payoneer Blagajna
           </button>
 
-          <button onClick={() => setActiveTab('lemon_blagajna')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === 'lemon_blagajna' ? 'bg-yellow-400/10 text-yellow-500 border border-yellow-500/30' : 'text-zinc-500 hover:text-white hover:bg-white/5 border border-transparent'}`}>
-            <span className="text-[14px]">🍋</span> Limun Blagajna
+          <button onClick={() => setActiveTab('live_sales')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === 'live_sales' ? 'bg-orange-600/10 text-orange-500 border border-orange-500/30' : 'text-zinc-500 hover:text-white hover:bg-white/5 border border-transparent'}`}>
+            <Activity className="w-4 h-4" /> Paid Clients History
+            {sales.length > 0 && <span className="ml-auto bg-green-600 text-white text-[9px] px-2 py-0.5 rounded-full">{sales.length}</span>}
           </button>
 
           <button onClick={() => setActiveTab('showroom_cms')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === 'showroom_cms' ? 'bg-blue-600/10 text-blue-500 border border-blue-500/30' : 'text-zinc-500 hover:text-white hover:bg-white/5 border border-transparent'}`}>
@@ -312,6 +316,13 @@ const V8AdminDashboard = () => {
 
       {/* MAIN CONTENT (RIGHT) */}
       <div className="ml-64 flex-1 p-10 overflow-y-auto">
+        
+        {/* --- TAB: PAYONEER BLAGAJNA --- */}
+        {activeTab === 'payoneer_blagajna' && (
+          <div className="animate-in fade-in duration-500">
+            <V8PayoneerDashboard />
+          </div>
+        )}
         
         {/* --- TAB: SHOWROOM CMS --- */}
         {activeTab === 'showroom_cms' && (
@@ -459,29 +470,6 @@ const V8AdminDashboard = () => {
           </div>
         )}
 
-        {/* --- TAB: LEMON BLAGAJNA --- */}
-        {activeTab === 'lemon_blagajna' && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl mx-auto bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-yellow-500/30 p-10 rounded-[2.5rem] shadow-[0_0_50px_rgba(234,179,8,0.1)] mb-8">
-            <div className="flex items-center gap-4 mb-8 border-b border-white/10 pb-6"><span className="text-5xl drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]">🍋</span><div><h2 className="text-3xl font-black uppercase tracking-widest text-white">Limun <span className="text-yellow-400">Blagajna</span></h2><p className="text-zinc-500 text-[11px] font-bold uppercase tracking-widest mt-1">Global Merchant of Record Integration</p></div></div>
-            <div className="flex flex-col gap-6">
-              
-              {/* 🔥 DODAT 10X ENHANCER U BLAGAJNU 🔥 */}
-              <div className="flex flex-col gap-2">
-                <label className="text-orange-500 text-[11px] uppercase tracking-[0.2em] font-black flex items-center gap-2"><LinkIcon className="w-4 h-4" /> 10X Enhancer</label>
-                <input type="text" value={lemonLinks.enhancer10x} onChange={(e) => setLemonLinks({...lemonLinks, enhancer10x: e.target.value})} className="w-full bg-black/50 border border-white/10 focus:border-orange-500 rounded-2xl p-5 text-[13px] text-white outline-none" />
-              </div>
-
-              <div className="flex flex-col gap-2"><label className="text-yellow-400 text-[11px] uppercase tracking-[0.2em] font-black flex items-center gap-2"><LinkIcon className="w-4 h-4" /> Optimizer V8</label><input type="text" value={lemonLinks.optimizer} onChange={(e) => setLemonLinks({...lemonLinks, optimizer: e.target.value})} className="w-full bg-black/50 border border-white/10 focus:border-yellow-400 rounded-2xl p-5 text-[13px] text-white outline-none" /></div>
-              <div className="flex flex-col gap-2"><label className="text-green-500 text-[11px] uppercase tracking-[0.2em] font-black flex items-center gap-2"><LinkIcon className="w-4 h-4" /> Seedance 2.0</label><input type="text" value={lemonLinks.seedance} onChange={(e) => setLemonLinks({...lemonLinks, seedance: e.target.value})} className="w-full bg-black/50 border border-white/10 focus:border-green-500 rounded-2xl p-5 text-[13px] text-white outline-none" /></div>
-              <div className="flex flex-col gap-2"><label className="text-red-500 text-[11px] uppercase tracking-[0.2em] font-black flex items-center gap-2"><LinkIcon className="w-4 h-4" /> Kling 3.0</label><input type="text" value={lemonLinks.kling} onChange={(e) => setLemonLinks({...lemonLinks, kling: e.target.value})} className="w-full bg-black/50 border border-white/10 focus:border-red-500 rounded-2xl p-5 text-[13px] text-white outline-none" /></div>
-              
-              <div className="border-t border-white/10 pt-8 flex justify-end">
-                <button onClick={handleSaveLemon} disabled={isSavingLemon} className="bg-yellow-400 hover:bg-yellow-300 text-black px-10 py-4 rounded-xl font-black text-[12px] uppercase tracking-[0.2em] flex items-center justify-center gap-2 cursor-pointer">{isSavingLemon ? 'ČUVANJE...' : 'SAČUVAJ LINKOVE'}</button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
         {/* --- OSTATAK KODA (PROMO, SALES, ALATI) --- */}
         {activeTab === 'promo_10x' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl mx-auto bg-[#0a0a0a] border border-orange-500/30 p-8 rounded-[2rem] shadow-[0_0_50px_rgba(234,88,12,0.1)] mb-8">
@@ -504,12 +492,12 @@ const V8AdminDashboard = () => {
             <div className="mb-8 flex items-center justify-between border-b border-orange-500/20 pb-6">
               <div>
                 <h1 className="text-3xl font-black uppercase tracking-widest text-white mb-2 flex items-center gap-3">
-                  <Activity className="w-8 h-8 text-orange-500" /> LIVE SALES RADAR
+                  <Activity className="w-8 h-8 text-orange-500" /> PAID CLIENTS HISTORY
                 </h1>
                 <p className="text-zinc-500 text-[12px] font-bold tracking-widest uppercase">Automated V8 transaction feed</p>
               </div>
-              <button onClick={simulateLemonWebhook} className="bg-green-600/20 text-green-500 border border-green-500/50 hover:bg-green-600 hover:text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
-                <Zap className="w-4 h-4" /> FIRE TEST WEBHOOK
+              <button onClick={simulateDirectPurchase} className="bg-green-600/20 text-green-500 border border-green-500/50 hover:bg-green-600 hover:text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
+                <Zap className="w-4 h-4" /> INJECT TEST PURCHASE
               </button>
             </div>
             <div className="bg-[#0a0a0a] border border-orange-500/20 rounded-[2rem] p-2">

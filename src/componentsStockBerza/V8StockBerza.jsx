@@ -1,8 +1,9 @@
 // POČETAK FAJLA: V8StockBerza.jsx
+// Ne zaboravi da ažuriraš svoj React source code link u glavnom repozitorijumu!
+
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { CLOUDINARY_UPLOAD_PRESET, CLOUDINARY_CLOUD_NAME } from '../data';
-// 🔥 DODAT RefreshCcw ZA ANIMACIJU U PLAVOM BOKSU
 import { Zap, X, Image as ImageIcon, Images, DownloadCloud, Crown, AlertCircle, Type, Layers, FolderArchive, FileText, Wallet, MonitorPlay, Link as LinkIcon, Diamond, RefreshCcw } from 'lucide-react';
 import { db, auth } from '../firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, serverTimestamp, query, orderBy, getDoc, setDoc } from 'firebase/firestore';
@@ -14,6 +15,8 @@ import V8StandardAssets from './V8StandardAssets';
 import V8PremiumAssets from './V8PremiumAssets';
 import V8MasterBundles from './V8MasterBundles';
 import V8SignatureBundles from './V8SignatureBundles';
+
+// 🔥 NOVI MODAL - UVEZEN DIREKTNO IZ ROOT FOLDERA 🔥
 import V8SecureCheckout from '../V8SecureCheckout';
 
 // POČETAK FUNKCIJE: FullScreenLightbox
@@ -40,6 +43,7 @@ const V8StockBerza = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentUser, setCurrentUser] = useState(null); 
   
+  // Održavamo state za checkout modal
   const [checkoutData, setCheckoutData] = useState({ isOpen: false, name: '', price: 0 });
   
   const [isUploading, setIsUploading] = useState(false);
@@ -48,7 +52,6 @@ const V8StockBerza = () => {
   const [editingPaketId, setEditingPaketId] = useState(null); 
   const [fullScreenImageUrl, setFullScreenImageUrl] = useState(null);
   
-  // 🔥 PO DEFAULTU STAVLJENO NA PREMIUM 🔥
   const [activeTab, setActiveTab] = useState('premium'); 
   
   const [otvorenOpis, setOtvorenOpis] = useState(null);
@@ -153,12 +156,12 @@ const V8StockBerza = () => {
         if (paket.paddleLink && paket.paddleLink.trim() !== "") {
             window.location.href = paket.paddleLink;
         } else {
+            // 🔥 AKTIVIRAMO CENTRALNI CHECKOUT MODAL 🔥
             setCheckoutData({ isOpen: true, name: fullName, price: finalPrice });
         }
     } else {
         try {
             localStorage.setItem('v8_pending_stock_paket_id', paket.id);
-            await signOut(auth);
             const v8Provider = new GoogleAuthProvider();
             v8Provider.setCustomParameters({ prompt: 'select_account', login_hint: '' });
             await signInWithPopup(auth, v8Provider);
@@ -361,6 +364,7 @@ const renderV8Manifest = (rezolucija) => {
       <AnimatePresence>
          {checkoutData.isOpen && (
            <V8SecureCheckout 
+             isOpen={checkoutData.isOpen}
              productName={checkoutData.name} 
              price={checkoutData.price} 
              onClose={() => setCheckoutData({ isOpen: false, name: '', price: 0 })} 

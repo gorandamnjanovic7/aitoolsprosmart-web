@@ -1,7 +1,8 @@
 // POČETAK FAJLA: V8Navbar.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay, FileText, Code } from 'lucide-react'; // Dodat Code
+// 🔥 UBAČENA LayoutGrid IKONICA ZA V8 GRID SYSTEM 🔥
+import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay, FileText, Code, ShieldCheck, LayoutGrid } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 // FIREBASE & TOOLS
@@ -131,27 +132,27 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   </Link>
 
-                  <Link to="/prompt-engine" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-yellow-500/30 mt-1">
+                  {/* 🔥 PROMENJENA RUTA U /grid-system I IKONICA U LayoutGrid 🔥 */}
+                  <Link to="/grid-system" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-yellow-500/30 mt-1">
                     <div className="bg-yellow-500/20 p-2 rounded-lg group-hover/item:bg-yellow-500/40 transition-colors shadow-[0_0_10px_rgba(234,179,8,0.3)]">
-                      <FileText className="w-5 h-5 text-yellow-400 transition-transform group-hover/item:scale-110" />
+                      <LayoutGrid className="w-5 h-5 text-yellow-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-yellow-400 transition-all drop-shadow-md">PROMPT ENGINE</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Grid Factory Text Gen</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-yellow-400 transition-all drop-shadow-md">V8 GRID SYSTEM</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Cinematic Matrix Gen</span>
                     </div>
                   </Link>
                   
-                  <Link to="/optimizer" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-orange-500/30 mt-1">
+                  <Link to="/v8-standard-16mp" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-orange-500/30 mt-1">
                     <div className="bg-orange-500/20 p-2 rounded-lg group-hover/item:bg-orange-500/40 transition-colors shadow-[0_0_10px_rgba(249,115,22,0.3)]">
                       <ImageIcon className="w-5 h-5 text-orange-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-orange-400 transition-all drop-shadow-md">V8 OPTIMIZER</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-orange-400 transition-all drop-shadow-md"> V8 16MP WORKSPACE</span>
                       <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Cinematic Image Processor</span>
                     </div>
                   </Link>
 
-                  {/* 🔥 NOVO: JSON EXTRACTOR DUGME (Tačno ispod V8 Optimizera) 🔥 */}
                   <Link to="/extractor" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-cyan-500/30 mt-1">
                     <div className="bg-cyan-500/20 p-2 rounded-lg group-hover/item:bg-cyan-500/40 transition-colors shadow-[0_0_10px_rgba(6,182,212,0.3)]">
                       <Code className="w-5 h-5 text-cyan-400 transition-transform group-hover/item:scale-110" />
@@ -160,6 +161,19 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-cyan-400 transition-all drop-shadow-md">JSON EXTRACTOR</span>
                       <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Visual DNA Reverse Engine</span>
                     </div>
+                  </Link>
+
+                  <Link to="/v8-debranding-extractor" className="flex items-center justify-between gap-2 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-emerald-500/30 mt-1">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-emerald-500/20 p-2 rounded-lg group-hover/item:bg-emerald-500/40 transition-colors shadow-[0_0_10px_rgba(16,185,129,0.3)]">
+                        <ShieldCheck className="w-5 h-5 text-emerald-400 transition-transform group-hover/item:scale-110" />
+                      </div>
+                      <div className="flex flex-col text-left">
+                        <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-emerald-400 transition-all drop-shadow-md">DE-BRANDING DNA</span>
+                        <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Clean White-Label Engine</span>
+                      </div>
+                    </div>
+                    <span className="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded font-black tracking-widest shadow-[0_0_8px_rgba(16,185,129,0.5)]">NEW</span>
                   </Link>
 
                   <Link to="/seedance" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-green-500/30 mt-1">

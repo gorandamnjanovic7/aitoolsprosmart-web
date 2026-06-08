@@ -19,7 +19,7 @@ const V8IdleProtocol = () => {
       timeoutRef.current = setTimeout(() => {
         setIsIdle(true);
         isIdleRef.current = true;
-      }, 40000);
+      }, 300000);
     };
 
     const handleActivity = () => {

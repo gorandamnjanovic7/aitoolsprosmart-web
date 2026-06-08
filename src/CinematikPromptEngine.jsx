@@ -1,69 +1,26 @@
 // POČETAK FAJLA: CinematikPromptEngine.jsx
+// Ne zaboravi da ažuriraš svoj React source code link u glavnom repozitorijumu!
+
 import React, { useState, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom'; 
-import { Upload, FileImage, Clock, Wand2, MonitorPlay, Smartphone, Settings2, X, Diamond, Lock, DownloadCloud, Zap, ShieldCheck, AlertTriangle, Copy, CheckCircle } from 'lucide-react';
+import { Upload, FileImage, Clock, Wand2, MonitorPlay, Smartphone, Video, Settings2, X, Diamond, Lock, DownloadCloud, Zap, ShieldCheck, AlertTriangle, Copy, CheckCircle, RefreshCcw, Crown, ArrowUpCircle, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { db, auth } from './firebase';
-import { doc, getDoc, collection, addDoc, serverTimestamp, setDoc, onSnapshot, updateDoc, increment } from 'firebase/firestore';
+import { doc, onSnapshot, increment, serverTimestamp, collection, query, where, setDoc } from 'firebase/firestore';
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
-// OBAVEZNO: Definisan BASE_BACKEND_URL
+import V8SecureCheckout from './V8SecureCheckout';
+
 const BASE_BACKEND_URL = window.location.hostname === 'localhost' 
   ? "http://localhost:8000" 
   : "https://aitoolsprosmart-becend-production.up.railway.app";
 
-const V8EngineCheckoutModal = ({ isOpen, onClose, currentEngine }) => {
-  // --- POČETAK FUNKCIJE: V8EngineCheckoutModal_useEffect ---
-  useEffect(() => {
-    if (isOpen) document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
-  }, [isOpen]);
-  // --- KRAJ FUNKCIJE: V8EngineCheckoutModal_useEffect ---
-
-  if (!isOpen) return null;
-
-  return createPortal(
-    <div className="fixed inset-0 z-[9999999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
-      <div className="bg-[#0a0a0a] border border-orange-500/40 rounded-[2.5rem] max-w-md w-full relative text-zinc-100 font-sans shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden m-auto">
-        <button onClick={onClose} className="absolute top-5 right-5 bg-white/5 p-2 rounded-full text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10 transition-all z-10"><X size={20} strokeWidth={3} /></button>
-        
-        <div className="p-10 flex flex-col items-center">
-          <div className="w-16 h-16 rounded-full bg-orange-600/10 flex items-center justify-center mb-4 border border-orange-500/30 shadow-[0_0_20px_rgba(234,88,12,0.2)]">
-             <DownloadCloud className="w-8 h-8 text-orange-500" />
-          </div>
-          
-          <h3 className="text-[18px] font-black uppercase tracking-widest mb-2 text-white text-center">Digital Asset Checkout</h3>
-          <p className="text-[10px] text-orange-400 font-black uppercase tracking-widest mb-8 text-center text-balance px-4">{`V8 PRO LICENSE: ${currentEngine}`}</p>
-          
-          <div className="w-full bg-[#050505] border border-white/10 rounded-2xl p-6 space-y-4 text-[13px] font-mono shadow-inner mb-8">
-            <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Provider:</span><span className="font-bold text-white text-right">V8 Vault</span></div>
-            <div className="flex justify-between border-b border-white/5 pb-3"><span className="text-zinc-500 uppercase">Support:</span><span className="font-bold text-white text-[11px]">aitoolsprosmart@gmail.com</span></div>
-            <div className="flex justify-between pt-2 items-center"><span className="text-zinc-500 uppercase">Total (One-Time):</span><span className="font-black text-orange-500 text-[22px] drop-shadow-[0_0_8px_rgba(234,88,12,0.5)]">$250.00</span></div>
-          </div>
-          
-          <div className="w-full bg-[#050505] border border-orange-500/30 rounded-2xl p-6 text-center shadow-[0_0_20px_rgba(234,88,12,0.15)] relative overflow-hidden group">
-            <p className="text-[11px] md:text-[12px] text-zinc-300 font-black uppercase tracking-widest mb-4">Please contact support to complete your one-time purchase:</p>
-            <a href="mailto:aitoolsprosmart@gmail.com" className="flex items-center justify-center gap-2 w-full bg-white/5 border border-white/10 hover:border-orange-500/50 hover:bg-orange-500/10 text-orange-400 py-3.5 rounded-xl font-black text-[12px] uppercase tracking-widest transition-all cursor-pointer shadow-inner">
-                📧 Request Checkout Link
-            </a>
-            <span className="block mt-4 text-[9px] text-zinc-500 uppercase font-bold tracking-widest">System unlocks your generator automatically after checkout! 🚀</span>
-          </div>
-        </div>
-      </div>
-    </div>,
-    document.body
-  );
-};
-
-const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
+const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout }) => {
   const [currentEngine, setCurrentEngine] = useState(initialEngine);
 
-  // --- POČETAK FUNKCIJE: setInitialEngine_useEffect ---
   useEffect(() => {
     setCurrentEngine(initialEngine);
   }, [initialEngine]);
-  // --- KRAJ FUNKCIJE: setInitialEngine_useEffect ---
 
   const [promptText, setPromptText] = useState('');
   const [duration, setDuration] = useState('5s');
@@ -76,133 +33,169 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
   const [imageDescription, setImageDescription] = useState(''); 
   
   const [isGenerating, setIsGenerating] = useState(false);
-  
-  // Memorija za dobijene promptove iz Pythona
   const [generatedPrompts, setGeneratedPrompts] = useState(null); 
   const [copiedIndex, setCopiedIndex] = useState(null);
 
   const inputRef = useRef(null);
+  const [otvorenOpis, setOtvorenOpis] = useState(null);
 
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [isVIP, setIsVIP] = useState(false);
   const [credits, setCredits] = useState(0);
+  const [amountPaid, setAmountPaid] = useState(0);
+  const [currentPlan, setCurrentPlan] = useState('NONE');
   const [isCheckingAccess, setIsCheckingAccess] = useState(true);
   const [cooldownTime, setCooldownTime] = useState(null);
+
+  const [payData, setPayData] = useState([]);
+  const [vipData, setVipData] = useState({});
+
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [checkoutProduct, setCheckoutProduct] = useState('');
+  const [checkoutPrice, setCheckoutPrice] = useState(0);
 
   const isImageModeActive = !!imageFile || imageDescription.length > 0;
   const isTextModeActive = promptText.length > 0;
 
-  // --- POČETAK FUNKCIJE: AuthListener_useEffect ---
+  const handleGoogleLogin = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error("Login prekinut:", error);
+    }
+  };
+
+  const pokreniKupovinu = async (paketName, fullPrice) => {
+    if (!currentUser) {
+      try {
+        const provider = new GoogleAuthProvider();
+        await signInWithPopup(auth, provider);
+        return; 
+      } catch (error) {
+        console.error("Login prekinut tokom pokušaja kupovine:", error);
+        return;
+      }
+    }
+
+    const razlika = fullPrice - amountPaid;
+    const finalPrice = razlika > 0 ? razlika : fullPrice;
+    const isUpgrade = amountPaid > 0;
+    const engineKeyword = currentEngine.split(" ")[0].toUpperCase();
+    const naslovCheckouta = isUpgrade ? `${engineKeyword} - ${paketName.toUpperCase()} (UPGRADE)` : `${engineKeyword} - ${paketName.toUpperCase()}`;
+
+    setCheckoutProduct(naslovCheckouta);
+    setCheckoutPrice(finalPrice);
+    setIsCheckoutOpen(true);
+  };
+
+  // 1. Skidamo podatke iz baza
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) { 
-        setCurrentUser(user); 
-        const email = user.email ? user.email.toLowerCase() : "";
-        
-        if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
-          setIsVIP(true);
-          setCredits(9999);
-          setIsCheckingAccess(false);
-        } else {
-          const docRef = doc(db, "vip_users", email);
-          
-          onSnapshot(docRef, async (docSnap) => {
-             if (docSnap.exists() && docSnap.data().unlockedApps && (docSnap.data().unlockedApps.includes('V8_PROMPT_ENGINE') || docSnap.data().unlockedApps.includes('FULL_ACCESS'))) { 
-                setIsVIP(true); 
-                
-                const data = docSnap.data();
-                let currentCredits = data.promptCredits !== undefined ? data.promptCredits : 1000;
-                let cooldownStart = data.engineCooldownStartedAt ? data.engineCooldownStartedAt.toMillis() : null;
-                
-                if (cooldownStart) {
-                   const now = Date.now();
-                   const passed24h = (now - cooldownStart) >= (24 * 60 * 60 * 1000); 
-                   
-                   if (passed24h) {
-                      await updateDoc(docRef, { 
-                          promptCredits: 1000, 
-                          engineCooldownStartedAt: null 
-                      });
-                      currentCredits = 1000;
-                      setCooldownTime(null);
-                   } else {
-                      setCooldownTime(cooldownStart + (24 * 60 * 60 * 1000));
-                   }
-                } else {
-                   setCooldownTime(null);
-                }
-                
-                setCredits(currentCredits); 
-             } else { 
-                setIsVIP(false); 
-                setCredits(0);
-             }
-             setIsCheckingAccess(false);
-          });
+    const unsub = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      if (!user) {
+        setPayData([]); setVipData({}); setIsCheckingAccess(false); setAmountPaid(0); setCurrentPlan('NONE');
+        return;
+      }
+      const email = user.email.toLowerCase();
+      
+      const qPay = query(collection(db, "v8_payoneer_requests"), where("clientEmail", "==", email));
+      const unsubPay = onSnapshot(qPay, snap => setPayData(snap.docs.map(d => d.data())));
+
+      const unsubVip = onSnapshot(doc(db, "vip_users", email), snap => setVipData(snap.exists() ? snap.data() : {}));
+
+      return () => { unsubPay(); unsubVip(); };
+    });
+    return () => unsub();
+  }, []);
+
+  // 2. Dinamički proveravamo pristup pri promeni taba
+  useEffect(() => {
+    if (!currentUser) { setIsVIP(false); setCredits(0); setAmountPaid(0); setCurrentPlan('NONE'); return; }
+    const email = currentUser.email.toLowerCase();
+    
+    if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
+      setIsVIP(true); setCredits(9999); setAmountPaid(550); setCurrentPlan('ENTERPRISE'); setIsCheckingAccess(false); return;
+    }
+
+    let hasAccess = false;
+    let calculatedDefaultCredits = 0;
+    let maxPaid = 0;
+    let highestPlan = 'NONE';
+    
+    const engineKeyword = currentEngine.split(" ")[0].toUpperCase(); 
+
+    payData.forEach(data => {
+      if (data.status === "paid" || data.status === "PAID") {
+        const productName = data.productName ? data.productName.toUpperCase() : "";
+        if (productName.includes(engineKeyword)) {
+          hasAccess = true;
+          if (productName.includes("ENTERPRISE")) { if (maxPaid < 550) { maxPaid = 550; highestPlan = 'ENTERPRISE'; } calculatedDefaultCredits = Math.max(calculatedDefaultCredits, 10000); } 
+          else if (productName.includes("PRO")) { if (maxPaid < 250) { maxPaid = 250; highestPlan = 'PRO'; } calculatedDefaultCredits = Math.max(calculatedDefaultCredits, 5000); }
+          else if (productName.includes("STARTER")) { if (maxPaid < 100) { maxPaid = 100; highestPlan = 'STARTER'; } calculatedDefaultCredits = Math.max(calculatedDefaultCredits, 1000); }
+          else { if (maxPaid < 100) { maxPaid = 100; highestPlan = 'STARTER'; } calculatedDefaultCredits = Math.max(calculatedDefaultCredits, 1000); }
         }
-      } else { 
-        setCurrentUser(null); 
-        setIsVIP(false); 
-        setCredits(0);
-        setIsCheckingAccess(false);
       }
     });
-    return () => unsubscribe();
-  }, []);
-  // --- KRAJ FUNKCIJE: AuthListener_useEffect ---
 
-  // --- POČETAK FUNKCIJE: PendingPurchaseCheck_useEffect ---
-  useEffect(() => {
-    const checkPendingPurchase = async () => {
-      const pendingEngine = localStorage.getItem('v8_pending_engine_checkout');
-      if (auth.currentUser && pendingEngine) {
-        localStorage.removeItem('v8_pending_engine_checkout'); 
-        try {
-            const imePaketa = `V8 PRO LICENSE: ${pendingEngine}`;
-            const cenaPaketa = "250.00"; 
-            await addDoc(collection(db, "v8_kupci"), {
-                ime: auth.currentUser.displayName || "Client", email: auth.currentUser.email, uid: auth.currentUser.uid,
-                zeliPaket: imePaketa, cenaPaketa: cenaPaketa, vreme: serverTimestamp(), isPaid: false
-            });
-            await setDoc(doc(db, "posetioci", auth.currentUser.uid), { 
-                ime: auth.currentUser.displayName || "Client", email: auth.currentUser.email, 
-                vremePrijave: serverTimestamp(), zainteresovanZa: imePaketa, identitet: "V8-Engine-Client" 
-            }, { merge: true });
-            setShowPaymentModal(true); 
-        } catch (err) {
-            console.error("V8 PENDING ERROR", err);
-        }
-      }
-    };
-    const timer = setTimeout(() => { checkPendingPurchase(); }, 1000);
-    return () => clearTimeout(timer);
-  }, []);
-  // --- KRAJ FUNKCIJE: PendingPurchaseCheck_useEffect ---
+    // Fallback legacy provera
+    if (vipData[`${engineKeyword} - PRO`] === true) { hasAccess = true; calculatedDefaultCredits = Math.max(calculatedDefaultCredits, 5000); if (maxPaid < 250) maxPaid = 250; highestPlan = 'PRO'; }
+    if (vipData[`${engineKeyword} - STARTER`] === true) { hasAccess = true; calculatedDefaultCredits = Math.max(calculatedDefaultCredits, 1000); if (maxPaid < 100) maxPaid = 100; highestPlan = 'STARTER'; }
+    if (vipData.unlockedApps && vipData.unlockedApps.includes('FULL_ACCESS')) { hasAccess = true; calculatedDefaultCredits = Math.max(calculatedDefaultCredits, 10000); if (maxPaid < 550) maxPaid = 550; highestPlan = 'ENTERPRISE'; }
 
-  // --- POČETAK FUNKCIJE: handleDrag ---
+    if (hasAccess) {
+       setIsVIP(true);
+       setAmountPaid(maxPaid);
+       setCurrentPlan(highestPlan);
+       
+       const creditField = `${engineKeyword}_credits`;
+       let currentCredits = vipData[creditField] !== undefined ? vipData[creditField] : calculatedDefaultCredits;
+       
+       const cdField = `${engineKeyword}_cooldown`;
+       let cooldownStart = vipData[cdField] ? vipData[cdField].toMillis() : null;
+
+       if (cooldownStart) {
+          const now = Date.now();
+          if ((now - cooldownStart) >= (24 * 60 * 60 * 1000)) {
+             setDoc(doc(db, "vip_users", email), {
+                 [creditField]: calculatedDefaultCredits,
+                 [cdField]: null
+             }, { merge: true });
+             currentCredits = calculatedDefaultCredits;
+             setCooldownTime(null);
+          } else {
+             setCooldownTime(cooldownStart + (24 * 60 * 60 * 1000));
+          }
+       } else {
+          setCooldownTime(null);
+       }
+       setCredits(currentCredits);
+    } else {
+       setIsVIP(false);
+       setCredits(0);
+       setAmountPaid(0);
+       setCurrentPlan('NONE');
+       setCooldownTime(null);
+    }
+    setIsCheckingAccess(false);
+  }, [currentEngine, payData, vipData, currentUser]);
+
   const handleDrag = (e) => {
     e.preventDefault(); e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
     else if (e.type === "dragleave") setDragActive(false);
   };
-  // --- KRAJ FUNKCIJE: handleDrag ---
 
-  // --- POČETAK FUNKCIJE: handleDrop ---
   const handleDrop = (e) => {
     e.preventDefault(); e.stopPropagation(); setDragActive(false);
     if (!isTextModeActive && e.dataTransfer.files && e.dataTransfer.files[0]) ucitajSliku(e.dataTransfer.files[0]);
   };
-  // --- KRAJ FUNKCIJE: handleDrop ---
 
-  // --- POČETAK FUNKCIJE: handleChange ---
   const handleChange = (e) => {
     e.preventDefault();
     if (!isTextModeActive && e.target.files && e.target.files[0]) ucitajSliku(e.target.files[0]);
   };
-  // --- KRAJ FUNKCIJE: handleChange ---
 
-  // --- POČETAK FUNKCIJE: ucitajSliku ---
   const ucitajSliku = (file) => {
     setImageFile(file);
     const reader = new FileReader();
@@ -217,25 +210,24 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
     };
     reader.readAsDataURL(file);
   };
-  // --- KRAJ FUNKCIJE: ucitajSliku ---
 
-  // --- POČETAK FUNKCIJE: obrisiSliku ---
   const obrisiSliku = () => {
     setImageFile(null); setImagePreview(null); setImageDescription(''); setArLocked(false); 
   };
-  // --- KRAJ FUNKCIJE: obrisiSliku ---
 
-  // --- POČETAK FUNKCIJE: copyPrompt ---
   const copyPrompt = (text, index, type) => {
     navigator.clipboard.writeText(text);
     setCopiedIndex(`${index}-${type}`);
     setTimeout(() => setCopiedIndex(null), 2000);
   };
-  // --- KRAJ FUNKCIJE: copyPrompt ---
 
-  // --- POČETAK FUNKCIJE: generisiMasterPrompt ---
   const generisiMasterPrompt = async () => {
-    if (credits <= 0 && isVIP) {
+    if (!isVIP) {
+        alert("SECURITY BREACH DETECTED: Unauthorized access blocked.");
+        return;
+    }
+
+    if (credits <= 0) {
         alert("ENGINE COOLING: You have 0 prompts left. Please wait for the 24h reset cycle.");
         return;
     }
@@ -270,14 +262,19 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
           if (email !== "damnjanovicgoran7@gmail.com" && email !== "aitoolsprosmart@gmail.com") {
               const docRef = doc(db, "vip_users", email);
               const novaKolicina = credits - 1;
+              const engineKeyword = currentEngine.split(" ")[0].toUpperCase();
+              const creditField = `${engineKeyword}_credits`;
+              const cdField = `${engineKeyword}_cooldown`;
               
               if (novaKolicina <= 0) {
-                  await updateDoc(docRef, { 
-                      promptCredits: 0,
-                      engineCooldownStartedAt: serverTimestamp() 
-                  });
+                  await setDoc(docRef, { 
+                      [creditField]: 0,
+                      [cdField]: serverTimestamp() 
+                  }, { merge: true });
               } else {
-                  await updateDoc(docRef, { promptCredits: increment(-1) });
+                  await setDoc(docRef, { 
+                      [creditField]: increment(-1) 
+                  }, { merge: true });
               }
           }
       }
@@ -288,47 +285,214 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
       setIsGenerating(false);
     }
   };
-  // --- KRAJ FUNKCIJE: generisiMasterPrompt ---
 
-  // --- POČETAK FUNKCIJE: pokreniKupovinu ---
-  const pokreniKupovinu = async () => {
-    const imePaketa = `V8 PRO LICENSE: ${currentEngine}`;
-    const cenaPaketa = "250.00"; 
-
-    try {
-      let user = currentUser || auth.currentUser;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-
-      if (!user) {
-          localStorage.setItem('v8_pending_engine_checkout', currentEngine);
-          const v8Provider = new GoogleAuthProvider();
-          v8Provider.setCustomParameters({ prompt: 'select_account' });
-          await signInWithPopup(auth, v8Provider);
-          return;
-      }
-
-      if (user) {
-          await addDoc(collection(db, "v8_kupci"), {
-              ime: user.displayName || "Client", email: user.email, uid: user.uid,
-              zeliPaket: imePaketa, cenaPaketa: cenaPaketa, vreme: serverTimestamp(), isPaid: false
-          });
-          await setDoc(doc(db, "posetioci", user.uid), { 
-              ime: user.displayName || "Client", email: user.email, 
-              vremePrijave: serverTimestamp(), zainteresovanZa: imePaketa, identitet: "V8-Engine-Client" 
-          }, { merge: true });
-          setShowPaymentModal(true);
-      }
-    } catch (err) {
-        localStorage.removeItem('v8_pending_engine_checkout');
-        console.error("V8 PAYMENT ERROR:", err);
+  const renderPricingPlans = () => {
+    if (amountPaid >= 550) {
+      return (
+        <div className="w-full max-w-5xl mx-auto mt-16 px-4">
+           <div className="bg-gradient-to-r from-[#1a0b2e] to-[#050505] border border-purple-500/40 rounded-[2.5rem] p-12 text-center shadow-[0_0_50px_rgba(168,85,247,0.15)] relative overflow-hidden">
+              <Crown className="w-20 h-20 text-purple-400 mx-auto mb-6 drop-shadow-[0_0_20px_rgba(168,85,247,0.6)]" />
+              <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-widest mb-4">
+                ENTERPRISE TIER <span className="text-purple-500">UNLOCKED</span>
+              </h2>
+              <p className="text-purple-200/60 font-bold uppercase tracking-widest text-[11px] md:text-sm max-w-2xl mx-auto">
+                You possess the highest level V8 License. All {currentEngine} protocols are fully operational at maximum capacity.
+              </p>
+           </div>
+        </div>
+      );
     }
+
+    return (
+      <div className="w-full max-w-5xl mx-auto mt-16 px-4">
+        <div className="text-center mb-12">
+          {currentEngine === "SEEDANCE 2.0" ? (
+             <MonitorPlay className="w-12 h-12 text-green-500 mx-auto mb-6 drop-shadow-[0_0_15px_rgba(34,197,94,0.6)]" />
+          ) : (
+             <Video className="w-12 h-12 text-orange-500 mx-auto mb-6 drop-shadow-[0_0_15px_rgba(234,88,12,0.6)]" />
+          )}
+          <h2 className="text-4xl font-black text-white uppercase tracking-widest mb-4">
+            {amountPaid > 0 ? "UPGRADE YOUR ACCESS." : "LIFETIME ACCESS."} <span className={currentEngine === "SEEDANCE 2.0" ? "text-green-500 block md:inline mt-2 md:mt-0" : "text-orange-500 block md:inline mt-2 md:mt-0"}>CHOOSE YOUR V8 PLAN.</span>
+          </h2>
+          
+          <div className="mt-8 bg-[#0a0a0a]/90 border border-white/10 rounded-2xl p-8 text-left space-y-4 shadow-inner max-w-4xl mx-auto mb-8">
+             <h4 className={`${currentEngine === "SEEDANCE 2.0" ? "text-green-500 border-green-500/20" : "text-orange-500 border-orange-500/20"} font-black uppercase tracking-[0.2em] text-[13px] border-b pb-3 mb-4 flex items-center gap-2`}>
+                <ShieldCheck className="w-5 h-5" /> V8 LICENSE PROTOCOL
+             </h4>
+             <p className="text-[13px] md:text-[14px] text-zinc-300"><strong className="text-white">1. ONE-TIME PAYMENT:</strong> Pay once. Secure your Lifetime License. Zero monthly subscriptions.</p>
+             <p className="text-[13px] md:text-[14px] text-zinc-300"><strong className="text-white">2. THE ROLLING QUOTA:</strong> You get a dedicated pool of credits based on your tier. Use them in 24 hours or stretch them across 365 days. Your cycle only ends when your credits hit zero.</p>
+             <p className="text-[13px] md:text-[14px] text-zinc-300"><strong className="text-white">3. THE 24H AUTO-REFILL:</strong> Burned through your entire quota? The Extractor Core enters a mandatory 24-hour cooling phase. After exactly 24 hours, your credits auto-replenish to full capacity. <span className="text-emerald-400 font-black">For free. Forever.</span></p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap justify-center gap-6 w-full z-10 relative">
+          
+          {amountPaid < 100 && (
+            <div className="w-full md:w-[calc(33.333%-1rem)] max-w-sm bg-[#050505] border border-blue-500/30 rounded-[2rem] p-8 flex flex-col hover:border-blue-500/60 transition-all shadow-xl">
+                <div className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-500/10 mb-6 mx-auto"><Diamond className="w-6 h-6 text-blue-500" /></div>
+                <h3 className="text-xl font-black text-white uppercase text-center">Starter</h3>
+                <span className="text-4xl font-black text-blue-400 my-4 text-center">$100</span>
+                <div className="w-full text-left space-y-3 mb-8 text-[11px] text-zinc-400 font-bold uppercase tracking-widest flex-grow">
+                   <p className="flex items-center gap-2">✅ 1,000 Prompts Included</p>
+                   <p className="flex items-center gap-2">⏳ Use in 24h or stretch over 365 days</p>
+                   <p className="flex items-center gap-2">🔄 Rolling Quota (No expiry)</p>
+                </div>
+                <button onClick={() => pokreniKupovinu('STARTER', 100)} className="w-full bg-zinc-800 text-white hover:bg-blue-500 py-4 rounded-xl font-black uppercase tracking-widest text-[12px] transition-all shadow-md">
+                   SELECT STARTER
+                </button>
+            </div>
+          )}
+
+          {amountPaid < 250 && (
+            <div className={`w-full md:w-[calc(33.333%-1rem)] max-w-sm bg-[#050505] border-2 rounded-[2rem] p-8 flex flex-col relative transition-all transform md:scale-105 z-10 ${currentEngine === "SEEDANCE 2.0" ? "border-green-500/50 hover:border-green-500/80 shadow-[0_0_30px_rgba(34,197,94,0.15)]" : "border-orange-500/50 hover:border-orange-500/80 shadow-[0_0_30px_rgba(234,88,12,0.15)]"}`}>
+                <div className={`absolute top-0 left-0 w-full h-2 rounded-t-[1.9rem] ${currentEngine === "SEEDANCE 2.0" ? "bg-gradient-to-r from-green-600 to-emerald-500" : "bg-gradient-to-r from-orange-600 to-amber-500"}`}></div>
+                <div className={`absolute -top-4 left-1/2 -translate-x-1/2 text-black px-6 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest shadow-lg ${currentEngine === "SEEDANCE 2.0" ? "bg-green-500" : "bg-orange-500"}`}>Bestseller</div>
+                
+                <div className={`w-12 h-12 flex items-center justify-center rounded-full mb-6 mx-auto mt-2 ${currentEngine === "SEEDANCE 2.0" ? "bg-green-500/10" : "bg-orange-500/10"}`}>
+                   <Zap className={`w-6 h-6 ${currentEngine === "SEEDANCE 2.0" ? "text-green-500" : "text-orange-500"}`} />
+                </div>
+                <h3 className="text-xl font-black text-white uppercase text-center">Pro</h3>
+                <span className={`text-4xl font-black my-4 text-center flex items-center justify-center gap-3 ${currentEngine === "SEEDANCE 2.0" ? "text-green-500" : "text-orange-500"}`}>
+                   {amountPaid > 0 ? `$${250 - amountPaid}` : "$250"}
+                </span>
+                <div className="w-full text-left space-y-3 mb-8 text-[11px] text-zinc-300 font-bold uppercase tracking-widest flex-grow">
+                   <p className="flex items-center gap-2">✅ 5,000 Prompts Included</p>
+                   <p className="flex items-center gap-2">⏳ Use in 24h or stretch over 365 days</p>
+                   <p className="flex items-center gap-2">🔄 Rolling Quota (No expiry)</p>
+                </div>
+                <button onClick={() => pokreniKupovinu('PRO', 250)} className={`w-full py-5 rounded-2xl font-black uppercase tracking-widest text-[14px] transition-all text-white ${currentEngine === "SEEDANCE 2.0" ? (amountPaid > 0 ? 'bg-gradient-to-r from-green-600 to-emerald-500 shadow-[0_0_20px_rgba(34,197,94,0.4)]' : 'bg-green-500 hover:bg-green-400 shadow-[0_0_20px_rgba(34,197,94,0.4)]') : (amountPaid > 0 ? 'bg-gradient-to-r from-orange-600 to-amber-500 shadow-[0_0_20px_rgba(234,88,12,0.4)]' : 'bg-orange-500 hover:bg-orange-400 shadow-[0_0_20px_rgba(234,88,12,0.4)]')}`}>
+                   {amountPaid > 0 ? "UPGRADE TO PRO" : "SELECT PRO"}
+                </button>
+            </div>
+          )}
+
+          {amountPaid < 550 && (
+            <div className="w-full md:w-[calc(33.333%-1rem)] max-w-sm bg-[#050505] border border-purple-500/30 rounded-[2rem] p-8 flex flex-col hover:border-purple-500/60 transition-all shadow-xl">
+                <div className="w-12 h-12 flex items-center justify-center rounded-full bg-purple-500/10 mb-6 mx-auto"><Crown className="w-6 h-6 text-purple-500" /></div>
+                <h3 className="text-xl font-black text-white uppercase text-center">Enterprise</h3>
+                <span className="text-4xl font-black text-purple-400 my-4 text-center flex items-center justify-center gap-3">
+                   {amountPaid > 0 ? `$${550 - amountPaid}` : "$550"}
+                </span>
+                <div className="w-full text-left space-y-3 mb-8 text-[11px] text-zinc-400 font-bold uppercase tracking-widest flex-grow">
+                   <p className="flex items-center gap-2">✅ 10,000 Prompts Included</p>
+                   <p className="flex items-center gap-2">⏳ Use in 24h or stretch over 365 days</p>
+                   <p className="flex items-center gap-2">🔄 Lifetime Access (Rolling Quota)</p>
+                </div>
+                <button onClick={() => pokreniKupovinu('ENTERPRISE', 550)} className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-[12px] transition-all shadow-md ${amountPaid > 0 ? 'bg-gradient-to-r from-purple-700 to-purple-500 hover:from-purple-600 hover:to-purple-400 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)]' : 'bg-zinc-800 text-white hover:bg-purple-500'}`}>
+                   {amountPaid > 0 ? "UPGRADE TO ENTERPRISE" : "SELECT ENTERPRISE"}
+                </button>
+            </div>
+          )}
+        </div>
+
+        {/* 🔥 PREMIUM HORIZONTALNI UPGRADE INFO BOKS (Pomeren ISPOD paketa) 🔥 */}
+        {amountPaid > 0 && amountPaid < 550 && (
+           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-4xl mx-auto mt-12 mb-10 bg-gradient-to-r from-[#0a192f]/90 to-[#020617]/90 border border-blue-500/40 p-6 md:p-8 rounded-[2rem] flex flex-col md:flex-row items-center justify-center gap-8 shadow-[0_0_40px_rgba(59,130,246,0.2)] relative overflow-hidden backdrop-blur-md">
+             <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay"></div>
+             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50"></div>
+             
+             <div className="w-16 h-16 bg-blue-950/50 rounded-full flex items-center justify-center border border-blue-500/50 relative flex-shrink-0 shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+                <div className="absolute inset-0 rounded-full border-t-2 border-blue-400 animate-spin"></div>
+                <ArrowUpCircle className="w-8 h-8 text-blue-400" />
+             </div>
+
+             <div className="text-center md:text-left relative z-10">
+                <div className="inline-block bg-blue-900/30 border border-blue-500/30 px-3 py-1 rounded-full text-blue-300 font-bold uppercase tracking-widest text-[9px] mb-3">
+                  SMART UPGRADE SYSTEM ACTIVE
+                </div>
+                <h3 className="text-white text-lg md:text-xl font-black uppercase tracking-widest mb-2 drop-shadow-md">
+                  PRORATED UPGRADE POLICY
+                </h3>
+                <p className="text-zinc-300 text-[13px] md:text-[14px] leading-relaxed max-w-2xl font-medium">
+                  System radar has detected an active V8 License valued at <strong className="text-blue-400">${amountPaid}</strong> linked to your account. You will <strong className="text-white border-b border-blue-500/50 pb-0.5">only pay the exact difference</strong> to upgrade to a higher tier.
+                </p>
+             </div>
+           </motion.div>
+         )}
+      </div>
+    );
   };
-  // --- KRAJ FUNKCIJE: pokreniKupovinu ---
+
+  const renderV8Manifest = () => {
+      const specifikacije = [
+        { t: `1. Visual Prompt Engineering`, d: "Converts ideas into cinematic directives.", insight: `Forces models to focus on lighting, camera movement, and subject interaction rather than basic captioning.` },
+        { t: "2. Kinetic Physics", d: "Commands hyper-realistic object physics.", insight: "Uses token weights to prevent floating aesthetics, anchoring generated subjects to environmental gravity." },
+        { t: "3. Editorial Aesthetics", d: "Replicates high-end fashion and commercial looks.", insight: "Applies Vogue-level lighting ratios and color grading terms (e.g., split-toning, cinematic teal/orange)." },
+        { t: "4. Camera Equipment", d: "Forces exact cinematic gear emulation.", insight: "Instructs AI with terms like 'ARRI Alexa 65' or 'Leica Summilux' to bypass generic digital smoothness." },
+        { t: "5. Lighting Vectors", d: "Controls key, fill, and volumetric lighting.", insight: "Prevents flat lighting by enforcing specific light placement and rim-light extraction techniques." },
+        { t: "6. Atmosphere & Composition", d: "Captures spatial design and cinematic mood.", insight: "Describes camera angles, weather, motion blur, and foreground/background relationships for perfect framing." }
+      ];
+
+      return (
+        <div className="w-full max-w-5xl mx-auto mb-16 bg-black/40 border border-white/5 rounded-[2rem] p-8 md:p-10 relative z-10 shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-[0.2em] text-white">PROMPT ENGINE ARCHITECTURE</h2>
+            <p className="text-[12px] md:text-[14px] text-orange-400 font-bold uppercase tracking-[0.3em] mt-3 italic">Technical Specifications</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
+            {specifikacije.map((item, i) => {
+              const isOpen = otvorenOpis === i;
+              return (
+                <div key={i} onClick={() => setOtvorenOpis(isOpen ? null : i)} className={`bg-white/5 border p-6 rounded-2xl transition-all duration-500 cursor-pointer relative overflow-hidden group ${isOpen ? 'border-orange-500/50 shadow-[0_0_15px_rgba(249,115,22,0.1)]' : 'border-white/5 hover:border-white/20'}`}>
+                  <div className="relative z-10 flex justify-between items-center">
+                    <div>
+                      <h4 className={`text-[13px] md:text-[15px] font-black uppercase transition-colors duration-300 flex items-center gap-3 mb-2 ${isOpen ? 'text-orange-400' : 'text-blue-400'}`}>
+                        <span className={`text-lg transition-colors duration-300 ${isOpen ? 'text-orange-500' : 'text-blue-600/60'}`}>💎</span> {item.t}
+                      </h4>
+                      <p className={`text-[11px] md:text-[13px] font-medium leading-relaxed transition-colors duration-300 ${isOpen ? 'text-white' : 'text-zinc-400'}`}>{item.d}</p>
+                    </div>
+                    <div className={`ml-4 text-xs md:text-sm font-black transition-all duration-500 ${isOpen ? 'rotate-180 text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]' : 'text-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.8)] group-hover:text-blue-400'}`}>▼</div>
+                  </div>
+                  <div className={`grid transition-all duration-500 ease-in-out relative z-10 ${isOpen ? 'grid-rows-[1fr] mt-4 opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                    <div className="overflow-hidden">
+                      <div className="pt-4 border-t border-white/10">
+                        <p className="text-[11px] md:text-[12px] text-zinc-300 font-mono leading-relaxed border-l-2 border-orange-500 pl-3"><span className="text-orange-400 font-bold">Tech Insight:</span> {item.insight}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className={`absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent transition-opacity duration-500 ${isOpen ? 'opacity-100' : 'opacity-0'}`}></div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="mt-12 pt-10 border-t border-white/10 grid md:grid-cols-2 gap-6">
+            <a href="/V8_PROMPT_ENGINE_MANIFEST.txt" download className="flex items-center gap-4 bg-black/40 hover:bg-orange-500/10 border border-white/5 hover:border-orange-500/50 p-6 rounded-2xl transition-all group shadow-inner">
+              <FileText className="text-orange-500 w-8 h-8 group-hover:scale-110 transition-transform" />
+              <div className="flex flex-col text-left">
+                <span className="text-white font-black uppercase tracking-widest text-[13px] group-hover:text-orange-400 transition-colors">Engine Manifest</span>
+                <span className="text-zinc-500 text-[10px] uppercase tracking-wider font-bold">.TXT Document</span>
+              </div>
+              <DownloadCloud className="ml-auto text-zinc-600 group-hover:text-orange-500 transition-colors w-5 h-5" />
+            </a>
+
+            <a href="/V8_COMMERCIAL_LICENSE.pdf" download className="flex items-center gap-4 bg-black/40 hover:bg-emerald-500/10 border border-white/5 hover:border-emerald-500/50 p-6 rounded-2xl transition-all group shadow-inner">
+              <ShieldCheck className="text-emerald-500 w-8 h-8 group-hover:scale-110 transition-transform" />
+              <div className="flex flex-col text-left">
+                <span className="text-white font-black uppercase tracking-widest text-[13px] group-hover:text-emerald-400 transition-colors">Commercial License</span>
+                <span className="text-zinc-500 text-[10px] uppercase tracking-wider font-bold">.PDF Agreement</span>
+              </div>
+              <DownloadCloud className="ml-auto text-zinc-600 group-hover:text-emerald-500 transition-colors w-5 h-5" />
+            </a>
+          </div>
+        </div>
+      );
+  };
 
   return (
     <div className="bg-[#050505] p-8 md:p-12 rounded-[2.5rem] border border-[#FF8C00]/30 shadow-[0_0_50px_rgba(255,140,0,0.1)] max-w-5xl mx-auto mt-28 relative overflow-hidden">
       
-      {/* 🔥 V8 CREDIT HUD (UI HEADER) 🔥 */}
+      <AnimatePresence>
+        {isCheckoutOpen && (
+          <V8SecureCheckout 
+            isOpen={isCheckoutOpen} 
+            onClose={() => setIsCheckoutOpen(false)} 
+            productName={checkoutProduct} 
+            price={checkoutPrice} 
+          />
+        )}
+      </AnimatePresence>
+
       {isVIP && (
         <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50">
            <motion.div 
@@ -340,14 +504,13 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
               <div className="flex flex-col items-center">
                  <span className="text-[9px] uppercase tracking-[0.2em] font-black text-zinc-400 leading-none">V8 PROMPTS</span>
                  <span className={`text-[15px] font-black tracking-widest leading-none mt-1 ${credits > 100 ? 'text-emerald-400' : 'text-red-500'}`}>
-                    {credits} / 1000
+                    {credits} AVAIL.
                  </span>
               </div>
            </motion.div>
         </div>
       )}
 
-      {/* 🔥 V8 ENGINE SWITCHER 🔥 */}
       <div className="flex flex-wrap justify-center gap-4 mb-8 relative z-20 mt-8">
           <button 
               onClick={() => setCurrentEngine("SEEDANCE 2.0")}
@@ -357,10 +520,10 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
           </button>
           
           <button 
-              onClick={() => setCurrentEngine("KILING 3.0")}
+              onClick={() => setCurrentEngine("KLING 3.0")}
               className={`px-8 py-3.5 rounded-full font-black text-[11px] tracking-widest uppercase transition-all flex items-center gap-2 ${currentEngine !== "SEEDANCE 2.0" ? 'bg-orange-500 text-white shadow-[0_0_20px_rgba(234,88,12,0.4)]' : 'bg-[#0a0a0a] border border-white/10 text-zinc-400 hover:text-white hover:border-white/30'}`}
           >
-              <Settings2 size={16} /> KILING 3.0
+              <Video size={16} /> KLING 3.0
           </button>
       </div>
 
@@ -379,9 +542,8 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
                 V8 CORE // CINEMATIC GENERATOR
               </div>
               
-              {/* --- POČETAK FUNKCIJE: ispis_naslova_i_podnaslova --- */}
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-black italic uppercase tracking-tighter text-white mb-6 drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)] flex items-center justify-center gap-4 flex-wrap">
-                {currentEngine !== "SEEDANCE 2.0" ? <Settings2 className="text-orange-500 w-12 h-12 md:w-16 md:h-16 drop-shadow-[0_0_15px_rgba(234,88,12,0.8)]" /> : <MonitorPlay className="text-green-500 w-12 h-12 md:w-16 md:h-16 drop-shadow-[0_0_15px_rgba(34,197,94,0.8)]" />}
+                {currentEngine !== "SEEDANCE 2.0" ? <Video className="text-orange-500 w-12 h-12 md:w-16 md:h-16 drop-shadow-[0_0_15px_rgba(234,88,12,0.8)]" /> : <MonitorPlay className="text-green-500 w-12 h-12 md:w-16 md:h-16 drop-shadow-[0_0_15px_rgba(34,197,94,0.8)]" />}
                 {currentEngine} 
                 <span className={`text-xl md:text-3xl font-black not-italic tracking-widest ml-2 px-4 py-1 rounded-full flex items-center border ${currentEngine !== "SEEDANCE 2.0" ? "text-[#FF8C00] drop-shadow-[0_0_15px_rgba(255,140,0,0.6)] border-[#FF8C00]/30 bg-[#FF8C00]/10" : "text-green-500 drop-shadow-[0_0_15px_rgba(34,197,94,0.6)] border-green-500/30 bg-green-500/10"}`}>
                    // OPTIMIZED FOR FREEPIK
@@ -405,37 +567,16 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
                   </span>
                 </p>
               )}
-              {/* --- KRAJ FUNKCIJE: ispis_naslova_i_podnaslova --- */}
 
               {!isVIP && !isCheckingAccess && (
-                <div className="mt-12 p-8 md:p-10 bg-[#050505]/95 backdrop-blur-2xl border border-orange-500/40 rounded-[2.5rem] flex flex-col items-center max-w-4xl mx-auto shadow-[0_30px_80px_rgba(234,88,12,0.25)] relative overflow-hidden">
-                   <div className="absolute top-0 right-0 w-64 h-64 bg-orange-600/10 rounded-full blur-[80px] pointer-events-none"></div>
-                   <div className="absolute bottom-0 left-0 w-64 h-64 bg-red-600/10 rounded-full blur-[80px] pointer-events-none"></div>
-
-                   <Lock className="w-12 h-12 text-orange-500 mb-6 drop-shadow-[0_0_15px_rgba(234,88,12,0.6)]" />
-                   <h3 className="text-2xl md:text-3xl font-black text-white uppercase tracking-widest mb-2 z-10">LIFETIME ACCESS. <span className="text-orange-500">24H COOLDOWN.</span></h3>
-                   
-                   <div className="mt-6 mb-10 bg-white/[0.03] border border-white/10 rounded-3xl p-6 md:p-8 text-left space-y-5 z-10 w-full shadow-inner">
-                      <h4 className="text-orange-500 font-black uppercase tracking-[0.2em] text-[13px] border-b border-orange-500/20 pb-3 mb-2 flex items-center gap-2">
-                         <ShieldCheck className="w-4 h-4" /> V8 LICENSE PROTOCOL
-                      </h4>
-                      <p className="text-[12px] md:text-[14px] text-zinc-300 leading-relaxed"><strong className="text-white">1. ONE-TIME PAYMENT:</strong> Pay $250 once. Secure your Lifetime License. Zero monthly subscriptions.</p>
-                      <p className="text-[12px] md:text-[14px] text-zinc-300 leading-relaxed"><strong className="text-white">2. THE ROLLING QUOTA:</strong> You get 1000 master-grade prompts. Use them in 24 hours or stretch them across 365 days. Your cycle only ends when your prompts hit zero.</p>
-                      <p className="text-[12px] md:text-[14px] text-zinc-300 leading-relaxed"><strong className="text-white">3. THE 24H AUTO-REFILL:</strong> Hit your 1000th prompt? The V8 Engine enters a mandatory 24-hour cooling phase. After exactly 24 hours, your 1000 credits auto-replenish. <span className="text-emerald-400 font-black">For free. Forever.</span></p>
-                   </div>
-
-                   <div className="flex gap-4 w-full justify-center z-10">
-                      <button 
-                         onClick={pokreniKupovinu} 
-                         className="bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white px-10 py-5 rounded-2xl font-black text-[14px] md:text-[16px] uppercase tracking-[0.2em] shadow-[0_0_30px_rgba(234,88,12,0.5)] hover:scale-105 transition-all flex items-center gap-3"
-                      >
-                         <Zap className="w-5 h-5" /> SECURE LIFETIME LICENSE ($250)
-                      </button>
-                   </div>
+                <div className="mt-12 relative z-20 w-full">
+                   {renderPricingPlans()}
                 </div>
               )}
           </div>
       </motion.div>
+
+      {renderV8Manifest()}
 
       <div className={`transition-all duration-500 ${!isVIP ? 'opacity-30 grayscale-[70%] pointer-events-none' : ''}`}>
         
@@ -445,7 +586,7 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
              <AlertTriangle className="w-10 h-10 text-red-500 mx-auto mb-3 relative z-10 drop-shadow-[0_0_15px_rgba(239,68,68,0.8)]" />
              <h4 className="text-red-400 font-black uppercase text-[16px] tracking-widest relative z-10 mb-2">V8 ENGINE COOLING PROTOCOL ACTIVE</h4>
              <p className="text-zinc-300 text-[12px] font-bold tracking-widest relative z-10">
-                You have exhausted your 1000 prompts. The system will auto-refill your quota exactly 24 hours after your last generation.
+                You have exhausted your prompts. The system will auto-refill your quota exactly 24 hours after your last generation.
              </p>
           </div>
         )}
@@ -461,7 +602,7 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
                 className={`relative border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-center transition-all ${dragActive ? 'border-[#FF8C00] bg-[#FF8C00]/10' : 'border-white/20 bg-black/50 hover:border-[#FF8C00]/50'} ${imagePreview ? 'border-solid border-[#FF8C00]/50 p-2' : 'h-48'}`}
                 onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
               >
-                <input ref={inputRef} type="file" accept="image/*" onChange={handleChange} className="hidden" disabled={isTextModeActive} />
+                <input ref={inputRef} type="file" accept="image/*" onChange={handleChange} className="hidden" disabled={!isVIP || isTextModeActive} />
                 {imagePreview ? (
                   <div className="relative w-full h-48 group rounded-xl overflow-hidden">
                     <img src={imagePreview} alt="Uploaded prep" className="w-full h-full object-cover" />
@@ -470,7 +611,7 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center gap-3 cursor-pointer" onClick={() => !isTextModeActive && inputRef.current.click()}>
+                  <div className="flex flex-col items-center gap-3 cursor-pointer" onClick={() => isVIP && !isTextModeActive && inputRef.current.click()}>
                     <div className="bg-white/5 p-4 rounded-full"><Upload className="w-8 h-8 text-zinc-400" /></div>
                     <div>
                       <p className="text-white font-bold text-sm">{isTextModeActive ? 'LOCKED (Text Mode)' : 'Drag & Drop your reference image here'}</p>
@@ -480,7 +621,7 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
                 )}
               </div>
               <div className="relative mt-1">
-                <input type="text" value={imageDescription} onChange={(e) => setImageDescription(e.target.value)} disabled={isTextModeActive} placeholder="Briefly describe what happens to this image..." className="bg-black/50 border border-white/10 p-4 pr-12 rounded-xl text-[13px] text-white outline-none focus:border-[#FF8C00] transition-all w-full shadow-inner disabled:bg-black/80" />
+                <input type="text" value={imageDescription} onChange={(e) => setImageDescription(e.target.value)} disabled={!isVIP || isTextModeActive} placeholder="Briefly describe what happens to this image..." className="bg-black/50 border border-white/10 p-4 pr-12 rounded-xl text-[13px] text-white outline-none focus:border-[#FF8C00] transition-all w-full shadow-inner disabled:bg-black/80 disabled:cursor-not-allowed" />
                 {imageDescription && !isTextModeActive && (
                   <button onClick={() => setImageDescription('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 hover:text-red-400 bg-red-500/10 hover:bg-red-500/20 p-1.5 rounded-full transition-all"><X size={16} strokeWidth={3} /></button>
                 )}
@@ -492,7 +633,7 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
                 <Wand2 size={14} /> 2. TEXT-TO-VIDEO VISION
               </label>
               <div className="relative">
-                <textarea value={promptText} onChange={(e) => setPromptText(e.target.value)} disabled={isImageModeActive} placeholder={isImageModeActive ? "LOCKED: You are using Image-to-Video mode." : "Describe the action..."} className={`bg-black/50 border p-5 pr-12 rounded-2xl text-[14px] text-white outline-none resize-none h-32 transition-all w-full shadow-inner ${isImageModeActive ? 'border-red-900/30 opacity-40 cursor-not-allowed bg-black/80' : 'border-white/10 focus:border-[#FF8C00]'}`} />
+                <textarea value={promptText} onChange={(e) => setPromptText(e.target.value)} disabled={!isVIP || isImageModeActive} placeholder={isImageModeActive ? "LOCKED: You are using Image-to-Video mode." : "Describe the action..."} className={`bg-black/50 border p-5 pr-12 rounded-2xl text-[14px] text-white outline-none resize-none h-32 transition-all w-full shadow-inner ${!isVIP || isImageModeActive ? 'border-red-900/30 opacity-40 cursor-not-allowed bg-black/80' : 'border-white/10 focus:border-[#FF8C00]'}`} />
                 {promptText && !isImageModeActive && (
                   <button onClick={() => setPromptText('')} className="absolute right-3 top-4 text-red-500 hover:text-red-400 bg-red-500/10 hover:bg-red-500/20 p-1.5 rounded-full transition-all"><X size={16} strokeWidth={3} /></button>
                 )}
@@ -505,7 +646,7 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
               <label className="text-zinc-400 font-black text-[11px] tracking-widest uppercase flex items-center gap-2"><Clock size={14} /> 3. VIDEO DURATION</label>
               <div className="grid grid-cols-4 gap-2">
                 {['3s', '5s', '10s', '15s'].map((sec) => (
-                  <button key={sec} onClick={() => setDuration(sec)} className={`py-3 rounded-xl font-black text-[12px] transition-all border ${duration === sec ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00] shadow-[0_0_15px_rgba(255,140,0,0.2)]' : 'bg-black border-white/10 text-zinc-500 hover:border-white/30 hover:text-white'}`}>{sec}</button>
+                  <button key={sec} onClick={() => setDuration(sec)} disabled={!isVIP} className={`py-3 rounded-xl font-black text-[12px] transition-all border ${duration === sec ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00] shadow-[0_0_15px_rgba(255,140,0,0.2)]' : 'bg-black border-white/10 text-zinc-500 hover:border-white/30 hover:text-white disabled:cursor-not-allowed'}`}>{sec}</button>
                 ))}
               </div>
             </div>
@@ -513,24 +654,23 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
             <div className="flex flex-col gap-3">
                <label className="text-zinc-400 font-black text-[11px] tracking-widest uppercase flex items-center gap-2"><MonitorPlay size={14} /> 4. ASPECT RATIO {arLocked && <Lock size={12} className="text-red-500 inline ml-1" title="Locked by Image Dimensions" />}</label>
                <div className="flex gap-2">
-                  <button onClick={() => !arLocked && setAspectRatio('16:9')} disabled={arLocked && aspectRatio !== '16:9'} className={`flex-1 py-4 rounded-xl font-black text-[11px] uppercase flex items-center justify-center gap-2 transition-all border ${aspectRatio === '16:9' ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]' : 'bg-black border-white/10 text-zinc-500 hover:border-white/30'} ${arLocked && aspectRatio !== '16:9' ? 'opacity-20 cursor-not-allowed bg-black border-transparent' : ''}`}><MonitorPlay size={16} /> 16:9</button>
-                  <button onClick={() => !arLocked && setAspectRatio('9:16')} disabled={arLocked && aspectRatio !== '9:16'} className={`flex-1 py-4 rounded-xl font-black text-[11px] uppercase flex items-center justify-center gap-2 transition-all border ${aspectRatio === '9:16' ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]' : 'bg-black border-white/10 text-zinc-500 hover:border-white/30'} ${arLocked && aspectRatio !== '9:16' ? 'opacity-20 cursor-not-allowed bg-black border-transparent' : ''}`}><Smartphone size={16} /> 9:16</button>
+                  <button onClick={() => !arLocked && setAspectRatio('16:9')} disabled={!isVIP || (arLocked && aspectRatio !== '16:9')} className={`flex-1 py-4 rounded-xl font-black text-[11px] uppercase flex items-center justify-center gap-2 transition-all border ${aspectRatio === '16:9' ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]' : 'bg-black border-white/10 text-zinc-500 hover:border-white/30'} ${arLocked && aspectRatio !== '16:9' ? 'opacity-20 cursor-not-allowed bg-black border-transparent' : ''}`}><MonitorPlay size={16} /> 16:9</button>
+                  <button onClick={() => !arLocked && setAspectRatio('9:16')} disabled={!isVIP || (arLocked && aspectRatio !== '9:16')} className={`flex-1 py-4 rounded-xl font-black text-[11px] uppercase flex items-center justify-center gap-2 transition-all border ${aspectRatio === '9:16' ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]' : 'bg-black border-white/10 text-zinc-500 hover:border-white/30'} ${arLocked && aspectRatio !== '9:16' ? 'opacity-20 cursor-not-allowed bg-black border-transparent' : ''}`}><Smartphone size={16} /> 9:16</button>
                </div>
             </div>
 
             <div className="mt-auto pt-8 border-t border-white/10">
               <button 
                 onClick={generisiMasterPrompt} 
-                disabled={isGenerating || (!promptText && !imageFile) || (credits <= 0 && isVIP)} 
-                className={`w-full font-black text-[16px] uppercase tracking-widest py-5 rounded-2xl transition-all flex items-center justify-center gap-3 ${credits <= 0 && isVIP ? 'bg-red-900/50 text-red-500 border border-red-500/50 cursor-not-allowed' : 'bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white shadow-[0_0_30px_rgba(234,88,12,0.3)] hover:scale-[1.02]'} disabled:opacity-50`}
+                disabled={!isVIP || isGenerating || (!promptText && !imageFile) || credits <= 0} 
+                className={`w-full font-black text-[16px] uppercase tracking-widest py-5 rounded-2xl transition-all flex items-center justify-center gap-3 ${(!isVIP || credits <= 0) ? 'bg-red-900/50 text-red-500 border border-red-500/50 cursor-not-allowed' : 'bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white shadow-[0_0_30px_rgba(234,88,12,0.3)] hover:scale-[1.02]'} disabled:opacity-50`}
               >
-                {isGenerating ? 'COMPILING META-TOKENS...' : credits <= 0 && isVIP ? 'ENGINE COOLING (24H)' : 'GENERATE 5 MASTER PROMPTS'} <Settings2 size={20} className={isGenerating ? "animate-spin" : ""} />
+                {isGenerating ? 'COMPILING META-TOKENS...' : (!isVIP || credits <= 0) ? 'ACCESS DENIED / COOLING' : 'GENERATE 5 MASTER PROMPTS'} <Settings2 size={20} className={isGenerating ? "animate-spin" : ""} />
               </button>
             </div>
           </div>
         </div>
 
-        {/* 🔥 NOVI PRIKAZ REZULTATA: SAMO JEDAN SPOJENI PROMPT IZ JSON-A 🔥 */}
         <AnimatePresence>
           {generatedPrompts && generatedPrompts.prompts && generatedPrompts.prompts.length > 0 && (
             <motion.div 
@@ -552,7 +692,6 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
                        <Diamond className="w-4 h-4" /> VARIATION {item.number}
                     </h4>
 
-                    {/* JEDNO POLJE: PROMPT IZ TVOG JSON-A */}
                     <div>
                       <div className="flex justify-between items-center mb-3">
                          <span className="text-zinc-400 font-bold text-[11px] uppercase tracking-widest flex items-center gap-2"><MonitorPlay size={14}/> MERGED CINEMATIC PROMPT:</span>
@@ -574,10 +713,7 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0" }) => {
             </motion.div>
           )}
         </AnimatePresence>
-
       </div>
-
-      <V8EngineCheckoutModal isOpen={showPaymentModal} onClose={() => setShowPaymentModal(false)} currentEngine={currentEngine} />
     </div>
   );
 };

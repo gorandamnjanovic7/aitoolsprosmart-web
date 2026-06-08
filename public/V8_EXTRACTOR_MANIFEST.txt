@@ -1,0 +1,190 @@
+AI IMAGE DNA EXTRACTOR
+PREMIUM SALES COPY / FRONTEND PRODUCT TEXT
+============================================================
+
+Turn any reference image into professional cinematic prompt DNA.
+
+AI Image DNA Extractor is a premium visual-analysis engine built for creators, agencies, AI artists, prompt engineers, product advertisers, and commercial visual teams who need more than a simple image caption.
+
+This tool analyzes a reference image and extracts its full cinematic structure into clean JSON data.
+
+It identifies the subject, environment, lighting, camera setup, color grading, atmosphere, and composition — the exact building blocks needed to recreate the same visual quality inside advanced AI image generators.
+
+------------------------------------------------------------
+WHY THIS TOOL EXISTS
+------------------------------------------------------------
+
+Most AI creators look at a reference image and manually guess what makes it look expensive.
+
+They guess the camera. They guess the lens. They guess the lighting. They guess the mood. They guess the color grade. They guess the material details. They guess the composition.
+
+That wastes time.
+
+AI Image DNA Extractor removes the guessing.
+
+It turns a reference image into structured creative intelligence.
+
+Instead of asking, 'How do I describe this image?', you get a professional JSON breakdown ready for prompt generation, creative direction, and production workflows.
+
+------------------------------------------------------------
+WHAT IT DOES
+------------------------------------------------------------
+
+Upload or pass in a reference image, and the engine extracts:
+
+💎 subject details
+💎 environment structure
+💎 lighting setup
+💎 camera and lens recommendation
+💎 color grading style
+💎 atmosphere and composition
+💎 aspect ratio placeholder
+💎 clean JSON output
+
+The result is not a basic caption. It is a professional prompt-engineering blueprint.
+
+------------------------------------------------------------
+BUILT FOR HIGH-END AI IMAGE CREATION
+------------------------------------------------------------
+
+This engine is designed for premium visual workflows.
+
+It is useful for luxury product images, cinematic advertising, AI stock image packs, car visuals, watch visuals, fashion images, architecture concepts, food photography prompts, commercial product scenes, film-style image generation, prompt generator apps, SaaS creative tools, and agency workflows.
+
+If you create AI images for sale, client work, product campaigns, or marketplace packs, this tool gives you a professional starting point.
+
+------------------------------------------------------------
+FROM IMAGE TO CREATIVE BLUEPRINT
+------------------------------------------------------------
+
+A normal image caption might say: A luxury watch on a dark background.
+
+That is not enough.
+
+AI Image DNA Extractor goes deeper.
+
+It extracts what the object is made of, how the light hits the surface, what kind of camera look matches the scene, how the background supports the subject, what mood the color grading creates, how the image is framed, and what atmosphere surrounds the subject.
+
+This is the difference between a weak prompt and a premium prompt.
+
+------------------------------------------------------------
+WHY JSON MATTERS
+------------------------------------------------------------
+
+The output is structured JSON.
+
+That means it can be reused in real systems.
+
+You can display it in a frontend, save it in a database, convert it into image prompts, generate 100 prompt variations, feed it into Flux, Midjourney, Kling, Sora, Seedance, or other creative engines, build prompt packs from it, automate creative workflows, and use it as a backend feature in a paid platform.
+
+This is not just text. This is machine-readable creative data.
+
+------------------------------------------------------------
+FOR PROMPT ENGINEERS
+------------------------------------------------------------
+
+Prompt engineers can use this tool to quickly reverse-engineer the visual language of a reference image.
+
+Instead of manually writing long descriptions from scratch, the extractor provides a full cinematic foundation.
+
+You can then expand, modify, remix, or convert the JSON into prompts for different AI models.
+
+------------------------------------------------------------
+FOR AGENCIES
+------------------------------------------------------------
+
+Agencies can use the tool to speed up visual research and concept development.
+
+A creative director can upload a reference image and instantly receive a structured breakdown of its visual system.
+
+This helps teams align faster on lighting direction, production mood, camera style, environment design, subject treatment, color palette, and commercial tone.
+
+It turns reference images into usable production language.
+
+------------------------------------------------------------
+FOR PRODUCT SELLERS
+------------------------------------------------------------
+
+Product sellers can use this tool to understand what makes a product image look premium.
+
+The extractor can identify materials, reflections, lighting angles, studio mood, and commercial polish.
+
+This is useful for creating better prompts for watches, perfumes, cars, shoes, drinks, jewelry, tech products, furniture, and luxury packaging.
+
+Better prompts lead to better images. Better images lead to stronger product presentation.
+
+------------------------------------------------------------
+FOR AI STOCK IMAGE CREATORS
+------------------------------------------------------------
+
+Stock image creators need repeatable quality.
+
+This tool helps turn one strong reference into a reusable creative formula.
+
+You can extract the DNA from a successful image, then generate new variations with different subjects, backgrounds, angles, and formats.
+
+This makes it easier to build consistent premium image packs.
+
+------------------------------------------------------------
+KEY SELLING POINTS
+------------------------------------------------------------
+
+💎 Converts images into cinematic JSON
+💎 Designed for high-end prompt engineering
+💎 Extracts lighting, camera, subject, environment, and color grade
+💎 Helps recreate premium visual styles
+💎 Saves time in prompt writing
+💎 Useful for AI image packs and commercial visuals
+💎 Works as a backend engine for paid tools
+💎 Clean command-line integration
+💎 Strong foundation for SaaS products
+💎 Built for serious creators, not casual captions
+
+------------------------------------------------------------
+PREMIUM POSITIONING
+------------------------------------------------------------
+
+AI Image DNA Extractor is not a caption tool.
+
+It is a visual intelligence tool.
+
+It does not simply tell you what is in an image. It breaks down how the image is built.
+
+Anyone can write a caption. Professionals need structure, lighting, camera language, material accuracy, and composition logic.
+
+This engine gives you that foundation.
+
+------------------------------------------------------------
+FRONTEND HERO TEXT
+------------------------------------------------------------
+
+Extract the cinematic DNA of any image.
+
+Turn reference images into structured JSON prompt blueprints with subject detail, lighting, camera equipment, color grading, environment, and composition.
+
+Built for prompt engineers, AI creators, agencies, and commercial visual workflows.
+
+------------------------------------------------------------
+LONG SALES VERSION
+------------------------------------------------------------
+
+Every premium image has a hidden structure.
+
+The lighting. The lens. The color grade. The environment. The subject treatment. The material texture. The atmosphere. The composition.
+
+AI Image DNA Extractor reveals that structure.
+
+Upload a reference image and the engine analyzes it like a professional prompt engineer and cinematographer. It returns a clean JSON breakdown that can be used to recreate the image style, build better prompts, generate image variations, or power a commercial prompt-generation workflow.
+
+This is ideal for creators who want to move faster, sell better visuals, and create consistent premium AI image output.
+
+Whether you are building product ads, luxury visuals, cinematic scenes, AI stock packs, or a full creative SaaS platform, this engine gives you the visual intelligence layer needed to turn reference images into production-ready creative data.
+
+------------------------------------------------------------
+VALUE PROPOSITION
+------------------------------------------------------------
+
+Save time. Extract more detail. Write better prompts. Build stronger image packs. Create more consistent visual systems. Turn references into reusable creative data.
+
+AI Image DNA Extractor gives serious creators the structure behind premium images.
+
