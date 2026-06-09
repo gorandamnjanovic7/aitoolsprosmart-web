@@ -524,7 +524,10 @@ const V8Standard16MPWorkspace = () => {
       )}
 
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="relative w-full mx-auto mb-12 rounded-[2.5rem] overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(255,140,0,0.15)]">
-          <div className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-50" style={{ backgroundImage: "url('/v8_py/v8_py_pozadina.webp')" }}></div>
+          {/* 🔥 OVO JE NOVI VIDEO BACKGROUND KOJI SE RAZVLACI PREKO CELOG KONTEJNERA 🔥 */}
+          <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-50 z-0 pointer-events-none">
+             <source src="/v8-supercompute-bg.mp4" type="video/mp4" />
+          </video>
           <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050505]/40 via-[#050505]/80 to-[#050505]"></div>
           
           <div className="relative z-10 py-16 px-6 text-center flex flex-col items-center">

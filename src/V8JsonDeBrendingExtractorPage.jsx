@@ -376,7 +376,6 @@ const V8JsonDeBrendingExtractorPage = () => {
 
           {amountPaid < 250 && (
             <div className="w-full md:w-[calc(33.333%-1rem)] max-w-sm bg-[#050505] border-2 border-orange-500/50 rounded-[2rem] p-8 flex flex-col relative hover:border-orange-500/80 transition-all shadow-[0_0_30px_rgba(234,88,12,0.15)] transform md:scale-105 z-10">
-                {/* 🔥 LINIJA SADA SAVRŠENO PRATI IVICU KARTICE 🔥 */}
                 <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-orange-600 to-amber-500 rounded-t-[1.9rem]"></div>
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-orange-500 text-black px-6 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest shadow-lg">Bestseller</div>
                 
@@ -415,7 +414,6 @@ const V8JsonDeBrendingExtractorPage = () => {
           )}
         </div>
 
-        {/* 🔥 PREMIUM HORIZONTALNI UPGRADE INFO BOKS (Pomeren ISPOD paketa) 🔥 */}
         {amountPaid > 0 && amountPaid < 550 && (
            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-4xl mx-auto mt-12 mb-10 bg-gradient-to-r from-[#0a192f]/90 to-[#020617]/90 border border-blue-500/40 p-6 md:p-8 rounded-[2rem] flex flex-col md:flex-row items-center justify-center gap-8 shadow-[0_0_40px_rgba(59,130,246,0.2)] relative overflow-hidden backdrop-blur-md">
              <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay"></div>
@@ -556,7 +554,10 @@ const V8JsonDeBrendingExtractorPage = () => {
           transition={{ duration: 0.5 }}
           className="relative w-full mx-auto mb-12 rounded-[2.5rem] overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(255,140,0,0.15)]"
       >
-          <div className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-50" style={{ backgroundImage: "url('/v8_py/v8_py_pozadina.webp')" }}></div>
+          {/* 🔥 OVO JE NOVI VIDEO BACKGROUND KOJI SE RAZVLACI PREKO CELOG KONTEJNERA 🔥 */}
+          <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-50 z-0 pointer-events-none">
+             <source src="/v8-debranding-bg.mp4" type="video/mp4" />
+          </video>
           <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050505]/40 via-[#050505]/80 to-[#050505]"></div>
           
           <div className="relative z-10 py-16 px-6 text-center flex flex-col items-center">

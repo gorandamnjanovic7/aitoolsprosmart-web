@@ -1,4 +1,6 @@
 // POČETAK FAJLA: App.jsx
+// Ne zaboravi React source code link u tvom repozitorijumu!
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
@@ -51,6 +53,7 @@ import V8Footer from './V8Footer';
 // 🔥 NOVI IMPORTI 🔥
 import V8SecureCheckout from './V8SecureCheckout';
 import V8UnlockModal from './V8UnlockModal'; 
+import V8AdminLiveNotifier from './V8AdminLiveNotifier'; // 🔥 TVOJ ADMIN RADAR 🔥
 
 if (typeof window !== 'undefined') {
   if ('scrollRestoration' in window.history) { window.history.scrollRestoration = 'manual'; }
@@ -296,6 +299,9 @@ function AppContent({ appsData, refreshData }) {
         
         <V8Navbar handleHomeClick={handleHomeClick} />
 
+        {/* 🔥 TVOJ ADMIN RADAR ZA OBAVEŠTENJA U ŽIVO 🔥 */}
+        <V8AdminLiveNotifier />
+
         {/* 🔥 GLOBALNI MODAL ZA OTKLJUČAVANJE 🔥 */}
         <V8UnlockModal />
         
@@ -392,7 +398,7 @@ export default function App() {
     <HelmetProvider>
       <Router>
         {/* 🔥 DODATO 5 MINUTA (300000ms) ZA AKTIVACIJU SCREENSAVERA 🔥 */}
-        <V8IdleProtocol timeout={300000} />
+        <V8IdleProtocol timeout={600000} />
         <AppContent appsData={appsData} refreshData={refreshData} />
       </Router>
     </HelmetProvider>

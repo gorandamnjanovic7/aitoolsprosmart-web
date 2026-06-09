@@ -532,13 +532,26 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="relative w-full mx-auto mb-12 rounded-[2.5rem] overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(255,140,0,0.15)]"
+          className={`relative w-full mx-auto mb-12 rounded-[2.5rem] overflow-hidden border border-white/10 transition-shadow duration-500 ${currentEngine === "SEEDANCE 2.0" ? "shadow-[0_0_50px_rgba(34,197,94,0.15)]" : "shadow-[0_0_50px_rgba(255,140,0,0.15)]"}`}
       >
-          <div className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-50" style={{ backgroundImage: "url('/v8_py/v8_py_pozadina.webp')" }}></div>
+          {/* 🔥 DINAMIČKI VIDEO BACKGROUND KOJI SE MENJA NA KLIK 🔥 */}
+          <video 
+             key={`bg-${currentEngine}`}
+             autoPlay 
+             loop 
+             muted 
+             playsInline 
+             className="absolute inset-0 w-full h-full object-cover opacity-50 z-0 pointer-events-none"
+          >
+             <source 
+                src={currentEngine === "SEEDANCE 2.0" ? "/v8-seedance-bg.mp4" : "/kling.mp4"} 
+                type="video/mp4" 
+             />
+          </video>
           <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050505]/40 via-[#050505]/80 to-[#050505]"></div>
           
           <div className="relative z-10 py-16 px-6 text-center flex flex-col items-center">
-              <div className="inline-block bg-orange-600/10 border border-orange-500/30 px-5 py-2 rounded-full text-orange-400 font-black uppercase tracking-[0.3em] text-[10px] mb-6 animate-pulse shadow-[0_0_20px_rgba(234,88,12,0.2)] backdrop-blur-sm">
+              <div className={`inline-block border px-5 py-2 rounded-full font-black uppercase tracking-[0.3em] text-[10px] mb-6 animate-pulse backdrop-blur-sm ${currentEngine === "SEEDANCE 2.0" ? "bg-green-600/10 border-green-500/30 text-green-400 shadow-[0_0_20px_rgba(34,197,94,0.2)]" : "bg-orange-600/10 border-orange-500/30 text-orange-400 shadow-[0_0_20px_rgba(234,88,12,0.2)]"}`}>
                 V8 CORE // CINEMATIC GENERATOR
               </div>
               
@@ -595,11 +608,11 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
           <div className="flex flex-col gap-8">
             
             <div className={`flex flex-col gap-3 transition-all ${isTextModeActive ? 'opacity-40 pointer-events-none grayscale' : ''}`}>
-              <label className="text-[#FF8C00] font-black text-[11px] tracking-widest uppercase flex items-center gap-2">
+              <label className={`font-black text-[11px] tracking-widest uppercase flex items-center gap-2 ${currentEngine === "SEEDANCE 2.0" ? "text-green-500" : "text-[#FF8C00]"}`}>
                 <FileImage size={14} /> 1. IMAGE-TO-VIDEO MODE
               </label>
               <div 
-                className={`relative border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-center transition-all ${dragActive ? 'border-[#FF8C00] bg-[#FF8C00]/10' : 'border-white/20 bg-black/50 hover:border-[#FF8C00]/50'} ${imagePreview ? 'border-solid border-[#FF8C00]/50 p-2' : 'h-48'}`}
+                className={`relative border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-center transition-all ${dragActive ? (currentEngine === "SEEDANCE 2.0" ? 'border-green-500 bg-green-500/10' : 'border-[#FF8C00] bg-[#FF8C00]/10') : 'border-white/20 bg-black/50 hover:border-white/40'} ${imagePreview ? (currentEngine === "SEEDANCE 2.0" ? 'border-solid border-green-500/50 p-2' : 'border-solid border-[#FF8C00]/50 p-2') : 'h-48'}`}
                 onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
               >
                 <input ref={inputRef} type="file" accept="image/*" onChange={handleChange} className="hidden" disabled={!isVIP || isTextModeActive} />
@@ -621,7 +634,7 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
                 )}
               </div>
               <div className="relative mt-1">
-                <input type="text" value={imageDescription} onChange={(e) => setImageDescription(e.target.value)} disabled={!isVIP || isTextModeActive} placeholder="Briefly describe what happens to this image..." className="bg-black/50 border border-white/10 p-4 pr-12 rounded-xl text-[13px] text-white outline-none focus:border-[#FF8C00] transition-all w-full shadow-inner disabled:bg-black/80 disabled:cursor-not-allowed" />
+                <input type="text" value={imageDescription} onChange={(e) => setImageDescription(e.target.value)} disabled={!isVIP || isTextModeActive} placeholder="Briefly describe what happens to this image..." className={`bg-black/50 border border-white/10 p-4 pr-12 rounded-xl text-[13px] text-white outline-none transition-all w-full shadow-inner disabled:bg-black/80 disabled:cursor-not-allowed ${currentEngine === "SEEDANCE 2.0" ? "focus:border-green-500" : "focus:border-[#FF8C00]"}`} />
                 {imageDescription && !isTextModeActive && (
                   <button onClick={() => setImageDescription('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 hover:text-red-400 bg-red-500/10 hover:bg-red-500/20 p-1.5 rounded-full transition-all"><X size={16} strokeWidth={3} /></button>
                 )}
@@ -629,11 +642,11 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
             </div>
 
             <div className="flex flex-col gap-3">
-              <label className={`font-black text-[11px] tracking-widest uppercase flex items-center gap-2 transition-colors ${isImageModeActive ? 'text-zinc-600' : 'text-[#FF8C00]'}`}>
+              <label className={`font-black text-[11px] tracking-widest uppercase flex items-center gap-2 transition-colors ${isImageModeActive ? 'text-zinc-600' : (currentEngine === "SEEDANCE 2.0" ? 'text-green-500' : 'text-[#FF8C00]')}`}>
                 <Wand2 size={14} /> 2. TEXT-TO-VIDEO VISION
               </label>
               <div className="relative">
-                <textarea value={promptText} onChange={(e) => setPromptText(e.target.value)} disabled={!isVIP || isImageModeActive} placeholder={isImageModeActive ? "LOCKED: You are using Image-to-Video mode." : "Describe the action..."} className={`bg-black/50 border p-5 pr-12 rounded-2xl text-[14px] text-white outline-none resize-none h-32 transition-all w-full shadow-inner ${!isVIP || isImageModeActive ? 'border-red-900/30 opacity-40 cursor-not-allowed bg-black/80' : 'border-white/10 focus:border-[#FF8C00]'}`} />
+                <textarea value={promptText} onChange={(e) => setPromptText(e.target.value)} disabled={!isVIP || isImageModeActive} placeholder={isImageModeActive ? "LOCKED: You are using Image-to-Video mode." : "Describe the action..."} className={`bg-black/50 border p-5 pr-12 rounded-2xl text-[14px] text-white outline-none resize-none h-32 transition-all w-full shadow-inner ${!isVIP || isImageModeActive ? 'border-red-900/30 opacity-40 cursor-not-allowed bg-black/80' : `border-white/10 ${currentEngine === "SEEDANCE 2.0" ? "focus:border-green-500" : "focus:border-[#FF8C00]"}`}`} />
                 {promptText && !isImageModeActive && (
                   <button onClick={() => setPromptText('')} className="absolute right-3 top-4 text-red-500 hover:text-red-400 bg-red-500/10 hover:bg-red-500/20 p-1.5 rounded-full transition-all"><X size={16} strokeWidth={3} /></button>
                 )}
@@ -646,7 +659,7 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
               <label className="text-zinc-400 font-black text-[11px] tracking-widest uppercase flex items-center gap-2"><Clock size={14} /> 3. VIDEO DURATION</label>
               <div className="grid grid-cols-4 gap-2">
                 {['3s', '5s', '10s', '15s'].map((sec) => (
-                  <button key={sec} onClick={() => setDuration(sec)} disabled={!isVIP} className={`py-3 rounded-xl font-black text-[12px] transition-all border ${duration === sec ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00] shadow-[0_0_15px_rgba(255,140,0,0.2)]' : 'bg-black border-white/10 text-zinc-500 hover:border-white/30 hover:text-white disabled:cursor-not-allowed'}`}>{sec}</button>
+                  <button key={sec} onClick={() => setDuration(sec)} disabled={!isVIP} className={`py-3 rounded-xl font-black text-[12px] transition-all border ${duration === sec ? (currentEngine === "SEEDANCE 2.0" ? 'bg-green-500/20 border-green-500 text-green-500 shadow-[0_0_15px_rgba(34,197,94,0.2)]' : 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00] shadow-[0_0_15px_rgba(255,140,0,0.2)]') : 'bg-black border-white/10 text-zinc-500 hover:border-white/30 hover:text-white disabled:cursor-not-allowed'}`}>{sec}</button>
                 ))}
               </div>
             </div>
@@ -654,8 +667,8 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
             <div className="flex flex-col gap-3">
                <label className="text-zinc-400 font-black text-[11px] tracking-widest uppercase flex items-center gap-2"><MonitorPlay size={14} /> 4. ASPECT RATIO {arLocked && <Lock size={12} className="text-red-500 inline ml-1" title="Locked by Image Dimensions" />}</label>
                <div className="flex gap-2">
-                  <button onClick={() => !arLocked && setAspectRatio('16:9')} disabled={!isVIP || (arLocked && aspectRatio !== '16:9')} className={`flex-1 py-4 rounded-xl font-black text-[11px] uppercase flex items-center justify-center gap-2 transition-all border ${aspectRatio === '16:9' ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]' : 'bg-black border-white/10 text-zinc-500 hover:border-white/30'} ${arLocked && aspectRatio !== '16:9' ? 'opacity-20 cursor-not-allowed bg-black border-transparent' : ''}`}><MonitorPlay size={16} /> 16:9</button>
-                  <button onClick={() => !arLocked && setAspectRatio('9:16')} disabled={!isVIP || (arLocked && aspectRatio !== '9:16')} className={`flex-1 py-4 rounded-xl font-black text-[11px] uppercase flex items-center justify-center gap-2 transition-all border ${aspectRatio === '9:16' ? 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]' : 'bg-black border-white/10 text-zinc-500 hover:border-white/30'} ${arLocked && aspectRatio !== '9:16' ? 'opacity-20 cursor-not-allowed bg-black border-transparent' : ''}`}><Smartphone size={16} /> 9:16</button>
+                  <button onClick={() => !arLocked && setAspectRatio('16:9')} disabled={!isVIP || (arLocked && aspectRatio !== '16:9')} className={`flex-1 py-4 rounded-xl font-black text-[11px] uppercase flex items-center justify-center gap-2 transition-all border ${aspectRatio === '16:9' ? (currentEngine === "SEEDANCE 2.0" ? 'bg-green-500/20 border-green-500 text-green-500' : 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]') : 'bg-black border-white/10 text-zinc-500 hover:border-white/30'} ${arLocked && aspectRatio !== '16:9' ? 'opacity-20 cursor-not-allowed bg-black border-transparent' : ''}`}><MonitorPlay size={16} /> 16:9</button>
+                  <button onClick={() => !arLocked && setAspectRatio('9:16')} disabled={!isVIP || (arLocked && aspectRatio !== '9:16')} className={`flex-1 py-4 rounded-xl font-black text-[11px] uppercase flex items-center justify-center gap-2 transition-all border ${aspectRatio === '9:16' ? (currentEngine === "SEEDANCE 2.0" ? 'bg-green-500/20 border-green-500 text-green-500' : 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]') : 'bg-black border-white/10 text-zinc-500 hover:border-white/30'} ${arLocked && aspectRatio !== '9:16' ? 'opacity-20 cursor-not-allowed bg-black border-transparent' : ''}`}><Smartphone size={16} /> 9:16</button>
                </div>
             </div>
 
@@ -663,7 +676,7 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
               <button 
                 onClick={generisiMasterPrompt} 
                 disabled={!isVIP || isGenerating || (!promptText && !imageFile) || credits <= 0} 
-                className={`w-full font-black text-[16px] uppercase tracking-widest py-5 rounded-2xl transition-all flex items-center justify-center gap-3 ${(!isVIP || credits <= 0) ? 'bg-red-900/50 text-red-500 border border-red-500/50 cursor-not-allowed' : 'bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white shadow-[0_0_30px_rgba(234,88,12,0.3)] hover:scale-[1.02]'} disabled:opacity-50`}
+                className={`w-full font-black text-[16px] uppercase tracking-widest py-5 rounded-2xl transition-all flex items-center justify-center gap-3 ${(!isVIP || credits <= 0) ? 'bg-red-900/50 text-red-500 border border-red-500/50 cursor-not-allowed' : (currentEngine === "SEEDANCE 2.0" ? 'bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-500 hover:to-emerald-400 text-white shadow-[0_0_30px_rgba(34,197,94,0.3)]' : 'bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white shadow-[0_0_30px_rgba(234,88,12,0.3)]')} hover:scale-[1.02] disabled:opacity-50`}
               >
                 {isGenerating ? 'COMPILING META-TOKENS...' : (!isVIP || credits <= 0) ? 'ACCESS DENIED / COOLING' : 'GENERATE 5 MASTER PROMPTS'} <Settings2 size={20} className={isGenerating ? "animate-spin" : ""} />
               </button>
@@ -679,16 +692,16 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
               className="mt-16 border-t border-white/10 pt-16"
             >
               <div className="flex items-center gap-4 mb-10 justify-center">
-                 <Wand2 className="text-orange-500 w-8 h-8" />
+                 <Wand2 className={`w-8 h-8 ${currentEngine === "SEEDANCE 2.0" ? "text-green-500" : "text-orange-500"}`} />
                  <h2 className="text-3xl font-black uppercase tracking-widest text-white text-center">GENERATED MASTER PROMPTS</h2>
               </div>
               
               <div className="space-y-8">
                 {generatedPrompts.prompts.map((item, idx) => (
                   <div key={idx} className="bg-black/60 border border-white/10 rounded-3xl p-6 md:p-8 relative overflow-hidden group shadow-[0_0_30px_rgba(0,0,0,0.5)]">
-                    <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-orange-500 to-amber-400"></div>
+                    <div className={`absolute top-0 left-0 w-1 h-full ${currentEngine === "SEEDANCE 2.0" ? "bg-gradient-to-b from-green-500 to-emerald-400" : "bg-gradient-to-b from-orange-500 to-amber-400"}`}></div>
                     
-                    <h4 className="text-orange-500 font-black tracking-widest text-sm mb-6 flex items-center gap-2">
+                    <h4 className={`font-black tracking-widest text-sm mb-6 flex items-center gap-2 ${currentEngine === "SEEDANCE 2.0" ? "text-green-500" : "text-orange-500"}`}>
                        <Diamond className="w-4 h-4" /> VARIATION {item.number}
                     </h4>
 
@@ -697,7 +710,7 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
                          <span className="text-zinc-400 font-bold text-[11px] uppercase tracking-widest flex items-center gap-2"><MonitorPlay size={14}/> MERGED CINEMATIC PROMPT:</span>
                          <button 
                            onClick={() => copyPrompt(item.prompt, idx, 'prompt')} 
-                           className="text-orange-400 hover:text-white text-[11px] font-black uppercase tracking-widest flex items-center gap-2 bg-orange-500/10 hover:bg-orange-500/20 px-4 py-2 rounded-xl transition-all shadow-inner"
+                           className={`hover:text-white text-[11px] font-black uppercase tracking-widest flex items-center gap-2 px-4 py-2 rounded-xl transition-all shadow-inner ${currentEngine === "SEEDANCE 2.0" ? "text-green-400 bg-green-500/10 hover:bg-green-500/20" : "text-orange-400 bg-orange-500/10 hover:bg-orange-500/20"}`}
                          >
                             {copiedIndex === `${idx}-prompt` ? <CheckCircle size={14} className="text-emerald-400"/> : <Copy size={14}/>} 
                             {copiedIndex === `${idx}-prompt` ? 'COPIED!' : 'COPY PROMPT'}

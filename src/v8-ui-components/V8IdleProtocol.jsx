@@ -1,5 +1,10 @@
+// POČETAK FAJLA: V8IdleProtocol.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+
+// 🔥 TVOJA REŽIJA - TAČNE SEKUNDE KADA JE FENIKS U VAULTU 🔥
+const PHOENIX_START = 5.0; // Sekunda od koje kreće loop u Vaultu
+const PHOENIX_END = 6.0;   // Sekunda na kojoj se vraća nazad na PHOENIX_START
 
 // POCETAK FUNKCIJE: V8IdleProtocol
 const V8IdleProtocol = () => {
@@ -7,6 +12,10 @@ const V8IdleProtocol = () => {
   const timeoutRef = useRef(null);
   const lastActivityRef = useRef(Date.now());
   const isIdleRef = useRef(false);
+  
+  // Refovi za video i brojač puštanja
+  const videoRef = useRef(null);
+  const playCount = useRef(0);
 
   useEffect(() => {
     const resetTimer = () => {
@@ -15,11 +24,12 @@ const V8IdleProtocol = () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      // Podesi vreme čekanja na 40 sekundi (40000 ms)
+      // 🔥 Podesi vreme čekanja na 10 minuta (600000 ms) 🔥
       timeoutRef.current = setTimeout(() => {
         setIsIdle(true);
         isIdleRef.current = true;
-      }, 300000);
+        playCount.current = 0; // Resetuj brojač svaki put kad se aktivira screensaver
+      }, 600000); 
     };
 
     const handleActivity = () => {
@@ -50,7 +60,32 @@ const V8IdleProtocol = () => {
       window.removeEventListener('touchstart', handleActivity);
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, []); // OVDE JE BILA GREŠKA - Sada je prazan array kako se ne bi beskonačno restartovao
+  }, []);
+
+  // POČETAK FUNKCIJE: Logika za hvatanje Feniksa
+  const handleTimeUpdate = () => {
+    if (!videoRef.current) return;
+
+    // Ako smo odgledali 3 cela kruga, upadamo u zamku!
+    if (playCount.current >= 3) {
+      if (videoRef.current.currentTime >= PHOENIX_END) {
+        videoRef.current.currentTime = PHOENIX_START;
+        videoRef.current.play(); // Osiguraj da nastavi sa radom
+      }
+    }
+  };
+
+  const handleVideoEnded = () => {
+    if (!videoRef.current) return;
+    
+    // Video je završio ceo krug, dodajemo 1 na brojač
+    playCount.current += 1;
+    
+    // Pusti ga ponovo od početka (za prva 3 puta)
+    videoRef.current.currentTime = 0;
+    videoRef.current.play();
+  };
+  // KRAJ FUNKCIJE: Logika za hvatanje Feniksa
 
   return (
     <AnimatePresence>
@@ -64,10 +99,12 @@ const V8IdleProtocol = () => {
         >
           {/* U pozadini se pušta onaj tvoj cinematic render */}
           <video
+            ref={videoRef}
             autoPlay
-            loop
             muted
             playsInline
+            onTimeUpdate={handleTimeUpdate} // Gleda sekunde svake stotinke
+            onEnded={handleVideoEnded}      // Okida kad dođe do kraja fajla
             className="absolute inset-0 w-full h-full object-cover opacity-50"
           >
             <source src="/v8-vault-bg.mp4" type="video/mp4" />
@@ -88,6 +125,5 @@ const V8IdleProtocol = () => {
     </AnimatePresence>
   );
 };
-// KRAJ FUNKCIJE: V8IdleProtocol
-
 export default V8IdleProtocol;
+// KRAJ FAJLA: V8IdleProtocol.jsx
