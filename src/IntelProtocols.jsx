@@ -1,3 +1,4 @@
+// POČETAK FAJLA: IntelProtocols.jsx
 import React, { useState, useEffect } from 'react';
 import { Youtube } from 'lucide-react';
 import V8Reveal from './V8Reveal';
@@ -12,30 +13,35 @@ const IntelProtocols = () => {
   useEffect(() => {
     const fetchYouTubeVideos = async () => {
       try {
-        const channelId = "UC6ilBUks_oFMSD8CE9qD6lQ"; 
-        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&maxResults=8&order=date&type=video&key=${YOUTUBE_API_KEY}`;
+        // Pametni API poziv - direktno gađa tvoju Upload plejlistu (menjamo UC u UU)
+        // Ovo troši samo 1 API poen, sprečava pucanje sajta i vuče sve automatski
+        const uploadsPlaylistId = "UU6ilBUks_oFMSD8CE9qD6lQ"; 
+        const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploadsPlaylistId}&maxResults=8&key=${YOUTUBE_API_KEY}`;
+        
         const response = await fetch(url);
         const ytData = await response.json();
         
         if (ytData.items && ytData.items.length > 0) {
-          const praviVidei = ytData.items.map(item => ({
-            id: item.id.videoId,
-            title: item.snippet.title,
-            url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
-            thumbnail: item.snippet.thumbnails?.high?.url || item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url
-          }));
+          const praviVidei = ytData.items.map(item => {
+            const vidId = item.snippet.resourceId.videoId;
+            return {
+              id: vidId,
+              title: item.snippet.title,
+              url: `https://www.youtube.com/watch?v=${vidId}`,
+              thumbnail: item.snippet.thumbnails?.high?.url || item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url
+            };
+          });
           setLiveVideos(praviVidei);
-        } else { throw new Error("Empty YouTube Response"); }
+        } else { 
+          throw new Error("Prazan YouTube odgovor"); 
+        }
       } catch (error) {
-        // Fallback videi ako YouTube API prekorači kvotu
-        setLiveVideos([
-          { id: "v8-1", title: "V8 Premium Education 1", url: "https://www.youtube.com/watch?v=M7lc1UVf-VE", thumbnail: "https://img.youtube.com/vi/M7lc1UVf-VE/maxresdefault.jpg" },
-          { id: "v8-2", title: "V8 Intel Protocol 2", url: "https://www.youtube.com/watch?v=M7lc1UVf-VE", thumbnail: "https://img.youtube.com/vi/M7lc1UVf-VE/maxresdefault.jpg" },
-          { id: "v8-3", title: "V8 Trade Secrets 3", url: "https://www.youtube.com/watch?v=M7lc1UVf-VE", thumbnail: "https://img.youtube.com/vi/M7lc1UVf-VE/maxresdefault.jpg" },
-          { id: "v8-4", title: "V8 Masterclass 4", url: "https://www.youtube.com/watch?v=M7lc1UVf-VE", thumbnail: "https://img.youtube.com/vi/M7lc1UVf-VE/maxresdefault.jpg" }
-        ]);
-      } finally { setIsLoadingVideos(false); }
+        console.error("Greška pri povlačenju videa:", error);
+      } finally { 
+        setIsLoadingVideos(false); 
+      }
     };
+    
     fetchYouTubeVideos();
   }, []);
 
@@ -54,7 +60,7 @@ const IntelProtocols = () => {
       <V8Reveal delay={0.3} direction="up">
         {isLoadingVideos ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24">
-            {[...Array(4)].map((_, i) => <div className="animate-pulse bg-[#0a0a0a] rounded-[2.4rem] p-6 h-48" key={i} />)}
+            {[...Array(8)].map((_, i) => <div className="animate-pulse bg-[#0a0a0a] rounded-[2.4rem] p-6 h-48" key={i} />)}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24">
@@ -67,3 +73,4 @@ const IntelProtocols = () => {
 };
 
 export default IntelProtocols;
+// KRAJ FAJLA: IntelProtocols.jsx
