@@ -54,7 +54,8 @@ const V8StockBerza = () => {
   
   const [activeTab, setActiveTab] = useState('premium'); 
   
-  const [otvorenOpis, setOtvorenOpis] = useState(null);
+  // 🔥 SVI AKORDEONI SU SADA ZATVORENI PO DEFAULTU 🔥
+  const [otvoreniOpisi, setOtvoreniOpisi] = useState([]);
 
   const [noviNazivEn, setNoviNazivEn] = useState('');
   const [noviVolume, setNoviVolume] = useState('');
@@ -66,6 +67,8 @@ const V8StockBerza = () => {
   const [previewUrl, setPreviewUrl] = useState('');
   const [zipLink, setZipLink] = useState('');
   const [paddleLink, setPaddleLink] = useState('');
+  
+  const [isFree, setIsFree] = useState(false);
 
   const mainImageRef = useRef(null);
   const galleryImagesRef = useRef(null);
@@ -110,32 +113,35 @@ const V8StockBerza = () => {
 
   // POČETAK FUNKCIJE: Reset formata prilikom promene taba
   useEffect(() => {
+    if (activeTab === 'bundles' || activeTab === 'signature') {
+      setIsFree(false); 
+    }
     if (activeTab === 'bundles') setNoviFormat('45MP MASTERWORK BUNDLE');
     else if (activeTab === 'signature') setNoviFormat('60MP SIGNATURE BUNDLE');
     else setNoviFormat('16:9 ONLY (SINGLE)');
-    
-    setOtvorenOpis(null); 
   }, [activeTab]);
   // KRAJ FUNKCIJE: Reset formata prilikom promene taba
 
   // POČETAK FUNKCIJE: Automatsko setovanje opisa
   useEffect(() => {
     if (noviFormat === '16:9 ONLY (SINGLE)') { 
-        setNoviOpisEn("16:9 ONLY (SINGLE), 16MP Upscale, Contributor Cleanup, Premium Sharpness, Color Grading, Highlight Rolloff, Shadow Depth, sRGB Standard, Product AD Polish, Anti-plastic Realism, 100% IP SAFE"); 
+        setNoviOpisEn("16:9 ONLY (SINGLE)."); 
     } 
     else if (noviFormat === 'ALL FORMATS (16:9, 9:16, 21:9, 1:1)') { 
-        setNoviOpisEn("ALL FORMATS (16:9, 9:16, 21:9, 1:1), 16MP Upscale, Contributor Cleanup, Premium Sharpness, Color Grading, Highlight Rolloff, Shadow Depth, sRGB Standard, Product AD Polish, Anti-plastic Realism, 100% IP SAFE"); 
+        setNoviOpisEn("ALL FORMATS (16:9, 9:16, 21:9, 1:1)."); 
     } 
     else if (noviFormat === '33.2MP MASTERWORK SINGLE') { 
-        setNoviOpisEn("V8 MASTERWORK SINGLE: COMPLETE COLLECTION OF 20 PREMIUM VISUALS IN 33.2 MEGAPIXELS (8K UHD) RESOLUTION. INCLUDES BOTH 16:9 AND 9:16 ASPECT RATIOS. FLAWLESS TEXTURES, ZERO BRANDING, IP-SAFE. DESIGNED EXCLUSIVELY FOR LUXURY BRANDS AND HIGH-END COMMERCIAL CAMPAIGNS."); 
+        setNoviOpisEn("33.2MP Upscale - Industrial-grade precision for 8K. Supported formats: 16:9 (10 Images) aspect ratio, 9:16 aspect ratio (10 Images). Utilizing precision LANCZOS interpolation. An advanced MedianFilter systematically wipes out digital noise and compression artifacts. Custom NumPy matrix processing applies a smooth rolloff to prevent blown-out whites and retain intricate highlight textures. Strict conversion to the sRGB ICC profile ensures color accuracy across all digital devices and professional reference monitors. Signature Gaussian Noise distribution breaks artificial AI smoothness, creating an authentic, tangible photographic look. Zero text, watermarks, or logos. 100% IP Safe. Fully production-ready."); 
     }
     else if (noviFormat === '45MP MASTERWORK BUNDLE') { 
-        setNoviOpisEn("V8 MASTERWORK BUNDLE: COMPLETE COLLECTION OF 60 PREMIUM VISUALS IN 45 MEGAPIXELS RESOLUTION. INCLUDES 16:9, 9:16 AND 21:9 ASPECT RATIOS. FLAWLESS TEXTURES, ZERO BRANDING, IP-SAFE. THE DEFINITIVE CHOICE FOR HIGH-END COMMERCIAL CAMPAIGNS."); 
+        // 45MP LOGIKA (Ispravljene zamenjene cifre iz prompta)
+        setNoviOpisEn("V8 MASTERWORK BUNDLE: COMPLETE COLLECTION OF 60 PREMIUM VISUALS FOR 8K IN 45 MEGAPIXELS RESOLUTION. INCLUDES 16:9 ( 30 Images ) AND 9:16 ( 30 Images ) ASPECT RATIOS. Utilizing precision LANCZOS interpolation. An advanced MedianFilter systematically wipes out digital noise and compression artifacts. Custom NumPy matrix processing applies a smooth rolloff to prevent blown-out whites and retain intricate highlight textures. Strict conversion to the sRGB ICC profile ensures color accuracy across all digital devices and professional reference monitors. Signature Gaussian Noise distribution breaks artificial AI smoothness, creating an authentic, tangible photographic look. Zero text, watermarks, or logos. 100% IP Safe. Fully production-ready."); 
     }
     else if (noviFormat === '60MP SIGNATURE BUNDLE') { 
-        setNoviOpisEn("60MP SIGNATURE BUNDLE (45 FILES: 16:9, 9:16, 21:9), 60MP Upscale, Contributor Cleanup, Premium Sharpness, Color Grading, Highlight Rolloff, Shadow Depth, sRGB Standard, Product AD Polish, Anti-plastic Realism, 100% IP SAFE"); 
+        // 60MP LOGIKA (Ispravljene zamenjene cifre iz prompta + promenjena reč Masterwork u Signature)
+        setNoviOpisEn("V8 SIGNATURE BUNDLE: COMPLETE COLLECTION OF 45 PREMIUM VISUALS FOR 8K IN 60 MEGAPIXELS RESOLUTION. INCLUDES 16:9 ( 15 Images ), 9:16 ( 15 Images ) AND 21:9 ( 15 Images ) ASPECT RATIOS. Utilizing precision LANCZOS interpolation. An advanced MedianFilter systematically wipes out digital noise and compression artifacts. Custom NumPy matrix processing applies a smooth rolloff to prevent blown-out whites and retain intricate highlight textures. Strict conversion to the sRGB ICC profile ensures color accuracy across all digital devices and professional reference monitors. Signature Gaussian Noise distribution breaks artificial AI smoothness, creating an authentic, tangible photographic look. Zero text, watermarks, or logos. 100% IP Safe. Fully production-ready."); 
     }
-  }, [noviFormat]);
+  }, [noviFormat, editingPaketId]); 
   // KRAJ FUNKCIJE: Automatsko setovanje opisa
 
   // POČETAK FUNKCIJE: fetchPaketi
@@ -148,6 +154,12 @@ const V8StockBerza = () => {
 
   // POČETAK FUNKCIJE: prijavaIKupovina
   const prijavaIKupovina = async (paket) => {
+    if (paket.isFree || paket.cena === "0.00" || parseFloat(paket.cena) === 0) {
+        if(typeof v8Toast !== 'undefined') v8Toast.success("🚀 ACCESS GRANTED: Downloading Free V8 Asset...");
+        window.open(paket.zipLink, '_blank');
+        return;
+    }
+
     const fullName = paket.volume ? `${paket.nazivEn} - ${paket.volume}` : paket.nazivEn;
     const finalPrice = getGlobalCena(paket.cena);
 
@@ -156,7 +168,6 @@ const V8StockBerza = () => {
         if (paket.paddleLink && paket.paddleLink.trim() !== "") {
             window.location.href = paket.paddleLink;
         } else {
-            // 🔥 AKTIVIRAMO CENTRALNI CHECKOUT MODAL 🔥
             setCheckoutData({ isOpen: true, name: fullName, price: finalPrice });
         }
     } else {
@@ -221,16 +232,14 @@ const V8StockBerza = () => {
   };
   // KRAJ FUNKCIJE: handleUploadPrimeri
 
-  // POČETAK FUNKCIJE: Brisanje slika
   const removeMainImage = () => setPreviewUrl('');
   const removeThumbnail = (indexToRemove) => setPrimeriUrls(prev => prev.filter((_, idx) => idx !== indexToRemove));
-  // KRAJ FUNKCIJE
 
   // POČETAK FUNKCIJE: dodajPaket
   const dodajPaket = async (e) => {
     e.preventDefault();
     if (!previewUrl || !zipLink) { v8Toast.error("Image & ZIP needed!"); return; }
-    const paketData = { nazivEn: noviNazivEn.trim(), volume: noviVolume, format: noviFormat, kategorijaEn: novaKategorijaEn.trim(), cena: novaCena, tip: noviTip, opisEn: noviOpisEn, previewUrl, zipLink, paddleLink, primeri: primeriUrls, updatedAt: serverTimestamp() };
+    const paketData = { nazivEn: noviNazivEn.trim(), volume: noviVolume, format: noviFormat, kategorijaEn: novaKategorijaEn.trim(), cena: isFree ? "0.00" : novaCena, tip: noviTip, opisEn: noviOpisEn, previewUrl, zipLink, isFree: isFree, primeri: primeriUrls, updatedAt: serverTimestamp() };
     try {
         if (editingPaketId) { await updateDoc(doc(db, "v8_stock_paketi", editingPaketId), paketData); v8Toast.success("Updated!"); } 
         else { await addDoc(collection(db, "v8_stock_paketi"), { ...paketData, createdAt: serverTimestamp() }); v8Toast.success("Added!"); }
@@ -240,39 +249,28 @@ const V8StockBerza = () => {
   // KRAJ FUNKCIJE: dodajPaket
 
   // POČETAK FUNKCIJE: startEditPaket
-  const startEditPaket = (paket) => { setEditingPaketId(paket.id); setNoviNazivEn(paket.nazivEn || ''); setNoviVolume(paket.volume || ''); setNoviFormat(paket.format || '16:9 ONLY (SINGLE)'); setNovaKategorijaEn(paket.kategorijaEn || ''); setNovaCena(paket.cena || '49.99'); setNoviOpisEn(paket.opisEn || ''); setPreviewUrl(paket.previewUrl || ''); setZipLink(paket.zipLink || ''); setPaddleLink(paket.paddleLink || ''); setPrimeriUrls(paket.primeri || []); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  const startEditPaket = (paket) => { setEditingPaketId(paket.id); setNoviNazivEn(paket.nazivEn || ''); setNoviVolume(paket.volume || ''); setNoviFormat(paket.format || '16:9 ONLY (SINGLE)'); setNovaKategorijaEn(paket.kategorijaEn || ''); setNovaCena(paket.cena || '49.99'); setNoviOpisEn(paket.opisEn || ''); setPreviewUrl(paket.previewUrl || ''); setZipLink(paket.zipLink || ''); setIsFree(paket.isFree || false); setPrimeriUrls(paket.primeri || []); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   // KRAJ FUNKCIJE: startEditPaket
 
   // POČETAK FUNKCIJE: stoziEdit
-  const stoziEdit = () => { setEditingPaketId(null); setNoviNazivEn(''); setNoviVolume(''); setNoviFormat('16:9 ONLY (SINGLE)'); setNovaKategorijaEn(''); setNovaCena('49.99'); setPreviewUrl(''); setZipLink(''); setPaddleLink(''); setPrimeriUrls([]); };
+  const stoziEdit = () => { setEditingPaketId(null); setNoviNazivEn(''); setNoviVolume(''); setNoviFormat('16:9 ONLY (SINGLE)'); setNovaKategorijaEn(''); setNovaCena('49.99'); setPreviewUrl(''); setZipLink(''); setIsFree(false); setPrimeriUrls([]); };
   // KRAJ FUNKCIJE: stoziEdit
 
-  // POČETAK FUNKCIJE: obrisiPaket
   const obrisiPaket = async (id) => { if (window.confirm("Are you sure?")) { await deleteDoc(doc(db, "v8_stock_paketi", id)); fetchPaketi(); } };
-  // KRAJ FUNKCIJE: obrisiPaket
-  
-  // POČETAK FUNKCIJE: getGlobalCena
   const getGlobalCena = (cena) => { const numCena = parseFloat(cena); return numCena > 500 ? (Math.ceil((numCena / 110) * 1.2) + 0.99).toFixed(2) : numCena.toFixed(2); };
-  // KRAJ FUNKCIJE: getGlobalCena
-
-  // POČETAK FUNKCIJE: getAspectClass
   const getAspectClass = (format) => { return (!format || format.includes('16:9 ONLY')) ? 'aspect-video' : 'aspect-square'; };
-  // KRAJ FUNKCIJE: getAspectClass
 
-  // FILTRIRANJE PRE NEGO ŠTO POŠALJEMO CHILD KOMPONENTAMA
   const standardPaketi = paketi.filter(p => !(p.format || "").toUpperCase().includes('MASTERWORK') && !(p.format || "").toUpperCase().includes('SIGNATURE') && !(p.nazivEn || "").toUpperCase().includes('WATCHES'));
   const premiumPaketi = paketi.filter(p => { const fmt = (p.format || "").toUpperCase(); return fmt.includes('MASTERWORK') && !fmt.includes('MASTERWORK BUNDLE'); });
   const bundlePaketi = paketi.filter(p => (p.format || "").toUpperCase().includes('MASTERWORK BUNDLE'));
   const signaturePaketi = paketi.filter(p => (p.format || "").toUpperCase().includes('60MP SIGNATURE BUNDLE'));
 
-// POZADINE
-const pozadine = {
-  standard: "url('/standard-bg.webp')",
-  premium: "url('/premium-bg.webp')",
-  bundles: "url('/bundles-bg.webp')",
-  signature: "linear-gradient(to bottom, rgba(5,5,5,0.7), rgba(0,0,0,0.85)), url('/v8-stock/v8-master-bg.jpg')"
-};
-// KARAJ POZADINE
+  const pozadine = {
+    standard: "url('/standard-bg.webp')",
+    premium: "url('/premium-bg.webp')",
+    bundles: "url('/bundles-bg.webp')",
+    signature: "linear-gradient(to bottom, rgba(5,5,5,0.7), rgba(0,0,0,0.85)), url('/v8-stock/v8-master-bg.jpg')"
+  };
 
 // POČETAK FUNKCIJE: renderV8Manifest
 const renderV8Manifest = (rezolucija) => {
@@ -297,11 +295,11 @@ const renderV8Manifest = (rezolucija) => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
             {specifikacije.map((item, i) => {
-              const isOpen = otvorenOpis === i;
+              const isOpen = otvoreniOpisi.includes(i);
               return (
                 <div 
                   key={i} 
-                  onClick={() => setOtvorenOpis(isOpen ? null : i)}
+                  onClick={() => setOtvoreniOpisi(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i])}
                   className={`bg-white/5 border p-6 rounded-2xl transition-all duration-500 cursor-pointer relative overflow-hidden group ${
                     isOpen ? 'border-orange-500/50 shadow-[0_0_15px_rgba(249,115,22,0.1)]' : 'border-white/5 hover:border-white/20'
                   }`}
@@ -386,7 +384,7 @@ const renderV8Manifest = (rezolucija) => {
 
                <p className="text-zinc-200 font-bold uppercase tracking-[0.2em] text-[10px] md:text-[12px] max-w-4xl mx-auto leading-relaxed mb-10 drop-shadow-lg bg-black/30 p-4 rounded-lg backdrop-blur-sm transition-all">
                 {activeTab === 'premium' && "33MP OF FLAWLESS DETAIL. HOLLYWOOD BLOCKBUSTER QUALITY MEETS 100% COMMERCIALLY SECURE VISUALS. THE ULTIMATE ARSENAL FOR HIGH-END CREATORS."}
-                {activeTab === 'bundles' && (<>THE DEFINITIVE <span className="text-[#FF8C00]">45MP</span> PRODUCTION-READY ARArsenal. BUILT FOR HIGH-END PRODUCTION. ENGINEERED FOR VISIONARY CREATORS AND SCALABLE, 100% IP-SAFE COMMERCIAL CAMPAIGNS.</>)}
+                {activeTab === 'bundles' && (<>THE DEFINITIVE <span className="text-[#FF8C00]">45MP</span> PRODUCTION-READY ARSENAL. BUILT FOR HIGH-END PRODUCTION. ENGINEERED FOR VISIONARY CREATORS AND SCALABLE, 100% IP-SAFE COMMERCIAL CAMPAIGNS.</>)}
                 {activeTab === 'signature' && (<>THE PINNACLE OF COMMERCIAL ASSETS. <span className="text-yellow-400">45-FILE OMNI-CHANNEL CAMPAIGNS</span> IN 60 MEGAPIXELS. BUILT FOR ELITE AGENCIES AND LUXURY BRANDS.</>)}
                 {activeTab === 'standard' && "THE ULTIMATE ARSENAL OF ROYALTY-FREE AI ASSETS FOR HIGH-END PRODUCTION AND VISIONARY CREATORS."}
                </p>
@@ -445,7 +443,7 @@ const renderV8Manifest = (rezolucija) => {
                       <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
                           <Wallet size={14} /> PRICE (USD)
                       </label>
-                      <input type="text" value={novaCena} onChange={(e)=>setNovaCena(e.target.value)} placeholder="E.g. 49.99" className="bg-black border border-white/10 p-4 rounded-xl text-[13px] font-bold text-white outline-none focus:border-[#FF8C00] transition-all" />
+                      <input type="text" value={novaCena} onChange={(e)=>setNovaCena(e.target.value)} disabled={isFree} placeholder="E.g. 49.99" className={`bg-black border border-white/10 p-4 rounded-xl text-[13px] font-bold outline-none focus:border-[#FF8C00] transition-all ${isFree ? 'text-zinc-500 border-zinc-800' : 'text-white'}`} />
                   </div>
 
                   <div className="flex flex-col gap-2">
@@ -474,10 +472,25 @@ const renderV8Manifest = (rezolucija) => {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <label className="flex items-center gap-2 text-yellow-400 font-black text-[11px] tracking-widest uppercase">
-                            <Zap size={14} /> PADDLE CHECKOUT LINK
+                        <label className="flex items-center gap-2 text-emerald-400 font-black text-[11px] tracking-widest uppercase">
+                            <Zap size={14} /> SECURITY PROTOCOL TYPE
                         </label>
-                        <input type="url" value={paddleLink} onChange={(e)=>setPaddleLink(e.target.value)} placeholder="https://buy.paddle.com/..." className="bg-black border border-yellow-500/50 p-4 rounded-xl text-[13px] text-white w-full outline-none font-bold focus:border-yellow-400 transition-all" />
+                        <button 
+                          type="button" 
+                          onClick={() => {
+                            const nextFreeStatus = !isFree;
+                            setIsFree(nextFreeStatus);
+                            if (nextFreeStatus) setNovaCena("0.00");
+                            else setNovaCena("49.99");
+                          }} 
+                          className={`w-full p-4 rounded-xl font-black text-[13px] tracking-widest uppercase border-2 transition-all text-center flex items-center justify-center gap-2 cursor-pointer ${
+                            isFree 
+                              ? 'bg-gradient-to-r from-emerald-600 to-green-500 border-emerald-400 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)]' 
+                              : 'bg-black border-white/10 text-zinc-500 hover:border-emerald-500/50'
+                          }`}
+                        >
+                          {isFree ? "⚡ FREE PROTOCOL: ACTIVE DOWNLOAD" : "SET AS FREE PACKAGE"}
+                        </button>
                     </div>
                 </div>
 
