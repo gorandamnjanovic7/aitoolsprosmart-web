@@ -5,6 +5,7 @@ import { Helmet } from 'react-helmet-async';
 // V8 KOCKICE
 import HeroBanner from './HeroBanner';
 import IntelProtocols from './IntelProtocols';
+import UnlockTheBeast from './UnlockTheBeast'; // 🔥 TVOJ NOVI MAGNET UVEZEN OVDE
 import EnhancerPromo from './EnhancerPromo';
 import StockBundles from './StockBundles';
 import Marketplace from './Marketplace';
@@ -27,6 +28,10 @@ export default function HomePage({ apps = [] }) {
       
       <div className="max-w-7xl mx-auto px-6 text-left">
         <IntelProtocols />
+        
+        {/* 🔥 NOVI MAGNET POSTAVLJEN TAČNO IZMEĐU PROTOKOLA I ENHANCER-A 🔥 */}
+        <UnlockTheBeast />
+        
         <EnhancerPromo />
         <StockBundles />
         <Marketplace apps={apps} />
