@@ -7,6 +7,7 @@ import { Crown, CheckCircle, Zap, Play, Rocket, TrendingUp, Cpu, Crosshair, Down
 import { motion, AnimatePresence } from 'framer-motion'; 
 import { v8Toast } from './v8Utils';
 import { createPortal } from 'react-dom';
+import LoginRequiredModal from './LoginRequiredModal';
 
 // POČETAK KOMPONENTE: RippleButton
 const RippleButton = ({ children, onClick, disabled, className }) => {
@@ -36,6 +37,11 @@ const V8Promo10xPage = () => {
   const [lemonLink, setLemonLink] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [loginRequiredData, setLoginRequiredData] = useState({
+    isOpen: false,
+    name: 'V8 PROMO 10X LIFETIME',
+    price: 199.99
+  });
 
   // POČETAK FUNKCIJE: Scroll to top
   useEffect(() => {
@@ -73,21 +79,13 @@ const V8Promo10xPage = () => {
   }, []);
   // KRAJ FUNKCIJE: Firebase Fetch
 
-  // 🔥 NOVO: PAMETNI V8 MEMORY TOKEN 🔥
-  // Ako se stranica osvežila nakon logina, a klijent je kliknuo "Kupi", odrađujemo posao odmah!
+  // Novi flow koristi LoginRequiredModal umesto direktnog Google popup-a.
+  // Ovaj fallback čisti stari pending token ako je ostao iz prethodne verzije.
   useEffect(() => {
-    if (currentUser && localStorage.getItem('v8_pending_checkout') === 'true') {
-        localStorage.removeItem('v8_pending_checkout'); // Brišemo token
-        snimiKupcaUBazu(currentUser); // Snimamo kupca
-
-        if (lemonLink && lemonLink.includes("http")) {
-            window.location.href = lemonLink;
-        } else {
-            setShowPaymentModal(true); // OTVARA SE MODAL!
-        }
+    if (localStorage.getItem('v8_pending_checkout') === 'true') {
+        localStorage.removeItem('v8_pending_checkout');
     }
-  }, [currentUser, lemonLink]);
-  // KRAJ NOVE FUNKCIJE
+  }, []);
 
   const images = promoData?.images?.length > 0 ? promoData.images : ['/thumbinal.png']; 
   const videoUrl = "/V8_reklama.mp4";
@@ -131,44 +129,56 @@ const V8Promo10xPage = () => {
   };
   // KRAJ FUNKCIJE: Snimi Kupca
 
+  // POČETAK FUNKCIJE: Open Payment Flow
+  const openPaymentFlow = async (user) => {
+      if (!user) return;
+
+      const email = user.email ? user.email.toLowerCase() : "";
+      const isAdminUser = email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com";
+
+      if (!isAdminUser) {
+          await snimiKupcaUBazu(user);
+      }
+
+      if (lemonLink && lemonLink.includes("http")) {
+          window.location.href = lemonLink;
+      } else {
+          setShowPaymentModal(true);
+      }
+  };
+  // KRAJ FUNKCIJE: Open Payment Flow
+
   // POČETAK FUNKCIJE: Purchase Click
   const handlePurchaseClick = async (e) => {
     e.preventDefault();
-    if (currentUser) {
-        const email = currentUser.email ? currentUser.email.toLowerCase() : "";
-        
-        // I Master nalozi prolaze sada normalno da vide modal
-        if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
-             if (lemonLink && lemonLink.includes("http")) { window.location.href = lemonLink; } 
-             else { setShowPaymentModal(true); }
-             return; 
-        }
 
-        snimiKupcaUBazu(currentUser);
-        if (lemonLink && lemonLink.includes("http")) {
-            window.location.href = lemonLink; 
-        } else {
-            setShowPaymentModal(true); 
-        }
-    } else {
-        try {
-            // 🔥 Postavljamo Memory Token pre nego što otvorimo Google Login
-            localStorage.setItem('v8_pending_checkout', 'true');
-            
-            const v8Provider = new GoogleAuthProvider();
-            v8Provider.setCustomParameters({ prompt: 'select_account' });
-            await signInWithPopup(auth, v8Provider);
-            // Nastavak logike se odrađuje gore u novom useEffect-u!
-        } catch (error) { 
-            localStorage.removeItem('v8_pending_checkout'); // Ako klijent otkaže, brišemo token
-        }
+    if (currentUser) {
+        await openPaymentFlow(currentUser);
+        return;
     }
+
+    setLoginRequiredData({
+      isOpen: true,
+      name: 'V8 PROMO 10X LIFETIME',
+      price: 199.99
+    });
   };
   // KRAJ FUNKCIJE: Purchase Click
 
   return (
     <div className="min-h-screen bg-[#050505] text-white pt-24 pb-20 font-sans selection:bg-orange-500 selection:text-white relative">
       
+      <LoginRequiredModal
+        isOpen={loginRequiredData.isOpen}
+        onClose={() => setLoginRequiredData({ isOpen: false, name: 'V8 PROMO 10X LIFETIME', price: 199.99 })}
+        packageName={loginRequiredData.name}
+        price={loginRequiredData.price}
+        onLoginSuccess={async (user) => {
+          setLoginRequiredData({ isOpen: false, name: 'V8 PROMO 10X LIFETIME', price: 199.99 });
+          await openPaymentFlow(user);
+        }}
+      />
+
       {/* POČETAK SEKCIJE: Hero */}
       <motion.div initial={{ opacity: 0, scale: 0.95, y: 60 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: 1.1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }} className="relative w-full max-w-5xl mx-auto rounded-[2.5rem] border border-orange-500/20 shadow-[0_0_40px_rgba(234,88,12,0.1)] overflow-hidden flex flex-col items-center justify-center p-10 md:p-16 text-center mt-6 mb-16 group">
         <div className="absolute inset-0 z-0 bg-[#050505]">
