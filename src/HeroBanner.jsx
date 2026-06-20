@@ -1,3 +1,4 @@
+// POČETAK FAJLA: HeroBanner.jsx
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { MatrixRain, BANNER_DATA } from './data';
@@ -7,46 +8,58 @@ const HeroBanner = ({ setIsBannerHovered }) => {
   const [isHovered, setIsHovered] = useState(false);
   const timerRef = useRef(null);
 
+  // POČETAK FUNKCIJE: nextSlide
   const nextSlide = useCallback(() => {
     setActiveSlide(s => (s + 1) % (BANNER_DATA?.length || 1));
   }, []);
+  // KRAJ FUNKCIJE: nextSlide
 
+  // POČETAK FUNKCIJE: prevSlide
   const prevSlide = useCallback(() => {
     setActiveSlide(s => (s - 1 + (BANNER_DATA?.length || 1)) % (BANNER_DATA?.length || 1));
   }, []);
+  // KRAJ FUNKCIJE: prevSlide
   
-  // Glavna kontrola tajmera - sada je bulletproof
+  // POČETAK FUNKCIJE: Pametni Tajmer (useEffect)
   useEffect(() => { 
-    // Uvek prvo ubijamo stari tajmer da nema dupliranja
+    // Uvek prvo ubijamo stari tajmer (sada clearTimeout jer koristimo setTimeout)
     if (timerRef.current) {
-      clearInterval(timerRef.current);
+      clearTimeout(timerRef.current);
       timerRef.current = null;
     }
 
     // Ako miš NIJE na baneru, tek onda vrti slike
     if (!isHovered) {
-      timerRef.current = setInterval(() => {
+      // Čitamo vreme iz BANNER_DATA za trenutni slajd. Ako nema, default je 5000ms (5 sekundi).
+      const slideDuration = BANNER_DATA[activeSlide]?.duration || 5000;
+
+      timerRef.current = setTimeout(() => {
         nextSlide();
-      }, 7000); 
+      }, slideDuration); 
     }
 
-    // Cleanup kad se komponenta osveži
+    // Cleanup kad se komponenta osveži ili pređe na novi slajd
     return () => {
       if (timerRef.current) {
-        clearInterval(timerRef.current);
+        clearTimeout(timerRef.current);
       }
     };
-  }, [isHovered, nextSlide]);
+  }, [isHovered, activeSlide, nextSlide]);
+  // KRAJ FUNKCIJE: Pametni Tajmer (useEffect)
 
+  // POČETAK FUNKCIJE: handleMouseEnter
   const handleMouseEnter = () => { 
     setIsHovered(true); 
     if(setIsBannerHovered) setIsBannerHovered(true); 
   };
+  // KRAJ FUNKCIJE: handleMouseEnter
   
+  // POČETAK FUNKCIJE: handleMouseLeave
   const handleMouseLeave = () => { 
     setIsHovered(false); 
     if(setIsBannerHovered) setIsBannerHovered(false); 
   };
+  // KRAJ FUNKCIJE: handleMouseLeave
 
   return (
     <div 
@@ -84,3 +97,4 @@ const HeroBanner = ({ setIsBannerHovered }) => {
 };
 
 export default HeroBanner;
+// KRAJ FAJLA: HeroBanner.jsx
