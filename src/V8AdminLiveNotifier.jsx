@@ -1,18 +1,15 @@
 // POČETAK FAJLA: V8AdminLiveNotifier.jsx
-// Ne zaboravi React source code link u repozitorijumu!
-
 import React, { useState, useEffect } from 'react';
-import { db, auth } from './firebase'; // Proveri tačnu putanju do tvog firebase.js
+import { db, auth } from './firebase'; 
 import { collection, query, onSnapshot, where, Timestamp } from 'firebase/firestore';
-import { X, Zap, Crown, AlertCircle } from 'lucide-react';
+import { X, Zap, DollarSign, Bitcoin } from 'lucide-react';
 import { onAuthStateChanged } from 'firebase/auth';
 
 const V8AdminLiveNotifier = () => {
   const [notifications, setNotifications] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [mountTime] = useState(Timestamp.now()); // Beležimo trenutak kada si ušao na sajt
+  const [mountTime] = useState(Timestamp.now()); 
 
-  // 1. Provera da li si ti (Admin) ulogovan
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       if (user && (user.email === "damnjanovicgoran7@gmail.com" || user.email === "aitoolsprosmart@gmail.com")) {
@@ -24,45 +21,50 @@ const V8AdminLiveNotifier = () => {
     return () => unsub();
   }, []);
 
-  // 2. Radar koji sluša SAMO NOVE zahteve u bazi
+  // 🔥 ISPRAVLJEN RADAR DA SLUŠA requestDate UMESNO timestamp I DA SLUŠA I KRIPTO I PAYONEER 🔥
   useEffect(() => {
     if (!isAdmin) return;
 
-    // Slušamo kolekciju v8_payoneer_requests (gde idu oni iz SecureCheckout-a)
-    // Tražimo samo one koji su kreirani NAKON što si ti otvorio sajt
-    const q = query(
+    // Slušamo Payoneer
+    const qPayoneer = query(
       collection(db, "v8_payoneer_requests"),
-      where("timestamp", ">=", mountTime)
+      where("requestDate", ">=", mountTime)
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    // Slušamo Kripto
+    const qCrypto = query(
+      collection(db, "v8_crypto_requests"),
+      where("requestDate", ">=", mountTime)
+    );
+
+    const handleSnapshot = (snapshot, type) => {
       snapshot.docChanges().forEach((change) => {
-        // change.type === 'added' znači da je pao novi dokument u bazu
         if (change.type === 'added') {
           const data = change.doc.data();
-          
-          // Izbegavamo lokalne promene koje nemaju timestamp još uvek
-          if (data.timestamp) {
-              // Ubacujemo novu notifikaciju u state
-              setNotifications(prev => [...prev, { id: change.doc.id, ...data }]);
+          if (data.requestDate) {
+              setNotifications(prev => [...prev, { id: change.doc.id, typeOfRequest: type, ...data }]);
               
-              // OPCIONO: Pusti zvuk kad iskoči! (Ako imaš neki mp3 u public folderu)
+              // OPCIONO: Pusti zvuk
               // const audio = new Audio('/v8-ping.mp3');
               // audio.play().catch(e => console.log(e));
           }
         }
       });
-    });
+    };
 
-    return () => unsubscribe();
+    const unsubPayoneer = onSnapshot(qPayoneer, (snap) => handleSnapshot(snap, 'b2b'));
+    const unsubCrypto = onSnapshot(qCrypto, (snap) => handleSnapshot(snap, 'crypto'));
+
+    return () => {
+      unsubPayoneer();
+      unsubCrypto();
+    };
   }, [isAdmin, mountTime]);
 
-  // Funkcija za tvoje ručno gašenje obaveštenja
   const dismissNotification = (id) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
-  // Ako nisi admin ili nema novih akcija, ne renderuj ništa
   if (!isAdmin || notifications.length === 0) return null;
 
   return (
@@ -70,9 +72,8 @@ const V8AdminLiveNotifier = () => {
       {notifications.map(notif => (
         <div 
           key={notif.id} 
-          className="bg-[#050505] border-l-4 border-[#FF8C00] p-5 rounded-xl shadow-[0_10px_40px_rgba(255,140,0,0.4)] w-80 relative flex flex-col pointer-events-auto transform transition-all duration-500 animate-slide-in-right"
+          className={`bg-[#050505] border-l-4 p-5 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] w-80 relative flex flex-col pointer-events-auto transform transition-all duration-500 animate-slide-in-right ${notif.typeOfRequest === 'crypto' ? 'border-[#F97316] shadow-[0_10px_40px_rgba(249,115,22,0.3)]' : 'border-[#3B82F6] shadow-[0_10px_40px_rgba(59,130,246,0.3)]'}`}
         >
-          {/* Dugme za gašenje - OSTAJE DOK GA NE STISNEŠ */}
           <button 
             onClick={() => dismissNotification(notif.id)} 
             className="absolute top-3 right-3 text-zinc-500 hover:text-white bg-zinc-900/50 hover:bg-red-500 p-1.5 rounded-lg transition-all"
@@ -81,9 +82,9 @@ const V8AdminLiveNotifier = () => {
           </button>
           
           <div className="flex items-center gap-2 mb-3">
-            <Zap className="w-5 h-5 text-[#FF8C00] animate-pulse" />
-            <span className="text-[#FF8C00] font-black text-[11px] uppercase tracking-widest drop-shadow-[0_0_8px_rgba(255,140,0,0.8)]">
-              LIVE ACTION ALERT
+            {notif.typeOfRequest === 'crypto' ? <Bitcoin className="w-5 h-5 text-[#F97316] animate-pulse" /> : <DollarSign className="w-5 h-5 text-[#3B82F6] animate-pulse" />}
+            <span className={`font-black text-[11px] uppercase tracking-widest ${notif.typeOfRequest === 'crypto' ? 'text-[#F97316] drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]' : 'text-[#3B82F6] drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]'}`}>
+              {notif.typeOfRequest === 'crypto' ? 'NEW CRYPTO CHECKOUT' : 'NEW B2B CHECKOUT'}
             </span>
           </div>
           
@@ -94,7 +95,7 @@ const V8AdminLiveNotifier = () => {
           
           <div className="flex flex-col gap-1">
              <span className="text-zinc-400 text-[10px] font-bold uppercase tracking-wider">Targeted Asset</span>
-             <span className="text-blue-400 font-black text-sm uppercase">{notif.productName}</span>
+             <span className={`${notif.typeOfRequest === 'crypto' ? 'text-[#F97316]' : 'text-[#3B82F6]'} font-black text-sm uppercase`}>{notif.productName}</span>
              <span className="text-white font-black text-2xl mt-1">${notif.price}</span>
           </div>
         </div>
