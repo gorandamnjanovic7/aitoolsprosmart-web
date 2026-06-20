@@ -37,7 +37,6 @@ import V8Standard16MPWorkspace from "./V8Standard16MPWorkspace";
 import V8GridSystem from './V8GridSystem';
 import UgcAvatar from './UgcAvatar';
 import VaultTransition from './v8-ui-components/VaultTransition'; 
-import V8IdleProtocol from './v8-ui-components/V8IdleProtocol'; 
 import V8CinematicText from './v8-ui-components/V8CinematicText'; 
 import CinematikPromptEngine from './CinematikPromptEngine';
 import V8PayoneerDashboard from './V8PayoneerDashboard';
@@ -46,12 +45,18 @@ import V8JsonDeBrendingExtractorPage from './V8JsonDeBrendingExtractorPage';
 // 🔥 NOVO: Dodat import za DNA Extractor 🔥
 import V8JsonDeExtractorPage from './V8JsonDeExtractorPage';
 
+// 🔥 NOVO: Import za Master Engine seriju 🔥
+import V8MasterEngine33MP from './V8MasterEngine33MP';
+import V8MasterEngine45MP from './V8MasterEngine45MP';
+import V8MasterEngine60MP from './V8MasterEngine60MP';
+
 import V8RadarCursor from './v8-ui-components/V8RadarCursor'; 
 import V8Navbar from './V8Navbar';
 import V8Footer from './V8Footer';
 
 // 🔥 NOVI IMPORTI 🔥
 import V8SecureCheckout from './V8SecureCheckout';
+import LoginRequiredModal from './LoginRequiredModal';
 import V8UnlockModal from './V8UnlockModal'; 
 import V8AdminLiveNotifier from './V8AdminLiveNotifier'; // 🔥 TVOJ ADMIN RADAR 🔥
 
@@ -217,13 +222,31 @@ function AppContent({ appsData, refreshData }) {
   const entryTime = useRef(Date.now());
   const [authVersion, setAuthVersion] = useState(0); 
 
-  // 🔥 GLOBALNI STATE ZA CHECKOUT 🔥
+  // 🔥 GLOBALNI STATE ZA LOGIN + CHECKOUT 🔥
   const [checkoutData, setCheckoutData] = useState({ isOpen: false, name: '', price: '' });
+  const [loginRequiredData, setLoginRequiredData] = useState({ isOpen: false, name: '', price: '' });
+
+  // POČETAK FUNKCIJE: openSecureCheckout
+  const openSecureCheckout = useCallback((productName, price) => {
+    setCheckoutData({ isOpen: true, name: productName, price });
+  }, []);
+  // KRAJ FUNKCIJE: openSecureCheckout
 
   // POČETAK FUNKCIJE: handleOpenCheckout
   const handleOpenCheckout = useCallback((productName, price) => {
-    setCheckoutData({ isOpen: true, name: productName, price });
-  }, []);
+    const userNow = auth.currentUser;
+
+    if (!userNow) {
+      setLoginRequiredData({
+        isOpen: true,
+        name: productName,
+        price
+      });
+      return;
+    }
+
+    openSecureCheckout(productName, price);
+  }, [openSecureCheckout]);
   // KRAJ FUNKCIJE: handleOpenCheckout
 
   // POČETAK FUNKCIJE: handleCloseCheckout
@@ -231,6 +254,12 @@ function AppContent({ appsData, refreshData }) {
     setCheckoutData({ isOpen: false, name: '', price: '' });
   }, []);
   // KRAJ FUNKCIJE: handleCloseCheckout
+
+  // POČETAK FUNKCIJE: handleCloseLoginRequired
+  const handleCloseLoginRequired = useCallback(() => {
+    setLoginRequiredData({ isOpen: false, name: '', price: '' });
+  }, []);
+  // KRAJ FUNKCIJE: handleCloseLoginRequired
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, () => {
@@ -312,6 +341,11 @@ function AppContent({ appsData, refreshData }) {
               <Route path="/" element={<V8PageWrapper><HomePage apps={appsData} openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               <Route path="/v8-standard-16mp" element={<V8PageWrapper><V8Standard16MPWorkspace openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               
+              {/* 🔥 ISPRAVLJENE RUTE ZA MASTER ENGINE SERIJU 🔥 */}
+              <Route path="/master-33mp" element={<V8PageWrapper><V8MasterEngine33MP openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+              <Route path="/master-45mp" element={<V8PageWrapper><V8MasterEngine45MP openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+              <Route path="/master-60mp" element={<V8PageWrapper><V8MasterEngine60MP openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+              
               {/* 🔥 ISPRAVLJENE RUTE: SVAKA GAĐA SVOJ FAJL 🔥 */}
               <Route path="/extractor" element={
                 <V8PageWrapper>
@@ -358,10 +392,22 @@ function AppContent({ appsData, refreshData }) {
 
         <V8Footer />
 
+        {/* 🔥 GLOBALNI LOGIN MODAL PRE CHECKOUT-A 🔥 */}
+        <LoginRequiredModal
+          isOpen={loginRequiredData.isOpen}
+          onClose={handleCloseLoginRequired}
+          packageName={loginRequiredData.name}
+          price={loginRequiredData.price}
+          onLoginSuccess={() => {
+            openSecureCheckout(loginRequiredData.name, loginRequiredData.price);
+          }}
+        />
+
         {/* 🔥 RENDEROVANJE MODALA NA GLOBALNOM NIVOU 🔥 */}
         <AnimatePresence>
           {checkoutData.isOpen && (
             <V8SecureCheckout 
+              isOpen={checkoutData.isOpen}
               productName={checkoutData.name} 
               price={checkoutData.price} 
               onClose={handleCloseCheckout} 
@@ -397,11 +443,11 @@ export default function App() {
   return (
     <HelmetProvider>
       <Router>
-        {/* 🔥 DODATO 5 MINUTA (300000ms) ZA AKTIVACIJU SCREENSAVERA 🔥 */}
-        <V8IdleProtocol timeout={600000} />
+        {/* 🔥 OBRISAN V8IdleProtocol KAKO SE NE BI PALIO SCREENSAVER 🔥 */}
         <AppContent appsData={appsData} refreshData={refreshData} />
       </Router>
     </HelmetProvider>
   );
 }
 // KRAJ FUNKCIJE: App
+// KRAJ FAJLA: App.jsx
