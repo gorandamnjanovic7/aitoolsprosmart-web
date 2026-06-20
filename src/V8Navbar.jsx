@@ -1,14 +1,13 @@
 // POČETAK FAJLA: V8Navbar.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-// 🔥 UBAČENA LayoutGrid IKONICA ZA V8 GRID SYSTEM 🔥
-import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay, FileText, Code, ShieldCheck, LayoutGrid } from 'lucide-react';
+import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay, FileText, Code, ShieldCheck, LayoutGrid, Cpu, Maximize, Gift } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 // FIREBASE & TOOLS
 import { auth, provider, db } from './firebase';
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
 import { v8Toast } from './v8Utils';
 import * as data from './data';
 import navBg from './navbar-bg.webp';
@@ -21,12 +20,17 @@ const V8Navbar = ({ handleHomeClick }) => {
   
   const [user, setUser] = useState(null);
   const [isVIPInDB, setIsVIPInDB] = useState(false);
+  
+  // Stanje za praćenje kredita (SVI MOTORI)
+  const [userCredits, setUserCredits] = useState({ credits_16mp: 0, credits_33mp: 0, credits_45mp: 0, trialClaimed: true });
 
   const currentUserEmail = user?.email?.toLowerCase() || "";
   const isAdmin = currentUserEmail === "damnjanovicgoran7@gmail.com" || currentUserEmail === "aitoolsprosmart@gmail.com";
   const isVIP = isAdmin || isVIPInDB;
 
   useEffect(() => {
+    let unsubTrial = () => {};
+
     const unsub = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
@@ -35,13 +39,20 @@ const V8Navbar = ({ handleHomeClick }) => {
           try {
             const docSnap = await getDoc(doc(db, "vip_users", currentUser.email.toLowerCase()));
             setIsVIPInDB(docSnap.exists());
+
+            unsubTrial = onSnapshot(doc(db, "v8_users", currentUser.uid), (userSnap) => {
+              if (userSnap.exists()) {
+                setUserCredits(userSnap.data());
+              }
+            });
+
           } catch (e) { setIsVIPInDB(false); }
         }
       } else {
-        setUser(null); setIsVIPInDB(false);
+        setUser(null); setIsVIPInDB(false); setUserCredits({ credits_16mp: 0, credits_33mp: 0, credits_45mp: 0, trialClaimed: true });
       }
     });
-    return () => unsub();
+    return () => { unsub(); unsubTrial(); };
   }, []);
 
   useEffect(() => {
@@ -58,9 +69,51 @@ const V8Navbar = ({ handleHomeClick }) => {
 
   const handleLogin = async () => {
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const loggedUser = result.user;
       if(typeof v8Toast !== 'undefined') v8Toast.success("V8 IGNITED!");
-    } catch (err) { console.error(err); }
+
+      const userRef = doc(db, "v8_users", loggedUser.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        const newUserProfile = {
+          email: loggedUser.email,
+          displayName: loggedUser.displayName,
+          photoURL: loggedUser.photoURL,
+          credits_16mp: 0, 
+          credits_33mp: 0, 
+          credits_45mp: 0, 
+          trialClaimed: false, 
+          role: "free_trial",
+          joinedAt: serverTimestamp()
+        };
+        await setDoc(userRef, newUserProfile);
+        setUserCredits(newUserProfile);
+        console.log("[V8 SYSTEM] Novi klijent registrovan. Čeka se preuzimanje Trial-a.");
+      } else {
+        setUserCredits(userSnap.data());
+        console.log("[V8 SYSTEM] Postojeći klijent ulogovan.");
+      }
+      
+    } catch (err) { console.error("[V8 AUTH ERROR]:", err); }
+  };
+
+  // 🔥 FUNKCIJA ZA PREUZIMANJE SVIH KREDITA 🔥
+  const handleClaimTrial = async () => {
+    if (!user) return;
+    try {
+      const userRef = doc(db, "v8_users", user.uid);
+      await updateDoc(userRef, {
+        credits_16mp: 5,
+        credits_33mp: 3,
+        credits_45mp: 3,
+        trialClaimed: true 
+      });
+      if(typeof v8Toast !== 'undefined') v8Toast.success("TRIAL UNLOCKED: 11 Premium Credits Added!");
+    } catch (error) {
+      console.error("Error claiming trial:", error);
+    }
   };
 
   return (
@@ -98,6 +151,66 @@ const V8Navbar = ({ handleHomeClick }) => {
                </Link>
             </MagneticButton>
 
+            {/* MASTER UPSCALERS DROPDOWN */}
+            <div className="relative group hidden lg:block">
+              <MagneticButton>
+                <button className="flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-yellow-900/30 to-amber-900/30 border border-yellow-500/50 text-yellow-500 hover:text-white hover:border-yellow-400 transition-all shadow-[0_0_15px_rgba(234,179,8,0.15)] cursor-pointer">
+                  <Maximize className="w-4 h-4 text-yellow-400 drop-shadow-[0_0_8px_rgba(234,179,8,0.8)]" /> 
+                  <span>MASTER UPSCALERS</span>
+                  <ChevronDown className="w-3 h-3 text-yellow-400 group-hover:rotate-180 transition-transform duration-300" />
+                </button>
+              </MagneticButton>
+              
+              <div className="absolute top-full right-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-400 z-[9999]">
+                <div className="bg-black/90 backdrop-blur-2xl border border-white/10 border-t-yellow-500 border-b-yellow-500/30 rounded-2xl p-2 w-64 shadow-[0_30px_60px_rgba(0,0,0,0.9)] flex flex-col gap-1 relative overflow-hidden">
+                  <div className="absolute -top-12 -right-12 w-32 h-32 bg-yellow-600/30 rounded-full blur-[40px] pointer-events-none z-0"></div>
+
+                  <Link to="/v8-standard-16mp" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-orange-500/30">
+                    <div className="bg-orange-500/20 p-2 rounded-lg group-hover/item:bg-orange-500/40 transition-colors shadow-[0_0_10px_rgba(249,115,22,0.3)]">
+                      <ImageIcon className="w-5 h-5 text-orange-400 transition-transform group-hover/item:scale-110" />
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-orange-400 transition-all drop-shadow-md">16MP WORKSPACE</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Standard V8 Engine</span>
+                    </div>
+                  </Link>
+                  
+                  <Link to="/master-33mp" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-yellow-500/30 mt-1">
+                    <div className="bg-yellow-500/20 p-2 rounded-lg group-hover/item:bg-yellow-500/40 transition-colors shadow-[0_0_10px_rgba(234,179,8,0.3)]">
+                      <Cpu className="w-5 h-5 text-yellow-400 transition-transform group-hover/item:scale-110" />
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-yellow-400 transition-all drop-shadow-md">33.2MP ENGINE</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Premium Upscaler</span>
+                    </div>
+                  </Link>
+
+                  <Link to="/master-45mp" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-amber-500/30 mt-1">
+                    <div className="bg-amber-500/20 p-2 rounded-lg group-hover/item:bg-amber-500/40 transition-colors shadow-[0_0_10px_rgba(245,158,11,0.3)]">
+                      <Cpu className="w-5 h-5 text-amber-400 transition-transform group-hover/item:scale-110" />
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-amber-400 transition-all drop-shadow-md">45MP ENGINE</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Pro Marketplace</span>
+                    </div>
+                  </Link>
+
+                  <Link to="/master-60mp" className="flex items-center justify-between gap-2 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-rose-500/30 mt-1">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-rose-500/20 p-2 rounded-lg group-hover/item:bg-rose-500/40 transition-colors shadow-[0_0_10px_rgba(244,63,94,0.3)]">
+                        <Cpu className="w-5 h-5 text-rose-400 transition-transform group-hover/item:scale-110" />
+                      </div>
+                      <div className="flex flex-col text-left">
+                        <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-rose-400 transition-all drop-shadow-md">60MP ENGINE</span>
+                        <span className="text-[9px] font-bold text-zinc-500 tracking-wider">God Tier Resolution</span>
+                      </div>
+                    </div>
+                    <span className="text-[8px] bg-rose-600 text-white px-2 py-0.5 rounded font-black tracking-widest shadow-[0_0_8px_rgba(244,63,94,0.5)]">MAX</span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+
             {/* V8 MASTER TOOLS DROPDOWN */}
             <div className="relative group hidden lg:block">
               <MagneticButton>
@@ -111,7 +224,7 @@ const V8Navbar = ({ handleHomeClick }) => {
               <div className="absolute top-full right-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-400 z-[9999]">
                 <div className="bg-black/90 backdrop-blur-2xl border border-white/10 border-t-orange-500 border-b-orange-500/30 rounded-2xl p-2 w-64 shadow-[0_30px_60px_rgba(0,0,0,0.9)] flex flex-col gap-1 relative overflow-hidden">
                   <div className="absolute -top-12 -right-12 w-32 h-32 bg-orange-600/30 rounded-full blur-[40px] pointer-events-none z-0"></div>
-                  
+
                   <Link to="/enxance" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-orange-500/30">
                     <div className="bg-orange-500/20 p-2 rounded-lg group-hover/item:bg-orange-500/40 transition-colors shadow-[0_0_10px_rgba(249,115,22,0.3)]">
                       <Zap className="w-5 h-5 text-orange-400 transition-transform group-hover/item:scale-110" />
@@ -132,7 +245,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   </Link>
 
-                  {/* 🔥 PROMENJENA RUTA U /grid-system I IKONICA U LayoutGrid 🔥 */}
                   <Link to="/grid-system" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-yellow-500/30 mt-1">
                     <div className="bg-yellow-500/20 p-2 rounded-lg group-hover/item:bg-yellow-500/40 transition-colors shadow-[0_0_10px_rgba(234,179,8,0.3)]">
                       <LayoutGrid className="w-5 h-5 text-yellow-400 transition-transform group-hover/item:scale-110" />
@@ -140,16 +252,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                     <div className="flex flex-col text-left">
                       <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-yellow-400 transition-all drop-shadow-md">V8 GRID SYSTEM</span>
                       <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Cinematic Matrix Gen</span>
-                    </div>
-                  </Link>
-                  
-                  <Link to="/v8-standard-16mp" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-orange-500/30 mt-1">
-                    <div className="bg-orange-500/20 p-2 rounded-lg group-hover/item:bg-orange-500/40 transition-colors shadow-[0_0_10px_rgba(249,115,22,0.3)]">
-                      <ImageIcon className="w-5 h-5 text-orange-400 transition-transform group-hover/item:scale-110" />
-                    </div>
-                    <div className="flex flex-col text-left">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-orange-400 transition-all drop-shadow-md"> V8 16MP WORKSPACE</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Cinematic Image Processor</span>
                     </div>
                   </Link>
 
@@ -236,33 +338,100 @@ const V8Navbar = ({ handleHomeClick }) => {
               </div>
             </div>
 
-            {/* AUTH LOGIKA */}
+            {/* 🔥 MASTER USER DROPDOWN (ZAMENJUJE SVE I REŠAVA GUŽVU NA EKRANU) 🔥 */}
             {user ? (
-               <div className="flex items-center gap-2 ml-2 border-l border-white/10 pl-4">
-                 {isAdmin && (
-                   <>
-                     <MagneticButton>
-                       <Link to="/admin" className="bg-red-600/20 border border-red-500/50 text-red-400 px-4 md:px-5 py-2 md:py-2.5 rounded-full flex items-center gap-2 hover:bg-red-600 hover:text-white transition-all shadow-[0_0_10px_rgba(220,38,38,0.2)] hidden md:flex">
-                         <Settings className="w-4 h-4" /> CMS DB
-                       </Link>
-                     </MagneticButton>
-                     <MagneticButton>
-                       <Link to="/dashboard" className="bg-yellow-600/20 border border-yellow-500/50 text-yellow-400 px-4 md:px-5 py-2 md:py-2.5 rounded-full flex items-center gap-2 hover:bg-yellow-600 hover:text-white transition-all shadow-[0_0_10px_rgba(234,179,8,0.2)] hidden md:flex">
-                         <ShieldAlert className="w-4 h-4" /> DASHBOARD
-                       </Link>
-                     </MagneticButton>
-                   </>
-                 )}
-                 {isVIP && (
-                   <MagneticButton>
-                     <Link to="/trezor" className="bg-orange-600/20 border border-orange-500/50 text-orange-400 px-4 md:px-5 py-2 md:py-2.5 rounded-full flex items-center gap-2 hover:bg-orange-600 hover:text-white transition-all shadow-[0_0_10px_rgba(234,88,12,0.2)]">
-                       <Lock className="w-4 h-4" /> VAULT
+               <div className="flex items-center gap-2 ml-2 border-l border-white/10 pl-4 relative group">
+                 <MagneticButton>
+                   <button className="flex items-center gap-2 px-4 py-2 md:py-2.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-700/50 text-white transition-all shadow-md cursor-pointer">
+                     {userCredits?.trialClaimed === false && !isAdmin ? (
+                       <>
+                          <Gift className="w-3.5 h-3.5 text-fuchsia-400 animate-pulse" /> 
+                          <span className="font-black text-[10px] tracking-widest uppercase">CLAIM TRIAL</span>
+                       </>
+                     ) : (
+                       <>
+                          <Zap className="w-3.5 h-3.5 text-emerald-400 animate-pulse" /> 
+                          <span className="font-black text-[10px] tracking-widest uppercase">{isAdmin ? 'ADMIN BUTTON' : 'MY ACCOUNT'}</span>
+                       </>
+                     )}
+                     <ChevronDown className="w-3 h-3 text-zinc-400 group-hover:rotate-180 transition-transform duration-300" />
+                   </button>
+                 </MagneticButton>
+
+                 {/* DROPDOWN MENI */}
+                 <div className="absolute top-full right-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-400 z-[9999]">
+                   <div className="bg-black/95 backdrop-blur-2xl border border-white/10 border-t-emerald-500 rounded-2xl p-4 w-64 shadow-2xl flex flex-col gap-2 relative overflow-hidden">
+                     
+                     {/* Opcija za besplatan trial (ako nije preuzet i nije Admin) */}
+                     {userCredits?.trialClaimed === false && !isAdmin && (
+                        <div className="mb-2 border-b border-white/10 pb-3">
+                           <p className="text-zinc-400 text-[10px] font-bold mb-2">Unlock the Master Engines for free.</p>
+                           <button onClick={handleClaimTrial} className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-black uppercase text-[11px] py-3 rounded-xl hover:scale-[1.02] transition-all shadow-[0_0_15px_rgba(168,85,247,0.5)]">
+                              CLAIM 11 CREDITS NOW
+                           </button>
+                        </div>
+                     )}
+
+                     {/* Krediti sekcija */}
+                     <div className="text-left border-b border-white/10 pb-2 mb-1">
+                        <h4 className="text-zinc-400 font-bold uppercase tracking-widest text-[10px]">Processing Power</h4>
+                     </div>
+                     
+                     <Link to="/v8-standard-16mp" className="flex items-center justify-between bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 px-3 py-2 rounded-xl transition-all">
+                        <span className="text-blue-400 font-black text-[10px] uppercase flex items-center gap-2"><ImageIcon className="w-3.5 h-3.5"/> 16MP Standard</span>
+                        <span className="text-white font-black text-[11px] drop-shadow-md">{isAdmin ? '∞' : userCredits.credits_16mp}</span>
                      </Link>
-                   </MagneticButton>
-                 )}
-                 <button onClick={handleLogout} className="text-zinc-500 hover:text-red-500 transition-colors p-2 bg-white/5 rounded-full hover:bg-white/10 cursor-pointer" title="Log out">
-                   <LogOut className="w-4 h-4" />
-                 </button>
+                     
+                     <Link to="/master-33mp" className="flex items-center justify-between bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/30 px-3 py-2 rounded-xl transition-all">
+                        <span className="text-yellow-400 font-black text-[10px] uppercase flex items-center gap-2"><Cpu className="w-3.5 h-3.5"/> 33.2MP Master</span>
+                        <span className="text-white font-black text-[11px] drop-shadow-md">{isAdmin ? '∞' : userCredits.credits_33mp}</span>
+                     </Link>
+
+                     <Link to="/master-45mp" className="flex items-center justify-between bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 px-3 py-2 rounded-xl transition-all">
+                        <span className="text-amber-400 font-black text-[10px] uppercase flex items-center gap-2"><Zap className="w-3.5 h-3.5"/> 45.1MP Extreme</span>
+                        <span className="text-white font-black text-[11px] drop-shadow-md">{isAdmin ? '∞' : userCredits.credits_45mp}</span>
+                     </Link>
+                     
+                     {/* DODATA OVI OPCIJA ZA 60MP */}
+                     <Link to="/master-60mp" className="flex items-center justify-between bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-3 py-2 rounded-xl transition-all mt-1">
+                        <span className="text-rose-400 font-black text-[10px] uppercase flex items-center gap-2"><Cpu className="w-3.5 h-3.5"/> 60MP Extreme</span>
+                        <span className="text-white font-black text-[11px] drop-shadow-md">{isAdmin ? '∞' : '0'}</span>
+                     </Link>
+
+                     {/* Admin i VIP sekcija spakovana ovde */}
+                     {(isAdmin || isVIP) && (
+                        <>
+                           <div className="text-left border-b border-white/10 pb-2 mt-2 mb-1">
+                              <h4 className="text-zinc-400 font-bold uppercase tracking-widest text-[10px]">Portal Access</h4>
+                           </div>
+                           {isAdmin && (
+                              <>
+                                 <Link to="/admin" className="flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-xl text-red-400 transition-all">
+                                    <Settings className="w-3.5 h-3.5" /> <span className="font-black text-[10px] uppercase tracking-widest">CMS DB</span>
+                                 </Link>
+                                 <Link to="/dashboard" className="flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-xl text-yellow-400 transition-all">
+                                    <ShieldAlert className="w-3.5 h-3.5" /> <span className="font-black text-[10px] uppercase tracking-widest">DASHBOARD</span>
+                                 </Link>
+                              </>
+                           )}
+                           {isVIP && (
+                              <Link to="/trezor" className="flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-xl text-orange-400 transition-all">
+                                 <Lock className="w-3.5 h-3.5" /> <span className="font-black text-[10px] uppercase tracking-widest">VAULT</span>
+                              </Link>
+                           )}
+                        </>
+                     )}
+
+                     {/* Logout dugme */}
+                     <div className="mt-2 pt-2 border-t border-white/10">
+                        <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl transition-all cursor-pointer">
+                           <LogOut className="w-3.5 h-3.5" />
+                           <span className="font-black text-[10px] uppercase tracking-widest">Sign Out</span>
+                        </button>
+                     </div>
+
+                   </div>
+                 </div>
                </div>
             ) : (
                <div className="ml-2 border-l border-white/10 pl-4">
