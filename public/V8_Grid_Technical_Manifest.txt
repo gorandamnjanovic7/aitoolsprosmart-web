@@ -1,0 +1,392 @@
+# TECHNICAL MANIFEST — V8 GRID SYSTEM
+
+**File:** `V8GridSystem.jsx`  
+**Component:** `V8GridSystem`  
+**Purpose:** Premium React prompt-generation page for Google Nano Banana 2 cinematic grid prompts.
+
+---
+
+## 1. Core Purpose
+
+This page is a premium AI prompt generator that creates **100 unique cinematic grid prompts per generation cycle**.
+
+The generated prompts are optimized for Google Nano Banana 2 / Pro style prompting, cinematic multi-panel image grids, commercial-safe visual generation, no-brand / no-logo / no-text output, TXT export, JSON export, selectable grid formats, and selectable aspect ratios.
+
+---
+
+## 2. Main Output
+
+The engine generates:
+
+**100 prompts per click**
+
+Each prompt contains:
+
+- strict grid structure instructions
+- exact panel count
+- panel-by-panel subject descriptions
+- cinematic lighting metadata
+- camera/lens styling
+- negative prompt protection
+- no-brand commercial-safe lock
+- framing lock to prevent cropped subjects
+
+---
+
+## 3. Supported Grid Formats
+
+### 2x4 Grid
+8 panels. In wide formats it uses 2 rows x 4 columns. In 9:16 vertical mode it changes to 4 rows x 2 columns.
+
+### 2x3 Grid
+6 panels. In wide formats it uses 2 rows x 3 columns. In 9:16 vertical mode it changes to 3 rows x 2 columns.
+
+### 2x2 Grid
+4 panels. Standard 4-panel cinematic grid.
+
+---
+
+## 4. Supported Aspect Ratios
+
+- 16:9 cinematic
+- 21:9 ultrawide
+- 9:16 vertical
+
+The script dynamically adjusts rows and columns when vertical mode is selected.
+
+---
+
+## 5. Prompt Engine Logic
+
+Main functions:
+
+- `seededRandom(seed)` — deterministic pseudo-random generator.
+- `pick(arr, seed)` — selects one array item using seeded randomness.
+- `seededShuffle(array, seed)` — shuffles panel categories deterministically.
+- `autoDescription(category, originalIndex, seed, promptIndex)` — builds cinematic panel descriptions.
+- `makeSinglePrompt(...)` — builds one complete Nano Banana 2 optimized grid prompt.
+- `makeVariations(options)` — generates exactly 100 prompt variations.
+
+---
+
+## 6. Category System
+
+The page imports its database from:
+
+`./V8_Database`
+
+Imported objects:
+
+- `DEFAULT_CATEGORIES`
+- `SUB_CATEGORIES_DB`
+- `STYLE_PRESETS`
+- `CAMERA_PRESETS`
+- `LIGHTING_PRESETS`
+
+Each panel has editable category input and optional dropdown subcategory selection.
+
+---
+
+## 7. Visual Prompt Protection
+
+When **NO BRAND LOCK** is enabled, the prompt adds a strict override:
+
+No text, no logos, no brands, no watermarks, no typography, no letters, no signatures.
+
+This makes the output safer for commercial / stock-style image generation.
+
+---
+
+## 8. Negative Prompt System
+
+When enabled, the negative prompt blocks:
+
+- uneven grid
+- asymmetric grid
+- irregular borders
+- mixed panel sizes
+- extra rows
+- wrong panel count
+- 3x3 grid mistakes
+- sub-grids
+- picture-in-picture panels
+- repeated subjects
+- duplicate panels
+- cropped subjects
+- text
+- logos
+- brands
+- watermarks
+- UI elements
+- blurry output
+- plastic CGI look
+
+---
+
+## 9. Framing Lock
+
+Every generated prompt forces:
+
+- subject fully visible
+- subject centered in each panel
+- no cropping
+- no cut-off edges
+- wide-angle composition
+- enough negative space inside each panel
+
+---
+
+## 10. User Controls
+
+The interface includes:
+
+- algorithm seed
+- aspect ratio selector
+- grid format selector
+- preset style selector
+- no-brand lock checkbox
+- negative prompt checkbox
+- editable panel subjects
+- subcategory dropdowns
+
+---
+
+## 11. Export Options
+
+After generation, the user can export:
+
+### TXT
+Filename pattern:
+
+`V8-grid-pack-100-prompts-seed-[seed].txt`
+
+### JSON
+Filename pattern:
+
+`V8-grid-pack-100-prompts-seed-[seed].json`
+
+JSON format:
+
+```json
+[
+  {
+    "id": "001",
+    "prompt": "..."
+  }
+]
+```
+
+---
+
+## 12. Copy System
+
+Each generated prompt has its own copy button. When clicked:
+
+- prompt is copied to clipboard
+- copied state changes visually
+- toast success message appears
+
+---
+
+## 13. Authentication System
+
+The page uses Firebase Authentication with Google login.
+
+Admin emails hardcoded in the component:
+
+- `damnjanovicgoran7@gmail.com`
+- `aitoolsprosmart@gmail.com`
+
+Admins receive Enterprise access, 999999 prompt limit, and unlocked engine status.
+
+---
+
+## 14. Firestore Collections
+
+The page uses these Firestore collections:
+
+### `v8_payoneer_requests`
+Checks payment status and product/plan access.
+
+### `vip_users`
+Stores:
+
+- prompts used
+- exhausted quota timestamp
+- quota reset state
+
+---
+
+## 15. Payment / Plan System
+
+### Starter
+Price: $149  
+Quota: 5,000 prompts
+
+### Pro
+Price: $249  
+Quota: 25,000 prompts
+
+### Enterprise
+Price: $549  
+Quota: 100,000 prompts
+
+The page also supports prorated upgrades. Example: if the user paid $149 and upgrades to $249, checkout price becomes $100.
+
+---
+
+## 16. Quota System
+
+Each generation records usage in increments of:
+
+**100 prompts**
+
+When the quota is exhausted:
+
+- engine locks
+- cooldown starts
+- `exhaustedAt` timestamp is saved
+- user waits 30 days
+
+After 30 days, quota resets and the engine unlocks.
+
+---
+
+## 17. Cooldown System
+
+Cooldown duration:
+
+**30 days**
+
+Countdown format:
+
+`XD HH:MM:SS`
+
+---
+
+## 18. Checkout Integration
+
+The component imports and uses:
+
+`V8SecureCheckout`
+
+Checkout receives:
+
+- `isOpen`
+- `onClose`
+- `productName`
+- `price`
+
+---
+
+## 19. UI / UX Stack
+
+Used technologies:
+
+- React
+- Tailwind-style utility classes
+- Framer Motion
+- Lucide React icons
+- Firebase Auth
+- Firebase Firestore
+- custom toast system: `v8Toast`
+
+---
+
+## 20. Visual Design
+
+The interface uses:
+
+- black cinematic background
+- orange premium accents
+- glassmorphism panels
+- animated AI gradient borders
+- video background `/v8-bg-video.mp4`
+- dark overlay
+- orange glow effects
+- premium dashboard layout
+
+---
+
+## 21. Local Storage Persistence
+
+Saved browser keys:
+
+- `v8_categories`
+- `v8_seed`
+- `v8_preset`
+- `v8_aspect`
+- `v8_gridFormat`
+- `v8_nobrand`
+- `v8_negative`
+
+---
+
+## 22. Main Buttons
+
+Important actions:
+
+- `GENERATE 100 PROMPTS`
+- `REGENERATE 100 PROMPTS`
+- export TXT
+- export JSON
+- clear all
+- copy prompt
+- select Starter
+- select Pro
+- select Enterprise
+
+---
+
+## 23. Deployment Requirements
+
+Recommended setup:
+
+- React / Vite frontend
+- Firebase project
+- Firestore enabled
+- Google Auth provider enabled
+- Tailwind CSS configured
+- Framer Motion installed
+- Lucide React installed
+- valid `firebase.js`
+- valid `V8SecureCheckout.jsx`
+- valid `V8_Database.js`
+- valid `v8Utils.js`
+- video asset at `/v8-bg-video.mp4`
+
+---
+
+## 24. Required Dependencies
+
+```bash
+npm install react react-dom lucide-react framer-motion firebase
+```
+
+For Vite:
+
+```bash
+npm install vite @vitejs/plugin-react
+```
+
+---
+
+## 25. Recommended File Structure
+
+```txt
+src/
+  V8GridSystem.jsx
+  V8SecureCheckout.jsx
+  V8_Database.js
+  firebase.js
+  v8Utils.js
+
+public/
+  v8-bg-video.mp4
+```
+
+---
+
+## 26. Final Summary
+
+`V8GridSystem.jsx` is a premium cinematic grid prompt generator with 100-prompt batch generation, selectable grid layouts, selectable aspect ratios, no-brand protection, negative prompt protection, Firebase VIP access, paid plan tiers, quota tracking, 30-day cooldown, TXT/JSON export, and a polished commercial UI.

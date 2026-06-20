@@ -1,0 +1,347 @@
+V8 MASTER ENGINE — 45MP MARKETPLACE EXPORT
+PROFESSIONAL TECHNICAL MANIFEST V2.0
+============================================================
+
+This document describes the full V8 MASTER ENGINE 45MP workflow in a premium, client-facing format.
+It is designed as a technical trust signal for marketplace, contributor, advertising, and commercial image workflows.
+
+------------------------------------------------------------
+💎 1. Extreme 45MP Upscale
+------------------------------------------------------------
+
+The engine performs a professional 45 megapixel upscale designed for high-end marketplace delivery and contributor-ready exports.
+
+Supported final resolutions:
+
+💎 16:9  → 8960 x 5040  = 45.15MP
+💎 9:16  → 5040 x 8960  = 45.15MP
+💎 1:1   → 6720 x 6720  = 45.15MP
+💎 21:9  → 10240 x 4389 = 44.94MP
+
+💎 Technical Insight:
+The upscale is powered by premium LANCZOS interpolation, one of the most respected high-quality resampling methods for professional image enlargement. Unlike basic resizing, LANCZOS analyzes surrounding pixel data to rebuild smoother edges, cleaner transitions, and stronger high-resolution structure. This gives the final 45MP export a refined, marketplace-ready foundation with reduced softness and fewer jagged artifacts.
+
+💎 Why it matters:
+For contributor platforms and commercial clients, resolution alone is not enough. The upscale must preserve structure, edges, texture, and visual clarity. LANCZOS provides a stronger professional base than simple resize methods.
+
+------------------------------------------------------------
+💎 2. Batch Aspect-Ratio Protection
+------------------------------------------------------------
+
+The engine protects the batch by blocking mixed aspect-ratio uploads.
+
+Allowed batch examples:
+
+💎 only 16:9 images
+💎 only 21:9 images
+💎 only 9:16 images
+💎 only 1:1 images
+
+Blocked examples:
+
+💎 16:9 + 9:16 in the same batch
+💎 16:9 + 1:1 in the same batch
+💎 21:9 + 16:9 in the same batch
+💎 1:1 + 9:16 in the same batch
+
+💎 Technical Insight:
+A single batch must follow one format category so every exported file receives the correct final dimensions. This prevents accidental distortion, inconsistent framing, or mismatched marketplace outputs.
+
+------------------------------------------------------------
+💎 3. Support for 16:9, 21:9, 9:16, and 1:1
+------------------------------------------------------------
+
+The engine supports the most useful marketplace and advertising formats:
+
+💎 16:9 horizontal cinematic format
+💎 21:9 ultrawide premium cinematic format
+💎 9:16 vertical social/video format
+💎 1:1 square marketplace/product format
+
+💎 Technical Insight:
+Each format receives its own fixed 45MP target. This avoids random resizing and keeps the export consistent, predictable, and production-safe.
+
+------------------------------------------------------------
+💎 4. Texture-safe Contributor Quality Cleanup
+------------------------------------------------------------
+
+The engine applies a carefully controlled contributor cleanup pass to reduce unwanted AI grit, compression debris, and small digital artifacts.
+
+💎 Technical Insight:
+The cleanup is intentionally restrained. It is designed to improve noisy or compressed areas while protecting important fine details such as skin pores, fabric fibers, metal texture, wood grain, stone detail, hair strands, and micro-surface structure.
+
+💎 Why it matters:
+Over-cleaning can make an image look plastic, washed-out, or artificial. This workflow avoids aggressive smoothing and keeps the image contributor-safe.
+
+------------------------------------------------------------
+💎 5. Controlled MedianFilter Blend
+------------------------------------------------------------
+
+The engine uses a mild MedianFilter pass blended back with the original image.
+
+💎 Technical Insight:
+Instead of applying a harsh filter across the full image, the engine creates a cleaned version and blends it carefully with the original. This reduces noise and compression artifacts while preserving edge integrity and natural texture.
+
+💎 Benefit:
+This helps remove unwanted digital grit without destroying the premium micro-detail needed for marketplace approval.
+
+------------------------------------------------------------
+💎 6. Premium Sharpness 45MP Tuned
+------------------------------------------------------------
+
+After upscale and cleanup, the engine applies controlled sharpness tuned specifically for 45MP output.
+
+💎 Technical Insight:
+The sharpening stage uses a calibrated Unsharp Mask approach. It enhances edge contrast and perceived crispness without creating heavy halos, crunchy outlines, or amateur sharpening artifacts.
+
+💎 Why it matters:
+Contributor sites often reject images that appear over-sharpened or artificially processed. This stage is tuned to recover clarity while keeping the result natural.
+
+------------------------------------------------------------
+💎 7. Commercial Color Grading
+------------------------------------------------------------
+
+The engine applies a subtle commercial-grade color and contrast enhancement.
+
+💎 Technical Insight:
+Color, contrast, and brightness are adjusted gently to improve visual appeal without creating an overprocessed look. The goal is a premium advertising feel, not an artificial filter effect.
+
+💎 Result:
+Colors appear richer, contrast becomes stronger, and the image feels more polished while still remaining natural.
+
+------------------------------------------------------------
+💎 8. Highlight Rolloff
+------------------------------------------------------------
+
+The engine uses NumPy matrix processing to soften overly bright areas.
+
+💎 Technical Insight:
+Instead of allowing bright values to clip harshly into pure white, the engine applies a controlled rolloff to high-value pixels. This slows the transition into the brightest zones and helps preserve highlight texture.
+
+💎 Benefit:
+This reduces the blown-out digital look and protects important details in reflections, bright skies, product highlights, glass, chrome, jewelry, and luxury materials.
+
+------------------------------------------------------------
+💎 9. Shadow Depth
+------------------------------------------------------------
+
+The engine applies controlled shadow depth using NumPy matrix processing.
+
+💎 Technical Insight:
+Very dark values are gently compressed to create richer blacks while retaining subtle detail. The goal is not to crush shadows, but to create a more cinematic and dimensional image.
+
+💎 Benefit:
+This gives the image stronger depth, premium contrast, and a more three-dimensional commercial look.
+
+------------------------------------------------------------
+💎 10. Real sRGB ICC Marketplace Export
+------------------------------------------------------------
+
+The engine performs real sRGB ICC marketplace export for safer digital distribution.
+
+💎 Technical Insight:
+sRGB is the standard color space for web, stock platforms, contributor websites, mobile displays, browsers, and most client-facing digital environments. The engine creates and embeds a real sRGB ICC profile into the exported JPG files.
+
+💎 Why sRGB matters:
+An image can look different across devices if the color profile is wrong. sRGB helps maintain more predictable color appearance across phones, monitors, browsers, marketplace previews, and client downloads.
+
+💎 Trust Signal:
+Real sRGB ICC embedding tells clients and agencies that the file was prepared for real-world digital delivery, not just processed visually.
+
+------------------------------------------------------------
+💎 11. Product AD Polish
+------------------------------------------------------------
+
+The engine applies a final product advertising polish pass.
+
+💎 Technical Insight:
+This stage adds subtle final contrast and clarity refinement to make the main subject feel more defined and visually premium. It supports stronger subject separation and a more high-conversion commercial look.
+
+💎 Result:
+The final image feels more like a finished advertising asset and less like raw AI output.
+
+------------------------------------------------------------
+💎 12. Anti-Plastic Realism
+------------------------------------------------------------
+
+The engine adds subtle organic film grain to reduce artificial AI smoothness.
+
+💎 Technical Insight:
+AI images can appear too perfect, flat, or plastic. A controlled Gaussian noise layer introduces natural micro-variation, helping the image feel more photographic and less synthetic.
+
+💎 Benefit:
+The final image keeps a more authentic surface texture and avoids the overly smooth look that can trigger marketplace rejection or reduce buyer trust.
+
+------------------------------------------------------------
+💎 13. 30MB–40MB JPG Targeting
+------------------------------------------------------------
+
+The engine attempts to export each final JPG in the 30MB–40MB range.
+
+💎 Technical Insight:
+The script uses best-effort quality targeting to search for a JPG quality level that lands inside the target size range. If the exact target cannot be reached naturally, the engine preserves the closest practical high-quality result.
+
+💎 Important Note:
+Exact JPG size depends on image complexity, texture density, detail, grain, and compressibility. A highly detailed 45MP image can naturally reach a larger file size, while a very smooth image may stay smaller even at maximum quality.
+
+------------------------------------------------------------
+💎 14. JPG Export Only
+------------------------------------------------------------
+
+All supported input formats are exported as JPG.
+
+Supported inputs:
+
+💎 JPG
+💎 JPEG
+💎 PNG
+💎 WEBP
+💎 TIF
+💎 TIFF
+
+Final output:
+
+💎 JPG only
+
+💎 Technical Insight:
+JPG is the most practical delivery format for stock, contributor platforms, marketplace websites, and commercial image packages. The engine uses high-quality export settings, including chroma-preserving subsampling, progressive JPG support, 300 DPI metadata, and real sRGB ICC embedding.
+
+------------------------------------------------------------
+💎 15. TXT + CSV Report
+------------------------------------------------------------
+
+The engine generates both TXT and CSV reports.
+
+TXT report includes:
+
+💎 detected batch format
+💎 supported formats
+💎 target dimensions
+💎 final megapixels
+💎 output format
+💎 applied workflow
+💎 contributor cleanup note
+💎 original resolution
+💎 final resolution
+💎 JPG quality
+💎 final file size
+💎 sRGB ICC status
+💎 PASS / FAILED status
+
+CSV report includes structured data for easier sorting, checking, and business workflow tracking.
+
+💎 Technical Insight:
+TXT report is useful for human-readable delivery. CSV report is useful for spreadsheets, logs, client tracking, and productized workflows.
+
+------------------------------------------------------------
+💎 16. ZIP Export Package
+------------------------------------------------------------
+
+The engine automatically packages all processed JPG files and reports into one ZIP archive.
+
+💎 Technical Insight:
+The ZIP package makes the workflow easier for delivery, resale, archive, upload, and client handoff. It keeps all final images, the TXT report, and the CSV report together in one organized export.
+
+Final ZIP example:
+
+💎 VISIONARY_FACTORY_V8_MASTER_ENGINE_45MP_EXPORT.zip
+
+------------------------------------------------------------
+💎 17. PASS / FAILED System
+------------------------------------------------------------
+
+Each file receives a processing status.
+
+💎 PASS:
+The file was processed successfully and exported correctly.
+
+💎 FAILED:
+The file could not be processed, and the report records the error.
+
+💎 Technical Insight:
+This makes batch processing safer. If one image fails, the report clearly shows which file had the issue and why.
+
+------------------------------------------------------------
+💎 18. Clean Folder Structure
+------------------------------------------------------------
+
+The engine uses a clean and predictable folder structure:
+
+💎 1_RAW_INPUT
+💎 2_PROCESSING
+💎 3_READY_FOR_UPLOAD
+
+💎 Technical Insight:
+A clean structure prevents confusion, keeps input and output separate, and makes the workflow easier to use locally or later adapt for a hosted web service.
+
+------------------------------------------------------------
+💎 19. Auto Cleanup Of Old Output
+------------------------------------------------------------
+
+Before each new run, the engine clears old output folders and removes the previous ZIP package.
+
+💎 Technical Insight:
+This prevents old files from mixing with new exports. Every run starts clean, making the final ZIP accurate and organized.
+
+------------------------------------------------------------
+💎 20. EXIF Rotation Fix
+------------------------------------------------------------
+
+The engine automatically corrects EXIF image rotation.
+
+💎 Technical Insight:
+Images from phones and cameras sometimes contain rotation metadata instead of being physically rotated. The engine reads that metadata and corrects orientation before processing.
+
+💎 Benefit:
+Final exports will not unexpectedly appear sideways or upside down.
+
+------------------------------------------------------------
+💎 21. Multi-Core Batch Processing
+------------------------------------------------------------
+
+The engine uses multi-core CPU processing to handle image batches faster.
+
+💎 Technical Insight:
+By using multiple processes, the engine can process several images more efficiently than a single-thread workflow, especially with large 45MP exports.
+
+💎 Benefit:
+This is useful for professional batch work, marketplace packs, and repeated production workflows.
+
+------------------------------------------------------------
+💎 22. Progress Bar
+------------------------------------------------------------
+
+The engine displays a live progress bar during processing.
+
+💎 Technical Insight:
+The progress bar gives clear feedback while the batch is running, making long exports easier to monitor.
+
+💎 Benefit:
+You can see how much of the batch is complete instead of waiting blindly.
+
+------------------------------------------------------------
+💎 23. Marketplace-Safe Processing Philosophy
+------------------------------------------------------------
+
+The full engine is designed around one core principle:
+
+💎 stronger marketplace presentation without destroying natural detail.
+
+The workflow improves resolution, clarity, color, highlights, shadows, texture, and export quality while avoiding the most common rejection risks:
+
+💎 over-smoothing
+💎 over-sharpening
+💎 plastic AI surfaces
+💎 harsh highlights
+💎 crushed shadows
+💎 wrong color profile
+💎 inconsistent aspect ratios
+💎 messy batch exports
+💎 accidental cropping
+
+💎 Final Positioning:
+This is not just a resize script. It is a premium 45MP marketplace export engine designed to create high-resolution, polished, contributor-ready image assets with technical consistency and professional delivery structure.
+
+============================================================
+END OF MANIFEST V2.0
+============================================================
