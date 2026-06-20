@@ -2,19 +2,75 @@
 // Ne zaboravi da ažuriraš svoj React source code link u glavnom repozitorijumu!
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, FileImage, Clock, Wand2, MonitorPlay, Smartphone, Video, Settings2, X, Diamond, Lock, DownloadCloud, Zap, ShieldCheck, AlertTriangle, Copy, CheckCircle, RefreshCcw, Crown, ArrowUpCircle, FileText } from 'lucide-react';
+import { Upload, FileImage, Clock, Wand2, MonitorPlay, Smartphone, Video, Settings2, X, Diamond, Lock, DownloadCloud, Zap, ShieldCheck, AlertTriangle, Copy, CheckCircle, RefreshCcw, Crown, ArrowUpCircle, FileText, Trash2, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createPortal } from 'react-dom';
 
 import { db, auth } from './firebase';
 import { doc, onSnapshot, increment, serverTimestamp, collection, query, where, setDoc } from 'firebase/firestore';
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 import V8SecureCheckout from './V8SecureCheckout';
+import LoginRequiredModal from './LoginRequiredModal';
+import { CLOUDINARY_UPLOAD_PRESET, CLOUDINARY_CLOUD_NAME } from './data';
 
 const BASE_BACKEND_URL = window.location.hostname === 'localhost' 
   ? "http://localhost:8000" 
   : "https://aitoolsprosmart-becend-production.up.railway.app";
 
+// POČETAK FUNKCIJE: FullScreenVideoPlayer
+const FullScreenVideoPlayer = ({ src, onClose }) => {
+  const videoRef = useRef(null);
+  const [isEnded, setIsEnded] = useState(false);
+
+  useEffect(() => {
+      if (src) document.body.style.overflow = 'hidden';
+      else document.body.style.overflow = '';
+      return () => { document.body.style.overflow = ''; };
+  }, [src]);
+
+  if (!src) return null;
+
+  const handlePlay = () => {
+      if (videoRef.current) {
+          videoRef.current.play();
+          setIsEnded(false);
+      }
+  };
+
+  return createPortal(
+      <div className="fixed inset-0 z-[999999] bg-[#0f172a]/95 flex items-center justify-center p-4" onClick={onClose}>
+          <button type="button" onClick={(e) => { e.stopPropagation(); onClose(); }} className="absolute top-6 right-6 md:top-10 md:right-10 bg-red-600 hover:bg-red-500 text-white p-4 rounded-full font-black z-[1000000] shadow-[0_0_20px_rgba(220,38,38,0.5)] transition-all hover:scale-110">
+              <X size={32} strokeWidth={3} />
+          </button>
+          
+          <div className="relative w-full max-w-5xl flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+              <video 
+                  ref={videoRef}
+                  src={src} 
+                  autoPlay 
+                  controls={!isEnded}
+                  controlsList="nodownload"
+                  onContextMenu={(e) => e.preventDefault()}
+                  onEnded={() => setIsEnded(true)}
+                  onPlay={() => setIsEnded(false)}
+                  className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-white/10" 
+              />
+              
+              {isEnded && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-2xl pointer-events-none transition-all">
+                      <button onClick={handlePlay} className="bg-white/20 text-white p-6 rounded-full backdrop-blur-md border border-white/50 hover:bg-white/30 transition-all pointer-events-auto shadow-[0_0_30px_rgba(0,0,0,0.5)] hover:scale-110">
+                          <Play size={48} strokeWidth={2} className="ml-2" fill="currentColor" />
+                      </button>
+                  </div>
+              )}
+          </div>
+      </div>, document.body
+  );
+};
+// KRAJ FUNKCIJE: FullScreenVideoPlayer
+
+// POČETAK FUNKCIJE: CinematikPromptEngine
 const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout }) => {
   const [currentEngine, setCurrentEngine] = useState(initialEngine);
 
@@ -41,6 +97,7 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
 
   const [currentUser, setCurrentUser] = useState(null);
   const [isVIP, setIsVIP] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [credits, setCredits] = useState(0);
   const [amountPaid, setAmountPaid] = useState(0);
   const [currentPlan, setCurrentPlan] = useState('NONE');
@@ -54,6 +111,20 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
   const [checkoutProduct, setCheckoutProduct] = useState('');
   const [checkoutPrice, setCheckoutPrice] = useState(0);
 
+  const [loginRequiredData, setLoginRequiredData] = useState({
+    isOpen: false,
+    paketName: '',
+    fullPrice: 0,
+    checkoutTitle: '',
+    checkoutPrice: 0
+  });
+
+  const [showcase, setShowcase] = useState({ kling: '', seedance: '' });
+  const [isUploadingShowcase, setIsUploadingShowcase] = useState({ kling: false, seedance: false });
+  const [fullScreenVideo, setFullScreenVideo] = useState(null); 
+  const klingRef = useRef(null);
+  const seedanceRef = useRef(null);
+
   const isImageModeActive = !!imageFile || imageDescription.length > 0;
   const isTextModeActive = promptText.length > 0;
 
@@ -66,18 +137,7 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
     }
   };
 
-  const pokreniKupovinu = async (paketName, fullPrice) => {
-    if (!currentUser) {
-      try {
-        const provider = new GoogleAuthProvider();
-        await signInWithPopup(auth, provider);
-        return; 
-      } catch (error) {
-        console.error("Login prekinut tokom pokušaja kupovine:", error);
-        return;
-      }
-    }
-
+  const openSecureCheckout = (paketName, fullPrice) => {
     const razlika = fullPrice - amountPaid;
     const finalPrice = razlika > 0 ? razlika : fullPrice;
     const isUpgrade = amountPaid > 0;
@@ -87,17 +147,49 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
     setCheckoutProduct(naslovCheckouta);
     setCheckoutPrice(finalPrice);
     setIsCheckoutOpen(true);
+
+    return { naslovCheckouta, finalPrice };
   };
 
-  // 1. Skidamo podatke iz baza
+  const pokreniKupovinu = async (paketName, fullPrice) => {
+    const razlika = fullPrice - amountPaid;
+    const finalPrice = razlika > 0 ? razlika : fullPrice;
+    const isUpgrade = amountPaid > 0;
+    const engineKeyword = currentEngine.split(" ")[0].toUpperCase();
+    const naslovCheckouta = isUpgrade ? `${engineKeyword} - ${paketName.toUpperCase()} (UPGRADE)` : `${engineKeyword} - ${paketName.toUpperCase()}`;
+
+    if (!currentUser && !auth.currentUser) {
+      setLoginRequiredData({
+        isOpen: true,
+        paketName,
+        fullPrice,
+        checkoutTitle: naslovCheckouta,
+        checkoutPrice: finalPrice
+      });
+      return;
+    }
+
+    openSecureCheckout(paketName, fullPrice);
+  };
+
+  useEffect(() => {
+    const unsubShowcase = onSnapshot(doc(db, "v8_settings", "showcase_cinematik"), (docSnap) => {
+        if (docSnap.exists()) {
+            setShowcase(docSnap.data());
+        }
+    });
+    return () => unsubShowcase();
+  }, []);
+
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       if (!user) {
-        setPayData([]); setVipData({}); setIsCheckingAccess(false); setAmountPaid(0); setCurrentPlan('NONE');
+        setPayData([]); setVipData({}); setIsCheckingAccess(false); setAmountPaid(0); setCurrentPlan('NONE'); setIsAdmin(false);
         return;
       }
       const email = user.email.toLowerCase();
+      setIsAdmin(email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com");
       
       const qPay = query(collection(db, "v8_payoneer_requests"), where("clientEmail", "==", email));
       const unsubPay = onSnapshot(qPay, snap => setPayData(snap.docs.map(d => d.data())));
@@ -109,13 +201,13 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
     return () => unsub();
   }, []);
 
-  // 2. Dinamički proveravamo pristup pri promeni taba
+  // PROVERA I PRORAČUN KREDITA SA NOVIM SKENEROM
   useEffect(() => {
     if (!currentUser) { setIsVIP(false); setCredits(0); setAmountPaid(0); setCurrentPlan('NONE'); return; }
     const email = currentUser.email.toLowerCase();
     
-    if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
-      setIsVIP(true); setCredits(9999); setAmountPaid(550); setCurrentPlan('ENTERPRISE'); setIsCheckingAccess(false); return;
+    if (isAdmin) {
+      setIsVIP(true); setCredits(999999); setAmountPaid(550); setCurrentPlan('ENTERPRISE'); setIsCheckingAccess(false); return;
     }
 
     let hasAccess = false;
@@ -128,17 +220,17 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
     payData.forEach(data => {
       if (data.status === "paid" || data.status === "PAID") {
         const productName = data.productName ? data.productName.toUpperCase() : "";
-        if (productName.includes(engineKeyword)) {
+        
+        // 🔥 POPRAVLJEN SKENER: Hvata Security Checkout, Master, Bundle, Cinematik, itd.
+        if (productName.includes(engineKeyword) || productName.includes("CINEMATIK") || productName.includes("SECURITY CHECKOUT") || productName.includes("BUNDLE") || productName.includes("MASTER")) {
           hasAccess = true;
           if (productName.includes("ENTERPRISE")) { if (maxPaid < 550) { maxPaid = 550; highestPlan = 'ENTERPRISE'; } calculatedDefaultCredits = Math.max(calculatedDefaultCredits, 10000); } 
           else if (productName.includes("PRO")) { if (maxPaid < 250) { maxPaid = 250; highestPlan = 'PRO'; } calculatedDefaultCredits = Math.max(calculatedDefaultCredits, 5000); }
-          else if (productName.includes("STARTER")) { if (maxPaid < 100) { maxPaid = 100; highestPlan = 'STARTER'; } calculatedDefaultCredits = Math.max(calculatedDefaultCredits, 1000); }
           else { if (maxPaid < 100) { maxPaid = 100; highestPlan = 'STARTER'; } calculatedDefaultCredits = Math.max(calculatedDefaultCredits, 1000); }
         }
       }
     });
 
-    // Fallback legacy provera
     if (vipData[`${engineKeyword} - PRO`] === true) { hasAccess = true; calculatedDefaultCredits = Math.max(calculatedDefaultCredits, 5000); if (maxPaid < 250) maxPaid = 250; highestPlan = 'PRO'; }
     if (vipData[`${engineKeyword} - STARTER`] === true) { hasAccess = true; calculatedDefaultCredits = Math.max(calculatedDefaultCredits, 1000); if (maxPaid < 100) maxPaid = 100; highestPlan = 'STARTER'; }
     if (vipData.unlockedApps && vipData.unlockedApps.includes('FULL_ACCESS')) { hasAccess = true; calculatedDefaultCredits = Math.max(calculatedDefaultCredits, 10000); if (maxPaid < 550) maxPaid = 550; highestPlan = 'ENTERPRISE'; }
@@ -178,7 +270,36 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
        setCooldownTime(null);
     }
     setIsCheckingAccess(false);
-  }, [currentEngine, payData, vipData, currentUser]);
+  }, [currentEngine, payData, vipData, currentUser, isAdmin]);
+
+  const handleShowcaseUpload = async (e, type) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    setIsUploadingShowcase(prev => ({ ...prev, [type]: true }));
+    const fd = new FormData(); 
+    fd.append('file', file); 
+    fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+    try {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/video/upload`, { method: 'POST', body: fd });
+      const resData = await res.json();
+      await setDoc(doc(db, "v8_settings", "showcase_cinematik"), { [type]: resData.secure_url }, { merge: true });
+    } catch (err) { 
+      console.error("Greška pri uploadu videa:", err);
+      alert("Došlo je do greške pri uploadu. Proveri Cloudinary podešavanja.");
+    } finally { 
+      setIsUploadingShowcase(prev => ({ ...prev, [type]: false })); 
+      e.target.value = null; 
+    }
+  };
+
+  const deleteShowcaseVideo = async (e, type) => {
+    e.stopPropagation();
+    if(window.confirm("Obrisati ovaj video?")) {
+        await setDoc(doc(db, "v8_settings", "showcase_cinematik"), { [type]: '' }, { merge: true });
+    }
+  };
 
   const handleDrag = (e) => {
     e.preventDefault(); e.stopPropagation();
@@ -222,12 +343,12 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
   };
 
   const generisiMasterPrompt = async () => {
-    if (!isVIP) {
+    if (!isVIP && !isAdmin) {
         alert("SECURITY BREACH DETECTED: Unauthorized access blocked.");
         return;
     }
 
-    if (credits <= 0) {
+    if (credits <= 0 && !isAdmin) {
         alert("ENGINE COOLING: You have 0 prompts left. Please wait for the 24h reset cycle.");
         return;
     }
@@ -257,25 +378,23 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
           setGeneratedPrompts(data);
       }
       
-      if (auth.currentUser) {
+      if (auth.currentUser && !isAdmin) {
           const email = auth.currentUser.email.toLowerCase();
-          if (email !== "damnjanovicgoran7@gmail.com" && email !== "aitoolsprosmart@gmail.com") {
-              const docRef = doc(db, "vip_users", email);
-              const novaKolicina = credits - 1;
-              const engineKeyword = currentEngine.split(" ")[0].toUpperCase();
-              const creditField = `${engineKeyword}_credits`;
-              const cdField = `${engineKeyword}_cooldown`;
-              
-              if (novaKolicina <= 0) {
-                  await setDoc(docRef, { 
-                      [creditField]: 0,
-                      [cdField]: serverTimestamp() 
-                  }, { merge: true });
-              } else {
-                  await setDoc(docRef, { 
-                      [creditField]: increment(-1) 
-                  }, { merge: true });
-              }
+          const docRef = doc(db, "vip_users", email);
+          const novaKolicina = credits - 1;
+          const engineKeyword = currentEngine.split(" ")[0].toUpperCase();
+          const creditField = `${engineKeyword}_credits`;
+          const cdField = `${engineKeyword}_cooldown`;
+          
+          if (novaKolicina <= 0) {
+              await setDoc(docRef, { 
+                  [creditField]: 0,
+                  [cdField]: serverTimestamp() 
+              }, { merge: true });
+          } else {
+              await setDoc(docRef, { 
+                  [creditField]: increment(-1) 
+              }, { merge: true });
           }
       }
     } catch (error) {
@@ -327,6 +446,7 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
 
         <div className="flex flex-wrap justify-center gap-6 w-full z-10 relative">
           
+          {/* STARTER (Sakriven ako je plaćeno 100 ili više) */}
           {amountPaid < 100 && (
             <div className="w-full md:w-[calc(33.333%-1rem)] max-w-sm bg-[#050505] border border-blue-500/30 rounded-[2rem] p-8 flex flex-col hover:border-blue-500/60 transition-all shadow-xl">
                 <div className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-500/10 mb-6 mx-auto"><Diamond className="w-6 h-6 text-blue-500" /></div>
@@ -337,12 +457,13 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
                    <p className="flex items-center gap-2">⏳ Use in 24h or stretch over 365 days</p>
                    <p className="flex items-center gap-2">🔄 Rolling Quota (No expiry)</p>
                 </div>
-                <button onClick={() => pokreniKupovinu('STARTER', 100)} className="w-full bg-zinc-800 text-white hover:bg-blue-500 py-4 rounded-xl font-black uppercase tracking-widest text-[12px] transition-all shadow-md">
+                <button onClick={() => pokreniKupovinu('STARTER', 100)} className={`w-full bg-zinc-800 text-white ${currentEngine === "SEEDANCE 2.0" ? "hover:bg-green-500" : "hover:bg-orange-500"} py-4 rounded-xl font-black uppercase tracking-widest text-[13px] transition-all shadow-md`}>
                    SELECT STARTER
                 </button>
             </div>
           )}
 
+          {/* PRO (Sakriven ako je plaćeno 250 ili više) */}
           {amountPaid < 250 && (
             <div className={`w-full md:w-[calc(33.333%-1rem)] max-w-sm bg-[#050505] border-2 rounded-[2rem] p-8 flex flex-col relative transition-all transform md:scale-105 z-10 ${currentEngine === "SEEDANCE 2.0" ? "border-green-500/50 hover:border-green-500/80 shadow-[0_0_30px_rgba(34,197,94,0.15)]" : "border-orange-500/50 hover:border-orange-500/80 shadow-[0_0_30px_rgba(234,88,12,0.15)]"}`}>
                 <div className={`absolute top-0 left-0 w-full h-2 rounded-t-[1.9rem] ${currentEngine === "SEEDANCE 2.0" ? "bg-gradient-to-r from-green-600 to-emerald-500" : "bg-gradient-to-r from-orange-600 to-amber-500"}`}></div>
@@ -360,12 +481,13 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
                    <p className="flex items-center gap-2">⏳ Use in 24h or stretch over 365 days</p>
                    <p className="flex items-center gap-2">🔄 Rolling Quota (No expiry)</p>
                 </div>
-                <button onClick={() => pokreniKupovinu('PRO', 250)} className={`w-full py-5 rounded-2xl font-black uppercase tracking-widest text-[14px] transition-all text-white ${currentEngine === "SEEDANCE 2.0" ? (amountPaid > 0 ? 'bg-gradient-to-r from-green-600 to-emerald-500 shadow-[0_0_20px_rgba(34,197,94,0.4)]' : 'bg-green-500 hover:bg-green-400 shadow-[0_0_20px_rgba(34,197,94,0.4)]') : (amountPaid > 0 ? 'bg-gradient-to-r from-orange-600 to-amber-500 shadow-[0_0_20px_rgba(234,88,12,0.4)]' : 'bg-orange-500 hover:bg-orange-400 shadow-[0_0_20px_rgba(234,88,12,0.4)]')}`}>
+                <button onClick={() => pokreniKupovinu('PRO', 250)} className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-[13px] transition-all text-white ${currentEngine === "SEEDANCE 2.0" ? (amountPaid > 0 ? 'bg-gradient-to-r from-green-600 to-emerald-500 shadow-[0_0_20px_rgba(34,197,94,0.4)]' : 'bg-green-500 hover:bg-green-400 shadow-[0_0_20px_rgba(34,197,94,0.4)]') : (amountPaid > 0 ? 'bg-gradient-to-r from-orange-600 to-amber-500 shadow-[0_0_20px_rgba(234,88,12,0.4)]' : 'bg-orange-500 hover:bg-orange-400 shadow-[0_0_20px_rgba(234,88,12,0.4)]')}`}>
                    {amountPaid > 0 ? "UPGRADE TO PRO" : "SELECT PRO"}
                 </button>
             </div>
           )}
 
+          {/* ENTERPRISE */}
           {amountPaid < 550 && (
             <div className="w-full md:w-[calc(33.333%-1rem)] max-w-sm bg-[#050505] border border-purple-500/30 rounded-[2rem] p-8 flex flex-col hover:border-purple-500/60 transition-all shadow-xl">
                 <div className="w-12 h-12 flex items-center justify-center rounded-full bg-purple-500/10 mb-6 mx-auto"><Crown className="w-6 h-6 text-purple-500" /></div>
@@ -375,40 +497,41 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
                 </span>
                 <div className="w-full text-left space-y-3 mb-8 text-[11px] text-zinc-400 font-bold uppercase tracking-widest flex-grow">
                    <p className="flex items-center gap-2">✅ 10,000 Prompts Included</p>
-                   <p className="flex items-center gap-2">⏳ Use in 24h or stretch over 365 days</p>
-                   <p className="flex items-center gap-2">🔄 Lifetime Access (Rolling Quota)</p>
+                   <p className="flex items-center gap-2">⏳ High-Speed Priority Server</p>
+                   <p className="flex items-center gap-2">🔄 Lifetime Access</p>
                 </div>
-                <button onClick={() => pokreniKupovinu('ENTERPRISE', 550)} className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-[12px] transition-all shadow-md ${amountPaid > 0 ? 'bg-gradient-to-r from-purple-700 to-purple-500 hover:from-purple-600 hover:to-purple-400 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)]' : 'bg-zinc-800 text-white hover:bg-purple-500'}`}>
+                <button onClick={() => pokreniKupovinu('ENTERPRISE', 550)} className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-[13px] transition-all shadow-md ${amountPaid > 0 ? 'bg-gradient-to-r from-purple-700 to-purple-500 hover:from-purple-600 hover:to-purple-400 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)]' : 'bg-zinc-800 text-white hover:bg-purple-500'}`}>
                    {amountPaid > 0 ? "UPGRADE TO ENTERPRISE" : "SELECT ENTERPRISE"}
                 </button>
             </div>
           )}
         </div>
 
-        {/* 🔥 PREMIUM HORIZONTALNI UPGRADE INFO BOKS (Pomeren ISPOD paketa) 🔥 */}
+        {/* 🔥 DINAMIČKI PLAVI UPGRADE BOX 🔥 */}
         {amountPaid > 0 && amountPaid < 550 && (
-           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-4xl mx-auto mt-12 mb-10 bg-gradient-to-r from-[#0a192f]/90 to-[#020617]/90 border border-blue-500/40 p-6 md:p-8 rounded-[2rem] flex flex-col md:flex-row items-center justify-center gap-8 shadow-[0_0_40px_rgba(59,130,246,0.2)] relative overflow-hidden backdrop-blur-md">
-             <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay"></div>
-             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50"></div>
+           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`w-full max-w-4xl mx-auto mt-12 mb-10 bg-gradient-to-r from-[#0a0a0a]/90 to-[#020617]/90 border ${currentEngine === "SEEDANCE 2.0" ? "border-green-500/40 shadow-[0_0_40px_rgba(34,197,94,0.25)]" : "border-orange-500/40 shadow-[0_0_40px_rgba(234,88,12,0.25)]"} p-6 md:p-8 rounded-[2rem] flex flex-col md:flex-row items-center justify-center gap-8 relative overflow-hidden backdrop-blur-md`}>
+             <div className={`absolute inset-0 mix-blend-overlay ${currentEngine === "SEEDANCE 2.0" ? "bg-green-500/5" : "bg-orange-500/5"}`}></div>
+             <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent ${currentEngine === "SEEDANCE 2.0" ? "via-green-500" : "via-orange-500"} to-transparent opacity-50`}></div>
              
-             <div className="w-16 h-16 bg-blue-950/50 rounded-full flex items-center justify-center border border-blue-500/50 relative flex-shrink-0 shadow-[0_0_20px_rgba(59,130,246,0.3)]">
-                <div className="absolute inset-0 rounded-full border-t-2 border-blue-400 animate-spin"></div>
-                <ArrowUpCircle className="w-8 h-8 text-blue-400" />
+             <div className={`w-16 h-16 rounded-full flex items-center justify-center border relative flex-shrink-0 ${currentEngine === "SEEDANCE 2.0" ? "bg-green-900/40 border-green-500/50 shadow-[0_0_20px_rgba(34,197,94,0.4)]" : "bg-orange-900/40 border-orange-500/50 shadow-[0_0_20px_rgba(234,88,12,0.4)]"}`}>
+                <div className={`absolute inset-0 rounded-full border-t-2 animate-spin ${currentEngine === "SEEDANCE 2.0" ? "border-green-400" : "border-orange-400"}`}></div>
+                <ArrowUpCircle className={`w-8 h-8 ${currentEngine === "SEEDANCE 2.0" ? "text-green-400" : "text-orange-400"}`} />
              </div>
 
              <div className="text-center md:text-left relative z-10">
-                <div className="inline-block bg-blue-900/30 border border-blue-500/30 px-3 py-1 rounded-full text-blue-300 font-bold uppercase tracking-widest text-[9px] mb-3">
+                <div className={`inline-block border px-3 py-1 rounded-full font-bold uppercase tracking-widest text-[9px] mb-3 ${currentEngine === "SEEDANCE 2.0" ? "bg-green-900/50 border-green-500/30 text-green-300" : "bg-orange-900/50 border-orange-500/30 text-orange-300"}`}>
                   SMART UPGRADE SYSTEM ACTIVE
                 </div>
                 <h3 className="text-white text-lg md:text-xl font-black uppercase tracking-widest mb-2 drop-shadow-md">
                   PRORATED UPGRADE POLICY
                 </h3>
                 <p className="text-zinc-300 text-[13px] md:text-[14px] leading-relaxed max-w-2xl font-medium">
-                  System radar has detected an active V8 License valued at <strong className="text-blue-400">${amountPaid}</strong> linked to your account. You will <strong className="text-white border-b border-blue-500/50 pb-0.5">only pay the exact difference</strong> to upgrade to a higher tier.
+                  System radar has detected your active V8 License valued at <strong className={currentEngine === "SEEDANCE 2.0" ? "text-green-400" : "text-orange-400"}>${amountPaid}</strong>. 
+                  You can upgrade to a higher tier by paying <strong className={`text-white border-b pb-0.5 ${currentEngine === "SEEDANCE 2.0" ? "border-green-500/50" : "border-orange-500/50"}`}>ONLY THE PRICE DIFFERENCE</strong>. The package prices displayed above have already been automatically reduced!
                 </p>
              </div>
            </motion.div>
-         )}
+        )}
       </div>
     );
   };
@@ -455,26 +578,6 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
               );
             })}
           </div>
-
-          <div className="mt-12 pt-10 border-t border-white/10 grid md:grid-cols-2 gap-6">
-            <a href="/V8_PROMPT_ENGINE_MANIFEST.txt" download className="flex items-center gap-4 bg-black/40 hover:bg-orange-500/10 border border-white/5 hover:border-orange-500/50 p-6 rounded-2xl transition-all group shadow-inner">
-              <FileText className="text-orange-500 w-8 h-8 group-hover:scale-110 transition-transform" />
-              <div className="flex flex-col text-left">
-                <span className="text-white font-black uppercase tracking-widest text-[13px] group-hover:text-orange-400 transition-colors">Engine Manifest</span>
-                <span className="text-zinc-500 text-[10px] uppercase tracking-wider font-bold">.TXT Document</span>
-              </div>
-              <DownloadCloud className="ml-auto text-zinc-600 group-hover:text-orange-500 transition-colors w-5 h-5" />
-            </a>
-
-            <a href="/V8_COMMERCIAL_LICENSE.pdf" download className="flex items-center gap-4 bg-black/40 hover:bg-emerald-500/10 border border-white/5 hover:border-emerald-500/50 p-6 rounded-2xl transition-all group shadow-inner">
-              <ShieldCheck className="text-emerald-500 w-8 h-8 group-hover:scale-110 transition-transform" />
-              <div className="flex flex-col text-left">
-                <span className="text-white font-black uppercase tracking-widest text-[13px] group-hover:text-emerald-400 transition-colors">Commercial License</span>
-                <span className="text-zinc-500 text-[10px] uppercase tracking-wider font-bold">.PDF Agreement</span>
-              </div>
-              <DownloadCloud className="ml-auto text-zinc-600 group-hover:text-emerald-500 transition-colors w-5 h-5" />
-            </a>
-          </div>
         </div>
       );
   };
@@ -482,6 +585,33 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
   return (
     <div className="bg-[#050505] p-8 md:p-12 rounded-[2.5rem] border border-[#FF8C00]/30 shadow-[0_0_50px_rgba(255,140,0,0.1)] max-w-5xl mx-auto mt-28 relative overflow-hidden">
       
+      <FullScreenVideoPlayer src={fullScreenVideo} onClose={() => setFullScreenVideo(null)} />
+
+      <LoginRequiredModal
+        isOpen={loginRequiredData.isOpen}
+        onClose={() => setLoginRequiredData({
+          isOpen: false,
+          paketName: '',
+          fullPrice: 0,
+          checkoutTitle: '',
+          checkoutPrice: 0
+        })}
+        packageName={loginRequiredData.checkoutTitle}
+        price={loginRequiredData.checkoutPrice}
+        onLoginSuccess={() => {
+          if (loginRequiredData.paketName) {
+            openSecureCheckout(loginRequiredData.paketName, loginRequiredData.fullPrice);
+          }
+          setLoginRequiredData({
+            isOpen: false,
+            paketName: '',
+            fullPrice: 0,
+            checkoutTitle: '',
+            checkoutPrice: 0
+          });
+        }}
+      />
+
       <AnimatePresence>
         {isCheckoutOpen && (
           <V8SecureCheckout 
@@ -493,19 +623,27 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
         )}
       </AnimatePresence>
 
-      {isVIP && (
+      {/* 🔥 ADMIN BROJAČ SA BOJAMA KOJE PRATE TAB (Zelena/Narandžasta) 🔥 */}
+      {(isVIP || isAdmin) && (
         <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50">
            <motion.div 
               initial={{ y: -20, opacity: 0 }} 
               animate={{ y: 0, opacity: 1 }} 
-              className="bg-black/80 backdrop-blur-xl border border-orange-500/50 px-6 py-2 rounded-full shadow-[0_0_20px_rgba(234,88,12,0.3)] flex items-center gap-4"
+              className={`bg-black/80 backdrop-blur-xl border px-6 py-2 rounded-full shadow-lg flex items-center gap-4 ${currentEngine === "SEEDANCE 2.0" ? "border-green-500/50 shadow-[0_0_20px_rgba(34,197,94,0.3)]" : "border-orange-500/50 shadow-[0_0_20px_rgba(234,88,12,0.3)]"}`}
            >
-              <Zap className="w-4 h-4 text-orange-500 animate-pulse" />
+              <Zap className={`w-4 h-4 animate-pulse ${currentEngine === "SEEDANCE 2.0" ? "text-green-500" : "text-orange-500"}`} />
               <div className="flex flex-col items-center">
-                 <span className="text-[9px] uppercase tracking-[0.2em] font-black text-zinc-400 leading-none">V8 PROMPTS</span>
-                 <span className={`text-[15px] font-black tracking-widest leading-none mt-1 ${credits > 100 ? 'text-emerald-400' : 'text-red-500'}`}>
-                    {credits} AVAIL.
-                 </span>
+                 <span className="text-[9px] uppercase tracking-[0.2em] font-black text-zinc-400 opacity-60 leading-none">V8 PROMPTS</span>
+                 
+                 {isAdmin ? (
+                   <span className="text-[15px] font-black tracking-widest leading-none mt-1 text-purple-500 drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]">
+                     MASTER ADMIN : ∞
+                   </span>
+                 ) : (
+                   <span className={`text-[15px] font-black tracking-widest leading-none mt-1 ${credits > 100 ? 'text-emerald-400' : 'text-red-500'}`}>
+                     {credits} AVAIL.
+                   </span>
+                 )}
               </div>
            </motion.div>
         </div>
@@ -534,19 +672,18 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
           transition={{ duration: 0.5 }}
           className={`relative w-full mx-auto mb-12 rounded-[2.5rem] overflow-hidden border border-white/10 transition-shadow duration-500 ${currentEngine === "SEEDANCE 2.0" ? "shadow-[0_0_50px_rgba(34,197,94,0.15)]" : "shadow-[0_0_50px_rgba(255,140,0,0.15)]"}`}
       >
-          {/* 🔥 DINAMIČKI VIDEO BACKGROUND KOJI SE MENJA NA KLIK 🔥 */}
           <video 
-             key={`bg-${currentEngine}`}
-             autoPlay 
-             loop 
-             muted 
-             playsInline 
-             className="absolute inset-0 w-full h-full object-cover opacity-50 z-0 pointer-events-none"
+              key={`bg-${currentEngine}`}
+              autoPlay 
+              loop 
+              muted 
+              playsInline 
+              className="absolute inset-0 w-full h-full object-cover opacity-50 z-0 pointer-events-none"
           >
-             <source 
-                src={currentEngine === "SEEDANCE 2.0" ? "/v8-seedance-bg.mp4" : "/kling.mp4"} 
+              <source 
+                src={currentEngine === "SEEDANCE 2.0" ? "/seedance.mp4" : "/kling.mp4"} 
                 type="video/mp4" 
-             />
+              />
           </video>
           <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050505]/40 via-[#050505]/80 to-[#050505]"></div>
           
@@ -582,18 +719,95 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
               )}
 
               {!isVIP && !isCheckingAccess && (
-                <div className="mt-12 relative z-20 w-full">
-                   {renderPricingPlans()}
-                </div>
+                 <div className="mt-12 relative z-20 w-full">{renderPricingPlans()}</div>
               )}
           </div>
       </motion.div>
 
+      {/* 🔥 CINEMATIC CAPABILITY PROOF BOKSOVI 🔥 */}
+      <div className="w-full max-w-5xl mx-auto mb-16 relative z-10">
+         <div className="text-center mb-8">
+            <h2 className="text-2xl font-black uppercase tracking-[0.2em] text-white">CINEMATIC CAPABILITY PROOF</h2>
+            <p className="text-[12px] text-zinc-400 font-bold uppercase tracking-widest mt-2">V8 Core Engine Outputs</p>
+         </div>
+         
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center justify-center mb-10">
+            {/* SEEDANCE 9:16 (VERTIKALNI) */}
+            <div className="bg-black/50 border border-green-500/30 rounded-2xl p-4 flex flex-col items-center justify-center aspect-[9/16] w-full max-w-[320px] mx-auto relative overflow-hidden group shadow-[0_0_20px_rgba(34,197,94,0.05)] cursor-pointer hover:border-green-400 transition-colors" onClick={() => setFullScreenVideo(showcase.seedance)}>
+               <span className="absolute top-4 left-4 bg-green-500 text-black text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest z-20 shadow-md">SEEDANCE (9:16)</span>
+               
+               {showcase.seedance ? (
+                 <>
+                   <video src={showcase.seedance} autoPlay loop muted playsInline className="w-full h-full object-cover relative z-10 rounded-xl border border-green-500/30 pointer-events-none" />
+                   {isAdmin && (
+                     <button onClick={(e) => { e.stopPropagation(); deleteShowcaseVideo(e, 'seedance'); }} className="absolute top-4 right-4 bg-red-600 hover:bg-red-500 text-white p-2 rounded-full z-30 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Trash2 size={16} />
+                     </button>
+                   )}
+                 </>
+               ) : (
+                 isAdmin ? (
+                   <div className="flex flex-col items-center justify-center cursor-pointer opacity-50 hover:opacity-100 transition-opacity" onClick={(e) => { e.stopPropagation(); seedanceRef.current.click(); }}>
+                      <Upload className="w-10 h-10 text-green-500/50 mb-2" />
+                      <span className="text-[11px] font-bold text-green-500/50 uppercase tracking-widest text-center">{isUploadingShowcase.seedance ? "UPLOADING..." : "UPLOAD SEEDANCE VIDEO\n(9:16)"}</span>
+                      <input type="file" accept="video/*" ref={seedanceRef} className="hidden" onChange={(e) => handleShowcaseUpload(e, 'seedance')} />
+                   </div>
+                 ) : (
+                   <span className="text-zinc-600 text-sm font-bold uppercase tracking-widest">Video Unavailable</span>
+                 )
+               )}
+            </div>
+
+            {/* KLING 16:9 (HORIZONTALNI) */}
+            <div className="bg-black/50 border border-orange-500/30 rounded-2xl p-4 flex flex-col items-center justify-center aspect-video w-full relative overflow-hidden group shadow-[0_0_20px_rgba(234,88,12,0.05)] cursor-pointer hover:border-orange-400 transition-colors" onClick={() => setFullScreenVideo(showcase.kling)}>
+               <span className="absolute top-4 left-4 bg-orange-500 text-black text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest z-20 shadow-md">KLING (16:9)</span>
+               
+               {showcase.kling ? (
+                 <>
+                   <video src={showcase.kling} autoPlay loop muted playsInline className="w-full h-full object-cover relative z-10 rounded-xl border border-orange-500/30 pointer-events-none" />
+                   {isAdmin && (
+                     <button onClick={(e) => { e.stopPropagation(); deleteShowcaseVideo(e, 'kling'); }} className="absolute top-4 right-4 bg-red-600 hover:bg-red-500 text-white p-2 rounded-full z-30 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Trash2 size={16} />
+                     </button>
+                   )}
+                 </>
+               ) : (
+                 isAdmin ? (
+                   <div className="flex flex-col items-center justify-center cursor-pointer opacity-50 hover:opacity-100 transition-opacity" onClick={(e) => { e.stopPropagation(); klingRef.current.click(); }}>
+                      <Upload className="w-10 h-10 text-orange-500/50 mb-2" />
+                      <span className="text-[11px] font-bold text-orange-500/50 uppercase tracking-widest text-center">{isUploadingShowcase.kling ? "UPLOADING..." : "UPLOAD KLING VIDEO\n(16:9)"}</span>
+                      <input type="file" accept="video/*" ref={klingRef} className="hidden" onChange={(e) => handleShowcaseUpload(e, 'kling')} />
+                   </div>
+                 ) : (
+                   <span className="text-zinc-600 text-sm font-bold uppercase tracking-widest">Video Unavailable</span>
+                 )
+               )}
+            </div>
+         </div>
+
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center justify-center">
+            
+            {/* NOVI SEEDANCE VERTIKALNI */}
+            <div className="bg-black/50 border border-green-500/30 rounded-2xl p-4 flex flex-col items-center justify-center aspect-[9/16] w-full max-w-[320px] mx-auto relative overflow-hidden group shadow-[0_0_20px_rgba(34,197,94,0.05)] cursor-pointer hover:border-green-400 transition-colors" onClick={() => setFullScreenVideo("/V8_AI_Cinematic_Transformation.mp4")}>
+               <span className="absolute top-4 left-4 bg-green-500 text-black text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest z-20 shadow-md">SEEDANCE (9:16)</span>
+               <video src="/V8_AI_Cinematic_Transformation.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover relative z-10 rounded-xl border border-green-500/30 pointer-events-none" />
+            </div>
+
+            {/* NOVI KLING VERTIKALNI */}
+            <div className="bg-black/50 border border-orange-500/30 rounded-2xl p-4 flex flex-col items-center justify-center aspect-[9/16] w-full max-w-[320px] mx-auto relative overflow-hidden group shadow-[0_0_20px_rgba(234,88,12,0.05)] cursor-pointer hover:border-orange-400 transition-colors" onClick={() => setFullScreenVideo("/v8_pretorian.mp4")}>
+               <span className="absolute top-4 left-4 bg-orange-500 text-black text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest z-20 shadow-md">KLING (9:16)</span>
+               <video src="/v8_pretorian.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover relative z-10 rounded-xl border border-orange-500/30 pointer-events-none" />
+            </div>
+
+         </div>
+      </div>
+
       {renderV8Manifest()}
 
-      <div className={`transition-all duration-500 ${!isVIP ? 'opacity-30 grayscale-[70%] pointer-events-none' : ''}`}>
+      <div className={`transition-all duration-500 ${!isVIP && !isAdmin ? 'opacity-30 grayscale-[70%] pointer-events-none' : ''}`}>
         
-        {cooldownTime && (
+        {/* 🔥 Prikazujemo COOLDOWN obaveštenje samo ako nema kredita i prošlo je manje od 24h 🔥 */}
+        {cooldownTime && !isAdmin && (
           <div className="mb-10 bg-red-950/40 border border-red-500/50 rounded-2xl p-6 text-center shadow-inner relative overflow-hidden">
              <div className="absolute inset-0 bg-red-500/10 animate-pulse"></div>
              <AlertTriangle className="w-10 h-10 text-red-500 mx-auto mb-3 relative z-10 drop-shadow-[0_0_15px_rgba(239,68,68,0.8)]" />
@@ -624,17 +838,14 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center gap-3 cursor-pointer" onClick={() => isVIP && !isTextModeActive && inputRef.current.click()}>
+                  <div className="flex flex-col items-center gap-3 cursor-pointer" onClick={() => (isVIP || isAdmin) && !isTextModeActive && inputRef.current.click()}>
                     <div className="bg-white/5 p-4 rounded-full"><Upload className="w-8 h-8 text-zinc-400" /></div>
-                    <div>
-                      <p className="text-white font-bold text-sm">{isTextModeActive ? 'LOCKED (Text Mode)' : 'Drag & Drop your reference image here'}</p>
-                      <p className="text-zinc-500 text-xs mt-1">or click to browse files</p>
-                    </div>
+                    <div><p className="text-white font-bold text-sm">{isTextModeActive ? 'LOCKED (Text Mode)' : 'Drag & Drop your reference image here'}</p><p className="text-zinc-500 text-xs mt-1">or click to browse files</p></div>
                   </div>
                 )}
               </div>
               <div className="relative mt-1">
-                <input type="text" value={imageDescription} onChange={(e) => setImageDescription(e.target.value)} disabled={!isVIP || isTextModeActive} placeholder="Briefly describe what happens to this image..." className={`bg-black/50 border border-white/10 p-4 pr-12 rounded-xl text-[13px] text-white outline-none transition-all w-full shadow-inner disabled:bg-black/80 disabled:cursor-not-allowed ${currentEngine === "SEEDANCE 2.0" ? "focus:border-green-500" : "focus:border-[#FF8C00]"}`} />
+                <input type="text" value={imageDescription} onChange={(e) => setImageDescription(e.target.value)} disabled={(!isVIP && !isAdmin) || isTextModeActive} placeholder="Briefly describe what happens to this image..." className={`bg-black/50 border border-white/10 p-4 pr-12 rounded-xl text-[13px] text-white outline-none transition-all w-full shadow-inner disabled:bg-black/80 disabled:cursor-not-allowed ${currentEngine === "SEEDANCE 2.0" ? "focus:border-green-500" : "focus:border-[#FF8C00]"}`} />
                 {imageDescription && !isTextModeActive && (
                   <button onClick={() => setImageDescription('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 hover:text-red-400 bg-red-500/10 hover:bg-red-500/20 p-1.5 rounded-full transition-all"><X size={16} strokeWidth={3} /></button>
                 )}
@@ -646,7 +857,7 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
                 <Wand2 size={14} /> 2. TEXT-TO-VIDEO VISION
               </label>
               <div className="relative">
-                <textarea value={promptText} onChange={(e) => setPromptText(e.target.value)} disabled={!isVIP || isImageModeActive} placeholder={isImageModeActive ? "LOCKED: You are using Image-to-Video mode." : "Describe the action..."} className={`bg-black/50 border p-5 pr-12 rounded-2xl text-[14px] text-white outline-none resize-none h-32 transition-all w-full shadow-inner ${!isVIP || isImageModeActive ? 'border-red-900/30 opacity-40 cursor-not-allowed bg-black/80' : `border-white/10 ${currentEngine === "SEEDANCE 2.0" ? "focus:border-green-500" : "focus:border-[#FF8C00]"}`}`} />
+                <textarea value={promptText} onChange={(e) => setPromptText(e.target.value)} disabled={(!isVIP && !isAdmin) || isImageModeActive} placeholder={isImageModeActive ? "LOCKED: You are using Image-to-Video mode." : "Describe the action..."} className={`bg-black/50 border p-5 pr-12 rounded-2xl text-[14px] text-white outline-none resize-none h-32 transition-all w-full shadow-inner ${(!isVIP && !isAdmin) || isImageModeActive ? 'border-red-900/30 opacity-40 cursor-not-allowed bg-black/80' : `border-white/10 ${currentEngine === "SEEDANCE 2.0" ? "focus:border-green-500" : "focus:border-[#FF8C00]"}`}`} />
                 {promptText && !isImageModeActive && (
                   <button onClick={() => setPromptText('')} className="absolute right-3 top-4 text-red-500 hover:text-red-400 bg-red-500/10 hover:bg-red-500/20 p-1.5 rounded-full transition-all"><X size={16} strokeWidth={3} /></button>
                 )}
@@ -659,7 +870,7 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
               <label className="text-zinc-400 font-black text-[11px] tracking-widest uppercase flex items-center gap-2"><Clock size={14} /> 3. VIDEO DURATION</label>
               <div className="grid grid-cols-4 gap-2">
                 {['3s', '5s', '10s', '15s'].map((sec) => (
-                  <button key={sec} onClick={() => setDuration(sec)} disabled={!isVIP} className={`py-3 rounded-xl font-black text-[12px] transition-all border ${duration === sec ? (currentEngine === "SEEDANCE 2.0" ? 'bg-green-500/20 border-green-500 text-green-500 shadow-[0_0_15px_rgba(34,197,94,0.2)]' : 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00] shadow-[0_0_15px_rgba(255,140,0,0.2)]') : 'bg-black border-white/10 text-zinc-500 hover:border-white/30 hover:text-white disabled:cursor-not-allowed'}`}>{sec}</button>
+                  <button key={sec} onClick={() => setDuration(sec)} disabled={!isVIP && !isAdmin} className={`py-3 rounded-xl font-black text-[12px] transition-all border ${duration === sec ? (currentEngine === "SEEDANCE 2.0" ? 'bg-green-500/20 border-green-500 text-green-500 shadow-[0_0_15px_rgba(34,197,94,0.2)]' : 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00] shadow-[0_0_15px_rgba(255,140,0,0.2)]') : 'bg-black border-white/10 text-zinc-500 hover:border-white/30 hover:text-white disabled:cursor-not-allowed'}`}>{sec}</button>
                 ))}
               </div>
             </div>
@@ -667,18 +878,18 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
             <div className="flex flex-col gap-3">
                <label className="text-zinc-400 font-black text-[11px] tracking-widest uppercase flex items-center gap-2"><MonitorPlay size={14} /> 4. ASPECT RATIO {arLocked && <Lock size={12} className="text-red-500 inline ml-1" title="Locked by Image Dimensions" />}</label>
                <div className="flex gap-2">
-                  <button onClick={() => !arLocked && setAspectRatio('16:9')} disabled={!isVIP || (arLocked && aspectRatio !== '16:9')} className={`flex-1 py-4 rounded-xl font-black text-[11px] uppercase flex items-center justify-center gap-2 transition-all border ${aspectRatio === '16:9' ? (currentEngine === "SEEDANCE 2.0" ? 'bg-green-500/20 border-green-500 text-green-500' : 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]') : 'bg-black border-white/10 text-zinc-500 hover:border-white/30'} ${arLocked && aspectRatio !== '16:9' ? 'opacity-20 cursor-not-allowed bg-black border-transparent' : ''}`}><MonitorPlay size={16} /> 16:9</button>
-                  <button onClick={() => !arLocked && setAspectRatio('9:16')} disabled={!isVIP || (arLocked && aspectRatio !== '9:16')} className={`flex-1 py-4 rounded-xl font-black text-[11px] uppercase flex items-center justify-center gap-2 transition-all border ${aspectRatio === '9:16' ? (currentEngine === "SEEDANCE 2.0" ? 'bg-green-500/20 border-green-500 text-green-500' : 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]') : 'bg-black border-white/10 text-zinc-500 hover:border-white/30'} ${arLocked && aspectRatio !== '9:16' ? 'opacity-20 cursor-not-allowed bg-black border-transparent' : ''}`}><Smartphone size={16} /> 9:16</button>
+                  <button onClick={() => !arLocked && setAspectRatio('16:9')} disabled={(!isVIP && !isAdmin) || (arLocked && aspectRatio !== '16:9')} className={`flex-1 py-4 rounded-xl font-black text-[11px] uppercase flex items-center justify-center gap-2 transition-all border ${aspectRatio === '16:9' ? (currentEngine === "SEEDANCE 2.0" ? 'bg-green-500/20 border-green-500 text-green-500' : 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]') : 'bg-black border-white/10 text-zinc-500 hover:border-white/30'} ${arLocked && aspectRatio !== '16:9' ? 'opacity-20 cursor-not-allowed bg-black border-transparent' : ''}`}><MonitorPlay size={16} /> 16:9</button>
+                  <button onClick={() => !arLocked && setAspectRatio('9:16')} disabled={(!isVIP && !isAdmin) || (arLocked && aspectRatio !== '9:16')} className={`flex-1 py-4 rounded-xl font-black text-[11px] uppercase flex items-center justify-center gap-2 transition-all border ${aspectRatio === '9:16' ? (currentEngine === "SEEDANCE 2.0" ? 'bg-green-500/20 border-green-500 text-green-500' : 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]') : 'bg-black border-white/10 text-zinc-500 hover:border-white/30'} ${arLocked && aspectRatio !== '9:16' ? 'opacity-20 cursor-not-allowed bg-black border-transparent' : ''}`}><Smartphone size={16} /> 9:16</button>
                </div>
             </div>
 
             <div className="mt-auto pt-8 border-t border-white/10">
               <button 
                 onClick={generisiMasterPrompt} 
-                disabled={!isVIP || isGenerating || (!promptText && !imageFile) || credits <= 0} 
-                className={`w-full font-black text-[16px] uppercase tracking-widest py-5 rounded-2xl transition-all flex items-center justify-center gap-3 ${(!isVIP || credits <= 0) ? 'bg-red-900/50 text-red-500 border border-red-500/50 cursor-not-allowed' : (currentEngine === "SEEDANCE 2.0" ? 'bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-500 hover:to-emerald-400 text-white shadow-[0_0_30px_rgba(34,197,94,0.3)]' : 'bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white shadow-[0_0_30px_rgba(234,88,12,0.3)]')} hover:scale-[1.02] disabled:opacity-50`}
+                disabled={(!isVIP && !isAdmin) || isGenerating || (!promptText && !imageFile) || (!isAdmin && credits <= 0)} 
+                className={`w-full font-black text-[16px] uppercase tracking-widest py-5 rounded-2xl transition-all flex items-center justify-center gap-3 ${(!isVIP && !isAdmin) || (!isAdmin && credits <= 0) ? 'bg-red-900/50 text-red-500 border border-red-500/50 cursor-not-allowed' : (currentEngine === "SEEDANCE 2.0" ? 'bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-500 hover:to-emerald-400 text-white shadow-[0_0_30px_rgba(34,197,94,0.3)]' : 'bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white shadow-[0_0_30px_rgba(234,88,12,0.3)]')} hover:scale-[1.02] disabled:opacity-50`}
               >
-                {isGenerating ? 'COMPILING META-TOKENS...' : (!isVIP || credits <= 0) ? 'ACCESS DENIED / COOLING' : 'GENERATE 5 MASTER PROMPTS'} <Settings2 size={20} className={isGenerating ? "animate-spin" : ""} />
+                {isGenerating ? 'COMPILING META-TOKENS...' : (!isVIP && !isAdmin) || (!isAdmin && credits <= 0) ? 'ACCESS DENIED / COOLING' : 'GENERATE 5 MASTER PROMPTS'} <Settings2 size={20} className={isGenerating ? "animate-spin" : ""} />
               </button>
             </div>
           </div>
@@ -692,8 +903,8 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
               className="mt-16 border-t border-white/10 pt-16"
             >
               <div className="flex items-center gap-4 mb-10 justify-center">
-                 <Wand2 className={`w-8 h-8 ${currentEngine === "SEEDANCE 2.0" ? "text-green-500" : "text-orange-500"}`} />
-                 <h2 className="text-3xl font-black uppercase tracking-widest text-white text-center">GENERATED MASTER PROMPTS</h2>
+                  <Wand2 className={`w-8 h-8 ${currentEngine === "SEEDANCE 2.0" ? "text-green-500" : "text-orange-500"}`} />
+                  <h2 className="text-3xl font-black uppercase tracking-widest text-white text-center">GENERATED MASTER PROMPTS</h2>
               </div>
               
               <div className="space-y-8">
@@ -702,19 +913,19 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
                     <div className={`absolute top-0 left-0 w-1 h-full ${currentEngine === "SEEDANCE 2.0" ? "bg-gradient-to-b from-green-500 to-emerald-400" : "bg-gradient-to-b from-orange-500 to-amber-400"}`}></div>
                     
                     <h4 className={`font-black tracking-widest text-sm mb-6 flex items-center gap-2 ${currentEngine === "SEEDANCE 2.0" ? "text-green-500" : "text-orange-500"}`}>
-                       <Diamond className="w-4 h-4" /> VARIATION {item.number}
+                        <Diamond className="w-4 h-4" /> VARIATION {item.number}
                     </h4>
 
                     <div>
                       <div className="flex justify-between items-center mb-3">
-                         <span className="text-zinc-400 font-bold text-[11px] uppercase tracking-widest flex items-center gap-2"><MonitorPlay size={14}/> MERGED CINEMATIC PROMPT:</span>
-                         <button 
-                           onClick={() => copyPrompt(item.prompt, idx, 'prompt')} 
-                           className={`hover:text-white text-[11px] font-black uppercase tracking-widest flex items-center gap-2 px-4 py-2 rounded-xl transition-all shadow-inner ${currentEngine === "SEEDANCE 2.0" ? "text-green-400 bg-green-500/10 hover:bg-green-500/20" : "text-orange-400 bg-orange-500/10 hover:bg-orange-500/20"}`}
-                         >
-                            {copiedIndex === `${idx}-prompt` ? <CheckCircle size={14} className="text-emerald-400"/> : <Copy size={14}/>} 
-                            {copiedIndex === `${idx}-prompt` ? 'COPIED!' : 'COPY PROMPT'}
-                         </button>
+                          <span className="text-zinc-400 font-bold text-[11px] uppercase tracking-widest flex items-center gap-2"><MonitorPlay size={14}/> MERGED CINEMATIC PROMPT:</span>
+                          <button 
+                            onClick={() => copyPrompt(item.prompt, idx, 'prompt')} 
+                            className={`hover:text-white text-[11px] font-black uppercase tracking-widest flex items-center gap-2 px-4 py-2 rounded-xl transition-all shadow-inner ${currentEngine === "SEEDANCE 2.0" ? "text-green-400 bg-green-500/10 hover:bg-green-500/20" : "text-orange-400 bg-orange-500/10 hover:bg-orange-500/20"}`}
+                          >
+                             {copiedIndex === `${idx}-prompt` ? <CheckCircle size={14} className="text-emerald-400"/> : <Copy size={14}/>} 
+                             {copiedIndex === `${idx}-prompt` ? 'COPIED!' : 'COPY PROMPT'}
+                          </button>
                       </div>
                       <div className="text-zinc-300 text-[13px] md:text-[14px] leading-relaxed bg-white/5 border border-white/5 p-5 md:p-6 rounded-2xl font-mono shadow-inner">
                         {item.prompt}
