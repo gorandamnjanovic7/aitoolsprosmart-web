@@ -7,7 +7,7 @@ import { CLOUDINARY_UPLOAD_PRESET, CLOUDINARY_CLOUD_NAME } from '../data';
 import { Zap, X, Image as ImageIcon, Images, DownloadCloud, Crown, AlertCircle, Type, Layers, FolderArchive, FileText, Wallet, MonitorPlay, Link as LinkIcon, Diamond, RefreshCcw } from 'lucide-react';
 import { db, auth } from '../firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, serverTimestamp, query, orderBy, getDoc, setDoc } from 'firebase/firestore';
-import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { v8Toast } from '../v8Utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -18,6 +18,7 @@ import V8SignatureBundles from './V8SignatureBundles';
 
 // 🔥 NOVI MODAL - UVEZEN DIREKTNO IZ ROOT FOLDERA 🔥
 import V8SecureCheckout from '../V8SecureCheckout';
+import LoginRequiredModal from '../LoginRequiredModal';
 
 // POČETAK FUNKCIJE: FullScreenLightbox
 const FullScreenLightbox = ({ imageUrl, onClose }) => {
@@ -45,6 +46,7 @@ const V8StockBerza = () => {
   
   // Održavamo state za checkout modal
   const [checkoutData, setCheckoutData] = useState({ isOpen: false, name: '', price: 0 });
+  const [loginRequiredData, setLoginRequiredData] = useState({ isOpen: false, paket: null, name: '', price: 0 });
   
   const [isUploading, setIsUploading] = useState(false);
   const [isUploadingPrimer, setIsUploadingPrimer] = useState(false);
@@ -134,11 +136,9 @@ const V8StockBerza = () => {
         setNoviOpisEn("33.2MP Upscale - Industrial-grade precision for 8K. Supported formats: 16:9 (10 Images) aspect ratio, 9:16 aspect ratio (10 Images). Utilizing precision LANCZOS interpolation. An advanced MedianFilter systematically wipes out digital noise and compression artifacts. Custom NumPy matrix processing applies a smooth rolloff to prevent blown-out whites and retain intricate highlight textures. Strict conversion to the sRGB ICC profile ensures color accuracy across all digital devices and professional reference monitors. Signature Gaussian Noise distribution breaks artificial AI smoothness, creating an authentic, tangible photographic look. Zero text, watermarks, or logos. 100% IP Safe. Fully production-ready."); 
     }
     else if (noviFormat === '45MP MASTERWORK BUNDLE') { 
-        // 45MP LOGIKA (Ispravljene zamenjene cifre iz prompta)
         setNoviOpisEn("V8 MASTERWORK BUNDLE: COMPLETE COLLECTION OF 60 PREMIUM VISUALS FOR 8K IN 45 MEGAPIXELS RESOLUTION. INCLUDES 16:9 ( 30 Images ) AND 9:16 ( 30 Images ) ASPECT RATIOS. Utilizing precision LANCZOS interpolation. An advanced MedianFilter systematically wipes out digital noise and compression artifacts. Custom NumPy matrix processing applies a smooth rolloff to prevent blown-out whites and retain intricate highlight textures. Strict conversion to the sRGB ICC profile ensures color accuracy across all digital devices and professional reference monitors. Signature Gaussian Noise distribution breaks artificial AI smoothness, creating an authentic, tangible photographic look. Zero text, watermarks, or logos. 100% IP Safe. Fully production-ready."); 
     }
     else if (noviFormat === '60MP SIGNATURE BUNDLE') { 
-        // 60MP LOGIKA (Ispravljene zamenjene cifre iz prompta + promenjena reč Masterwork u Signature)
         setNoviOpisEn("V8 SIGNATURE BUNDLE: COMPLETE COLLECTION OF 45 PREMIUM VISUALS FOR 8K IN 60 MEGAPIXELS RESOLUTION. INCLUDES 16:9 ( 15 Images ), 9:16 ( 15 Images ) AND 21:9 ( 15 Images ) ASPECT RATIOS. Utilizing precision LANCZOS interpolation. An advanced MedianFilter systematically wipes out digital noise and compression artifacts. Custom NumPy matrix processing applies a smooth rolloff to prevent blown-out whites and retain intricate highlight textures. Strict conversion to the sRGB ICC profile ensures color accuracy across all digital devices and professional reference monitors. Signature Gaussian Noise distribution breaks artificial AI smoothness, creating an authentic, tangible photographic look. Zero text, watermarks, or logos. 100% IP Safe. Fully production-ready."); 
     }
   }, [noviFormat, editingPaketId]); 
@@ -152,6 +152,28 @@ const V8StockBerza = () => {
   };
   // KRAJ FUNKCIJE: fetchPaketi
 
+  // POČETAK FUNKCIJE: otvoriCheckoutIliPaddle
+  const otvoriCheckoutIliPaddle = async (user, paket) => {
+    if (!user || !paket) return;
+
+    const fullName = paket.volume ? `${paket.nazivEn} - ${paket.volume}` : paket.nazivEn;
+    const finalPrice = getGlobalCena(paket.cena);
+
+    await snimiKupcaUBazu(user, paket);
+
+    if (paket.paddleLink && paket.paddleLink.trim() !== "") {
+      window.location.href = paket.paddleLink;
+      return;
+    }
+
+    setCheckoutData({
+      isOpen: true,
+      name: fullName,
+      price: finalPrice
+    });
+  };
+  // KRAJ FUNKCIJE: otvoriCheckoutIliPaddle
+
   // POČETAK FUNKCIJE: prijavaIKupovina
   const prijavaIKupovina = async (paket) => {
     if (paket.isFree || paket.cena === "0.00" || parseFloat(paket.cena) === 0) {
@@ -162,22 +184,19 @@ const V8StockBerza = () => {
 
     const fullName = paket.volume ? `${paket.nazivEn} - ${paket.volume}` : paket.nazivEn;
     const finalPrice = getGlobalCena(paket.cena);
+    const userNow = currentUser || auth.currentUser;
 
-    if (currentUser) {
-        snimiKupcaUBazu(currentUser, paket);
-        if (paket.paddleLink && paket.paddleLink.trim() !== "") {
-            window.location.href = paket.paddleLink;
-        } else {
-            setCheckoutData({ isOpen: true, name: fullName, price: finalPrice });
-        }
-    } else {
-        try {
-            localStorage.setItem('v8_pending_stock_paket_id', paket.id);
-            const v8Provider = new GoogleAuthProvider();
-            v8Provider.setCustomParameters({ prompt: 'select_account', login_hint: '' });
-            await signInWithPopup(auth, v8Provider);
-        } catch (error) { v8Toast.error("Login canceled."); localStorage.removeItem('v8_pending_stock_paket_id'); }
+    if (userNow) {
+        await otvoriCheckoutIliPaddle(userNow, paket);
+        return;
     }
+
+    setLoginRequiredData({
+      isOpen: true,
+      paket,
+      name: fullName,
+      price: finalPrice
+    });
   };
   // KRAJ FUNKCIJE: prijavaIKupovina
 
@@ -216,8 +235,15 @@ const V8StockBerza = () => {
   const handleUploadPrimeri = async (e) => {
     const files = Array.from(e.target.files); 
     if (files.length === 0) return;
-    const slobodnaMesta = ((activeTab === 'bundles' || activeTab === 'signature') ? 6 : 4) - primeriUrls.length;
+    
+    // V8 Dinamička provera za limit thumbnailova
+    let maxThumbnails = 4; // Default za Premium/Standard
+    if (activeTab === 'bundles') maxThumbnails = 10;
+    else if (activeTab === 'signature') maxThumbnails = 8;
+    
+    const slobodnaMesta = maxThumbnails - primeriUrls.length;
     if (slobodnaMesta <= 0) return;
+    
     setIsUploadingPrimer(true);
     const noveSlike = [];
     try {
@@ -274,7 +300,7 @@ const V8StockBerza = () => {
 
 // POČETAK FUNKCIJE: renderV8Manifest
 const renderV8Manifest = (rezolucija) => {
-    const specifikacije = [
+      const specifikacije = [
         { t: `1. ${rezolucija} Upscale`, d: "Industrial-grade precision for 8K.", insight: `Utilizing precision LANCZOS interpolation, images are scaled to a native ${rezolucija} resolution, eliminating blurriness and jagged artifacts.` },
         { t: "2. Contributor Cleanup", d: "MedianFilter for pristine surfaces.", insight: "An advanced MedianFilter systematically wipes out digital noise and compression artifacts, ensuring a pristine base image." },
         { t: "3. Premium Sharpness", d: "Unsharp Mask for micro-contrast.", insight: "A surgically calibrated Unsharp Mask algorithm tuned to 1.15 radius accentuates textures without creating artificial halo lines." },
@@ -358,6 +384,21 @@ const renderV8Manifest = (rezolucija) => {
 
       <FullScreenLightbox imageUrl={fullScreenImageUrl} onClose={() => setFullScreenImageUrl(null)} />
       
+      {/* 🔥 LOGIN REQUIRED MODAL ZA SVE STOCK PAKETE 🔥 */}
+      <LoginRequiredModal
+        isOpen={loginRequiredData.isOpen}
+        onClose={() => setLoginRequiredData({ isOpen: false, paket: null, name: '', price: 0 })}
+        packageName={loginRequiredData.name}
+        price={loginRequiredData.price}
+        onLoginSuccess={async (user) => {
+          if (loginRequiredData.paket) {
+            await otvoriCheckoutIliPaddle(user, loginRequiredData.paket);
+          }
+
+          setLoginRequiredData({ isOpen: false, paket: null, name: '', price: 0 });
+        }}
+      />
+
       {/* 🔥 RENDEROVANJE GLOBALNOG MODALA UNUTAR BERZE 🔥 */}
       <AnimatePresence>
          {checkoutData.isOpen && (
@@ -535,7 +576,7 @@ const renderV8Manifest = (rezolucija) => {
                             <Images size={12} /> GALLERY IMAGES
                         </label>
                         <button type="button" onClick={() => galleryImagesRef.current.click()} className="bg-zinc-900 hover:bg-[#FF8C00] text-white hover:text-black border border-white/10 hover:border-[#FF8C00] px-6 py-4 rounded-xl font-black text-[11px] uppercase transition-all flex items-center gap-2"> 
-                          <Images size={16} /> {isUploadingPrimer ? 'UPLOADING...' : `ADD THUMBNAILS (${primeriUrls.length}/${(activeTab === 'bundles' || activeTab === 'signature') ? 6 : 4})`} 
+                          <Images size={16} /> {isUploadingPrimer ? 'UPLOADING...' : `ADD THUMBNAILS (${primeriUrls.length}/${activeTab === 'bundles' ? 10 : activeTab === 'signature' ? 8 : 4})`} 
                         </button>
                         <input type="file" multiple ref={galleryImagesRef} onChange={handleUploadPrimeri} className="hidden" /> 
                     </div>
