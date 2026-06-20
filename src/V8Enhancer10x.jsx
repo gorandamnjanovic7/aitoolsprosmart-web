@@ -16,6 +16,7 @@ import { collection, getDocs, doc, getDoc, setDoc, serverTimestamp, onSnapshot, 
 // DATA & TOAST
 import * as data from './data';
 import { v8Toast } from './v8Utils';
+import LoginRequiredModal from './LoginRequiredModal';
 
 // --- V8 SENZOR ZA AUTOMATSKU DETEKCIJU SERVERA ---
 const BASE_BACKEND_URL = window.location.hostname === 'localhost' 
@@ -94,6 +95,12 @@ const V8Enhancer10x = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(null);
   const [vipHistory, setVipHistory] = useState([]);
   const [lemonLink, setLemonLink] = useState("");
+
+  const [loginRequiredData, setLoginRequiredData] = useState({
+    isOpen: false,
+    tip: '',
+    cena: 0
+  });
 
   // 🔥 DODATO: Zaključavanje ekrana da ne mrda kad se otvori modal 🔥
   useEffect(() => {
@@ -176,62 +183,80 @@ const V8Enhancer10x = () => {
     } catch (err) { v8Toast.error("Login failed!"); }
   };
 
-  // 🔥 V8 BLINDIRANA FUNKCIJA ZA PLAĆANJE (SA MODALOM) 🔥
+  // 🔥 V8 BLINDIRANA FUNKCIJA ZA PLAĆANJE (SA LOGIN MODALOM) 🔥
+  const openPaymentFlow = async (currentUser, tip, cena) => {
+    if (!currentUser) return;
+
+    await addDoc(collection(db, "v8_kupci"), {
+      ime: currentUser.displayName || "Client",
+      email: currentUser.email,
+      uid: currentUser.uid,
+      zeliPaket: tip,
+      cenaPaketa: cena,
+      vreme: serverTimestamp(),
+      isPaid: false
+    });
+
+    await setDoc(doc(db, "posetioci", currentUser.uid), {
+      ime: currentUser.displayName || "Client",
+      email: currentUser.email,
+      vremePrijave: serverTimestamp(),
+      zainteresovanZa: tip,
+      identitet: "V8-Client"
+    }, { merge: true });
+
+    const email = currentUser.email ? currentUser.email.toLowerCase() : "";
+
+    if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
+      setIsVIP(true);
+      v8Toast.success("Access already unlocked!");
+      loadHistory(email);
+      return;
+    }
+
+    const docRef = doc(db, "vip_users", email);
+    const docSnap = await getDoc(docRef);
+
+    if (
+      docSnap.exists() &&
+      docSnap.data().unlockedApps &&
+      (
+        docSnap.data().unlockedApps.includes('FULL_ACCESS') ||
+        docSnap.data().unlockedApps.includes('10X_ENHANCER')
+      )
+    ) {
+      setIsVIP(true);
+      v8Toast.success("Access already unlocked!");
+      loadHistory(email);
+      return;
+    }
+
+    if (lemonLink && lemonLink.includes("http")) {
+      window.location.href = lemonLink;
+    } else {
+      setShowPaymentModal({ tip, cena });
+    }
+  };
+
   const handlePaymentV8 = async (tip, cena) => {
     try {
-        let currentUser = auth.currentUser;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
 
-        // Vraća ekran na vrh pre logovanja, sprečava bug skrolovanja
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+      const currentUser = auth.currentUser;
 
-        if (!currentUser) {
-            const v8Provider = new GoogleAuthProvider();
-            v8Provider.setCustomParameters({ prompt: 'select_account' });
-            const result = await signInWithPopup(auth, v8Provider);
-            currentUser = result.user;
-        }
+      if (!currentUser) {
+        setLoginRequiredData({
+          isOpen: true,
+          tip,
+          cena: Number(cena)
+        });
+        return;
+      }
 
-        if (currentUser) {
-            await addDoc(collection(db, "v8_kupci"), {
-                ime: currentUser.displayName || "Client", email: currentUser.email, uid: currentUser.uid,
-                zeliPaket: tip, cenaPaketa: cena, vreme: serverTimestamp(), isPaid: false
-            });
-
-            await setDoc(doc(db, "posetioci", currentUser.uid), { 
-                ime: currentUser.displayName || "Client", 
-                email: currentUser.email, 
-                vremePrijave: serverTimestamp(), 
-                zainteresovanZa: tip, 
-                identitet: "V8-Client" 
-            }, { merge: true });
-
-            const email = currentUser.email ? currentUser.email.toLowerCase() : "";
-            
-            if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
-                setIsVIP(true);
-                v8Toast.success("Access already unlocked!");
-                loadHistory(email);
-                return; 
-            }
-
-            const docRef = doc(db, "vip_users", email);
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists() && docSnap.data().unlockedApps && (docSnap.data().unlockedApps.includes('FULL_ACCESS') || docSnap.data().unlockedApps.includes('10X_ENHANCER'))) {
-                setIsVIP(true);
-                v8Toast.success("Access already unlocked!");
-                loadHistory(email);
-            } else {
-                if (lemonLink && lemonLink.includes("http")) {
-                    window.location.href = lemonLink;
-                } else {
-                    setShowPaymentModal({ tip, cena });
-                }
-            }
-        }
+      await openPaymentFlow(currentUser, tip, cena);
     } catch (err) {
-        console.error("V8 PAYMENT ERROR:", err);
-        v8Toast.error(err.message || "Greška na sistemu za naplatu.");
+      console.error("V8 PAYMENT ERROR:", err);
+      v8Toast.error(err.message || "Greška na sistemu za naplatu.");
     }
   };
 
@@ -391,6 +416,20 @@ const V8Enhancer10x = () => {
         .ray-inner { background: rgba(10,10,10,0.95); backdrop-filter: blur(20px); border-radius: calc(2rem - 2px); position: relative; z-index: 1; height: 100%; padding: 1.5rem; display: flex; flex-direction: column; }
       `}</style>
       <Helmet><title>10X ENHANCER | AI TOOLS PRO SMART</title></Helmet>
+
+      <LoginRequiredModal
+        isOpen={loginRequiredData.isOpen}
+        onClose={() => setLoginRequiredData({ isOpen: false, tip: '', cena: 0 })}
+        packageName={loginRequiredData.tip || "10X ENHANCER LIFETIME"}
+        price={loginRequiredData.cena || 199.99}
+        onLoginSuccess={async (user) => {
+          const pendingTip = loginRequiredData.tip || "10X ENHANCER LIFETIME";
+          const pendingCena = loginRequiredData.cena || 199.99;
+
+          setLoginRequiredData({ isOpen: false, tip: '', cena: 0 });
+          await openPaymentFlow(user, pendingTip, pendingCena);
+        }}
+      />
 
       {/* --- SIDEBAR ISTORIJA --- */}
       {isVIP && (
