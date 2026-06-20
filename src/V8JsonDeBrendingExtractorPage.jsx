@@ -2,15 +2,16 @@
 // Ne zaboravi da ažuriraš svoj React source code link u glavnom repozitorijumu!
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, Code, ShieldCheck, RefreshCcw, Diamond, Copy, CheckCircle, FileImage, Crown, Zap, DownloadCloud, X, FileText, ArrowUpCircle, Layers, Cpu, Eye, Trash2 } from 'lucide-react';
+import { Upload, Code, ShieldCheck, RefreshCcw, Diamond, Copy, CheckCircle, FileImage, Crown, Zap, DownloadCloud, X, FileText, ArrowUpCircle, Layers, Cpu, Eye, Trash2, Timer } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
 
 import { db, auth } from './firebase';
-import { doc, onSnapshot, collection, query, where, setDoc } from 'firebase/firestore';
-import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from 'firebase/auth'; 
+import { doc, getDoc, onSnapshot, collection, query, where, setDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth'; 
 
 import V8SecureCheckout from './V8SecureCheckout';
+import LoginRequiredModal from './LoginRequiredModal';
 import { CLOUDINARY_UPLOAD_PRESET, CLOUDINARY_CLOUD_NAME } from './data';
 
 const BASE_BACKEND_URL = window.location.hostname === 'localhost' 
@@ -28,13 +29,12 @@ const FullScreenLightbox = ({ imageUrl, onClose }) => {
   if (!imageUrl) return null;
   return createPortal(
       <div className="fixed inset-0 z-[999999] bg-[#0f172a]/95 flex items-center justify-center p-4" onClick={onClose}>
-          <button type="button" onClick={(e) => { e.stopPropagation(); onClose(); }} className="absolute top-6 right-6 md:top-10 md:right-10 bg-[#FF8C00] text-white p-4 rounded-full font-black z-[1000000] shadow-[0_0_20px_rgba(255,140,0,0.5)]"><X size={32} strokeWidth={3} /></button>
+          <button type="button" onClick={(e) => { e.stopPropagation(); onClose(); }} className="absolute top-6 right-6 md:top-10 md:right-10 bg-[#FF8C00] text-white p-4 rounded-full font-black z-[1000000] shadow-[0_0_20px_rgba(255,140,0,0.5)] hover:bg-[#FF8C00]/80 transition-all"><X size={32} strokeWidth={3} /></button>
           <img src={imageUrl} alt="Full Screen Preview" className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-[0_0_80px_rgba(255,140,0,0.4)] border border-[#FF8C00]/30 relative z-[999999]" onClick={(e) => e.stopPropagation()} />
       </div>, document.body
   );
 };
 // KRAJ FUNKCIJE: FullScreenLightbox
-
 
 // POČETAK FUNKCIJE: V8JsonDeBrendingExtractorPage
 const V8JsonDeBrendingExtractorPage = () => {
@@ -59,54 +59,53 @@ const V8JsonDeBrendingExtractorPage = () => {
   const [otvorenOpis, setOtvorenOpis] = useState(null);
   const inputRef = useRef(null);
 
-  // Before/After Showcase state
   const [showcase, setShowcase] = useState({ before: '', after: '' });
   const [fullScreenImageUrl, setFullScreenImageUrl] = useState(null);
   const [isUploadingShowcase, setIsUploadingShowcase] = useState({ before: false, after: false });
   const beforeImgRef = useRef(null);
   const afterImgRef = useRef(null);
 
-  // LOKALNO UPRAVLJANJE CHECKOUT MODALOM
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [checkoutProduct, setCheckoutProduct] = useState('');
   const [checkoutPrice, setCheckoutPrice] = useState(0);
+  const [isLoginRequiredOpen, setIsLoginRequiredOpen] = useState(false);
 
-  // POČETAK FUNKCIJE: handleGoogleLogin
-  const handleGoogleLogin = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error("Login prekinut:", error);
-    }
-  };
-  // KRAJ FUNKCIJE: handleGoogleLogin
+  // Dodato za Cooldown (ako ikada zatreba, iako ga ovde rucno skidamo dole u extractDNA, cisto da state ne puca)
+  const [isEngineCoolingDown, setIsEngineCoolingDown] = useState(false);
+  const [cooldownDisplay, setCooldownDisplay] = useState("");
 
-  // POČETAK FUNKCIJE: pokreniKupovinu
-  const pokreniKupovinu = async (paketName, fullPrice) => {
-    if (!userEmail) {
-      try {
-        const provider = new GoogleAuthProvider();
-        await signInWithPopup(auth, provider);
-        return; 
-      } catch (error) {
-        console.error("Login prekinut tokom pokušaja kupovine:", error);
-        return;
-      }
-    }
-
+  const openCheckoutForPackage = (paketName, fullPrice) => {
     const razlika = fullPrice - amountPaid;
     const finalPrice = razlika > 0 ? razlika : fullPrice;
     const isUpgrade = amountPaid > 0;
-    const naslovCheckouta = isUpgrade ? `V8 DeBrending - ${paketName.toUpperCase()} (UPGRADE)` : `V8 DeBrending - ${paketName.toUpperCase()}`;
+    const naslovCheckouta = isUpgrade
+      ? `V8 DeBrending - ${paketName.toUpperCase()} (UPGRADE)`
+      : `V8 DeBrending - ${paketName.toUpperCase()}`;
 
     setCheckoutProduct(naslovCheckouta);
     setCheckoutPrice(finalPrice);
     setIsCheckoutOpen(true);
   };
-  // KRAJ FUNKCIJE: pokreniKupovinu
 
-  // POČETAK FUNKCIJE: useEffect (Auth provera i pretplata)
+  const pokreniKupovinu = (paketName, fullPrice) => {
+    const razlika = fullPrice - amountPaid;
+    const finalPrice = razlika > 0 ? razlika : fullPrice;
+    const isUpgrade = amountPaid > 0;
+    const naslovCheckouta = isUpgrade
+      ? `V8 DeBrending - ${paketName.toUpperCase()} (UPGRADE)`
+      : `V8 DeBrending - ${paketName.toUpperCase()}`;
+
+    setCheckoutProduct(naslovCheckouta);
+    setCheckoutPrice(finalPrice);
+
+    if (!auth.currentUser && !userEmail) {
+      setIsLoginRequiredOpen(true);
+      return;
+    }
+
+    setIsCheckoutOpen(true);
+  };
+
   useEffect(() => {
     const unsubShowcase = onSnapshot(doc(db, "v8_settings", "showcase_debranding"), (docSnap) => {
       if (docSnap.exists()) {
@@ -155,7 +154,8 @@ const V8JsonDeBrendingExtractorPage = () => {
           if (data.status === "paid" || data.status === "PAID") {
             const productName = data.productName ? data.productName.toUpperCase() : "";
             
-            if (productName.includes("DEBRENDING") || productName.includes("DE-BRANDING")) {
+            // 🔥 POPRAVLJEN SKENER 🔥
+            if (productName.includes("DEBRENDING") || productName.includes("DE-BRANDING") || productName.includes("SECURITY CHECKOUT")) {
               hasAccess = true;
               
               if (productName.includes("ENTERPRISE")) {
@@ -195,9 +195,7 @@ const V8JsonDeBrendingExtractorPage = () => {
       unsubShowcase();
     };
   }, []);
-  // KRAJ FUNKCIJE: useEffect
 
-  // POČETAK FUNKCIJE: handleShowcaseUpload (Za Before/After slike)
   const handleShowcaseUpload = async (e, type) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -219,18 +217,14 @@ const V8JsonDeBrendingExtractorPage = () => {
       e.target.value = null; 
     }
   };
-  // KRAJ FUNKCIJE: handleShowcaseUpload
 
-  // POČETAK FUNKCIJE: deleteShowcaseImage
   const deleteShowcaseImage = async (e, type) => {
     e.stopPropagation();
     if(window.confirm("Obrisati ovu sliku?")) {
         await setDoc(doc(db, "v8_settings", "showcase_debranding"), { [type]: '' }, { merge: true });
     }
   };
-  // KRAJ FUNKCIJE: deleteShowcaseImage
 
-  // POČETAK FUNKCIJE: Drag & Drop logika
   const handleDrag = (e) => {
     e.preventDefault(); e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
@@ -277,20 +271,16 @@ const V8JsonDeBrendingExtractorPage = () => {
     setDetectedAR(null);
     setTargetFormat('16:9'); 
   };
-  // KRAJ FUNKCIJE: Drag & Drop logika
 
-  // POČETAK FUNKCIJE: handleCopy
   const handleCopy = () => {
     navigator.clipboard.writeText(jsonResult);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-  // KRAJ FUNKCIJE: handleCopy
 
-  // POČETAK FUNKCIJE: extractDNA
   const extractDNA = async () => {
     if (!file) return;
-    if (credits <= 0 && isVIP) {
+    if (credits <= 0 && isVIP && !isAdmin) {
         alert("INSUFFICIENT CREDITS! Please wait for refill.");
         return;
     }
@@ -319,9 +309,7 @@ const V8JsonDeBrendingExtractorPage = () => {
         setIsExtracting(false); 
     }
   };
-  // KRAJ FUNKCIJE: extractDNA
 
-  // POČETAK FUNKCIJE: renderPricingPlans
   const renderPricingPlans = () => {
     if (amountPaid >= 550) {
       return (
@@ -368,7 +356,7 @@ const V8JsonDeBrendingExtractorPage = () => {
                    <p className="flex items-center gap-2">⏳ Use in 24h or stretch over 365 days</p>
                    <p className="flex items-center gap-2">🔄 Rolling Quota (No expiry)</p>
                 </div>
-                <button onClick={() => pokreniKupovinu('STARTER', 150)} className="w-full bg-zinc-800 text-white hover:bg-blue-500 py-4 rounded-xl font-black uppercase tracking-widest text-[12px] transition-all shadow-md">
+                <button onClick={() => pokreniKupovinu('STARTER', 150)} className="w-full bg-zinc-800 text-white hover:bg-blue-500 py-4 rounded-xl font-black uppercase tracking-widest text-[13px] transition-all shadow-md">
                    SELECT STARTER
                 </button>
             </div>
@@ -389,7 +377,7 @@ const V8JsonDeBrendingExtractorPage = () => {
                    <p className="flex items-center gap-2">⏳ Use in 24h or stretch over 365 days</p>
                    <p className="flex items-center gap-2">🔄 Rolling Quota (No expiry)</p>
                 </div>
-                <button onClick={() => pokreniKupovinu('PRO', 250)} className={`w-full py-5 rounded-2xl font-black uppercase tracking-widest text-[14px] transition-all ${amountPaid > 0 ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-white shadow-[0_0_20px_rgba(234,88,12,0.4)]' : 'bg-orange-500 text-white hover:bg-orange-400 shadow-[0_0_20px_rgba(234,88,12,0.4)]'}`}>
+                <button onClick={() => pokreniKupovinu('PRO', 250)} className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-[13px] transition-all ${amountPaid > 0 ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-white shadow-[0_0_20px_rgba(234,88,12,0.4)]' : 'bg-orange-500 text-white hover:bg-orange-400 shadow-[0_0_20px_rgba(234,88,12,0.4)]'}`}>
                    {amountPaid > 0 ? "UPGRADE TO PRO" : "SELECT PRO"}
                 </button>
             </div>
@@ -407,7 +395,7 @@ const V8JsonDeBrendingExtractorPage = () => {
                    <p className="flex items-center gap-2">⏳ Use in 24h or stretch over 365 days</p>
                    <p className="flex items-center gap-2">🔄 Lifetime Access (Rolling Quota)</p>
                 </div>
-                <button onClick={() => pokreniKupovinu('ENTERPRISE', 550)} className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-[12px] transition-all shadow-md ${amountPaid > 0 ? 'bg-gradient-to-r from-purple-700 to-purple-500 hover:from-purple-600 hover:to-purple-400 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)]' : 'bg-zinc-800 text-white hover:bg-purple-500'}`}>
+                <button onClick={() => pokreniKupovinu('ENTERPRISE', 550)} className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-[13px] transition-all shadow-md ${amountPaid > 0 ? 'bg-gradient-to-r from-purple-700 to-purple-500 hover:from-purple-600 hover:to-purple-400 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)]' : 'bg-zinc-800 text-white hover:bg-purple-500'}`}>
                    {amountPaid > 0 ? "UPGRADE TO ENTERPRISE" : "SELECT ENTERPRISE"}
                 </button>
             </div>
@@ -415,34 +403,33 @@ const V8JsonDeBrendingExtractorPage = () => {
         </div>
 
         {amountPaid > 0 && amountPaid < 550 && (
-           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-4xl mx-auto mt-12 mb-10 bg-gradient-to-r from-[#0a192f]/90 to-[#020617]/90 border border-blue-500/40 p-6 md:p-8 rounded-[2rem] flex flex-col md:flex-row items-center justify-center gap-8 shadow-[0_0_40px_rgba(59,130,246,0.2)] relative overflow-hidden backdrop-blur-md">
+           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-4xl mx-auto mt-12 mb-10 bg-gradient-to-r from-blue-950/80 to-blue-900/30 border border-blue-500/40 p-6 md:p-8 rounded-[2rem] flex flex-col md:flex-row items-center justify-center gap-8 shadow-[0_0_40px_rgba(59,130,246,0.25)] relative overflow-hidden backdrop-blur-md">
              <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay"></div>
              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50"></div>
              
-             <div className="w-16 h-16 bg-blue-950/50 rounded-full flex items-center justify-center border border-blue-500/50 relative flex-shrink-0 shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+             <div className="w-16 h-16 bg-blue-900/40 rounded-full flex items-center justify-center border border-blue-500/50 relative flex-shrink-0 shadow-[0_0_20px_rgba(59,130,246,0.4)]">
                 <div className="absolute inset-0 rounded-full border-t-2 border-blue-400 animate-spin"></div>
                 <ArrowUpCircle className="w-8 h-8 text-blue-400" />
              </div>
 
              <div className="text-center md:text-left relative z-10">
-                <div className="inline-block bg-blue-900/30 border border-blue-500/30 px-3 py-1 rounded-full text-blue-300 font-bold uppercase tracking-widest text-[9px] mb-3">
+                <div className="inline-block bg-blue-900/50 border border-blue-500/30 px-3 py-1 rounded-full text-blue-300 font-bold uppercase tracking-widest text-[9px] mb-3">
                   SMART UPGRADE SYSTEM ACTIVE
                 </div>
                 <h3 className="text-white text-lg md:text-xl font-black uppercase tracking-widest mb-2 drop-shadow-md">
                   PRORATED UPGRADE POLICY
                 </h3>
                 <p className="text-zinc-300 text-[13px] md:text-[14px] leading-relaxed max-w-2xl font-medium">
-                  System radar has detected an active V8 License valued at <strong className="text-blue-400">${amountPaid}</strong> linked to your account. You will <strong className="text-white border-b border-blue-500/50 pb-0.5">only pay the exact difference</strong> to upgrade to a higher tier.
+                  System radar has detected your active V8 License valued at <strong className="text-blue-400">${amountPaid}</strong>. 
+                  You can upgrade to a higher tier by paying <strong className="text-white border-b border-blue-500/50 pb-0.5">ONLY THE PRICE DIFFERENCE</strong>. The package prices displayed above have already been automatically reduced!
                 </p>
              </div>
            </motion.div>
-         )}
+        )}
       </div>
     );
   };
-  // KRAJ FUNKCIJE: renderPricingPlans
 
-  // POČETAK FUNKCIJE: renderV8Manifest
   const renderV8Manifest = () => {
     const specifikacije = [
         { t: "1. De-Branding DNA Extraction", d: "Extracts a clean, de-branded cinematic JSON blueprint.", insight: "Analyzes the image and explicitly removes brand identifiers, logos, and text while preserving premium cinematic identity." },
@@ -513,7 +500,6 @@ const V8JsonDeBrendingExtractorPage = () => {
         </div>
       );
   };
-  // KRAJ FUNKCIJE: renderV8Manifest
 
   const arOptions = ['16:9', '9:16', '1:1', '21:9'];
 
@@ -521,6 +507,16 @@ const V8JsonDeBrendingExtractorPage = () => {
     <div className="bg-[#050505] p-8 md:p-12 rounded-[2.5rem] border border-[#FF8C00]/30 shadow-[0_0_50px_rgba(255,140,0,0.1)] max-w-6xl mx-auto mt-28 relative">
 
       <FullScreenLightbox imageUrl={fullScreenImageUrl} onClose={() => setFullScreenImageUrl(null)} />
+
+      <LoginRequiredModal
+        isOpen={isLoginRequiredOpen}
+        onClose={() => setIsLoginRequiredOpen(false)}
+        packageName={checkoutProduct}
+        price={checkoutPrice}
+        onLoginSuccess={() => {
+          setIsCheckoutOpen(true);
+        }}
+      />
 
       <AnimatePresence>
         {isCheckoutOpen && (
@@ -533,16 +529,22 @@ const V8JsonDeBrendingExtractorPage = () => {
         )}
       </AnimatePresence>
 
-      {isVIP && (
+      {(isVIP || isAdmin) && (
         <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50">
            <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} 
               className="bg-black/80 backdrop-blur-xl border border-orange-500/50 px-6 py-2 rounded-full shadow-[0_0_20px_rgba(234,88,12,0.3)] flex items-center gap-4">
               <Zap className="w-4 h-4 text-orange-500 animate-pulse" />
               <div className="flex flex-col items-center">
                  <span className="text-[9px] uppercase tracking-[0.2em] font-black text-zinc-400 leading-none">ENGINE CREDITS</span>
-                 <span className={`text-[15px] font-black tracking-widest leading-none mt-1 ${credits > 100 ? 'text-emerald-400' : 'text-red-500'}`}>
-                    {credits}
-                 </span>
+                 {isAdmin ? (
+                    <span className="text-[15px] font-black tracking-widest leading-none mt-1 text-purple-500 drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]">
+                       MASTER ADMIN : ∞
+                    </span>
+                 ) : (
+                    <span className={`text-[15px] font-black tracking-widest leading-none mt-1 ${credits > 100 ? 'text-emerald-400' : 'text-red-500'}`}>
+                       {credits} AVAIL.
+                    </span>
+                 )}
               </div>
            </motion.div>
         </div>
@@ -554,7 +556,6 @@ const V8JsonDeBrendingExtractorPage = () => {
           transition={{ duration: 0.5 }}
           className="relative w-full mx-auto mb-12 rounded-[2.5rem] overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(255,140,0,0.15)]"
       >
-          {/* 🔥 OVO JE NOVI VIDEO BACKGROUND KOJI SE RAZVLACI PREKO CELOG KONTEJNERA 🔥 */}
           <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-50 z-0 pointer-events-none">
              <source src="/v8-debranding-bg.mp4" type="video/mp4" />
           </video>
@@ -655,7 +656,7 @@ const V8JsonDeBrendingExtractorPage = () => {
          </div>
       </div>
 
-      <div className={`transition-all duration-500 ${!isVIP ? 'opacity-30 grayscale-[70%] pointer-events-none' : ''}`}>
+      <div className={`transition-all duration-500 ${!isVIP && !isAdmin ? 'opacity-30 grayscale-[70%] pointer-events-none' : ''}`}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 relative z-10 mb-16 items-stretch">
           
           <div className="flex flex-col gap-6 h-full">
@@ -741,11 +742,11 @@ const V8JsonDeBrendingExtractorPage = () => {
              <div className="mt-auto pt-2 flex flex-col gap-4">
                <button 
                  onClick={extractDNA} 
-                 disabled={isExtracting || !file || credits <= 0} 
-                 className={`w-full font-black text-[14px] uppercase tracking-widest py-4 rounded-xl transition-all flex items-center justify-center gap-3 ${credits <= 0 ? 'bg-red-900/50 text-red-500 border border-red-500/50 cursor-not-allowed' : 'bg-[#0a0a0a] border border-white/10 text-white hover:border-orange-500/50 hover:text-orange-400'} disabled:opacity-50 hover:scale-[1.02]`}
+                 disabled={isExtracting || !file || (credits <= 0 && !isAdmin)} 
+                 className={`w-full font-black text-[14px] uppercase tracking-widest py-4 rounded-xl transition-all flex items-center justify-center gap-3 ${(credits <= 0 && !isAdmin) ? 'bg-red-900/50 text-red-500 border border-red-500/50 cursor-not-allowed' : 'bg-[#0a0a0a] border border-white/10 text-white hover:border-orange-500/50 hover:text-orange-400'} disabled:opacity-50 hover:scale-[1.02]`}
                >
                  {isExtracting ? <RefreshCcw className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}
-                 {isExtracting ? "REMOVING BRANDING..." : credits <= 0 ? "INSUFFICIENT CREDITS" : "EXTRACT CLEAN JSON"}
+                 {isExtracting ? "REMOVING BRANDING..." : (credits <= 0 && !isAdmin) ? "INSUFFICIENT CREDITS" : "EXTRACT CLEAN JSON"}
                </button>
 
                <AnimatePresence>
