@@ -12,6 +12,7 @@ import sl5Img from './sl5.webp';
 import sl6Img from './sl6.webp';
 import mojLogo from './logo.png';
 import macroHelmet from './praetorian-macro.jpg';
+import godTierFistImg from './banner-v8-godtier-fist.jpg';
 
 // Napomena: Ako si slike stavio direktno u 'src' a ne u 'assets' folder, 
 // onda izbriši '/assets' iz putanje (npr. import sl1Img from './sl1.jpg';)
@@ -27,22 +28,31 @@ export const logoUrl = mojLogo; // NAPOMENA: Proveri da li negde na samom vrhu f
 // ============================================================================
 export const BANNER_DATA = [
   { 
+    image: godTierFistImg, // Nova 60MP zver (Pesnica/Skiptar)
+    badge: "GOD TIER // 60MP MAXIMUM PROTOCOL", 
+    title: "60MP UNCOMPROMISED SUPREMACY", 
+    subtitle: "The absolute zenith of digital asset engineering. Flawless macro-resolution, extreme textural protection, and real sRGB hardware color locking, tailored exclusively for ultra-premium corporations.",
+    duration: 168000, 
+  },
+  { 
     image: macroHelmet, // Tvoja 45MP Macro zver
     badge: "LANCZOS 45MP MACRO-PROTOCOL", 
     title: "45MP CINEMATIC SUPREMACY", 
-    subtitle: "Experience absolute textural fidelity. Extreme macro-resolution and perfect sRGB grading, engineered for elite Hollywood-tier visual assets." 
+    subtitle: "Experience absolute textural fidelity. Extreme macro-resolution and perfect sRGB grading, engineered for elite Hollywood-tier visual assets.",
+    duration: 168000,
+  },
+  { 
+    image: sl2Img, // Roman Helmet (Cela kaciga)
+    badge: "HISTORICAL MASTERWORK", 
+    title: "CINEMATIC 33.2MP REALISM", 
+    subtitle: "Unleash Hollywood-grade historical textures. Perfect lighting and material accuracy for elite visual storytelling.",
+    duration: 168000 
   },
   { 
     image: sl1Img, // Fluid Obsidian
     badge: "V8 CORE ARCHITECTURE", 
     title: "OBSIDIAN & GOLD: THE V8 STANDARD", 
     subtitle: "Uncompromising aesthetic precision. Fluid dynamic rendering designed for ultra-luxury brand positioning." 
-  },
-  { 
-    image: sl2Img, // Roman Helmet (Cela kaciga)
-    badge: "HISTORICAL MASTERWORK", 
-    title: "CINEMATIC 33.2MP REALISM", 
-    subtitle: "Unleash Hollywood-grade historical textures. Perfect lighting and material accuracy for elite visual storytelling." 
   },
   { 
     image: sl3Img, // Futuristic Boardroom
