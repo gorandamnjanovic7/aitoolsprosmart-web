@@ -11,10 +11,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // V8 REVEAL COMPONENT
 import V8Reveal from './V8Reveal';
+import LoginRequiredModal from './LoginRequiredModal';
 
 // FIREBASE
 import { db, auth } from './firebase';
-import { signInWithPopup, onAuthStateChanged, GoogleAuthProvider } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp, collection, addDoc } from 'firebase/firestore'; 
 
 // DATA & GLOBAL
@@ -138,6 +139,11 @@ export default function SingleProductPage({ apps = [] }) {
   const [activeMedia, setActiveMedia] = useState(0); 
   const [fullScreenImage, setFullScreenImage] = useState(null); 
   const [wireModalData, setWireModalData] = useState(null); 
+  const [loginRequiredData, setLoginRequiredData] = useState({
+    isOpen: false,
+    tip: '',
+    cena: 0
+  }); 
   const [hasAccess, setHasAccess] = useState(false); 
   const [isCheckingAccess, setIsCheckingAccess] = useState(true);
   const navigate = useNavigate(); 
@@ -168,60 +174,7 @@ export default function SingleProductPage({ apps = [] }) {
     return () => unsubscribe();
   }, [app]);
   
-  // 🔥 V8 PAMETNA MEMORIJA (Automatski otvara modal posle logina na ovoj stranici) 🔥
-  useEffect(() => {
-    const checkPendingPurchase = async () => {
-      const pendingTip = localStorage.getItem('v8_pending_product_tip');
-      const pendingCena = localStorage.getItem('v8_pending_product_cena');
-
-      if (auth.currentUser && pendingTip && pendingCena) {
-        localStorage.removeItem('v8_pending_product_tip');
-        localStorage.removeItem('v8_pending_product_cena');
-
-        const tip = pendingTip;
-        const cena = pendingCena;
-        
-        try {
-            await addDoc(collection(db, "v8_kupci"), {
-                ime: auth.currentUser.displayName || "Client", email: auth.currentUser.email, uid: auth.currentUser.uid,
-                zeliPaket: tip, cenaPaketa: cena, vreme: serverTimestamp(), isPaid: false
-            });
-
-            await setDoc(doc(db, "posetioci", auth.currentUser.uid), { 
-                ime: auth.currentUser.displayName || "Client", 
-                email: auth.currentUser.email, 
-                vremePrijave: serverTimestamp(), 
-                zainteresovanZa: tip, 
-                identitet: "V8-Client-Global" 
-            }, { merge: true });
-
-            const email = auth.currentUser.email ? auth.currentUser.email.toLowerCase() : "";
-            
-            if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
-                setHasAccess(true);
-                v8Toast.success("Access already unlocked!");
-                return; 
-            }
-
-            const docRef = doc(db, "vip_users", email);
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists() && docSnap.data().unlockedApps && (docSnap.data().unlockedApps.includes(app.id) || docSnap.data().unlockedApps.includes('FULL_ACCESS'))) {
-                setHasAccess(true);
-                v8Toast.success("Access already unlocked!");
-            } else {
-                setWireModalData({ tip, cena }); // PALI MODAL AUTOMATSKI CVRSTO NA SREDINU!
-            }
-        } catch (err) {
-            console.error("V8 PENDING PAYMENT ERROR:", err);
-        }
-      }
-    };
-    
-    const timer = setTimeout(() => { checkPendingPurchase(); }, 1000);
-    return () => clearTimeout(timer);
-  }, [app]);
-
+  
   if (!app) return <div className="min-h-screen bg-[#050505] flex items-center justify-center text-zinc-500 uppercase text-[10px] tracking-widest">Loading...</div>;
   
   const currentMedia = app.media?.[activeMedia] || { url: data.bannerUrl, type: 'image' }; 
@@ -233,62 +186,67 @@ export default function SingleProductPage({ apps = [] }) {
   const cenaStandard = app.price ? parseFloat(app.price) : 15;
   const cenaPremium = app.priceLifetime ? parseFloat(app.priceLifetime) : 89;
   
-  const handlePaymentGlobal = async (tip, cena) => {
+  const nastaviKupovinuPosleLogina = async (user, tip, cena) => {
+    if (!user || !app) return;
+
     try {
-        let currentUser = auth.currentUser;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+      await addDoc(collection(db, "v8_kupci"), {
+        ime: user.displayName || "Client",
+        email: user.email,
+        uid: user.uid,
+        zeliPaket: tip,
+        cenaPaketa: cena,
+        vreme: serverTimestamp(),
+        isPaid: false
+      });
 
-        if (!currentUser) {
-            // PAMTI PRE LOGINA DA BI OTVORIO MODAL ODMAH POSLE LOGINA
-            localStorage.setItem('v8_pending_product_tip', tip);
-            localStorage.setItem('v8_pending_product_cena', cena);
+      await setDoc(doc(db, "posetioci", user.uid), { 
+        ime: user.displayName || "Client", 
+        email: user.email, 
+        vremePrijave: serverTimestamp(), 
+        zainteresovanZa: tip, 
+        identitet: "V8-Client-Global" 
+      }, { merge: true });
 
-            const v8Provider = new GoogleAuthProvider();
-            v8Provider.setCustomParameters({ prompt: 'select_account' });
-            await signInWithPopup(auth, v8Provider);
-            return;
-        }
+      const email = user.email ? user.email.toLowerCase() : "";
 
-        if (currentUser) {
-            await addDoc(collection(db, "v8_kupci"), {
-                ime: currentUser.displayName || "Client", email: currentUser.email, uid: currentUser.uid,
-                zeliPaket: tip, cenaPaketa: cena, vreme: serverTimestamp(), isPaid: false
-            });
+      if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
+        setHasAccess(true);
+        v8Toast.success("Access already unlocked!");
+        return; 
+      }
 
-            await setDoc(doc(db, "posetioci", currentUser.uid), { 
-                ime: currentUser.displayName || "Client", 
-                email: currentUser.email, 
-                vremePrijave: serverTimestamp(), 
-                zainteresovanZa: tip, 
-                identitet: "V8-Client-Global" 
-            }, { merge: true });
+      const docRef = doc(db, "vip_users", email);
+      const docSnap = await getDoc(docRef);
 
-            const email = currentUser.email ? currentUser.email.toLowerCase() : "";
-            
-            if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com") {
-                setHasAccess(true);
-                v8Toast.success("Access already unlocked!");
-                return; 
-            }
-
-            const docRef = doc(db, "vip_users", email);
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists() && docSnap.data().unlockedApps && (docSnap.data().unlockedApps.includes(app.id) || docSnap.data().unlockedApps.includes('FULL_ACCESS'))) {
-                setHasAccess(true);
-                v8Toast.success("Access already unlocked!");
-            } else {
-                setWireModalData({ tip, cena });
-            }
-        }
+      if (docSnap.exists() && docSnap.data().unlockedApps && (docSnap.data().unlockedApps.includes(app.id) || docSnap.data().unlockedApps.includes('FULL_ACCESS'))) {
+        setHasAccess(true);
+        v8Toast.success("Access already unlocked!");
+      } else {
+        setWireModalData({ tip, cena });
+      }
     } catch (err) {
-        localStorage.removeItem('v8_pending_product_tip');
-        localStorage.removeItem('v8_pending_product_cena');
-        console.error("V8 PAYMENT ERROR:", err);
-        v8Toast.error(err.message || "Sistem je blokirao Google prijavu.");
+      console.error("V8 PAYMENT ERROR:", err);
+      v8Toast.error(err.message || "Sistem je blokirao kupovinu.");
     }
   };
-  
+
+  const handlePaymentGlobal = async (tip, cena) => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    const userNow = auth.currentUser;
+
+    if (!userNow) {
+      setLoginRequiredData({
+        isOpen: true,
+        tip,
+        cena
+      });
+      return;
+    }
+
+    await nastaviKupovinuPosleLogina(userNow, tip, cena);
+  };  
   return (
     <div className="bg-[#050505] pt-32 pb-32 px-6 font-sans text-white text-left relative">
       <Helmet><title>{app.name} | V8 FACTORY</title></Helmet>
@@ -397,6 +355,20 @@ export default function SingleProductPage({ apps = [] }) {
           </div>
         </div>
       </div>
+
+      {/* LOGIN MODAL PRE KUPOVINE */}
+      <LoginRequiredModal
+        isOpen={loginRequiredData.isOpen}
+        onClose={() => setLoginRequiredData({ isOpen: false, tip: '', cena: 0 })}
+        packageName={loginRequiredData.tip}
+        price={loginRequiredData.cena}
+        onLoginSuccess={async (user) => {
+          const pendingTip = loginRequiredData.tip;
+          const pendingCena = loginRequiredData.cena;
+          setLoginRequiredData({ isOpen: false, tip: '', cena: 0 });
+          await nastaviKupovinuPosleLogina(user, pendingTip, pendingCena);
+        }}
+      />
 
       {/* POZIVI ZA NEZAVISNE MODALE KOJI RADE BEZ GREŠKE */}
       <FullScreenLightbox imageUrl={fullScreenImage} onClose={() => setFullScreenImage(null)} />
