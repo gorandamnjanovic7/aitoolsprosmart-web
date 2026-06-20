@@ -6,9 +6,10 @@ import { createPortal } from 'react-dom';
 
 import { db, auth } from './firebase';
 import { doc, onSnapshot, collection, query, where, setDoc } from 'firebase/firestore';
-import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from 'firebase/auth'; 
+import { onAuthStateChanged } from 'firebase/auth'; 
 
 import V8SecureCheckout from './V8SecureCheckout';
+import LoginRequiredModal from './LoginRequiredModal';
 import { CLOUDINARY_UPLOAD_PRESET, CLOUDINARY_CLOUD_NAME } from './data';
 
 const BASE_BACKEND_URL = window.location.hostname === 'localhost' 
@@ -26,7 +27,7 @@ const FullScreenLightbox = ({ imageUrl, onClose }) => {
   if (!imageUrl) return null;
   return createPortal(
       <div className="fixed inset-0 z-[999999] bg-[#0f172a]/95 flex items-center justify-center p-4" onClick={onClose}>
-          <button type="button" onClick={(e) => { e.stopPropagation(); onClose(); }} className="absolute top-6 right-6 md:top-10 md:right-10 bg-[#FF8C00] text-white p-4 rounded-full font-black z-[1000000] shadow-[0_0_20px_rgba(255,140,0,0.5)]"><X size={32} strokeWidth={3} /></button>
+          <button type="button" onClick={(e) => { e.stopPropagation(); onClose(); }} className="absolute top-6 right-6 md:top-10 md:right-10 bg-[#FF8C00] text-white p-4 rounded-full font-black z-[1000000] shadow-[0_0_20px_rgba(255,140,0,0.5)] hover:bg-[#FF8C00]/80 transition-all"><X size={32} strokeWidth={3} /></button>
           <img src={imageUrl} alt="Full Screen Preview" className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-[0_0_80px_rgba(255,140,0,0.4)] border border-[#FF8C00]/30 relative z-[999999]" onClick={(e) => e.stopPropagation()} />
       </div>, document.body
   );
@@ -54,7 +55,7 @@ const V8JsonExtractorPage = () => {
   const inputRef = useRef(null);
   const [otvorenOpis, setOtvorenOpis] = useState(null);
 
-  // Showcase state (Sada su 16:9 i 9:16)
+  // Showcase state
   const [showcase, setShowcase] = useState({ landscape: '', portrait: '' });
   const [fullScreenImageUrl, setFullScreenImageUrl] = useState(null);
   const [isUploadingShowcase, setIsUploadingShowcase] = useState({ landscape: false, portrait: false });
@@ -64,15 +65,7 @@ const V8JsonExtractorPage = () => {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [checkoutProduct, setCheckoutProduct] = useState('');
   const [checkoutPrice, setCheckoutPrice] = useState(0);
-
-  const handleGoogleLogin = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error("Login prekinut:", error);
-    }
-  };
+  const [isLoginRequiredOpen, setIsLoginRequiredOpen] = useState(false);
 
   useEffect(() => {
     const unsubShowcase = onSnapshot(doc(db, "v8_settings", "showcase_extractor"), (docSnap) => {
@@ -108,8 +101,8 @@ const V8JsonExtractorPage = () => {
           if (data.status === "paid" || data.status === "PAID") {
             const productName = data.productName ? data.productName.toUpperCase() : "";
             
-            // Pazimo da ne zahvatimo DeBranding
-            if (productName.includes("EXTRACTOR") && !productName.includes("DEBRENDING") && !productName.includes("DE-BRANDING")) {
+            // 🔥 POPRAVLJEN SKENER: Prepoznaje i "SECURITY CHECKOUT" da ne baguje stare uplate!
+            if ((productName.includes("EXTRACTOR") && !productName.includes("DEBRENDING") && !productName.includes("DE-BRANDING")) || productName.includes("SECURITY CHECKOUT")) {
               hasAccess = true;
               if (productName.includes("ENTERPRISE")) { if (maxPaid < 550) { maxPaid = 550; highestPlan = 'ENTERPRISE'; } totalCredits = Math.max(totalCredits, 10000); } 
               else if (productName.includes("PRO")) { if (maxPaid < 250) { maxPaid = 250; highestPlan = 'PRO'; } totalCredits = Math.max(totalCredits, 2000); } 
@@ -130,7 +123,6 @@ const V8JsonExtractorPage = () => {
     };
   }, []);
 
-  // Upload Showcase slika
   const handleShowcaseUpload = async (e, type) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -212,7 +204,7 @@ const V8JsonExtractorPage = () => {
 
   const extractDNA = async () => {
     if (!file) return;
-    if (credits <= 0 && isVIP) { alert("INSUFFICIENT CREDITS! Please wait for refill."); return; }
+    if (credits <= 0 && isVIP && !isAdmin) { alert("INSUFFICIENT CREDITS! Please wait for refill."); return; }
 
     setIsExtracting(true); setJsonResult('');
     
@@ -232,24 +224,23 @@ const V8JsonExtractorPage = () => {
   };
 
   const pokreniKupovinu = async (paketName, fullPrice) => {
-    if (!userEmail) {
-      try {
-        const provider = new GoogleAuthProvider();
-        await signInWithPopup(auth, provider);
-        return; 
-      } catch (error) {
-        console.error("Login prekinut:", error);
-        return;
-      }
-    }
+    const userNow = auth.currentUser || userEmail;
 
     const razlika = fullPrice - amountPaid;
     const finalPrice = razlika > 0 ? razlika : fullPrice;
     const isUpgrade = amountPaid > 0;
-    const naslovCheckouta = isUpgrade ? `V8 Extractor - ${paketName.toUpperCase()} (UPGRADE)` : `V8 Extractor - ${paketName.toUpperCase()}`;
+    const naslovCheckouta = isUpgrade
+      ? `V8 Extractor - ${paketName.toUpperCase()} (UPGRADE)`
+      : `V8 Extractor - ${paketName.toUpperCase()}`;
 
     setCheckoutProduct(naslovCheckouta);
     setCheckoutPrice(finalPrice);
+
+    if (!userNow) {
+      setIsLoginRequiredOpen(true);
+      return;
+    }
+
     setIsCheckoutOpen(true);
   };
 
@@ -293,13 +284,14 @@ const V8JsonExtractorPage = () => {
             <div className="w-full md:w-[calc(33.333%-1rem)] max-w-sm bg-[#050505] border border-blue-500/30 rounded-[2rem] p-8 flex flex-col hover:border-blue-500/60 transition-all shadow-xl">
                 <div className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-500/10 mb-6 mx-auto"><Diamond className="w-6 h-6 text-blue-500" /></div>
                 <h3 className="text-xl font-black text-white uppercase text-center">Starter</h3>
-                <span className="text-4xl font-black text-blue-400 my-4 text-center">$150</span>
+                <span className="text-4xl font-black text-blue-400 my-4 text-center">${amountPaid > 0 ? 150 - amountPaid : 150}</span>
                 <div className="w-full text-left space-y-3 mb-8 text-[11px] text-zinc-400 font-bold uppercase tracking-widest flex-grow">
                    <p className="flex items-center gap-2">✅ 500 Credits Included</p>
                    <p className="flex items-center gap-2">⏳ Use in 24h or stretch over 365 days</p>
                    <p className="flex items-center gap-2">🔄 Rolling Quota (No expiry)</p>
                 </div>
-                <button onClick={() => pokreniKupovinu('STARTER', 150)} className="w-full bg-zinc-800 text-white hover:bg-cyan-500 py-4 rounded-xl font-black uppercase tracking-widest text-[12px] transition-all shadow-md">
+                {/* 🔥 IZJEDNAČENA VISINA I KLASIK ZA DUGME: py-4 text-[13px] rounded-xl */}
+                <button onClick={() => pokreniKupovinu('STARTER', 150)} className="w-full bg-zinc-800 text-white hover:bg-cyan-500 py-4 rounded-xl font-black uppercase tracking-widest text-[13px] transition-all shadow-md">
                    SELECT STARTER
                 </button>
             </div>
@@ -320,7 +312,8 @@ const V8JsonExtractorPage = () => {
                    <p className="flex items-center gap-2">⏳ Use in 24h or stretch over 365 days</p>
                    <p className="flex items-center gap-2">🔄 Rolling Quota (No expiry)</p>
                 </div>
-                <button onClick={() => pokreniKupovinu('PRO', 250)} className={`w-full py-5 rounded-2xl font-black uppercase tracking-widest text-[14px] transition-all ${amountPaid > 0 ? 'bg-gradient-to-r from-cyan-600 to-blue-500 text-white shadow-[0_0_20px_rgba(6,182,212,0.4)]' : 'bg-cyan-500 text-white hover:bg-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.4)]'}`}>
+                {/* 🔥 IZJEDNAČENA VISINA I KLASIK ZA DUGME: py-4 text-[13px] rounded-xl */}
+                <button onClick={() => pokreniKupovinu('PRO', 250)} className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-[13px] transition-all ${amountPaid > 0 ? 'bg-gradient-to-r from-cyan-600 to-blue-500 text-white shadow-[0_0_20px_rgba(6,182,212,0.4)]' : 'bg-cyan-500 text-white hover:bg-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.4)]'}`}>
                    {amountPaid > 0 ? "UPGRADE TO PRO" : "SELECT PRO"}
                 </button>
             </div>
@@ -338,7 +331,8 @@ const V8JsonExtractorPage = () => {
                    <p className="flex items-center gap-2">⏳ Use in 24h or stretch over 365 days</p>
                    <p className="flex items-center gap-2">🔄 Lifetime Access (Rolling Quota)</p>
                 </div>
-                <button onClick={() => pokreniKupovinu('ENTERPRISE', 550)} className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-[12px] transition-all shadow-md ${amountPaid > 0 ? 'bg-gradient-to-r from-purple-700 to-purple-500 hover:from-purple-600 hover:to-purple-400 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)]' : 'bg-zinc-800 text-white hover:bg-purple-500'}`}>
+                {/* 🔥 IZJEDNAČENA VISINA I KLASIK ZA DUGME: py-4 text-[13px] rounded-xl */}
+                <button onClick={() => pokreniKupovinu('ENTERPRISE', 550)} className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-[13px] transition-all shadow-md ${amountPaid > 0 ? 'bg-gradient-to-r from-purple-700 to-purple-500 hover:from-purple-600 hover:to-purple-400 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)]' : 'bg-zinc-800 text-white hover:bg-purple-500'}`}>
                    {amountPaid > 0 ? "UPGRADE TO ENTERPRISE" : "SELECT ENTERPRISE"}
                 </button>
             </div>
@@ -420,7 +414,6 @@ const V8JsonExtractorPage = () => {
             })}
           </div>
 
-          {/* DUGMIĆI ZA MANIFEST I LICENCU */}
           <div className="mt-12 pt-10 border-t border-white/10 grid md:grid-cols-2 gap-6">
             <a href="/V8_EXTRACTOR_MANIFEST.txt" download className="flex items-center gap-4 bg-black/40 hover:bg-cyan-500/10 border border-white/5 hover:border-cyan-500/50 p-6 rounded-2xl transition-all group shadow-inner">
               <FileText className="text-cyan-500 w-8 h-8 group-hover:scale-110 transition-transform" />
@@ -443,7 +436,6 @@ const V8JsonExtractorPage = () => {
         </div>
       );
   };
-  // KRAJ FUNKCIJE: renderV8Manifest
 
   const arOptions = ['16:9', '9:16', '1:1', '21:9'];
 
@@ -451,6 +443,19 @@ const V8JsonExtractorPage = () => {
     <div className="bg-[#050505] p-8 md:p-12 rounded-[2.5rem] border border-cyan-500/30 shadow-[0_0_50px_rgba(6,182,212,0.1)] max-w-6xl mx-auto mt-28 relative">
 
       <FullScreenLightbox imageUrl={fullScreenImageUrl} onClose={() => setFullScreenImageUrl(null)} />
+
+      <LoginRequiredModal
+        isOpen={isLoginRequiredOpen}
+        onClose={() => setIsLoginRequiredOpen(false)}
+        packageName={checkoutProduct || "V8 Extractor"}
+        price={checkoutPrice || 0}
+        onLoginSuccess={(user) => {
+          if (user?.email) {
+            setUserEmail(user.email.toLowerCase());
+          }
+          setIsCheckoutOpen(true);
+        }}
+      />
 
       <AnimatePresence>
         {isCheckoutOpen && (
@@ -463,16 +468,23 @@ const V8JsonExtractorPage = () => {
         )}
       </AnimatePresence>
 
-      {isVIP && (
+      {/* 🔥 FIXOVAN ADMIN COUNTER NA VRHU */}
+      {(isVIP || isAdmin) && (
         <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50">
            <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} 
               className="bg-black/80 backdrop-blur-xl border border-cyan-500/50 px-6 py-2 rounded-full shadow-[0_0_20px_rgba(6,182,212,0.3)] flex items-center gap-4">
               <Zap className="w-4 h-4 text-cyan-500 animate-pulse" />
               <div className="flex flex-col items-center">
                  <span className="text-[9px] uppercase tracking-[0.2em] font-black text-zinc-400 leading-none">ENGINE CREDITS</span>
-                 <span className={`text-[15px] font-black tracking-widest leading-none mt-1 ${credits > 100 ? 'text-emerald-400' : 'text-red-500'}`}>
-                    {credits}
-                 </span>
+                 {isAdmin ? (
+                    <span className="text-[15px] font-black tracking-widest leading-none mt-1 text-purple-500 drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]">
+                       MASTER ADMIN : ∞
+                    </span>
+                 ) : (
+                    <span className={`text-[15px] font-black tracking-widest leading-none mt-1 ${credits > 100 ? 'text-emerald-400' : 'text-red-500'}`}>
+                       {credits} AVAIL.
+                    </span>
+                 )}
               </div>
            </motion.div>
         </div>
@@ -484,7 +496,6 @@ const V8JsonExtractorPage = () => {
           transition={{ duration: 0.5 }}
           className="relative w-full mx-auto mb-12 rounded-[2.5rem] overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(6,182,212,0.15)]"
       >
-          {/* 🔥 OVO JE NOVI VIDEO BACKGROUND KOJI SE RAZVLACI PREKO CELOG KONTEJNERA 🔥 */}
           <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-50 z-0 pointer-events-none">
              <source src="/v8-extractor-bg.mp4" type="video/mp4" />
           </video>
@@ -562,7 +573,6 @@ const V8JsonExtractorPage = () => {
                
                {showcase.portrait ? (
                  <>
-                   {/* Ograničen max-w da 9:16 ne ode previše u širinu */}
                    <img src={showcase.portrait} alt="Portrait Format" className="max-w-[70%] h-full object-contain relative z-10 cursor-pointer hover:scale-[1.02] transition-transform duration-500" onClick={() => setFullScreenImageUrl(showcase.portrait)} />
                    {isAdmin && (
                      <button onClick={(e) => deleteShowcaseImage(e, 'portrait')} className="absolute top-4 right-4 bg-red-600 hover:bg-red-500 text-white p-2 rounded-full z-30 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
@@ -588,7 +598,7 @@ const V8JsonExtractorPage = () => {
          </div>
       </div>
 
-      <div className={`transition-all duration-500 ${!isVIP ? 'opacity-30 grayscale-[70%] pointer-events-none' : ''}`}>
+      <div className={`transition-all duration-500 ${!isVIP && !isAdmin ? 'opacity-30 grayscale-[70%] pointer-events-none' : ''}`}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 relative z-10 mb-16 items-stretch">
           
           <div className="flex flex-col gap-6 h-full">
@@ -674,11 +684,11 @@ const V8JsonExtractorPage = () => {
              <div className="mt-auto pt-2 flex flex-col gap-4">
                <button 
                  onClick={extractDNA} 
-                 disabled={isExtracting || !file || credits <= 0} 
-                 className={`w-full font-black text-[14px] uppercase tracking-widest py-4 rounded-xl transition-all flex items-center justify-center gap-3 ${credits <= 0 ? 'bg-red-900/50 text-red-500 border border-red-500/50 cursor-not-allowed' : 'bg-[#0a0a0a] border border-white/10 text-white hover:border-cyan-500/50 hover:text-cyan-400'} disabled:opacity-50 hover:scale-[1.02]`}
+                 disabled={isExtracting || !file || (credits <= 0 && !isAdmin)} 
+                 className={`w-full font-black text-[14px] uppercase tracking-widest py-4 rounded-xl transition-all flex items-center justify-center gap-3 ${(credits <= 0 && !isAdmin) ? 'bg-red-900/50 text-red-500 border border-red-500/50 cursor-not-allowed' : 'bg-[#0a0a0a] border border-white/10 text-white hover:border-cyan-500/50 hover:text-cyan-400'} disabled:opacity-50 hover:scale-[1.02]`}
                >
                  {isExtracting ? <RefreshCcw className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}
-                 {isExtracting ? "EXTRACTING..." : credits <= 0 ? "INSUFFICIENT CREDITS" : "EXTRACT CLEAN JSON"}
+                 {isExtracting ? "EXTRACTING..." : (credits <= 0 && !isAdmin) ? "INSUFFICIENT CREDITS" : "EXTRACT CLEAN JSON"}
                </button>
 
                <AnimatePresence>
