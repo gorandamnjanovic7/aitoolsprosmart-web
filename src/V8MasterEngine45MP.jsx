@@ -41,6 +41,7 @@ const V8MasterEngine45MP = () => {
   const [downloadStatus, setDownloadStatus] = useState('idle'); 
   const [dragActive, setDragActive] = useState(false);
   const [activeLog, setActiveLog] = useState(0);
+  const [batchError, setBatchError] = useState(null); // 🔥 ISPRAVKA: DODATA DEFINICIJA
   
   const [zipUrl, setZipUrl] = useState(null);
   
@@ -178,7 +179,6 @@ const V8MasterEngine45MP = () => {
     payData.forEach(data => {
       if (data.status === "paid" || data.status === "PAID") {
         const productName = data.productName ? data.productName.toUpperCase() : "";
-        // 🔥 POPRAVLJEN SKENER: Hvata Security Checkout
         if (productName.includes("EXTREME") || productName.includes("45MP") || productName.includes("SECURITY CHECKOUT")) {
           hasAccess = true;
           if (productName.includes("ENTERPRISE")) { if (maxPaid < 550) { maxPaid = 550; highestPlan = 'ENTERPRISE'; } calculatedDefaultCredits = Math.max(calculatedDefaultCredits, 10000); } 
@@ -355,13 +355,14 @@ const V8MasterEngine45MP = () => {
     setDownloadStatus('idle');
     setZipUrl(null);
     setActiveLog(0);
+    setBatchError(null); // 🔥 ISPRAVKA
 
     if (inputRef.current) inputRef.current.value = "";
   };
 
   const obrisiSlike = (e) => {
     if(e) { e.preventDefault(); e.stopPropagation(); }
-    setFiles([]); setDownloadStatus('idle'); setZipUrl(null); setActiveLog(0);
+    setFiles([]); setDownloadStatus('idle'); setZipUrl(null); setActiveLog(0); setBatchError(null); // 🔥 ISPRAVKA
     if (inputRef.current) inputRef.current.value = "";
   };
 
@@ -388,6 +389,7 @@ const V8MasterEngine45MP = () => {
     setDownloadStatus('processing');
     setActiveLog(0);
     setZipUrl(null);
+    setBatchError(null); // 🔥 ISPRAVKA
 
     const formData = new FormData();
     files.forEach(file => { formData.append('images', file); });
@@ -434,7 +436,8 @@ const V8MasterEngine45MP = () => {
       }
     } catch (error) {
       console.error("V8 Master Engine failure:", error);
-      alert(error.message || "Greška na serveru. Da li je skripta povezana na backend?");
+      const message = error.message || "Greška na serveru. Da li je skripta povezana na backend?";
+      setBatchError(message); // 🔥 ISPRAVKA
       setDownloadStatus('error');
       setActiveLog(0);
     } finally {
