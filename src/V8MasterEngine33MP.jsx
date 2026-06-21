@@ -40,7 +40,7 @@ const V8MasterEngine33MP = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [downloadStatus, setDownloadStatus] = useState('idle'); 
   const [dragActive, setDragActive] = useState(false);
-  const [batchError, setBatchError] = useState(null);
+  const [batchError, setBatchError] = useState(null); // OVO JE BILO OVDE, TO JE DOBRO
   const [activeLog, setActiveLog] = useState(0);
   
   const [zipUrl, setZipUrl] = useState(null);
@@ -177,7 +177,6 @@ const V8MasterEngine33MP = () => {
     payData.forEach(data => {
       if (data.status === "paid" || data.status === "PAID") {
         const productName = data.productName ? data.productName.toUpperCase() : "";
-        // 🔥 POPRAVLJEN SKENER: Hvata Security Checkout
         if (productName.includes("MASTER") || productName.includes("33MP") || productName.includes("SECURITY CHECKOUT")) {
           hasAccess = true;
           if (productName.includes("ENTERPRISE")) { if (maxPaid < 550) { maxPaid = 550; highestPlan = 'ENTERPRISE'; } calculatedDefaultCredits = Math.max(calculatedDefaultCredits, 10000); } 
@@ -338,13 +337,14 @@ const V8MasterEngine33MP = () => {
     setDownloadStatus('idle');
     setZipUrl(null);
     setActiveLog(0);
+    setBatchError(null); // RESETOVANJE GREŠKE KAD SE DODA NOVA SLIKA
 
     if (inputRef.current) inputRef.current.value = "";
   };
 
   const obrisiSlike = (e) => {
     if(e) { e.preventDefault(); e.stopPropagation(); }
-    setFiles([]); setDownloadStatus('idle'); setZipUrl(null); setActiveLog(0);
+    setFiles([]); setDownloadStatus('idle'); setZipUrl(null); setActiveLog(0); setBatchError(null); // RESET GREŠKE
     if (inputRef.current) inputRef.current.value = "";
   };
 
@@ -371,6 +371,7 @@ const V8MasterEngine33MP = () => {
     setDownloadStatus('processing');
     setActiveLog(0);
     setZipUrl(null);
+    setBatchError(null); // RESETOVANJE PRE POČETKA NOVOG PROCESA
 
     const formData = new FormData();
     files.forEach(file => { formData.append('images', file); });
@@ -418,7 +419,8 @@ const V8MasterEngine33MP = () => {
       }
     } catch (error) {
       console.error("V8 Master Engine failure:", error);
-      alert(error.message || "Greška na serveru. Da li je skripta povezana na backend?");
+      const message = error.message || "Greška na serveru. Da li je skripta povezana na backend?";
+      setBatchError(message); // 🔥 ISPRAVKA: SETOVANJE GREŠKE
       setDownloadStatus('error');
       setActiveLog(0);
     } finally {
@@ -472,7 +474,6 @@ const V8MasterEngine33MP = () => {
                    <p className="flex items-center gap-2">⏳ Use in 24h or stretch over 365 days</p>
                    <p className="flex items-center gap-2">🔄 Rolling Quota</p>
                 </div>
-                {/* 🔥 IZJEDNAČENO DUGME */}
                 <button onClick={() => pokreniKupovinu('STARTER', 150)} className="w-full bg-zinc-800 text-white hover:bg-zinc-600 py-4 rounded-xl font-black uppercase tracking-widest text-[13px] transition-all shadow-md">
                    SELECT STARTER
                 </button>
@@ -496,7 +497,6 @@ const V8MasterEngine33MP = () => {
                    <p className="flex items-center gap-2">⏳ Batch Processing (Up to 10)</p>
                    <p className="flex items-center gap-2">🔄 Rolling Quota</p>
                 </div>
-                {/* 🔥 IZJEDNAČENO DUGME */}
                 <button onClick={() => pokreniKupovinu('PRO', 250)} className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-[13px] transition-all text-black bg-gradient-to-r from-yellow-500 to-amber-400 hover:scale-[1.02] shadow-[0_0_20px_rgba(234,179,8,0.4)]`}>
                    {amountPaid > 0 ? "UPGRADE TO PRO" : "SELECT PRO"}
                 </button>
@@ -515,7 +515,6 @@ const V8MasterEngine33MP = () => {
                    <p className="flex items-center gap-2">⏳ High-Speed Priority Server</p>
                    <p className="flex items-center gap-2">🔄 Lifetime Access</p>
                 </div>
-                {/* 🔥 IZJEDNAČENO DUGME */}
                 <button onClick={() => pokreniKupovinu('ENTERPRISE', 550)} className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-[13px] transition-all shadow-md ${amountPaid > 0 ? 'bg-gradient-to-r from-purple-700 to-purple-500 text-white' : 'bg-zinc-800 text-white hover:bg-purple-500'}`}>
                    {amountPaid > 0 ? "UPGRADE TO ENTERPRISE" : "SELECT ENTERPRISE"}
                 </button>
@@ -523,7 +522,6 @@ const V8MasterEngine33MP = () => {
           )}
         </div>
 
-        {/* 🔥 DINAMIČKI PLAVI (SADA ZLATNI) UPGRADE BOX 🔥 */}
         {amountPaid > 0 && amountPaid < 550 && (
            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-4xl mx-auto mt-12 mb-10 bg-gradient-to-r from-[#1a180b]/90 to-[#020617]/90 border border-yellow-500/40 p-6 md:p-8 rounded-[2rem] flex flex-col md:flex-row items-center justify-center gap-8 shadow-[0_0_40px_rgba(234,179,8,0.2)] relative overflow-hidden backdrop-blur-md">
              <div className="absolute inset-0 bg-yellow-500/5 mix-blend-overlay"></div>
