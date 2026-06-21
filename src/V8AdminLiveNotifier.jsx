@@ -1,9 +1,11 @@
 // POČETAK FAJLA: V8AdminLiveNotifier.jsx
+// Ne zaboravi React source code link u tvom repozitorijumu!
 import React, { useState, useEffect, useRef } from 'react';
 import { db, auth } from './firebase'; 
 import { collection, query, onSnapshot, where, Timestamp } from 'firebase/firestore';
-import { X, Zap, DollarSign, Bitcoin } from 'lucide-react';
+import { X, Zap, Landmark, Bitcoin } from 'lucide-react';
 import { onAuthStateChanged } from 'firebase/auth';
+import { motion } from 'framer-motion';
 
 const V8AdminLiveNotifier = () => {
   const [notifications, setNotifications] = useState([]);
@@ -81,7 +83,7 @@ const V8AdminLiveNotifier = () => {
         <div 
           key={notif.id} 
           /* 🔥 V8 CSS ALARM - Ubačen animate-pulse na ceo modal i pojačan sjaj 🔥 */
-          className={`bg-[#050505] border-l-[6px] p-5 rounded-xl w-80 relative flex flex-col pointer-events-auto transform transition-all duration-500 animate-slide-in-right ring-1 ring-offset-4 ring-offset-[#050505] animate-[pulse_1s_ease-in-out_infinite] ${
+          className={`bg-[#050505] border-l-[6px] p-5 rounded-xl w-[380px] relative flex items-center pointer-events-auto transform transition-all duration-500 animate-slide-in-right ring-1 ring-offset-4 ring-offset-[#050505] animate-[pulse_1s_ease-in-out_infinite] ${
             notif.typeOfRequest === 'crypto' 
             ? 'border-[#F97316] ring-[#F97316]/50 shadow-[0_0_40px_rgba(249,115,22,0.6)]' 
             : 'border-[#3B82F6] ring-[#3B82F6]/50 shadow-[0_0_40px_rgba(59,130,246,0.6)]'
@@ -91,28 +93,49 @@ const V8AdminLiveNotifier = () => {
           <button 
             onClick={() => dismissNotification(notif.id)} 
             title="Ugasi alarm"
-            className="absolute top-3 right-3 text-red-100 bg-red-600/40 border border-red-500/50 hover:bg-red-600 hover:text-white p-1.5 rounded-lg transition-all shadow-[0_0_15px_rgba(220,38,38,0.5)]"
+            className="absolute top-3 right-3 text-red-100 bg-red-600/40 border border-red-500/50 hover:bg-red-600 hover:text-white p-1.5 rounded-lg transition-all shadow-[0_0_15px_rgba(220,38,38,0.5)] z-20"
           >
             <X size={16} strokeWidth={3} />
           </button>
           
-          <div className="flex items-center gap-2 mb-3">
-            {notif.typeOfRequest === 'crypto' ? <Bitcoin className="w-5 h-5 text-[#F97316] animate-[pulse_0.5s_infinite]" /> : <DollarSign className="w-5 h-5 text-[#3B82F6] animate-[pulse_0.5s_infinite]" />}
-            <span className={`font-black text-[11px] uppercase tracking-widest ${notif.typeOfRequest === 'crypto' ? 'text-[#F97316] drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]' : 'text-[#3B82F6] drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]'}`}>
-              {notif.typeOfRequest === 'crypto' ? 'NEW CRYPTO CHECKOUT' : 'NEW B2B CHECKOUT'}
-            </span>
+          {/* Dinamička ikona i puls (Banka ili Bitcoin) */}
+          <div className={`relative flex items-center justify-center w-14 h-14 rounded-full border shrink-0 mr-5 ${
+              notif.typeOfRequest === 'b2b'
+              ? 'bg-blue-950/40 border-blue-500/30 text-blue-400'
+              : 'bg-orange-950/40 border-orange-500/30 text-[#F97316]'
+          }`}>
+              <motion.div 
+                  animate={{ scale: [1, 1.5, 1], opacity: [0.8, 0, 0.8] }} 
+                  transition={{ duration: 1.5, repeat: Infinity }} 
+                  className={`absolute inset-0 rounded-full blur-md ${
+                      notif.typeOfRequest === 'b2b' ? 'bg-blue-500' : 'bg-orange-500'
+                  }`}
+              ></motion.div>
+              
+              {notif.typeOfRequest === 'b2b' ? <Landmark className="relative z-10 w-7 h-7" /> : <Bitcoin className="relative z-10 w-7 h-7" />}
           </div>
-          
-          <div className="flex flex-col gap-1 border-b border-white/10 pb-3 mb-3">
-            <span className="text-zinc-400 text-[10px] font-bold uppercase tracking-wider">Client</span>
-            <span className="text-white font-bold text-sm">{notif.clientEmail || notif.firstName}</span>
+
+          {/* Podaci o uplati */}
+          <div className="flex flex-col w-full pr-8">
+            <div className="flex items-center gap-1 mb-2">
+              <Zap className={`w-3 h-3 ${notif.typeOfRequest === 'crypto' ? 'text-[#F97316]' : 'text-[#3B82F6]'}`} />
+              <span className={`font-black text-[10px] uppercase tracking-widest ${notif.typeOfRequest === 'crypto' ? 'text-[#F97316] drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]' : 'text-[#3B82F6] drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]'}`}>
+                {notif.typeOfRequest === 'crypto' ? 'NEW CRYPTO CHECKOUT' : 'NEW B2B CHECKOUT'}
+              </span>
+            </div>
+            
+            <div className="flex flex-col gap-0.5 mb-2">
+              <span className="text-zinc-400 text-[10px] font-bold uppercase tracking-wider">Client</span>
+              <span className="text-white font-bold text-sm truncate">{notif.clientEmail || notif.firstName}</span>
+            </div>
+            
+            <div className="flex flex-col gap-0.5">
+               <span className="text-zinc-400 text-[10px] font-bold uppercase tracking-wider">Asset</span>
+               <span className={`${notif.typeOfRequest === 'crypto' ? 'text-[#F97316]' : 'text-[#3B82F6]'} font-black text-xs uppercase truncate`}>{notif.productName}</span>
+               <span className="text-white font-black text-xl mt-1 font-mono">${notif.price || notif.iznosDolari}</span>
+            </div>
           </div>
-          
-          <div className="flex flex-col gap-1">
-             <span className="text-zinc-400 text-[10px] font-bold uppercase tracking-wider">Targeted Asset</span>
-             <span className={`${notif.typeOfRequest === 'crypto' ? 'text-[#F97316]' : 'text-[#3B82F6]'} font-black text-sm uppercase`}>{notif.productName}</span>
-             <span className="text-white font-black text-2xl mt-1">${notif.price}</span>
-          </div>
+
         </div>
       ))}
     </div>
