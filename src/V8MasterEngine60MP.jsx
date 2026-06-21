@@ -95,6 +95,7 @@ const V8MasterEngine60MP = () => {
   const [downloadStatus, setDownloadStatus] = useState('idle');
   const [dragActive, setDragActive] = useState(false);
   const [activeLog, setActiveLog] = useState(0);
+  const [batchError, setBatchError] = useState(null); // 🔥 ISPRAVKA: DODATA DEFINICIJA
 
   const [zipUrl, setZipUrl] = useState(null);
 
@@ -534,6 +535,7 @@ const V8MasterEngine60MP = () => {
     setDownloadStatus('idle');
     setZipUrl(null);
     setActiveLog(0);
+    setBatchError(null); // 🔥 ISPRAVKA
 
     if (inputRef.current) inputRef.current.value = "";
   };
@@ -548,6 +550,7 @@ const V8MasterEngine60MP = () => {
     setDownloadStatus('idle');
     setZipUrl(null);
     setActiveLog(0);
+    setBatchError(null); // 🔥 ISPRAVKA
 
     if (inputRef.current) inputRef.current.value = "";
   };
@@ -577,6 +580,7 @@ const V8MasterEngine60MP = () => {
     setDownloadStatus('processing');
     setActiveLog(0);
     setZipUrl(null);
+    setBatchError(null); // 🔥 ISPRAVKA
 
     const formData = new FormData();
 
@@ -643,7 +647,8 @@ const V8MasterEngine60MP = () => {
       }
     } catch (error) {
       console.error("V8 Master Engine failure:", error);
-      alert(error.message || "Greška na serveru. Da li je skripta povezana na backend?");
+      const message = error.message || "Greška na serveru. Da li je skripta povezana na backend?";
+      setBatchError(message); // 🔥 ISPRAVKA: SETOVANJE GREŠKE
       setDownloadStatus('error');
       setActiveLog(0);
     } finally {
@@ -1481,6 +1486,12 @@ const V8MasterEngine60MP = () => {
               )}
             </div>
 
+            {batchError && (
+              <div className="bg-red-950/50 border border-red-500/40 text-red-200 text-[11px] md:text-[12px] font-bold rounded-xl p-4 leading-relaxed">
+                {batchError}
+              </div>
+            )}
+
             <div className="mt-auto pt-2 flex flex-col gap-4">
               <button
                 type="button"
@@ -1513,7 +1524,7 @@ const V8MasterEngine60MP = () => {
                   : downloadStatus === 'success'
                     ? "DOWNLOAD 60MP BATCH (ZIP)"
                     : (credits <= 0 && !isAdmin)
-                      ? "INSUFFICIENT CREDITS"
+                      ? "INSUFFICIENTA CREDITS"
                       : `INITIATE 60MP BATCH UPSCALE${!isVIP ? ' (TRIAL)' : ''}`}
               </button>
             </div>
