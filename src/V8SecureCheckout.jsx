@@ -1,5 +1,6 @@
 // POČETAK FAJLA: V8SecureCheckout.jsx
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom'; // 🔥 DODAT PORTAL
 import { db, auth } from './firebase'; 
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from 'firebase/auth'; 
@@ -140,8 +141,9 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price }) => {
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-[999999] flex items-center justify-center p-4 sm:p-6 bg-[#02040a]/90 backdrop-blur-md">
+  // 🔥 VRAĆAMO PORTAL KAKO BI MODAL BIO APSOLUTNO IZNAD SVEGA (UKLJUČUJUĆI FOOTER) 🔥
+  return createPortal(
+    <div className="fixed inset-0 z-[9999999] flex items-center justify-center p-4 sm:p-6 bg-[#02040a]/90 backdrop-blur-md">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -346,7 +348,7 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price }) => {
                     </div>
                   </div>
 
-                  <div className="pt-2 shrink-0">
+                  <div className="pt-2 shrink-0 relative z-50">
                     <button 
                       type="submit" 
                       disabled={loading || !country || !user} 
@@ -461,7 +463,8 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price }) => {
           </div>
         </div>
       </motion.div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
