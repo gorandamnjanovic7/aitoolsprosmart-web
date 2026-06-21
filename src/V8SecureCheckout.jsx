@@ -62,8 +62,11 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("[DEBUG] handleSubmit pokrenut"); // DODAJ OVO
+    console.log("[DEBUG] Podaci:", { user, firstName, lastName, country, email }); // DODAJ OVO
 
     if (!user || !firstName || !lastName || !country || !email) {
+      console.log("[DEBUG] Validacija nije prošla!"); // DODAJ OVO
       alert("Please link your Google Account and fill in all fields.");
       return;
     }
