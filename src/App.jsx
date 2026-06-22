@@ -41,24 +41,17 @@ import V8CinematicText from './v8-ui-components/V8CinematicText';
 import CinematikPromptEngine from './CinematikPromptEngine';
 import V8PayoneerDashboard from './V8PayoneerDashboard';
 import V8JsonDeBrendingExtractorPage from './V8JsonDeBrendingExtractorPage';
-
-// 🔥 NOVO: Dodat import za DNA Extractor 🔥
 import V8JsonDeExtractorPage from './V8JsonDeExtractorPage';
-
-// 🔥 NOVO: Import za Master Engine seriju 🔥
 import V8MasterEngine33MP from './V8MasterEngine33MP';
 import V8MasterEngine45MP from './V8MasterEngine45MP';
 import V8MasterEngine60MP from './V8MasterEngine60MP';
-
 import V8RadarCursor from './v8-ui-components/V8RadarCursor'; 
 import V8Navbar from './V8Navbar';
 import V8Footer from './V8Footer';
-
-// 🔥 NOVI IMPORTI 🔥
 import V8SecureCheckout from './V8SecureCheckout';
 import LoginRequiredModal from './LoginRequiredModal';
 import V8UnlockModal from './V8UnlockModal'; 
-import V8AdminLiveNotifier from './V8AdminLiveNotifier'; // 🔥 TVOJ ADMIN RADAR 🔥
+import V8AdminLiveNotifier from './V8AdminLiveNotifier';
 
 if (typeof window !== 'undefined') {
   if ('scrollRestoration' in window.history) { window.history.scrollRestoration = 'manual'; }
@@ -66,7 +59,8 @@ if (typeof window !== 'undefined') {
   window.scrollTo(0, 0);
 }
 
-const MOJA_IP = "213.196.99.10"; 
+// 🔥 V8 ANALITIKA - TVOJA IP ADRESA KOJU IGNORIŠEMO 🔥
+const MOJA_IP = "213.196.99.2"; 
 let globalUserIp = "";
 const currentSessionId = Math.random().toString(36).substring(2, 15);
 
@@ -83,8 +77,25 @@ fetchUserIp();
 
 // POCETAK FUNKCIJE: logAnalyticsEvent
 export const logAnalyticsEvent = async (type, details) => {
-  if (globalUserIp === MOJA_IP || globalUserIp === "") return; 
-  try { await addDoc(collection(db, "analytics"), { type, ...details, timestamp: Date.now(), sessionId: currentSessionId }); } catch (err) {}
+  const currentUser = auth.currentUser;
+  
+  // 🔥 ZABRANA ZA ANONIMNE: Ako klijent nije ulogovan, odmah prekidamo! Ne beležimo ga u bazu. 🔥
+  if (!currentUser) return; 
+
+  // Ignorišemo tebe po IP adresi ILI po admin emailu (dupla zaštita)
+  const isAdmin = currentUser.email === "damnjanovicgoran7@gmail.com" || currentUser.email === "aitoolsprosmart@gmail.com";
+  
+  if (globalUserIp === MOJA_IP || isAdmin || globalUserIp === "") return; 
+
+  try { 
+    await addDoc(collection(db, "analytics"), { 
+      type, 
+      ...details, 
+      userEmail: currentUser.email, // Sada sigurno imamo email
+      timestamp: Date.now(), 
+      sessionId: currentSessionId 
+    }); 
+  } catch (err) {}
 };
 // KRAJ FUNKCIJE: logAnalyticsEvent
 
@@ -95,26 +106,17 @@ export const v8Toast = {
   subscribe: (l) => { v8Toast.listeners.push(l); return () => v8Toast.listeners = v8Toast.listeners.filter(cb => cb !== l); }
 };
 
-// POCETAK FUNKCIJE: V8PageWrapper
 const V8PageWrapper = ({ children }) => {
   return (
     <>
       <ScanOverlay />
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ delay: 0.8, duration: 0.4 }} 
-        className="w-full h-full origin-center relative z-10"
-      >
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ delay: 0.8, duration: 0.4 }} className="w-full h-full origin-center relative z-10">
         {children}
       </motion.div>
     </>
   );
 };
-// KRAJ FUNKCIJE: V8PageWrapper
 
-// POCETAK FUNKCIJE: V8ToastContainer
 const V8ToastContainer = () => {
   const [toasts, setToasts] = useState([]);
   useEffect(() => {
@@ -136,9 +138,7 @@ const V8ToastContainer = () => {
     </div>
   );
 };
-// KRAJ FUNKCIJE: V8ToastContainer
 
-// POCETAK FUNKCIJE: FullScreenBoot
 const FullScreenBoot = ({ onComplete }) => {
   const [progress, setProgress] = useState(0);
   const [isIgniting, setIsIgniting] = useState(false);
@@ -146,12 +146,7 @@ const FullScreenBoot = ({ onComplete }) => {
   useEffect(() => {
     const interval = setInterval(() => {
       setProgress(p => {
-        if (p >= 100) { 
-          clearInterval(interval); 
-          setIsIgniting(true); 
-          setTimeout(onComplete, 1200); 
-          return 100; 
-        }
+        if (p >= 100) { clearInterval(interval); setIsIgniting(true); setTimeout(onComplete, 1200); return 100; }
         return p + Math.floor(Math.random() * 4) + 1; 
       });
     }, 40); 
@@ -187,9 +182,7 @@ const FullScreenBoot = ({ onComplete }) => {
     </motion.div>
   );
 };
-// KRAJ FUNKCIJE: FullScreenBoot
 
-// POCETAK FUNKCIJE: SmartScrollButton
 const SmartScrollButton = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   
@@ -212,9 +205,7 @@ const SmartScrollButton = () => {
     </button>
   );
 };
-// KRAJ FUNKCIJE: SmartScrollButton
 
-// POCETAK FUNKCIJE: AppContent
 function AppContent({ appsData, refreshData }) {
   const [isBooting, setIsBooting] = useState(true);
   const location = useLocation();
@@ -222,49 +213,32 @@ function AppContent({ appsData, refreshData }) {
   const entryTime = useRef(Date.now());
   const [authVersion, setAuthVersion] = useState(0); 
 
-  // 🔥 GLOBALNI STATE ZA LOGIN + CHECKOUT 🔥
   const [checkoutData, setCheckoutData] = useState({ isOpen: false, name: '', price: '' });
   const [loginRequiredData, setLoginRequiredData] = useState({ isOpen: false, name: '', price: '' });
 
-  // POČETAK FUNKCIJE: openSecureCheckout
   const openSecureCheckout = useCallback((productName, price) => {
     setCheckoutData({ isOpen: true, name: productName, price });
   }, []);
-  // KRAJ FUNKCIJE: openSecureCheckout
 
-  // POČETAK FUNKCIJE: handleOpenCheckout
   const handleOpenCheckout = useCallback((productName, price) => {
     const userNow = auth.currentUser;
-
     if (!userNow) {
-      setLoginRequiredData({
-        isOpen: true,
-        name: productName,
-        price
-      });
+      setLoginRequiredData({ isOpen: true, name: productName, price });
       return;
     }
-
     openSecureCheckout(productName, price);
   }, [openSecureCheckout]);
-  // KRAJ FUNKCIJE: handleOpenCheckout
 
-  // POČETAK FUNKCIJE: handleCloseCheckout
   const handleCloseCheckout = useCallback(() => {
     setCheckoutData({ isOpen: false, name: '', price: '' });
   }, []);
-  // KRAJ FUNKCIJE: handleCloseCheckout
 
-  // POČETAK FUNKCIJE: handleCloseLoginRequired
   const handleCloseLoginRequired = useCallback(() => {
     setLoginRequiredData({ isOpen: false, name: '', price: '' });
   }, []);
-  // KRAJ FUNKCIJE: handleCloseLoginRequired
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, () => {
-        setAuthVersion(v => v + 1);
-    }); 
+    const unsub = onAuthStateChanged(auth, () => { setAuthVersion(v => v + 1); }); 
     return () => unsub();
   }, []);
 
@@ -288,7 +262,15 @@ function AppContent({ appsData, refreshData }) {
   useEffect(() => { logAnalyticsEvent('page_view', { path: location.pathname }); }, []);
 
   useEffect(() => {
-    const handleGlobalClick = (e) => { const target = e.target.closest('button, a'); if (target) logAnalyticsEvent('click', { elementText: target.innerText || target.getAttribute('aria-label') || 'Icon', path: window.location.pathname }); };
+    const handleGlobalClick = (e) => { 
+        const target = e.target.closest('button, a'); 
+        if (target) {
+            logAnalyticsEvent('click', { 
+                elementText: target.innerText || target.getAttribute('aria-label') || 'Icon', 
+                path: window.location.pathname 
+            }); 
+        }
+    };
     document.addEventListener('click', handleGlobalClick); return () => document.removeEventListener('click', handleGlobalClick);
   }, []);
 
@@ -297,7 +279,6 @@ function AppContent({ appsData, refreshData }) {
   return (
     <div key={authVersion} className="min-h-screen text-zinc-100 font-sans relative text-left bg-[url('/v8-supercomputer-bg.jpg')] bg-cover bg-center bg-fixed bg-no-repeat">
       
-      {/* AGRESIVNI OVERRIDE ZA BROJAC POSETA - PODIGNUT DA NE PREKLAPA KONTAKT */}
       <style>{`
         #v8-counter-container {
           position: fixed !important;
@@ -327,39 +308,21 @@ function AppContent({ appsData, refreshData }) {
         </AnimatePresence>
         
         <V8Navbar handleHomeClick={handleHomeClick} />
-
-        {/* 🔥 TVOJ ADMIN RADAR ZA OBAVEŠTENJA U ŽIVO 🔥 */}
         <V8AdminLiveNotifier />
-
-        {/* 🔥 GLOBALNI MODAL ZA OTKLJUČAVANJE 🔥 */}
         <V8UnlockModal />
         
         <div className="flex-1 text-left pt-20">
           <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
-            {/* 🔥 PROSLEDJIVANJE openCheckout FUNKCIJE KROZ RUTE 🔥 */}
            <Routes location={location} key={location.pathname}>
               <Route path="/" element={<V8PageWrapper><HomePage apps={appsData} openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               <Route path="/v8-standard-16mp" element={<V8PageWrapper><V8Standard16MPWorkspace openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               
-              {/* 🔥 ISPRAVLJENE RUTE ZA MASTER ENGINE SERIJU 🔥 */}
               <Route path="/master-33mp" element={<V8PageWrapper><V8MasterEngine33MP openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               <Route path="/master-45mp" element={<V8PageWrapper><V8MasterEngine45MP openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               <Route path="/master-60mp" element={<V8PageWrapper><V8MasterEngine60MP openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               
-              {/* 🔥 ISPRAVLJENE RUTE: SVAKA GAĐA SVOJ FAJL 🔥 */}
-              <Route path="/extractor" element={
-                <V8PageWrapper>
-                  <V8JsonDeExtractorPage openCheckout={handleOpenCheckout} />
-                </V8PageWrapper>
-              } />
-              
-              <Route path="/v8-debranding-extractor" element={
-                <V8PageWrapper>
-                  <V8JsonDeBrendingExtractorPage openCheckout={handleOpenCheckout} />
-                </V8PageWrapper>
-              } />
-              
-              {/* 🔥 OVDE JE ZAMENJENO IME U V8GridSystem 🔥 */}
+              <Route path="/extractor" element={<V8PageWrapper><V8JsonDeExtractorPage openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+              <Route path="/v8-debranding-extractor" element={<V8PageWrapper><V8JsonDeBrendingExtractorPage openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               <Route path="/grid-system" element={<V8PageWrapper><V8GridSystem openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               
               <Route path="/seedance" element={<V8PageWrapper><CinematikPromptEngine initialEngine="SEEDANCE 2.0" openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
@@ -385,14 +348,12 @@ function AppContent({ appsData, refreshData }) {
         <V8ContactWidget />
         <UgcAvatar />
 
-        {/* BROJAC POSETA STAVLJEN U NOVI KONTEJNER */}
         <div id="v8-counter-container">
           <VisitorCounter />
         </div>
 
         <V8Footer />
 
-        {/* 🔥 GLOBALNI LOGIN MODAL PRE CHECKOUT-A 🔥 */}
         <LoginRequiredModal
           isOpen={loginRequiredData.isOpen}
           onClose={handleCloseLoginRequired}
@@ -403,7 +364,6 @@ function AppContent({ appsData, refreshData }) {
           }}
         />
 
-        {/* 🔥 RENDEROVANJE MODALA NA GLOBALNOM NIVOU 🔥 */}
         <AnimatePresence>
           {checkoutData.isOpen && (
             <V8SecureCheckout 
@@ -419,13 +379,10 @@ function AppContent({ appsData, refreshData }) {
     </div>
   );
 }
-// KRAJ FUNKCIJE: AppContent
 
-// POCETAK FUNKCIJE: App
 export default function App() {
   const [appsData, setAppsData] = useState([]);
 
-  // POCETAK FUNKCIJE: refreshData
   const refreshData = useCallback(async () => {
     try {
       const q = query(collection(db, "v8_products"), orderBy("createdAt", "desc"));
@@ -436,18 +393,15 @@ export default function App() {
       setAppsData([]);
     }
   }, []);
-  // KRAJ FUNKCIJE: refreshData
 
   useEffect(() => { refreshData(); }, [refreshData]);
 
   return (
     <HelmetProvider>
       <Router>
-        {/* 🔥 OBRISAN V8IdleProtocol KAKO SE NE BI PALIO SCREENSAVER 🔥 */}
         <AppContent appsData={appsData} refreshData={refreshData} />
       </Router>
     </HelmetProvider>
   );
 }
-// KRAJ FUNKCIJE: App
 // KRAJ FAJLA: App.jsx
