@@ -7,12 +7,13 @@ import {
   ShieldAlert, Users, Zap, Image as ImageIcon, CheckCircle, Activity, 
   PlayCircle, Loader2, UploadCloud, Trash2, DollarSign, Calendar, 
   Layers, Film, Sparkles, Flame, Crown, Rocket, 
-  Star, Camera, Droplets, Hexagon, Globe, Bitcoin, FileText 
+  Star, Camera, Droplets, Hexagon, Globe, Bitcoin, FileText,
+  PieChart, Eye, Clock, Filter 
 } from 'lucide-react';
 import { v8Toast } from './v8Utils';
 
 import { db, auth } from './firebase';
-import { collection, query, onSnapshot, orderBy, doc, serverTimestamp, getDoc, setDoc, addDoc, getDocs, deleteDoc } from 'firebase/firestore';
+import { collection, query, onSnapshot, orderBy, doc, serverTimestamp, getDoc, setDoc, addDoc, getDocs, deleteDoc, limit } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
 import * as data from './data'; 
@@ -23,6 +24,10 @@ const V8AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('payoneer_blagajna');
   const [sales, setSales] = useState([]);
   const [cryptoReqs, setCryptoReqs] = useState([]); 
+  
+  // 🔥 V8 ANALITIKA STATE 🔥
+  const [analyticsData, setAnalyticsData] = useState([]);
+  const [selectedAnalyticsFilter, setSelectedAnalyticsFilter] = useState('ALL'); 
   
   const [isAuthChecking, setIsAuthChecking] = useState(true);
 
@@ -82,7 +87,6 @@ const V8AdminDashboard = () => {
 
   const handleGenerateInvoice = (saleData) => {
     const invoiceNum = `INV-2026-${Math.floor(Math.random() * 9000 + 1000)}`; 
-    
     let dateObj = new Date();
     if (saleData.vreme?.toDate) dateObj = saleData.vreme.toDate();
     else if (saleData.requestDate?.toDate) dateObj = saleData.requestDate.toDate();
@@ -276,26 +280,42 @@ const V8AdminDashboard = () => {
 
   const handleNukePayoneer = async () => {
     if (!window.confirm("🚨 UPOZORENJE: Da li si siguran da želiš da izbrišeš apsolutno sve B2B (Payoneer) zahteve iz baze, osim jednog?")) return;
-    
     try {
       const q = query(collection(db, "v8_payoneer_requests"));
       const querySnapshot = await getDocs(q);
-      
       if (querySnapshot.docs.length <= 1) {
         alert("Imaš samo 1 ili 0 zahteva u bazi. Nema šta da se briše.");
         return;
       }
-      
       const docsToDelete = querySnapshot.docs.slice(1);
-      
       for (let documentSnapshot of docsToDelete) {
         await deleteDoc(doc(db, "v8_payoneer_requests", documentSnapshot.id));
       }
-      
       alert(`🔥 NUKE USPEŠAN: Obrisano tačno ${docsToDelete.length} starih test zahteva! Osveži stranicu (F5).`);
     } catch (error) {
-      console.error("Nuke error:", error);
       alert("Greška pri brisanju: " + error.message);
+    }
+  };
+
+  // 🔥 RESETOVANJE ANALITIKE NA NULU 🔥
+  const handleNukeAnalytics = async () => {
+    if (!window.confirm("🚨 UPOZORENJE: Da li si siguran da želiš da izbrišeš CELOKUPNU ANALITIKU? Svi brojači se vraćaju na nulu! Ovo se ne može poništiti.")) return;
+    try {
+      const q = query(collection(db, "analytics"));
+      const querySnapshot = await getDocs(q);
+      
+      if (querySnapshot.empty) {
+        if(typeof v8Toast !== 'undefined') v8Toast.error("Baza analitike je već prazna.");
+        return;
+      }
+
+      for (let documentSnapshot of querySnapshot.docs) {
+        await deleteDoc(doc(db, "analytics", documentSnapshot.id));
+      }
+      
+      if(typeof v8Toast !== 'undefined') v8Toast.success(`🔥 RESET USPEŠAN: Obrisano ${querySnapshot.docs.length} zapisa. Brojači su na nuli.`);
+    } catch (error) {
+      alert("Greška pri brisanju analitike: " + error.message);
     }
   };
 
@@ -332,6 +352,16 @@ const V8AdminDashboard = () => {
     const q = query(collection(db, "v8_crypto_requests"), orderBy("requestDate", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setCryptoReqs(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // 🔥 V8 ANALITIKA LISTENER (ZAKLJUČANO NA MAX 200 DA NE ZABODE BROWSER) 🔥
+  useEffect(() => {
+    const q = query(collection(db, "analytics"), orderBy("timestamp", "desc"), limit(200));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setAnalyticsData(list);
     });
     return () => unsubscribe();
   }, []);
@@ -414,24 +444,16 @@ const V8AdminDashboard = () => {
 
     try {
       const resourceType = srType === 'video' ? 'video' : 'image';
-      
       const res = await fetch(`https://api.cloudinary.com/v1_1/${data.CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`, { 
-        method: 'POST', 
-        body: fd 
+        method: 'POST', body: fd 
       });
       const resData = await res.json();
-      
       if(resData.error) throw new Error(resData.error.message);
 
       const fileUrl = resData.secure_url;
-
       await addDoc(collection(db, "v8_showroom_baza"), {
-        title: srTitle,
-        category: srCategory,
-        format: srFormat,
-        type: srType,
-        url: fileUrl,
-        createdAt: serverTimestamp()
+        title: srTitle, category: srCategory, format: srFormat,
+        type: srType, url: fileUrl, createdAt: serverTimestamp()
       });
 
       if(typeof v8Toast !== 'undefined') v8Toast.success("USPEŠNO DODATO U SHOWROOM!");
@@ -439,7 +461,7 @@ const V8AdminDashboard = () => {
       fileInput.value = ''; 
     } catch(err) {
       console.error(err);
-      if(typeof v8Toast !== 'undefined') v8Toast.error("Greška pri uploadu! Proveri veličinu fajla.");
+      if(typeof v8Toast !== 'undefined') v8Toast.error("Greška pri uploadu!");
     } finally {
       setIsSrUploading(false);
     }
@@ -451,22 +473,14 @@ const V8AdminDashboard = () => {
       if(typeof v8Toast !== 'undefined') v8Toast.error("Moraš uneti naziv kategorije!");
       return;
     }
-
     setIsCatSaving(true);
     try {
       await addDoc(collection(db, "v8_showroom_kategorije"), {
-        name: catName.toUpperCase(),
-        color: catColor,
-        icon: catIcon,
-        placeholders: {
-          image169: img169,
-          image916: img916,
-          video169: vid169,
-          video916: vid916
-        },
+        name: catName.toUpperCase(), color: catColor, icon: catIcon,
+        placeholders: { image169: img169, image916: img916, video169: vid169, video916: vid916 },
         createdAt: serverTimestamp()
       });
-      if(typeof v8Toast !== 'undefined') v8Toast.success("V8 DUGME (KATEGORIJA) KREIRANO!");
+      if(typeof v8Toast !== 'undefined') v8Toast.success("V8 DUGME KREIRANO!");
       setCatName('');
       setImg169(0); setImg916(0); setVid169(0); setVid916(0);
     } catch(err) {
@@ -481,6 +495,15 @@ const V8AdminDashboard = () => {
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   };
+
+  // 🔥 LOGIKA ZA FILTRIRANJE ANALITIKE (SAMO ULOGOVANI KLIJENTI) 🔥
+  const uniqueRegisteredUsers = Array.from(new Set(analyticsData.filter(d => d.userEmail).map(d => d.userEmail)));
+  
+  const filteredAnalytics = analyticsData.filter(log => {
+    if (!log.userEmail) return false; // Odmah sakrij sve preostale anonimne zapise iz stare baze
+    if (selectedAnalyticsFilter === 'ALL') return true;
+    return log.userEmail === selectedAnalyticsFilter;
+  });
 
   if (isAuthChecking) {
     return (
@@ -522,6 +545,10 @@ const V8AdminDashboard = () => {
             {sales.length > 0 && <span className="ml-auto bg-blue-600 text-white text-[9px] px-2 py-0.5 rounded-full">{sales.length}</span>}
           </button>
 
+          <button onClick={() => setActiveTab('v8_analitika')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === 'v8_analitika' ? 'bg-fuchsia-600/10 text-fuchsia-500 border border-fuchsia-500/30' : 'text-zinc-500 hover:text-white hover:bg-white/5 border border-transparent'}`}>
+            <PieChart className="w-4 h-4" /> V8 Analitika
+          </button>
+
           <button onClick={() => setActiveTab('showroom_cms')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === 'showroom_cms' ? 'bg-pink-600/10 text-pink-500 border border-pink-500/30' : 'text-zinc-500 hover:text-white hover:bg-white/5 border border-transparent'}`}>
             <Layers className="w-4 h-4" /> Showroom CMS
           </button>
@@ -546,16 +573,11 @@ const V8AdminDashboard = () => {
         {/* --- TAB: PAYONEER BLAGAJNA --- */}
         {activeTab === 'payoneer_blagajna' && (
           <div className="animate-in fade-in duration-500">
-            {/* 🔥 NUKE DUGME 🔥 */}
             <div className="mb-6 flex justify-end">
-              <button 
-                onClick={handleNukePayoneer}
-                className="bg-red-600/20 text-red-500 border border-red-500/50 hover:bg-red-600 hover:text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(220,38,38,0.2)]"
-              >
+              <button onClick={handleNukePayoneer} className="bg-red-600/20 text-red-500 border border-red-500/50 hover:bg-red-600 hover:text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(220,38,38,0.2)]">
                 <Flame className="w-4 h-4" /> Očisti bazu (Ostavi 1 primer)
               </button>
             </div>
-            
             <V8PayoneerDashboard />
           </div>
         )}
@@ -563,7 +585,7 @@ const V8AdminDashboard = () => {
         {/* --- TAB: KRIPTO BLAGAJNA --- */}
         {activeTab === 'crypto_blagajna' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-5xl mx-auto">
-            <div className="mb-8 flex items-center justify-between border-b border-orange-500/20 pb-6">
+             <div className="mb-8 flex items-center justify-between border-b border-orange-500/20 pb-6">
               <div>
                 <h1 className="text-3xl font-black uppercase tracking-widest text-white mb-2 flex items-center gap-3">
                   <Bitcoin className="w-8 h-8 text-orange-500" /> KRIPTO BLAGAJNA
@@ -613,10 +635,106 @@ const V8AdminDashboard = () => {
           </motion.div>
         )}
 
+        {/* --- TAB: V8 ANALITIKA --- */}
+        {activeTab === 'v8_analitika' && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-5xl mx-auto">
+            <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between border-b border-fuchsia-500/20 pb-6 gap-4">
+              <div>
+                <h1 className="text-3xl font-black uppercase tracking-widest text-white mb-2 flex items-center gap-3">
+                  <PieChart className="w-8 h-8 text-fuchsia-500" /> V8 LIVE RADAR
+                </h1>
+                <p className="text-zinc-500 text-[12px] font-bold tracking-widest uppercase">Praćenje registrovanih klijenata u realnom vremenu</p>
+              </div>
+              
+              {/* 🔥 DUGME ZA RESETOVANJE (NUKE) ANALITIKE 🔥 */}
+              <button 
+                onClick={handleNukeAnalytics} 
+                className="bg-red-600/20 text-red-500 border border-red-500/50 hover:bg-red-600 hover:text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(220,38,38,0.2)]"
+              >
+                <Flame className="w-4 h-4" /> RESETUJ BAZU (NUKE)
+              </button>
+            </div>
+
+            {/* 🔥 FILTER PO KORISNIKU 🔥 */}
+            <div className="mb-6 flex justify-end">
+              <div className="bg-[#050505] border border-white/10 rounded-xl p-2 flex items-center gap-3 w-full md:w-auto">
+                <Filter className="w-4 h-4 text-fuchsia-500 ml-2" />
+                <select 
+                  value={selectedAnalyticsFilter} 
+                  onChange={(e) => setSelectedAnalyticsFilter(e.target.value)} 
+                  className="bg-transparent border-none text-white text-[11px] font-black uppercase tracking-widest outline-none cursor-pointer pr-4 w-full md:w-auto"
+                >
+                  <option value="ALL">Prikaži sve ulogovane klijente</option>
+                  {uniqueRegisteredUsers.map(email => (
+                    <option key={email} value={email}>Prati klijenta: {email}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="bg-[#050505] border border-white/5 p-6 rounded-3xl shadow-inner flex flex-col gap-2">
+                <span className="text-zinc-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2"><Eye className="w-4 h-4 text-fuchsia-500" /> Prikazano Akcija</span>
+                <span className="text-4xl font-black text-white">{filteredAnalytics.length}</span>
+              </div>
+              <div className="bg-[#050505] border border-white/5 p-6 rounded-3xl shadow-inner flex flex-col gap-2">
+                <span className="text-zinc-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2"><Users className="w-4 h-4 text-blue-500" /> Registrovani Klikovi</span>
+                <span className="text-4xl font-black text-white">
+                  {filteredAnalytics.filter(d => d.type === 'click').length}
+                </span>
+              </div>
+              <div className="bg-[#050505] border border-white/5 p-6 rounded-3xl shadow-inner flex flex-col gap-2">
+                <span className="text-zinc-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2"><Clock className="w-4 h-4 text-orange-500" /> Pregledi Stranica</span>
+                <span className="text-4xl font-black text-white">
+                  {filteredAnalytics.filter(d => d.type === 'page_view').length}
+                </span>
+              </div>
+            </div>
+
+            <div className="bg-[#0a0a0a] border border-fuchsia-500/20 rounded-[2rem] p-6 overflow-hidden shadow-[0_0_40px_rgba(217,70,239,0.05)]">
+              <h3 className="text-fuchsia-500 font-black text-[12px] uppercase tracking-[0.2em] mb-6 border-b border-white/5 pb-4">Live Activity Feed</h3>
+              
+              <div className="max-h-[600px] overflow-y-auto pr-2 space-y-3">
+                {filteredAnalytics.length === 0 ? (
+                  <p className="text-zinc-500 text-center py-10 text-[12px] uppercase font-black tracking-widest">Nema zabeleženih aktivnosti za ovog klijenta.</p>
+                ) : (
+                  // 🔥 RENDERUJEMO SAMO POSLEDNJIH 50 DA MIŠ LETI 🔥
+                  filteredAnalytics.slice(0, 50).map(log => (
+                    <div key={log.id} className="flex items-center justify-between bg-[#050505] p-4 rounded-2xl border border-white/5 hover:border-fuchsia-500/30 transition-all">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center border shrink-0 ${log.type === 'page_view' ? 'bg-orange-500/10 border-orange-500/30 text-orange-500' : 'bg-blue-500/10 border-blue-500/30 text-blue-500'}`}>
+                          {log.type === 'page_view' ? <Eye className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
+                        </div>
+                        <div className="flex flex-col overflow-hidden">
+                          <span className="text-white text-[13px] font-black truncate max-w-[200px] md:max-w-xs">
+                            {log.userEmail}
+                          </span>
+                          <span className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest mt-0.5 truncate max-w-[200px] md:max-w-xs">
+                            {log.type === 'page_view' ? `Gleda stranicu: ${log.path}` : `Kliknuo na: ${log.elementText || log.path}`}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        <span className="text-zinc-400 text-[10px] font-bold uppercase tracking-widest">
+                          {formatTime(log.timestamp)}
+                        </span>
+                        {log.durationMS && (
+                          <span className="bg-white/10 text-white text-[9px] px-2 py-0.5 rounded-md font-black">
+                            Zadržavanje: {Math.round(log.durationMS / 1000)}s
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* --- TAB: SHOWROOM CMS --- */}
         {activeTab === 'showroom_cms' && (
           <div className="max-w-4xl mx-auto flex flex-col gap-10">
-            
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-[#0a0a0a] border border-blue-500/30 p-10 rounded-[2.5rem] shadow-[0_0_50px_rgba(59,130,246,0.1)]">
               <div className="flex items-center gap-4 mb-8 border-b border-white/10 pb-6">
                 <Film className="w-10 h-10 text-blue-500" />
@@ -833,7 +951,6 @@ const V8AdminDashboard = () => {
     </div>
   );
 };
-// KRAJ FUNKCIJE: V8AdminDashboard
 
 export default V8AdminDashboard;
 // KRAJ FAJLA: V8AdminDashboard.jsx
