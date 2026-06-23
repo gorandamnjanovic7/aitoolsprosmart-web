@@ -1,8 +1,8 @@
 // POČETAK FAJLA: V8Navbar.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay, FileText, Code, ShieldCheck, LayoutGrid, Cpu, Maximize, Gift } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay, FileText, Code, ShieldCheck, LayoutGrid, Cpu, Maximize, Gift, Menu, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // FIREBASE & TOOLS
 import { auth, provider, db } from './firebase';
@@ -20,6 +20,9 @@ const V8Navbar = ({ handleHomeClick }) => {
   
   const [user, setUser] = useState(null);
   const [isVIPInDB, setIsVIPInDB] = useState(false);
+  
+  // 🔥 NOVO: Stanje za Mobilni Meni 🔥
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Stanje za praćenje kredita (SVI MOTORI)
   const [userCredits, setUserCredits] = useState({ credits_16mp: 0, credits_33mp: 0, credits_45mp: 0, trialClaimed: true });
@@ -61,9 +64,20 @@ const V8Navbar = ({ handleHomeClick }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Zaključavanje pozadine kada je mobilni meni otvoren
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    return () => { document.body.style.overflow = 'auto'; };
+  }, [isMobileMenuOpen]);
+
   const handleLogout = async () => {
     await signOut(auth);
     if(typeof v8Toast !== 'undefined') v8Toast.success("V8 Disconnected.");
+    setIsMobileMenuOpen(false); // Zatvori meni
     window.location.reload(); 
   };
 
@@ -72,6 +86,7 @@ const V8Navbar = ({ handleHomeClick }) => {
       const result = await signInWithPopup(auth, provider);
       const loggedUser = result.user;
       if(typeof v8Toast !== 'undefined') v8Toast.success("V8 IGNITED!");
+      setIsMobileMenuOpen(false); // Zatvori meni
 
       const userRef = doc(db, "v8_users", loggedUser.uid);
       const userSnap = await getDoc(userRef);
@@ -99,7 +114,6 @@ const V8Navbar = ({ handleHomeClick }) => {
     } catch (err) { console.error("[V8 AUTH ERROR]:", err); }
   };
 
-  // 🔥 FUNKCIJA ZA PREUZIMANJE SVIH KREDITA 🔥
   const handleClaimTrial = async () => {
     if (!user) return;
     try {
@@ -114,6 +128,11 @@ const V8Navbar = ({ handleHomeClick }) => {
     } catch (error) {
       console.error("Error claiming trial:", error);
     }
+  };
+
+  const handleMobileLinkClick = () => {
+    setIsMobileMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -135,7 +154,7 @@ const V8Navbar = ({ handleHomeClick }) => {
       >
         <div className="max-w-7xl mx-auto flex justify-between items-center px-4 md:px-8">
           
-          <Link to="/" onClick={handleHomeClick} className="flex items-center gap-3 group shrink-0 mr-4">
+          <Link to="/" onClick={() => { handleHomeClick(); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 group shrink-0 mr-4">
             <img src={data.logoUrl} className={`object-contain transition-all duration-500 ${scrolled ? 'h-8 md:h-10' : 'h-10 md:h-12'} animate-pulse group-hover:scale-105`} alt="logo" />
             <div className="flex items-center gap-1.5 whitespace-nowrap">
               <span className={`font-black uppercase tracking-[0.1em] text-blue-500 italic group-hover:text-orange-500 transition-all duration-500 ${scrolled ? 'text-[10px] md:text-[12px]' : 'text-[11px] md:text-[14px]'}`}>AI TOOLS</span>
@@ -143,6 +162,7 @@ const V8Navbar = ({ handleHomeClick }) => {
             </div>
           </Link>
 
+          {/* DESKTOP NAVIGACIJA */}
           <div className="flex-1 flex items-center justify-end gap-3 font-black uppercase text-[10px] md:text-[11px] tracking-widest whitespace-nowrap">
             
             <MagneticButton>
@@ -338,9 +358,9 @@ const V8Navbar = ({ handleHomeClick }) => {
               </div>
             </div>
 
-            {/* 🔥 MASTER USER DROPDOWN (ZAMENJUJE SVE I REŠAVA GUŽVU NA EKRANU) 🔥 */}
+            {/* MASTER USER DROPDOWN */}
             {user ? (
-               <div className="flex items-center gap-2 ml-2 border-l border-white/10 pl-4 relative group">
+               <div className="flex items-center gap-2 ml-2 lg:border-l lg:border-white/10 lg:pl-4 relative group">
                  <MagneticButton>
                    <button className="flex items-center gap-2 px-4 py-2 md:py-2.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-700/50 text-white transition-all shadow-md cursor-pointer">
                      {userCredits?.trialClaimed === false && !isAdmin ? (
@@ -351,18 +371,17 @@ const V8Navbar = ({ handleHomeClick }) => {
                      ) : (
                        <>
                           <Zap className="w-3.5 h-3.5 text-emerald-400 animate-pulse" /> 
-                          <span className="font-black text-[10px] tracking-widest uppercase">{isAdmin ? 'ADMIN BUTTON' : 'MY ACCOUNT'}</span>
+                          <span className="hidden sm:inline font-black text-[10px] tracking-widest uppercase">{isAdmin ? 'ADMIN' : 'ACCOUNT'}</span>
                        </>
                      )}
-                     <ChevronDown className="w-3 h-3 text-zinc-400 group-hover:rotate-180 transition-transform duration-300" />
+                     <ChevronDown className="hidden lg:block w-3 h-3 text-zinc-400 group-hover:rotate-180 transition-transform duration-300" />
                    </button>
                  </MagneticButton>
 
-                 {/* DROPDOWN MENI */}
-                 <div className="absolute top-full right-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-400 z-[9999]">
+                 {/* DESKTOP USER DROPDOWN MENI */}
+                 <div className="hidden lg:block absolute top-full right-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-400 z-[9999]">
                    <div className="bg-black/95 backdrop-blur-2xl border border-white/10 border-t-emerald-500 rounded-2xl p-4 w-64 shadow-2xl flex flex-col gap-2 relative overflow-hidden">
                      
-                     {/* Opcija za besplatan trial (ako nije preuzet i nije Admin) */}
                      {userCredits?.trialClaimed === false && !isAdmin && (
                         <div className="mb-2 border-b border-white/10 pb-3">
                            <p className="text-zinc-400 text-[10px] font-bold mb-2">Unlock the Master Engines for free.</p>
@@ -372,7 +391,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                         </div>
                      )}
 
-                     {/* Krediti sekcija */}
                      <div className="text-left border-b border-white/10 pb-2 mb-1">
                         <h4 className="text-zinc-400 font-bold uppercase tracking-widest text-[10px]">Processing Power</h4>
                      </div>
@@ -392,13 +410,11 @@ const V8Navbar = ({ handleHomeClick }) => {
                         <span className="text-white font-black text-[11px] drop-shadow-md">{isAdmin ? '∞' : userCredits.credits_45mp}</span>
                      </Link>
                      
-                     {/* DODATA OVI OPCIJA ZA 60MP */}
                      <Link to="/master-60mp" className="flex items-center justify-between bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-3 py-2 rounded-xl transition-all mt-1">
                         <span className="text-rose-400 font-black text-[10px] uppercase flex items-center gap-2"><Cpu className="w-3.5 h-3.5"/> 60MP Extreme</span>
                         <span className="text-white font-black text-[11px] drop-shadow-md">{isAdmin ? '∞' : '0'}</span>
                      </Link>
 
-                     {/* Admin i VIP sekcija spakovana ovde */}
                      {(isAdmin || isVIP) && (
                         <>
                            <div className="text-left border-b border-white/10 pb-2 mt-2 mb-1">
@@ -422,7 +438,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                         </>
                      )}
 
-                     {/* Logout dugme */}
                      <div className="mt-2 pt-2 border-t border-white/10">
                         <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl transition-all cursor-pointer">
                            <LogOut className="w-3.5 h-3.5" />
@@ -434,18 +449,228 @@ const V8Navbar = ({ handleHomeClick }) => {
                  </div>
                </div>
             ) : (
-               <div className="ml-2 border-l border-white/10 pl-4">
+               <div className="hidden lg:block ml-2 border-l border-white/10 pl-4">
                  <MagneticButton>
-                   <button onClick={handleLogin} className="bg-zinc-800 px-4 md:px-5 py-2 md:py-2.5 rounded-full text-zinc-400 shadow-xl hover:bg-zinc-700 hover:text-white transition-all hidden sm:block border border-white/5 cursor-pointer">
+                   <button onClick={handleLogin} className="bg-zinc-800 px-4 md:px-5 py-2 md:py-2.5 rounded-full text-zinc-400 shadow-xl hover:bg-zinc-700 hover:text-white transition-all border border-white/5 cursor-pointer">
                      <User className="w-4 h-4 inline mr-2" /> LOGIN
                    </button>
                  </MagneticButton>
                </div>
             )}
 
+            {/* 🔥 HAMBURGER DUGME (SAMO ZA MOBILNE) 🔥 */}
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="lg:hidden ml-2 bg-orange-600/20 text-orange-500 border border-orange-500/40 p-2.5 rounded-xl hover:bg-orange-600 hover:text-white transition-all shadow-[0_0_15px_rgba(249,115,22,0.3)]"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+
           </div>
         </div>
       </nav>
+
+      {/* 🔥 MOBILE FULL-SCREEN MENU OVERLAY 🔥 */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, x: "100%" }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="fixed inset-0 w-full h-full bg-[#050505]/95 backdrop-blur-3xl z-[99999] flex flex-col overflow-y-auto pb-20"
+          >
+            {/* Header Mob Menija */}
+            <div className="flex justify-between items-center p-6 border-b border-white/10">
+              <div className="flex items-center gap-3">
+                <img src={data.logoUrl} className="h-8 object-contain" alt="logo" />
+                <span className="font-black uppercase tracking-[0.1em] text-orange-500 italic text-[12px]">V8 NAV SYSTEM</span>
+              </div>
+              <button 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-2 bg-zinc-900 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-800 border border-white/5"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="flex flex-col p-6 gap-8">
+              
+              {/* Sekcija: Nalog i Krediti */}
+              {user ? (
+                <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-5 flex flex-col gap-4">
+                  <div className="flex items-center gap-3 pb-4 border-b border-white/10">
+                    <User className="w-8 h-8 text-emerald-500 bg-emerald-500/10 p-1.5 rounded-full" />
+                    <div>
+                      <h3 className="font-black text-white text-[14px] uppercase tracking-widest">{user.displayName || "V8 KLIJENT"}</h3>
+                      <p className="text-[10px] text-zinc-500 uppercase font-bold">{user.email}</p>
+                    </div>
+                  </div>
+
+                  {userCredits?.trialClaimed === false && !isAdmin && (
+                    <button onClick={handleClaimTrial} className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-black uppercase text-[12px] py-4 rounded-2xl shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+                      <Gift className="w-5 h-5" /> CLAIM 11 FREE CREDITS
+                    </button>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-3 mt-2">
+                    <div className="bg-black/50 border border-white/5 rounded-xl p-3 flex flex-col items-center justify-center">
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">16MP Credits</span>
+                      <span className="text-xl font-black text-blue-400">{isAdmin ? '∞' : userCredits.credits_16mp}</span>
+                    </div>
+                    <div className="bg-black/50 border border-white/5 rounded-xl p-3 flex flex-col items-center justify-center">
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">33MP Credits</span>
+                      <span className="text-xl font-black text-yellow-400">{isAdmin ? '∞' : userCredits.credits_33mp}</span>
+                    </div>
+                    <div className="bg-black/50 border border-white/5 rounded-xl p-3 flex flex-col items-center justify-center">
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">45MP Credits</span>
+                      <span className="text-xl font-black text-amber-500">{isAdmin ? '∞' : userCredits.credits_45mp}</span>
+                    </div>
+                    <div className="bg-black/50 border border-white/5 rounded-xl p-3 flex flex-col items-center justify-center">
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">60MP Credits</span>
+                      <span className="text-xl font-black text-rose-500">{isAdmin ? '∞' : '0'}</span>
+                    </div>
+                  </div>
+
+                  {(isAdmin || isVIP) && (
+                    <div className="flex flex-col gap-2 mt-2">
+                      {isAdmin && (
+                        <>
+                          <Link to="/admin" onClick={handleMobileLinkClick} className="w-full bg-red-950/30 text-red-500 border border-red-500/30 rounded-xl py-3 flex items-center justify-center gap-2 font-black text-[11px] uppercase tracking-widest">
+                            <Settings className="w-4 h-4" /> CMS Baza
+                          </Link>
+                          <Link to="/dashboard" onClick={handleMobileLinkClick} className="w-full bg-yellow-950/30 text-yellow-500 border border-yellow-500/30 rounded-xl py-3 flex items-center justify-center gap-2 font-black text-[11px] uppercase tracking-widest">
+                            <ShieldAlert className="w-4 h-4" /> Dashboard
+                          </Link>
+                        </>
+                      )}
+                      {isVIP && (
+                        <Link to="/trezor" onClick={handleMobileLinkClick} className="w-full bg-orange-950/30 text-orange-500 border border-orange-500/30 rounded-xl py-3 flex items-center justify-center gap-2 font-black text-[11px] uppercase tracking-widest">
+                          <Lock className="w-4 h-4" /> Vault Trezor
+                        </Link>
+                      )}
+                    </div>
+                  )}
+
+                  <button onClick={handleLogout} className="mt-4 w-full bg-red-600 hover:bg-red-500 text-white font-black text-[12px] uppercase py-4 rounded-xl flex items-center justify-center gap-2">
+                    <LogOut className="w-5 h-5" /> Sign Out
+                  </button>
+                </div>
+              ) : (
+                <button onClick={handleLogin} className="w-full bg-zinc-800 text-white border border-zinc-600 rounded-3xl py-6 flex flex-col items-center justify-center gap-3 shadow-xl">
+                  <User className="w-8 h-8 text-zinc-400" />
+                  <span className="font-black text-[16px] uppercase tracking-widest">LOGIN TO V8</span>
+                  <span className="text-[10px] text-zinc-500 font-bold uppercase">Pristupi Premium Alatima</span>
+                </button>
+              )}
+
+              {/* Sekcija: Navigacija */}
+              <div className="flex flex-col gap-6">
+                
+                <div className="flex flex-col gap-3">
+                  <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2">Glavni Meni</h4>
+                  <Link to="/" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform">
+                    <div className="bg-emerald-500/10 p-3 rounded-xl"><Globe className="w-6 h-6 text-emerald-500" /></div>
+                    <span className="text-[14px] font-black uppercase tracking-widest text-white">Početna Strana</span>
+                  </Link>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2">Master Upscalers</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Link to="/v8-standard-16mp" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-blue-500/20 p-4 rounded-2xl flex flex-col items-center gap-3">
+                      <ImageIcon className="w-8 h-8 text-blue-500" />
+                      <span className="text-[11px] font-black text-white tracking-widest">16MP</span>
+                    </Link>
+                    <Link to="/master-33mp" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-yellow-500/20 p-4 rounded-2xl flex flex-col items-center gap-3">
+                      <Cpu className="w-8 h-8 text-yellow-500" />
+                      <span className="text-[11px] font-black text-white tracking-widest">33MP</span>
+                    </Link>
+                    <Link to="/master-45mp" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-amber-500/20 p-4 rounded-2xl flex flex-col items-center gap-3">
+                      <Zap className="w-8 h-8 text-amber-500" />
+                      <span className="text-[11px] font-black text-white tracking-widest">45MP</span>
+                    </Link>
+                    <Link to="/master-60mp" onClick={handleMobileLinkClick} className="bg-rose-950/20 border border-rose-500/40 p-4 rounded-2xl flex flex-col items-center gap-3 shadow-[0_0_15px_rgba(244,63,94,0.1)]">
+                      <Cpu className="w-8 h-8 text-rose-500" />
+                      <span className="text-[11px] font-black text-white tracking-widest">60MP MAX</span>
+                    </Link>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2">V8 Premium Tools</h4>
+                  
+                  <Link to="/enxance" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform">
+                    <div className="bg-orange-500/10 p-3 rounded-xl"><Zap className="w-6 h-6 text-orange-500" /></div>
+                    <div className="flex flex-col">
+                      <span className="text-[13px] font-black uppercase tracking-widest text-white">10X Enhancer</span>
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase">AI Engine</span>
+                    </div>
+                  </Link>
+
+                  <Link to="/#marketplace" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform">
+                    <div className="bg-blue-500/10 p-3 rounded-xl"><Award className="w-6 h-6 text-blue-500" /></div>
+                    <div className="flex flex-col">
+                      <span className="text-[13px] font-black uppercase tracking-widest text-white">AI Store</span>
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase">Marketplace</span>
+                    </div>
+                  </Link>
+
+                  <Link to="/grid-system" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform">
+                    <div className="bg-yellow-500/10 p-3 rounded-xl"><LayoutGrid className="w-6 h-6 text-yellow-500" /></div>
+                    <div className="flex flex-col">
+                      <span className="text-[13px] font-black uppercase tracking-widest text-white">Grid System</span>
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase">Cinematic Gen</span>
+                    </div>
+                  </Link>
+
+                  <Link to="/extractor" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform">
+                    <div className="bg-cyan-500/10 p-3 rounded-xl"><Code className="w-6 h-6 text-cyan-500" /></div>
+                    <div className="flex flex-col">
+                      <span className="text-[13px] font-black uppercase tracking-widest text-white">JSON Extractor</span>
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase">Visual DNA</span>
+                    </div>
+                  </Link>
+
+                  <Link to="/v8-debranding-extractor" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-emerald-950/20 border border-emerald-500/30 p-4 rounded-2xl active:scale-95 transition-transform relative overflow-hidden">
+                    <div className="absolute top-0 right-0 bg-emerald-600 text-white text-[8px] font-black px-3 py-1 rounded-bl-xl">NEW</div>
+                    <div className="bg-emerald-500/20 p-3 rounded-xl"><ShieldCheck className="w-6 h-6 text-emerald-400" /></div>
+                    <div className="flex flex-col">
+                      <span className="text-[13px] font-black uppercase tracking-widest text-white">De-Branding DNA</span>
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase">White-Label Engine</span>
+                    </div>
+                  </Link>
+
+                  <div className="grid grid-cols-2 gap-3 mt-2">
+                    <Link to="/seedance" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-green-500/20 p-4 rounded-2xl flex flex-col items-center text-center gap-2">
+                      <MonitorPlay className="w-6 h-6 text-green-500" />
+                      <span className="text-[11px] font-black text-white uppercase tracking-widest">Seedance 2.0</span>
+                    </Link>
+                    <Link to="/kling" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-red-500/20 p-4 rounded-2xl flex flex-col items-center text-center gap-2">
+                      <Video className="w-6 h-6 text-red-500" />
+                      <span className="text-[11px] font-black text-white uppercase tracking-widest">Kling 3.0</span>
+                    </Link>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2">Premium Stock</h4>
+                  <Link to="/stock" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform">
+                    <div className="bg-blue-500/10 p-3 rounded-xl"><Layers className="w-6 h-6 text-blue-500" /></div>
+                    <span className="text-[13px] font-black uppercase tracking-widest text-white">Stock Bundles</span>
+                  </Link>
+                  <Link to="/showroom" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform">
+                    <div className="bg-purple-500/10 p-3 rounded-xl"><ImageIcon className="w-6 h-6 text-purple-500" /></div>
+                    <span className="text-[13px] font-black uppercase tracking-widest text-white">V8 Showroom</span>
+                  </Link>
+                </div>
+
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 };
