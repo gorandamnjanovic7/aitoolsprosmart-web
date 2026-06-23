@@ -346,7 +346,11 @@ function AppContent({ appsData, refreshData }) {
         
         <SmartScrollButton />
         <V8ContactWidget />
-        <UgcAvatar />
+        
+        {/* 🔥 UGC AVATAR SAKRIVEN NA TELEFONIMA I TABLETIMA 🔥 */}
+        <div className="hidden lg:block">
+          <UgcAvatar />
+        </div>
 
         <div id="v8-counter-container">
           <VisitorCounter />
