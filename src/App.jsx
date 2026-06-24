@@ -300,7 +300,12 @@ function AppContent({ appsData, refreshData }) {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(5,5,5,0.95)_30%,_rgba(5,5,5,0.3)_100%)] backdrop-blur-[1px] pointer-events-none z-0"></div>
 
       <div className="relative z-10 flex flex-col min-h-screen w-full pb-20 lg:pb-0">
-        <V8RadarCursor />
+        
+        {/* 🔥 V8 RADAR CURSOR SAKRIVEN NA TELEFONIMA I TABLETIMA 🔥 */}
+        <div className="hidden lg:block">
+          <V8RadarCursor />
+        </div>
+        
         <V8ToastContainer />
         
         <AnimatePresence>
@@ -352,7 +357,8 @@ function AppContent({ appsData, refreshData }) {
           <UgcAvatar />
         </div>
 
-        <div id="v8-counter-container">
+        {/* 🔥 VISITOR COUNTER SAKRIVEN NA TELEFONIMA I TABLETIMA 🔥 */}
+        <div id="v8-counter-container" className="hidden lg:block">
           <VisitorCounter />
         </div>
 
