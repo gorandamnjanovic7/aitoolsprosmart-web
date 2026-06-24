@@ -79,10 +79,9 @@ fetchUserIp();
 export const logAnalyticsEvent = async (type, details) => {
   const currentUser = auth.currentUser;
   
-  // 🔥 ZABRANA ZA ANONIMNE: Ako klijent nije ulogovan, odmah prekidamo! Ne beležimo ga u bazu. 🔥
+  // ZABRANA ZA ANONIMNE: Ako klijent nije ulogovan, odmah prekidamo!
   if (!currentUser) return; 
 
-  // Ignorišemo tebe po IP adresi ILI po admin emailu (dupla zaštita)
   const isAdmin = currentUser.email === "damnjanovicgoran7@gmail.com" || currentUser.email === "aitoolsprosmart@gmail.com";
   
   if (globalUserIp === MOJA_IP || isAdmin || globalUserIp === "") return; 
@@ -91,7 +90,7 @@ export const logAnalyticsEvent = async (type, details) => {
     await addDoc(collection(db, "analytics"), { 
       type, 
       ...details, 
-      userEmail: currentUser.email, // Sada sigurno imamo email
+      userEmail: currentUser.email, 
       timestamp: Date.now(), 
       sessionId: currentSessionId 
     }); 
@@ -216,6 +215,16 @@ function AppContent({ appsData, refreshData }) {
   const [checkoutData, setCheckoutData] = useState({ isOpen: false, name: '', price: '' });
   const [loginRequiredData, setLoginRequiredData] = useState({ isOpen: false, name: '', price: '' });
 
+  // 🔥 DETEKCIJA MOBILNOG EKRANA (Rešava miša, avatara i brojač) 🔥
+  const [isDesktop, setIsDesktop] = useState(true);
+
+  useEffect(() => {
+    const checkScreen = () => setIsDesktop(window.innerWidth >= 1024);
+    checkScreen(); // Pozovi odmah pri učitavanju
+    window.addEventListener('resize', checkScreen);
+    return () => window.removeEventListener('resize', checkScreen);
+  }, []);
+
   const openSecureCheckout = useCallback((productName, price) => {
     setCheckoutData({ isOpen: true, name: productName, price });
   }, []);
@@ -277,15 +286,16 @@ function AppContent({ appsData, refreshData }) {
   const handleHomeClick = (e) => { if (location.pathname === '/') { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); window.history.replaceState(null, '', '/'); } };
 
   return (
-    <div key={authVersion} className="min-h-screen text-zinc-100 font-sans relative text-left bg-[url('/v8-supercomputer-bg.jpg')] bg-cover bg-center bg-fixed bg-no-repeat">
+    // 🔥 DODATO overflow-x-hidden i max-w-[100vw] DA SE SPREČI SKROLOVANJE U STRANU 🔥
+    <div key={authVersion} className="min-h-screen text-zinc-100 font-sans relative text-left bg-[url('/v8-supercomputer-bg.jpg')] bg-cover bg-center bg-fixed bg-no-repeat w-full max-w-[100vw] overflow-x-hidden">
       
+      {/* 🔥 OČIŠĆEN STIL: IZBRISANO JE display: block !important 🔥 */}
       <style>{`
         #v8-counter-container {
           position: fixed !important;
           bottom: 120px !important;
           left: 1.5rem !important;
           z-index: 9999 !important;
-          display: block !important;
         }
         #v8-counter-container > * {
           position: relative !important;
@@ -301,10 +311,8 @@ function AppContent({ appsData, refreshData }) {
 
       <div className="relative z-10 flex flex-col min-h-screen w-full pb-20 lg:pb-0">
         
-        {/* 🔥 V8 RADAR CURSOR SAKRIVEN NA TELEFONIMA I TABLETIMA 🔥 */}
-        <div className="hidden lg:block">
-          <V8RadarCursor />
-        </div>
+        {/* 🔥 REACT USLOV: RADAR CURSOR RADI SAMO NA DESKTOPU 🔥 */}
+        {isDesktop && <V8RadarCursor />}
         
         <V8ToastContainer />
         
@@ -352,15 +360,15 @@ function AppContent({ appsData, refreshData }) {
         <SmartScrollButton />
         <V8ContactWidget />
         
-        {/* 🔥 UGC AVATAR SAKRIVEN NA TELEFONIMA I TABLETIMA 🔥 */}
-        <div className="hidden lg:block">
-          <UgcAvatar />
-        </div>
+        {/* 🔥 REACT USLOV: UGC AVATAR RADI SAMO NA DESKTOPU 🔥 */}
+        {isDesktop && <UgcAvatar />}
 
-        {/* 🔥 VISITOR COUNTER SAKRIVEN NA TELEFONIMA I TABLETIMA 🔥 */}
-        <div id="v8-counter-container" className="hidden lg:block">
-          <VisitorCounter />
-        </div>
+        {/* 🔥 REACT USLOV: VISITOR COUNTER RADI SAMO NA DESKTOPU 🔥 */}
+        {isDesktop && (
+          <div id="v8-counter-container">
+            <VisitorCounter />
+          </div>
+        )}
 
         <V8Footer />
 
