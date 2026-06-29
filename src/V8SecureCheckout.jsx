@@ -6,7 +6,7 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from 'firebase/auth'; 
 import { motion } from 'framer-motion'; 
 import { ShieldCheck, Mail, BellRing, Key, X, Lock, Earth, CheckCircle, Bitcoin, Wallet, Zap, CreditCard, Link } from 'lucide-react';
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js"; // 🔥 UBACEN PAYPAL PAKET
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js"; 
 
 const countryList = [
   "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia", "Cameroon", "Canada", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo", "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "North Macedonia", "Norway", "Oman", "Pakistan", "Palau", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"
@@ -21,8 +21,9 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price }) => {
   const [country, setCountry] = useState(''); 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  
+  const [showPayPalModal, setShowPayPalModal] = useState(false);
 
-  // 🔥 PAYPAL INICIJALIZACIJA (VUČE KLJUČ IZ FRONTEND FOLDERA)
   const initialOptions = {
     "client-id": import.meta.env.VITE_PAYPAL_CLIENT_ID,
     currency: "USD",
@@ -47,6 +48,7 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price }) => {
     if (!isOpen) {
       setLoading(false);
       setSuccess(false);
+      setShowPayPalModal(false);
     }
   }, [isOpen]);
 
@@ -87,7 +89,7 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price }) => {
         });
         
         const isLocal = import.meta.env.DEV || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const backendUrl = isLocal ? "http://localhost:8000" : "https://aitoolsprosmart-becend-production.up.railway.app";
+        const backendUrl = isLocal ? "http://localhost:8080" : "https://aitoolsprosmart-becend-production.up.railway.app";
 
         const response = await fetch(`${backendUrl}/api/crypto-checkout`, {
           method: 'POST',
@@ -241,53 +243,22 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price }) => {
                     </div>
 
                     <div className="pt-6 shrink-0 relative z-50">
-                      {/* 🔥 MAGIJA SE DEŠAVA OVDE: AKO JE KARTICA + POPUNJENA POLJA PRIKAZUJEMO PAYPAL DUGME 🔥 */}
-                      {paymentMethod === 'card' && firstName && lastName && country ? (
-                         <PayPalButtons 
-                            style={{ layout: "vertical", color: "blue", shape: "rect", label: "pay" }}
-                            createOrder={(data, actions) => {
-                                return actions.order.create({
-                                    purchase_units: [{
-                                        description: productName,
-                                        amount: { value: price.toString() }
-                                    }]
-                                });
-                            }}
-                            onApprove={async (data, actions) => {
-                                const details = await actions.order.capture();
-                                // Zapis u Firestore nakon uspešne PayPal naplate
-                                await addDoc(collection(db, "v8_paypal_requests"), {
-                                    clientEmail: email,
-                                    firstName,
-                                    lastName,
-                                    country,
-                                    productName,
-                                    price,
-                                    orderId: details.id,
-                                    method: "card_paypal",
-                                    status: "completed",
-                                    requestDate: serverTimestamp()
-                                });
-                                setSuccess(true);
-                            }}
-                            onError={(err) => {
-                                console.error("PayPal Error:", err);
-                                alert("There was an issue processing your payment. Please try again.");
-                            }}
-                         />
-                      ) : (
-                        <button 
-                          type={paymentMethod === 'card' ? 'button' : 'submit'} 
-                          disabled={loading || !country || !user || (paymentMethod === 'card' && (!firstName || !lastName))} 
-                          className={`w-full text-white font-black py-4 sm:py-4.5 rounded-xl text-[11px] sm:text-sm tracking-widest uppercase transition-all duration-300 disabled:opacity-50 shadow-[0_0_20px_rgba(0,0,0,0.3)] outline-none ${
-                            paymentMethod === 'crypto' ? 'bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 shadow-[0_0_30px_rgba(249,115,22,0.5)]'
-                            : paymentMethod === 'payoneer' ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.5)]'
-                            : 'bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-600 hover:to-blue-400 shadow-[0_0_30px_rgba(37,99,235,0.5)]'
-                          }`}
-                        >
-                          {loading ? 'Processing...' : paymentMethod === 'card' ? 'FILL DETAILS TO PAY' : paymentMethod === 'crypto' ? 'PROCEED TO CRYPTO' : 'REQUEST SECURE LINK'}
-                        </button>
-                      )}
+                      <button 
+                        type={paymentMethod === 'card' ? 'button' : 'submit'} 
+                        onClick={() => {
+                            if (paymentMethod === 'card' && firstName && lastName && country) {
+                                setShowPayPalModal(true);
+                            }
+                        }}
+                        disabled={loading || !country || !user || (paymentMethod === 'card' && (!firstName || !lastName))} 
+                        className={`w-full text-white font-black py-4 sm:py-4.5 rounded-xl text-[11px] sm:text-sm tracking-widest uppercase transition-all duration-300 disabled:opacity-50 shadow-[0_0_20px_rgba(0,0,0,0.3)] outline-none ${
+                          paymentMethod === 'crypto' ? 'bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 shadow-[0_0_30px_rgba(249,115,22,0.5)]'
+                          : paymentMethod === 'payoneer' ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.5)]'
+                          : 'bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-600 hover:to-blue-400 shadow-[0_0_30px_rgba(37,99,235,0.5)]'
+                        }`}
+                      >
+                        {loading ? 'Processing...' : paymentMethod === 'card' ? 'PROCEED TO SECURE PAYMENT' : paymentMethod === 'crypto' ? 'PROCEED TO CRYPTO' : 'REQUEST SECURE LINK'}
+                      </button>
                     </div>
                   </form>
                 )}
@@ -368,8 +339,124 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price }) => {
           </div>
 
         </motion.div>
+
+        {/* 🔥 NOVI SPLIT-SCREEN SUB-MODAL ZA PAYPAL FORMU 🔥 */}
+        {showPayPalModal && (
+          <div className="absolute inset-0 z-[10000000] flex items-center justify-center p-4 sm:p-6 bg-[#02040a]/80 backdrop-blur-md">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="relative flex flex-col md:flex-row w-full max-w-4xl bg-[#050914] border border-blue-600/50 rounded-2xl shadow-[0_0_100px_rgba(37,99,235,0.2)] overflow-hidden max-h-[90vh]"
+            >
+              {/* 🔥 X DUGME: Sada je fiksirano za ceo prozor i uvek vidljivo! 🔥 */}
+              <button
+                type="button"
+                onClick={() => setShowPayPalModal(false)}
+                className="absolute top-4 right-4 z-[100] p-2 bg-zinc-900/80 backdrop-blur-md rounded-full border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
+              >
+                <X size={18} />
+              </button>
+
+              {/* Leva strana: Slika (vidljiva samo na tablet/desktop uređajima) */}
+              <div 
+                className="hidden md:flex md:w-1/2 relative bg-cover bg-center"
+                style={{ backgroundImage: "url('/checkout-bg.webp')" }}
+              >
+                {/* Crni gradijent koji se preliva na formu */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#050914]/50 to-[#050914]"></div>
+                
+                {/* Tekst preko slike */}
+                <div className="absolute bottom-10 left-8 z-10 pr-8">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-900/50 border border-blue-500/50 backdrop-blur-sm mb-3">
+                    <ShieldCheck className="w-4 h-4 text-blue-400" />
+                    <span className="text-[10px] font-bold tracking-widest text-blue-100 uppercase">256-Bit Encrypted</span>
+                  </div>
+                  <h2 className="text-white font-black text-2xl uppercase tracking-wider mb-2 leading-tight">
+                    Finalize<br />Your Request
+                  </h2>
+                  <p className="text-zinc-400 text-xs leading-relaxed">
+                    You are moments away from unlocking the V8 Master Engine. Your transaction is guarded by global security protocols.
+                  </p>
+                </div>
+              </div>
+
+              {/* Desna strana: Forma - DODATO OTVARANJE SKROLA (overflow-y-auto) */}
+              <div className="w-full md:w-1/2 p-6 sm:p-10 pt-16 flex flex-col relative bg-[#050914] overflow-y-auto custom-scrollbar">
+                
+                <div className="mb-8">
+                  <h3 className="text-white font-black text-lg sm:text-xl uppercase tracking-widest mb-1">
+                    Complete Payment
+                  </h3>
+                  <p className="text-blue-400 text-sm tracking-wide font-bold">
+                    {productName} &bull; ${price}
+                  </p>
+                </div>
+
+                <div className="relative z-10 w-full min-h-[300px]">
+                  <PayPalButtons 
+                      style={{ layout: "vertical", color: "blue", shape: "rect", label: "pay" }}
+                      createOrder={(data, actions) => {
+                          return actions.order.create({
+                              purchase_units: [{
+                                  description: productName,
+                                  amount: { value: price.toString() }
+                              }]
+                          });
+                      }}
+                      onApprove={async (data, actions) => {
+                          try {
+                              const details = await actions.order.capture();
+                              
+                              const isLocal = import.meta.env.DEV || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                              const backendUrl = isLocal ? "http://localhost:8080" : "https://aitoolsprosmart-becend-production.up.railway.app";
+                              
+                              const response = await fetch(`${backendUrl}/api/paypal-verify`, {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ 
+                                      orderId: details.id, 
+                                      clientEmail: email, 
+                                      firstName, 
+                                      lastName, 
+                                      country, 
+                                      productName, 
+                                      price 
+                                  })
+                              });
+                              
+                              if(response.ok) {
+                                  setShowPayPalModal(false); 
+                                  setSuccess(true);          
+                              } else {
+                                  alert("Payment verification failed on the server. Please contact support.");
+                              }
+                          } catch (error) {
+                              console.error("Greška pri verifikaciji:", error);
+                              alert("Payment received, but verification delayed. Contact support.");
+                          }
+                      }}
+                      onError={(err) => {
+                          console.error("PayPal Error:", err);
+                          alert("There was an issue processing your payment. Please try again.");
+                      }}
+                  />
+                </div>
+                
+                <div className="mt-6 flex items-center justify-center gap-2 opacity-50 pb-4">
+                  <Lock size={12} className="text-zinc-500" />
+                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                    Secured by PayPal
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
       </div>
-    </PayPalScriptProvider>
+    </PayPalScriptProvider>,
+    document.body
   );
 };
 
