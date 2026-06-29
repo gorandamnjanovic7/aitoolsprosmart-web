@@ -247,7 +247,13 @@ function AppContent({ appsData, refreshData }) {
   }, []);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, () => { setAuthVersion(v => v + 1); }); 
+    const unsub = onAuthStateChanged(auth, (user) => { 
+      setAuthVersion(v => v + 1); 
+      // 🔥 GA4: USER-ID TRACKING 🔥
+      if (user && typeof window !== 'undefined' && window.gtag) {
+          window.gtag('config', 'G-86XYNNT6H8', { 'user_id': user.uid });
+      }
+    }); 
     return () => unsub();
   }, []);
 
@@ -265,10 +271,27 @@ function AppContent({ appsData, refreshData }) {
        logAnalyticsEvent('time_spent', { path: prevLocation.current, durationMS: timeSpent });
        prevLocation.current = location.pathname; entryTime.current = Date.now();
        logAnalyticsEvent('page_view', { path: location.pathname });
+
+       // 🔥 GA4: SPA PAGE VIEW TRACKING 🔥
+       if (typeof window !== 'undefined' && window.gtag) {
+           window.gtag('event', 'page_view', {
+               page_path: location.pathname,
+               page_location: window.location.href
+           });
+       }
     }
   }, [location.pathname]);
 
-  useEffect(() => { logAnalyticsEvent('page_view', { path: location.pathname }); }, []);
+  useEffect(() => { 
+      logAnalyticsEvent('page_view', { path: location.pathname }); 
+      // 🔥 GA4: INITIAL PAGE VIEW 🔥
+      if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'page_view', {
+              page_path: location.pathname,
+              page_location: window.location.href
+          });
+      }
+  }, []);
 
   useEffect(() => {
     const handleGlobalClick = (e) => { 
@@ -286,10 +309,8 @@ function AppContent({ appsData, refreshData }) {
   const handleHomeClick = (e) => { if (location.pathname === '/') { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); window.history.replaceState(null, '', '/'); } };
 
   return (
-    // 🔥 DODATO overflow-x-hidden i max-w-[100vw] DA SE SPREČI SKROLOVANJE U STRANU 🔥
     <div key={authVersion} className="min-h-screen text-zinc-100 font-sans relative text-left bg-[url('/v8-supercomputer-bg.jpg')] bg-cover bg-center bg-fixed bg-no-repeat w-full max-w-[100vw] overflow-x-hidden">
       
-      {/* 🔥 OČIŠĆEN STIL: IZBRISANO JE display: block !important 🔥 */}
       <style>{`
         #v8-counter-container {
           position: fixed !important;
@@ -311,7 +332,6 @@ function AppContent({ appsData, refreshData }) {
 
       <div className="relative z-10 flex flex-col min-h-screen w-full pb-20 lg:pb-0">
         
-        {/* 🔥 REACT USLOV: RADAR CURSOR RADI SAMO NA DESKTOPU 🔥 */}
         {isDesktop && <V8RadarCursor />}
         
         <V8ToastContainer />
@@ -360,10 +380,8 @@ function AppContent({ appsData, refreshData }) {
         <SmartScrollButton />
         <V8ContactWidget />
         
-        {/* 🔥 REACT USLOV: UGC AVATAR RADI SAMO NA DESKTOPU 🔥 */}
         {isDesktop && <UgcAvatar />}
 
-        {/* 🔥 REACT USLOV: VISITOR COUNTER RADI SAMO NA DESKTOPU 🔥 */}
         {isDesktop && (
           <div id="v8-counter-container">
             <VisitorCounter />
