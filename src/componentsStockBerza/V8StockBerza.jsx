@@ -23,8 +23,16 @@ import LoginRequiredModal from '../LoginRequiredModal';
 // POČETAK FUNKCIJE: FullScreenLightbox
 const FullScreenLightbox = ({ imageUrl, onClose }) => {
   useEffect(() => {
-      if (imageUrl) document.body.style.overflow = 'hidden';
-      else document.body.style.overflow = '';
+      if (imageUrl) {
+          document.body.style.overflow = 'hidden';
+          // 🔥 GA4: PRAĆENJE ZUMIRANJA SLIKA 🔥
+          if (typeof window !== 'undefined' && window.gtag) {
+              window.gtag('event', 'image_zoom', { event_category: 'Engagement' });
+          }
+      }
+      else {
+          document.body.style.overflow = '';
+      }
       return () => { document.body.style.overflow = ''; };
   }, [imageUrl]);
 
@@ -88,6 +96,16 @@ const V8StockBerza = () => {
   }, []);
   // KRAJ FUNKCIJE: Auth Provera
 
+  // 🔥 GA4: ŠPIJUNIRANJE TANOVA 🔥
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'tab_view', {
+        event_category: 'Navigation',
+        event_label: activeTab 
+      });
+    }
+  }, [activeTab]);
+
   // POČETAK FUNKCIJE: Provera pending kupovine
   useEffect(() => {
     const checkPendingPurchase = async () => {
@@ -98,6 +116,17 @@ const V8StockBerza = () => {
         if(trazeniPaket) {
             try {
                 await snimiKupcaUBazu(auth.currentUser, trazeniPaket);
+                
+                // 🔥 GA4: USPEŠNA KUPOVINA PENDING PAKETA 🔥
+                if (typeof window !== 'undefined' && window.gtag) {
+                    window.gtag('event', 'purchase', {
+                        transaction_id: `V8_TX_${Date.now()}`,
+                        value: Number(trazeniPaket.cena),
+                        currency: 'USD',
+                        items: [{ item_id: trazeniPaket.id, item_name: trazeniPaket.nazivEn, price: Number(trazeniPaket.cena) }]
+                    });
+                }
+
                 if (trazeniPaket.paddleLink && trazeniPaket.paddleLink.trim() !== "") {
                     window.location.href = trazeniPaket.paddleLink;
                 } else {
@@ -174,10 +203,19 @@ const V8StockBerza = () => {
   };
   // KRAJ FUNKCIJE: otvoriCheckoutIliPaddle
 
-  // POČETAK FUNKCIJE: prijavaIKupovina
+ // POČETAK FUNKCIJE: prijavaIKupovina
   const prijavaIKupovina = async (paket) => {
     if (paket.isFree || paket.cena === "0.00" || parseFloat(paket.cena) === 0) {
         if(typeof v8Toast !== 'undefined') v8Toast.success("🚀 ACCESS GRANTED: Downloading Free V8 Asset...");
+        
+        // 🔥 GA4: PRAĆENJE BESPLATNIH PREUZIMANJA 🔥
+        if (typeof window !== 'undefined' && window.gtag) {
+            window.gtag('event', 'free_download', {
+                event_category: 'Lead_Generation',
+                event_label: paket.nazivEn
+            });
+        }
+
         window.open(paket.zipLink, '_blank');
         return;
     }
@@ -185,6 +223,17 @@ const V8StockBerza = () => {
     const fullName = paket.volume ? `${paket.nazivEn} - ${paket.volume}` : paket.nazivEn;
     const finalPrice = getGlobalCena(paket.cena);
     const userNow = currentUser || auth.currentUser;
+
+    // 🔥 GOOGLE ANALYTICS: AUTOMATSKO HVATANJE INICIJALNE KUPOVINE 🔥
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'begin_checkout', {
+        event_category: 'B2B_Sales',
+        event_label: fullName, 
+        value: Number(finalPrice),
+        currency: 'USD',
+        items: [{ item_name: fullName, price: Number(finalPrice) }]
+      });
+    }
 
     if (userNow) {
         await otvoriCheckoutIliPaddle(userNow, paket);
@@ -325,7 +374,19 @@ const renderV8Manifest = (rezolucija) => {
               return (
                 <div 
                   key={i} 
-                  onClick={() => setOtvoreniOpisi(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i])}
+                  onClick={() => {
+                    setOtvoreniOpisi(prev => {
+                        const isNowOpen = !prev.includes(i);
+                        // 🔥 GA4: ČITANJE V8 MANIFESTA 🔥
+                        if (isNowOpen && typeof window !== 'undefined' && window.gtag) {
+                            window.gtag('event', 'manifest_read', {
+                                event_category: 'Engagement',
+                                event_label: item.t
+                            });
+                        }
+                        return isNowOpen ? [...prev, i] : prev.filter(x => x !== i);
+                    });
+                  }}
                   className={`bg-white/5 border p-6 rounded-2xl transition-all duration-500 cursor-pointer relative overflow-hidden group ${
                     isOpen ? 'border-orange-500/50 shadow-[0_0_15px_rgba(249,115,22,0.1)]' : 'border-white/5 hover:border-white/20'
                   }`}
