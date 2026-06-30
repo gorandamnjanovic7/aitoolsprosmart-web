@@ -11,9 +11,6 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { v8Toast } from '../v8Utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// 🔥 VRAĆEN IMPORT ZA GLOBALNI VIDEO (Iz src foldera) 🔥
-import v10VideoBg from "../v10bg.mp4";
-
 import V8StandardAssets from './V8StandardAssets';
 import V8PremiumAssets from './V8PremiumAssets';
 import V8MasterBundles from './V8MasterBundles';
@@ -285,81 +282,25 @@ const V8StockBerza = () => {
     premium: "url('/premium-bg.webp')",
     bundles: "url('/bundles-bg.webp')",
     signature: "linear-gradient(to bottom, rgba(5,5,5,0.7), rgba(0,0,0,0.85)), url('/v8-stock/v8-master-bg.jpg')",
-    ultra150: "none" // Ostavljamo "none" jer imamo video u pozadini za ovaj tab
+    ultra150: "none" 
   };
 
   const renderV8Manifest = (rezolucija) => {
     const specifikacije = [
-      { 
-        t: `1. Lanczos Upscale`, 
-        d: "Direct premium interpolation.", 
-        insight: `Direct premium LANCZOS interpolation to approx. ${rezolucija} by aspect ratio.` 
-      },
-      { 
-        t: "2. sRGB Conversion + ICC", 
-        d: "Color profile embedding.", 
-        insight: "Clean sRGB conversion with embedded sRGB ICC profile when available." 
-      },
-      { 
-        t: "3. MedianFilter Cleanup", 
-        d: "Texture-safe dirt reduction.", 
-        insight: "Texture-safe MedianFilter cleanup to reduce compression dirt without destroying detail." 
-      },
-      { 
-        t: "4. UnsharpMask Sharpness", 
-        d: "Micro-contrast sharpening.", 
-        insight: `Gentle UnsharpMask micro-contrast sharpening calibrated for ${rezolucija} output.` 
-      },
-      { 
-        t: "5. Color Grading", 
-        d: "Commercial color & contrast tuning.", 
-        insight: "Controlled premium color, contrast, and brightness tuning for commercial impact." 
-      },
-      { 
-        t: "6. Highlight Rolloff", 
-        d: "Compression of extreme highlights.", 
-        insight: "Smooth compression of extreme highlights to protect lava, fire, neon, metal, glass, and bright edges." 
-      },
-      { 
-        t: "7. Shadow Depth", 
-        d: "Richer blacks and tactile detail.", 
-        insight: "Controlled dark-value treatment for richer blacks while retaining tactile shadow detail." 
-      },
-      { 
-        t: "8. Product Ad Polish", 
-        d: "Final commercial refinement.", 
-        insight: "Final restrained commercial refinement for premium stock / print presentation." 
-      },
-      { 
-        t: "9. Anti-Plastic Grain", 
-        d: "Organic micro-grain integration.", 
-        insight: "Subtle organic micro-grain to break artificial smoothness after heavy upscale." 
-      },
-      { 
-        t: "10. IP-Safe Metadata", 
-        d: "Technical export cleanup.", 
-        insight: "Technical export cleanup: no EXIF, no hidden camera data, clean production-ready JPG export." 
-      },
-      { 
-        t: "11. Anti-Halo Protection", 
-        d: "High-contrast edge protection.", 
-        insight: "Extra protection around high-contrast bright edges to reduce ugly glow/outline artifacts." 
-      },
-      { 
-        t: "12. Banding Protection", 
-        d: "Fine dithering in dark gradients.", 
-        insight: "Fine dithering in dark gradients, smoke, mist, and sky areas to reduce banding." 
-      },
-      { 
-        t: "13. Texture Engine", 
-        d: "Detail-safe surface finish.", 
-        insight: "Texture-preserving finish for rocks, fabric, skin, water, leaves, metal, jewelry, and product surfaces." 
-      },
-      { 
-        t: `14. Quality Gate`, 
-        d: "Final validation & reporting.", 
-        insight: `Final validation of ${rezolucija} dimensions, JPEG integrity, TXT report, CSV report, and ZIP validation report.` 
-      }
+      { t: `1. Lanczos Upscale`, d: "Direct premium interpolation.", insight: `Direct premium LANCZOS interpolation to approx. ${rezolucija} by aspect ratio.` },
+      { t: "2. sRGB Conversion + ICC", d: "Color profile embedding.", insight: "Clean sRGB conversion with embedded sRGB ICC profile when available." },
+      { t: "3. MedianFilter Cleanup", d: "Texture-safe dirt reduction.", insight: "Texture-safe MedianFilter cleanup to reduce compression dirt without destroying detail." },
+      { t: "4. UnsharpMask Sharpness", d: "Micro-contrast sharpening.", insight: `Gentle UnsharpMask micro-contrast sharpening calibrated for ${rezolucija} output.` },
+      { t: "5. Color Grading", d: "Commercial color & contrast tuning.", insight: "Controlled premium color, contrast, and brightness tuning for commercial impact." },
+      { t: "6. Highlight Rolloff", d: "Compression of extreme highlights.", insight: "Smooth compression of extreme highlights to protect lava, fire, neon, metal, glass, and bright edges." },
+      { t: "7. Shadow Depth", d: "Richer blacks and tactile detail.", insight: "Controlled dark-value treatment for richer blacks while retaining tactile shadow detail." },
+      { t: "8. Product Ad Polish", d: "Final commercial refinement.", insight: "Final restrained commercial refinement for premium stock / print presentation." },
+      { t: "9. Anti-Plastic Grain", d: "Organic micro-grain integration.", insight: "Subtle organic micro-grain to break artificial smoothness after heavy upscale." },
+      { t: "10. IP-Safe Metadata", d: "Technical export cleanup.", insight: "Technical export cleanup: no EXIF, no hidden camera data, clean production-ready JPG export." },
+      { t: "11. Anti-Halo Protection", d: "High-contrast edge protection.", insight: "Extra protection around high-contrast bright edges to reduce ugly glow/outline artifacts." },
+      { t: "12. Banding Protection", d: "Fine dithering in dark gradients.", insight: "Fine dithering in dark gradients, smoke, mist, and sky areas to reduce banding." },
+      { t: "13. Texture Engine", d: "Detail-safe surface finish.", insight: "Texture-preserving finish for rocks, fabric, skin, water, leaves, metal, jewelry, and product surfaces." },
+      { t: `14. Quality Gate`, d: "Final validation & reporting.", insight: `Final validation of ${rezolucija} dimensions, JPEG integrity, TXT report, CSV report, and ZIP validation report.` }
     ];
 
     return (
@@ -427,12 +368,12 @@ const V8StockBerza = () => {
         />
       )}
 
-      {/* 🌟 GLOBALNI 9:16 VIDEO ZA V10 ULTRA PRINT TAB (Iz import-a) 🌟 */}
+      {/* 🌟 GLOBALNI 9:16 VIDEO ZA V10 ULTRA PRINT TAB (Iz public foldera) 🌟 */}
       {activeTab === 'ultra150' && (
         <video 
           autoPlay loop muted playsInline 
           className="fixed inset-0 w-full h-full object-cover z-0 opacity-100 transition-opacity duration-1000" 
-          src={v10VideoBg} 
+          src="/v10bg.mp4" 
         />
       )}
 
