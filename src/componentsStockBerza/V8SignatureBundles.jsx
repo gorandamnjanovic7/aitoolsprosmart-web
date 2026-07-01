@@ -16,26 +16,36 @@ const V8SignatureBundles = ({ paketi = [], isAdmin, getGlobalCena, getAspectClas
     return () => unsub();
   }, []);
 
-  // Ubaci ovo u sve 4 komponente umesto dosadašnjeg useEffect-a za bazu:
+  // 🔥 DVOZONSKI FIREBASE RADAR - SLUŠA KRIPTO I PAYPAL/KARTICE 🔥
   useEffect(() => {
     if (!userEmail) {
       setKupljeniPaketi([]);
       return;
     }
 
-    // 🔥 JEDINO ISPRAVNO: Slušamo v8_payoneer_requests 🔥
-    const q = query(collection(db, "v8_payoneer_requests"), where("clientEmail", "==", userEmail));
-    
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const kupljeni = snapshot.docs
-        .map(doc => doc.data())
-        .filter(data => data.status === "paid" || data.status === "PAID")
-        .map(data => data.productName ? data.productName.toLowerCase().trim() : "");
-        
-      setKupljeniPaketi(kupljeni);
+    let cryptoItems = [];
+    let paypalItems = [];
+
+    const azurirajSve = () => {
+      const sviKupljeni = [...cryptoItems, ...paypalItems].filter(Boolean);
+      setKupljeniPaketi([...new Set(sviKupljeni)]);
+    };
+
+    // 1. Sluša KRIPTO (NOWPayments)
+    const qCrypto = query(collection(db, "v8_crypto_requests"), where("clientEmail", "==", userEmail));
+    const unsubCrypto = onSnapshot(qCrypto, (snap) => {
+      cryptoItems = snap.docs.filter(doc => doc.data().status === "PLAĆENO").map(doc => doc.data().productName?.toLowerCase().trim());
+      azurirajSve();
     });
 
-    return () => unsubscribe();
+    // 2. Sluša PAYPAL (PayPal i Kreditne Kartice)
+    const qPayPal = query(collection(db, "v8_paypal_requests"), where("clientEmail", "==", userEmail));
+    const unsubPayPal = onSnapshot(qPayPal, (snap) => {
+      paypalItems = snap.docs.filter(doc => doc.data().status === "completed_verified").map(doc => doc.data().productName?.toLowerCase().trim());
+      azurirajSve();
+    });
+
+    return () => { unsubCrypto(); unsubPayPal(); };
   }, [userEmail]);
 
   if (!paketi || paketi.length === 0) {
