@@ -91,30 +91,69 @@ const V8JsonExtractorPage = () => {
         return;
       }
 
-      const qPay = query(collection(db, "v8_payoneer_requests"), where("clientEmail", "==", email));
-      
-      onSnapshot(qPay, (snap) => {
-        let hasAccess = false; let totalCredits = 0; let maxPaid = 0; let highestPlan = 'NONE';
+      // 🔥 UNIVERZALNI RADAR ZA KREDITE - Sabira uplate sa svih platformi 🔥
+      let payoneerDocs = [];
+      let cryptoDocs = [];
+      let paypalDocs = [];
 
-        snap.docs.forEach(docSnap => {
-          const data = docSnap.data();
-          if (data.status === "paid" || data.status === "PAID") {
+      const calculateAccess = () => {
+        let hasAccess = false;
+        let totalCredits = 0;
+        let maxPaid = 0;
+        let highestPlan = 'NONE';
+
+        const allDocs = [...payoneerDocs, ...cryptoDocs, ...paypalDocs];
+
+        allDocs.forEach(data => {
+          if (data.status === "paid" || data.status === "PAID" || data.status === "PLAĆENO" || data.status === "completed_verified") {
             const productName = data.productName ? data.productName.toUpperCase() : "";
             
-            // 🔥 POPRAVLJEN SKENER: Prepoznaje i "SECURITY CHECKOUT" da ne baguje stare uplate!
+            // 🔥 Skener prepoznaje "EXTRACTOR" i ignoriše "DEBRENDING" 🔥
             if ((productName.includes("EXTRACTOR") && !productName.includes("DEBRENDING") && !productName.includes("DE-BRANDING")) || productName.includes("SECURITY CHECKOUT")) {
               hasAccess = true;
-              if (productName.includes("ENTERPRISE")) { if (maxPaid < 550) { maxPaid = 550; highestPlan = 'ENTERPRISE'; } totalCredits = Math.max(totalCredits, 10000); } 
-              else if (productName.includes("PRO")) { if (maxPaid < 250) { maxPaid = 250; highestPlan = 'PRO'; } totalCredits = Math.max(totalCredits, 2000); } 
-              else { if (maxPaid < 150) { maxPaid = 150; highestPlan = 'STARTER'; } totalCredits = Math.max(totalCredits, 500); }
+              
+              if (productName.includes("ENTERPRISE")) {
+                if (maxPaid < 550) { maxPaid = 550; highestPlan = 'ENTERPRISE'; }
+                totalCredits = Math.max(totalCredits, 10000); 
+              } else if (productName.includes("PRO")) {
+                if (maxPaid < 250) { maxPaid = 250; highestPlan = 'PRO'; }
+                totalCredits = Math.max(totalCredits, 2000);
+              } else {
+                if (maxPaid < 150) { maxPaid = 150; highestPlan = 'STARTER'; }
+                totalCredits = Math.max(totalCredits, 500); 
+              }
             }
           }
         });
 
-        if (hasAccess) { setIsVIP(true); setCredits(totalCredits); setAmountPaid(maxPaid); setCurrentPlan(highestPlan); } 
-        else { setIsVIP(false); setCredits(0); setAmountPaid(0); setCurrentPlan('NONE'); }
+        if (hasAccess) {
+          setIsVIP(true);
+          setCredits(totalCredits);
+          setAmountPaid(maxPaid);
+          setCurrentPlan(highestPlan);
+        } else {
+          setIsVIP(false);
+          setCredits(0);
+          setAmountPaid(0);
+          setCurrentPlan('NONE');
+        }
         setIsCheckingAccess(false);
+      };
+
+      const unsubPayoneer = onSnapshot(query(collection(db, "v8_payoneer_requests"), where("clientEmail", "==", email)), snap => {
+        payoneerDocs = snap.docs.map(d => d.data());
+        calculateAccess();
       });
+      const unsubCrypto = onSnapshot(query(collection(db, "v8_crypto_requests"), where("clientEmail", "==", email)), snap => {
+        cryptoDocs = snap.docs.map(d => d.data());
+        calculateAccess();
+      });
+      const unsubPayPal = onSnapshot(query(collection(db, "v8_paypal_requests"), where("clientEmail", "==", email)), snap => {
+        paypalDocs = snap.docs.map(d => d.data());
+        calculateAccess();
+      });
+
+      return () => { unsubPayoneer(); unsubCrypto(); unsubPayPal(); };
     });
 
     return () => {

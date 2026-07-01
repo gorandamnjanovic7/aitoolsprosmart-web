@@ -172,33 +172,55 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
     openSecureCheckout(paketName, fullPrice);
   };
 
+  // 🔥 DVOZONSKI RADAR: Sluša SAMO Crypto i PayPal/Card 🔥
   useEffect(() => {
     const unsubShowcase = onSnapshot(doc(db, "v8_settings", "showcase_cinematik"), (docSnap) => {
         if (docSnap.exists()) {
             setShowcase(docSnap.data());
         }
     });
-    return () => unsubShowcase();
-  }, []);
 
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (user) => {
+    let unsubCrypto = () => {};
+    let unsubPayPal = () => {};
+    let unsubVip = () => {};
+
+    const unsubAuth = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       if (!user) {
         setPayData([]); setVipData({}); setIsCheckingAccess(false); setAmountPaid(0); setCurrentPlan('NONE'); setIsAdmin(false);
         return;
       }
+      
       const email = user.email.toLowerCase();
       setIsAdmin(email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com");
       
-      const qPay = query(collection(db, "v8_payoneer_requests"), where("clientEmail", "==", email));
-      const unsubPay = onSnapshot(qPay, snap => setPayData(snap.docs.map(d => d.data())));
+      let cryptoDocs = [];
+      let paypalDocs = [];
 
-      const unsubVip = onSnapshot(doc(db, "vip_users", email), snap => setVipData(snap.exists() ? snap.data() : {}));
+      const updateAllPayData = () => {
+         setPayData([...cryptoDocs, ...paypalDocs]);
+      };
 
-      return () => { unsubPay(); unsubVip(); };
+      unsubCrypto = onSnapshot(query(collection(db, "v8_crypto_requests"), where("clientEmail", "==", email)), snap => {
+         cryptoDocs = snap.docs.map(d => d.data());
+         updateAllPayData();
+      });
+
+      unsubPayPal = onSnapshot(query(collection(db, "v8_paypal_requests"), where("clientEmail", "==", email)), snap => {
+         paypalDocs = snap.docs.map(d => d.data());
+         updateAllPayData();
+      });
+
+      unsubVip = onSnapshot(doc(db, "vip_users", email), snap => setVipData(snap.exists() ? snap.data() : {}));
     });
-    return () => unsub();
+
+    return () => { 
+        unsubAuth(); 
+        unsubShowcase(); 
+        unsubCrypto(); 
+        unsubPayPal(); 
+        unsubVip(); 
+    };
   }, []);
 
   // PROVERA I PRORAČUN KREDITA SA NOVIM SKENEROM
@@ -218,10 +240,11 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
     const engineKeyword = currentEngine.split(" ")[0].toUpperCase(); 
 
     payData.forEach(data => {
-      if (data.status === "paid" || data.status === "PAID") {
+      // 🔥 Podržava PLAĆENO (Kripto) i completed_verified (PayPal) 🔥
+      if (data.status === "PLAĆENO" || data.status === "completed_verified") {
         const productName = data.productName ? data.productName.toUpperCase() : "";
         
-        // 🔥 POPRAVLJEN SKENER: Hvata Security Checkout, Master, Bundle, Cinematik, itd.
+        // Hvata Security Checkout, Master, Bundle, Cinematik, itd.
         if (productName.includes(engineKeyword) || productName.includes("CINEMATIK") || productName.includes("SECURITY CHECKOUT") || productName.includes("BUNDLE") || productName.includes("MASTER")) {
           hasAccess = true;
           if (productName.includes("ENTERPRISE")) { if (maxPaid < 550) { maxPaid = 550; highestPlan = 'ENTERPRISE'; } calculatedDefaultCredits = Math.max(calculatedDefaultCredits, 10000); } 
@@ -446,7 +469,6 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
 
         <div className="flex flex-wrap justify-center gap-6 w-full z-10 relative">
           
-          {/* STARTER (Sakriven ako je plaćeno 100 ili više) */}
           {amountPaid < 100 && (
             <div className="w-full md:w-[calc(33.333%-1rem)] max-w-sm bg-[#050505] border border-blue-500/30 rounded-[2rem] p-8 flex flex-col hover:border-blue-500/60 transition-all shadow-xl">
                 <div className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-500/10 mb-6 mx-auto"><Diamond className="w-6 h-6 text-blue-500" /></div>
@@ -463,7 +485,6 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
             </div>
           )}
 
-          {/* PRO (Sakriven ako je plaćeno 250 ili više) */}
           {amountPaid < 250 && (
             <div className={`w-full md:w-[calc(33.333%-1rem)] max-w-sm bg-[#050505] border-2 rounded-[2rem] p-8 flex flex-col relative transition-all transform md:scale-105 z-10 ${currentEngine === "SEEDANCE 2.0" ? "border-green-500/50 hover:border-green-500/80 shadow-[0_0_30px_rgba(34,197,94,0.15)]" : "border-orange-500/50 hover:border-orange-500/80 shadow-[0_0_30px_rgba(234,88,12,0.15)]"}`}>
                 <div className={`absolute top-0 left-0 w-full h-2 rounded-t-[1.9rem] ${currentEngine === "SEEDANCE 2.0" ? "bg-gradient-to-r from-green-600 to-emerald-500" : "bg-gradient-to-r from-orange-600 to-amber-500"}`}></div>
@@ -487,7 +508,6 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
             </div>
           )}
 
-          {/* ENTERPRISE */}
           {amountPaid < 550 && (
             <div className="w-full md:w-[calc(33.333%-1rem)] max-w-sm bg-[#050505] border border-purple-500/30 rounded-[2rem] p-8 flex flex-col hover:border-purple-500/60 transition-all shadow-xl">
                 <div className="w-12 h-12 flex items-center justify-center rounded-full bg-purple-500/10 mb-6 mx-auto"><Crown className="w-6 h-6 text-purple-500" /></div>
@@ -507,7 +527,6 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
           )}
         </div>
 
-        {/* 🔥 DINAMIČKI PLAVI UPGRADE BOX 🔥 */}
         {amountPaid > 0 && amountPaid < 550 && (
            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`w-full max-w-4xl mx-auto mt-12 mb-10 bg-gradient-to-r from-[#0a0a0a]/90 to-[#020617]/90 border ${currentEngine === "SEEDANCE 2.0" ? "border-green-500/40 shadow-[0_0_40px_rgba(34,197,94,0.25)]" : "border-orange-500/40 shadow-[0_0_40px_rgba(234,88,12,0.25)]"} p-6 md:p-8 rounded-[2rem] flex flex-col md:flex-row items-center justify-center gap-8 relative overflow-hidden backdrop-blur-md`}>
              <div className={`absolute inset-0 mix-blend-overlay ${currentEngine === "SEEDANCE 2.0" ? "bg-green-500/5" : "bg-orange-500/5"}`}></div>
@@ -637,7 +656,7 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
                  
                  {isAdmin ? (
                    <span className="text-[15px] font-black tracking-widest leading-none mt-1 text-purple-500 drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]">
-                     MASTER ADMIN : ∞
+                      MASTER ADMIN : ∞
                    </span>
                  ) : (
                    <span className={`text-[15px] font-black tracking-widest leading-none mt-1 ${credits > 100 ? 'text-emerald-400' : 'text-red-500'}`}>

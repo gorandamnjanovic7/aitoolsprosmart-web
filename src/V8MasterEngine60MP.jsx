@@ -199,6 +199,7 @@ const V8MasterEngine60MP = () => {
     }, 250);
   };
 
+  // 🔥 DVOZONSKI RADAR: Sluša Crypto i PayPal/Card 🔥
   useEffect(() => {
     const unsubShowcase = onSnapshot(doc(db, "v8_settings", "showcase_60mp"), (docSnap) => {
       if (docSnap.exists()) {
@@ -208,6 +209,10 @@ const V8MasterEngine60MP = () => {
         }));
       }
     });
+
+    let unsubCrypto = () => {};
+    let unsubPayPal = () => {};
+    let unsubVip = () => {};
 
     const unsubAuth = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
@@ -230,28 +235,35 @@ const V8MasterEngine60MP = () => {
         email === "aitoolsprosmart@gmail.com"
       );
 
-      const qPay = query(
-        collection(db, "v8_payoneer_requests"),
-        where("clientEmail", "==", email)
-      );
+      let cryptoDocs = [];
+      let paypalDocs = [];
 
-      const unsubPay = onSnapshot(qPay, (snap) => {
-        setPayData(snap.docs.map((d) => d.data()));
+      const updateAllPayData = () => {
+         setPayData([...cryptoDocs, ...paypalDocs]);
+      };
+
+      unsubCrypto = onSnapshot(query(collection(db, "v8_crypto_requests"), where("clientEmail", "==", email)), snap => {
+         cryptoDocs = snap.docs.map(d => d.data());
+         updateAllPayData();
       });
 
-      const unsubVip = onSnapshot(doc(db, "vip_users", email), (snap) => {
+      unsubPayPal = onSnapshot(query(collection(db, "v8_paypal_requests"), where("clientEmail", "==", email)), snap => {
+         paypalDocs = snap.docs.map(d => d.data());
+         updateAllPayData();
+      });
+
+      unsubVip = onSnapshot(doc(db, "vip_users", email), (snap) => {
         setVipData(snap.exists() ? snap.data() : {});
       });
 
-      return () => {
-        unsubPay();
-        unsubVip();
-      };
     });
 
     return () => {
       unsubAuth();
       unsubShowcase();
+      unsubCrypto();
+      unsubPayPal();
+      unsubVip();
     };
   }, []);
 
@@ -279,7 +291,7 @@ const V8MasterEngine60MP = () => {
     let highestPlan = 'NONE';
 
     payData.forEach((data) => {
-      if (data.status === "paid" || data.status === "PAID") {
+      if (data.status === "PLAĆENO" || data.status === "completed_verified") {
         const productName = data.productName ? data.productName.toUpperCase() : "";
 
         if (productName.includes("GOD TIER") || productName.includes("60MP")) {
@@ -1524,7 +1536,7 @@ const V8MasterEngine60MP = () => {
                   : downloadStatus === 'success'
                     ? "DOWNLOAD 60MP BATCH (ZIP)"
                     : (credits <= 0 && !isAdmin)
-                      ? "INSUFFICIENTA CREDITS"
+                      ? "INSUFFICIENT CREDITS"
                       : `INITIATE 60MP BATCH UPSCALE${!isVIP ? ' (TRIAL)' : ''}`}
               </button>
             </div>

@@ -8,7 +8,7 @@ import {
   PlayCircle, Loader2, UploadCloud, Trash2, DollarSign, Calendar, 
   Layers, Film, Sparkles, Flame, Crown, Rocket, 
   Star, Camera, Droplets, Hexagon, Globe, Bitcoin, FileText,
-  PieChart, Eye, Clock, Filter 
+  PieChart, Eye, Clock, Filter, CreditCard
 } from 'lucide-react';
 import { v8Toast } from './v8Utils';
 
@@ -24,6 +24,7 @@ const V8AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('payoneer_blagajna');
   const [sales, setSales] = useState([]);
   const [cryptoReqs, setCryptoReqs] = useState([]); 
+  const [paypalReqs, setPaypalReqs] = useState([]); 
   
   // 🔥 V8 ANALITIKA STATE 🔥
   const [analyticsData, setAnalyticsData] = useState([]);
@@ -90,7 +91,9 @@ const V8AdminDashboard = () => {
     let dateObj = new Date();
     if (saleData.vreme?.toDate) dateObj = saleData.vreme.toDate();
     else if (saleData.requestDate?.toDate) dateObj = saleData.requestDate.toDate();
-    const formattedDate = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    
+    // Tačan format za fakturu
+    const formattedDate = dateObj.toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
     const clientName = saleData.ime || saleData.klijent || saleData.firstName + ' ' + (saleData.lastName || '') || 'Valued Client';
     const clientEmail = saleData.email || saleData.clientEmail || 'N/A';
@@ -194,7 +197,7 @@ const V8AdminDashboard = () => {
 
           <div class="payment-status">
             <span class="status-badge">PAID IN FULL</span>
-            <small style="color: #666;">(Note: Payment settled via international secure gateway. Wire transfer to IBAN).</small>
+            <small style="color: #666;">(Note: Payment settled via secure gateway. Exact Timestamp: ${formattedDate}).</small>
           </div>
 
           <div class="footer">
@@ -356,6 +359,15 @@ const V8AdminDashboard = () => {
     return () => unsubscribe();
   }, []);
 
+  // Osluškivanje PayPal Baze
+  useEffect(() => {
+    const q = query(collection(db, "v8_paypal_requests"), orderBy("requestDate", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setPaypalReqs(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    return () => unsubscribe();
+  }, []);
+
   // 🔥 V8 ANALITIKA LISTENER (ZAKLJUČANO NA MAX 200 DA NE ZABODE BROWSER) 🔥
   useEffect(() => {
     const q = query(collection(db, "analytics"), orderBy("timestamp", "desc"), limit(200));
@@ -490,6 +502,13 @@ const V8AdminDashboard = () => {
     }
   };
 
+  // Tačan prikaz vremena u tabelama do sekunde
+  const formatTimeExact = (timestamp) => {
+    if (!timestamp) return "N/A";
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  };
+
   const formatTime = (timestamp) => {
     if (!timestamp) return "Just now";
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -500,7 +519,7 @@ const V8AdminDashboard = () => {
   const uniqueRegisteredUsers = Array.from(new Set(analyticsData.filter(d => d.userEmail).map(d => d.userEmail)));
   
   const filteredAnalytics = analyticsData.filter(log => {
-    if (!log.userEmail) return false; // Odmah sakrij sve preostale anonimne zapise iz stare baze
+    if (!log.userEmail) return false; 
     if (selectedAnalyticsFilter === 'ALL') return true;
     return log.userEmail === selectedAnalyticsFilter;
   });
@@ -515,6 +534,10 @@ const V8AdminDashboard = () => {
       </div>
     );
   }
+
+  // Filtriranje PayPal / Card zahteva ukoliko backend snima payment_source (ako ne, prikazuju se svi u PayPal)
+  const paypalOrders = paypalReqs.filter(r => !r.paymentSource || r.paymentSource.toLowerCase() === 'paypal');
+  const cardOrders = paypalReqs.filter(r => r.paymentSource && r.paymentSource.toLowerCase() !== 'paypal');
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex pt-20">
@@ -531,18 +554,38 @@ const V8AdminDashboard = () => {
 
         <div className="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
           
-          <button onClick={() => setActiveTab('payoneer_blagajna')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === 'payoneer_blagajna' ? 'bg-emerald-600/10 text-emerald-500 border border-emerald-500/30' : 'text-zinc-500 hover:text-white hover:bg-white/5 border border-transparent'}`}>
-            <DollarSign className="w-4 h-4" /> B2B Blagajna
+          <button onClick={() => setActiveTab('payoneer_blagajna')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === 'payoneer_blagajna' ? 'bg-orange-600/10 text-orange-500 border border-orange-500/30' : 'text-zinc-500 hover:text-white hover:bg-white/5 border border-transparent'}`}>
+            <img src="/payoneer.png" alt="B2B" className="w-4 h-4 object-contain" onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
+            <div style={{display: 'none'}} className="w-4 h-4 rounded-full border border-orange-500 items-center justify-center"><div className="w-1.5 h-1.5 rounded-full bg-orange-500"></div></div>
+            B2B Blagajna
           </button>
 
-          <button onClick={() => setActiveTab('crypto_blagajna')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === 'crypto_blagajna' ? 'bg-orange-600/10 text-orange-500 border border-orange-500/30' : 'text-zinc-500 hover:text-white hover:bg-white/5 border border-transparent'}`}>
-            <Bitcoin className="w-4 h-4" /> Kripto Blagajna
-            {cryptoReqs.length > 0 && <span className="ml-auto bg-orange-600 text-white text-[9px] px-2 py-0.5 rounded-full">{cryptoReqs.length}</span>}
+          <button onClick={() => setActiveTab('crypto_blagajna')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === 'crypto_blagajna' ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/30' : 'text-zinc-500 hover:text-white hover:bg-white/5 border border-transparent'}`}>
+            <img src="/bitcoin.png" alt="Crypto" className="w-4 h-4 object-contain" onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }} />
+            <Bitcoin size={16} style={{display: 'none'}} className="text-yellow-500" />
+            Kripto Blagajna
+            {cryptoReqs.length > 0 && <span className="ml-auto bg-yellow-500 text-black text-[9px] px-2 py-0.5 rounded-full">{cryptoReqs.length}</span>}
           </button>
 
-          <button onClick={() => setActiveTab('live_sales')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === 'live_sales' ? 'bg-blue-600/10 text-blue-500 border border-blue-500/30' : 'text-zinc-500 hover:text-white hover:bg-white/5 border border-transparent'}`}>
+          {/* 🔥 NOVI PAYPAL TAB 🔥 */}
+          <button onClick={() => setActiveTab('paypal_blagajna')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === 'paypal_blagajna' ? 'bg-blue-600/10 text-blue-500 border border-blue-500/30' : 'text-zinc-500 hover:text-white hover:bg-white/5 border border-transparent'}`}>
+            <img src="/paypal.png" alt="PayPal" className="w-4 h-4 object-contain" onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
+            <div style={{display: 'none'}} className="w-4 h-4 text-blue-500 font-bold items-center justify-center">P</div>
+            PayPal
+            {paypalOrders.length > 0 && <span className="ml-auto bg-blue-600 text-white text-[9px] px-2 py-0.5 rounded-full">{paypalOrders.length}</span>}
+          </button>
+
+          {/* 🔥 NOVI CARD PAY TAB 🔥 */}
+          <button onClick={() => setActiveTab('card_blagajna')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === 'card_blagajna' ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/30' : 'text-zinc-500 hover:text-white hover:bg-white/5 border border-transparent'}`}>
+            <img src="/visa.png" alt="Visa" className="w-5 h-3 object-contain" onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
+            <div style={{display: 'none'}} className="w-5 h-3 bg-indigo-500/20 text-indigo-400 text-[6px] items-center justify-center rounded-sm border border-indigo-500/50">VISA</div>
+            Card Pay
+            {cardOrders.length > 0 && <span className="ml-auto bg-indigo-600 text-white text-[9px] px-2 py-0.5 rounded-full">{cardOrders.length}</span>}
+          </button>
+
+          <button onClick={() => setActiveTab('live_sales')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === 'live_sales' ? 'bg-emerald-600/10 text-emerald-500 border border-emerald-500/30' : 'text-zinc-500 hover:text-white hover:bg-white/5 border border-transparent'}`}>
             <Activity className="w-4 h-4" /> Paid History
-            {sales.length > 0 && <span className="ml-auto bg-blue-600 text-white text-[9px] px-2 py-0.5 rounded-full">{sales.length}</span>}
+            {sales.length > 0 && <span className="ml-auto bg-emerald-600 text-white text-[9px] px-2 py-0.5 rounded-full">{sales.length}</span>}
           </button>
 
           <button onClick={() => setActiveTab('v8_analitika')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === 'v8_analitika' ? 'bg-fuchsia-600/10 text-fuchsia-500 border border-fuchsia-500/30' : 'text-zinc-500 hover:text-white hover:bg-white/5 border border-transparent'}`}>
@@ -557,7 +600,7 @@ const V8AdminDashboard = () => {
             <Zap className="w-4 h-4" /> 10X Ad Config
           </button>
 
-          <button onClick={() => setActiveTab('v8_alati')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === 'v8_alati' ? 'bg-emerald-600/10 text-emerald-500 border border-emerald-500/30' : 'text-zinc-500 hover:text-white hover:bg-white/5 border border-transparent'}`}>
+          <button onClick={() => setActiveTab('v8_alati')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === 'v8_alati' ? 'bg-teal-600/10 text-teal-500 border border-teal-500/30' : 'text-zinc-500 hover:text-white hover:bg-white/5 border border-transparent'}`}>
             <Zap className="w-4 h-4" /> V8 Master Tools
           </button>
 
@@ -585,10 +628,12 @@ const V8AdminDashboard = () => {
         {/* --- TAB: KRIPTO BLAGAJNA --- */}
         {activeTab === 'crypto_blagajna' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-5xl mx-auto">
-             <div className="mb-8 flex items-center justify-between border-b border-orange-500/20 pb-6">
+             <div className="mb-8 flex items-center justify-between border-b border-yellow-500/20 pb-6">
               <div>
                 <h1 className="text-3xl font-black uppercase tracking-widest text-white mb-2 flex items-center gap-3">
-                  <Bitcoin className="w-8 h-8 text-orange-500" /> KRIPTO BLAGAJNA
+                  <img src="/bitcoin.png" alt="BTC" className="w-8 h-8 object-contain" onError={(e)=>{e.target.style.display='none'; e.target.nextSibling.style.display='block';}} />
+                  <Bitcoin style={{display:'none'}} className="w-8 h-8 text-yellow-500" />
+                  KRIPTO BLAGAJNA
                 </h1>
                 <p className="text-zinc-500 text-[12px] font-bold tracking-widest uppercase">Live NOWPayments Gateway Feed</p>
               </div>
@@ -602,10 +647,10 @@ const V8AdminDashboard = () => {
                 </div>
               ) : (
                 cryptoReqs.map(req => (
-                  <div key={req.id} className="bg-[#050505] border border-orange-500/20 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between hover:border-orange-500/50 shadow-[0_5px_30px_rgba(249,115,22,0.05)] transition-all">
+                  <div key={req.id} className="bg-[#050505] border border-yellow-500/20 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between hover:border-yellow-500/50 shadow-[0_5px_30px_rgba(234,179,8,0.05)] transition-all">
                     <div className="flex items-center gap-6">
-                       <div className="w-12 h-12 rounded-full bg-orange-600/10 flex items-center justify-center border border-orange-500/30">
-                         <Bitcoin className="w-5 h-5 text-orange-500" />
+                       <div className="w-12 h-12 rounded-full bg-yellow-500/10 flex items-center justify-center border border-yellow-500/30">
+                         <Bitcoin className="w-5 h-5 text-yellow-500" />
                        </div>
                        <div>
                          <h3 className="text-[14px] font-black uppercase tracking-widest text-white">{req.firstName} {req.lastName}</h3>
@@ -617,10 +662,123 @@ const V8AdminDashboard = () => {
                        </div>
                     </div>
                     <div className="flex flex-col md:items-end gap-3 mt-4 md:mt-0">
-                       <div className="text-2xl font-black text-orange-500">${req.price}</div>
+                       <div className="text-2xl font-black text-yellow-500">${req.price}</div>
+                       <div className="text-zinc-500 text-[10px] font-bold tracking-widest uppercase flex items-center gap-1"><Clock className="w-3 h-3"/> {formatTimeExact(req.requestDate)}</div>
                        <div className="flex items-center gap-3">
                          <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${req.status === 'initiating_gateway' ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700' : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30'}`}>
                            {req.status === 'initiating_gateway' ? 'GATEWAY PENDING' : req.status}
+                         </span>
+                         
+                         <button onClick={() => handleGenerateInvoice(req)} className="bg-white/10 hover:bg-white text-white hover:text-black border border-white/20 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all">
+                            <FileText className="w-3 h-3" /> PDF INVOICE
+                         </button>
+                       </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* --- TAB: PAYPAL BLAGAJNA --- */}
+        {activeTab === 'paypal_blagajna' && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-5xl mx-auto">
+             <div className="mb-8 flex items-center justify-between border-b border-blue-500/20 pb-6">
+              <div>
+                <h1 className="text-3xl font-black uppercase tracking-widest text-white mb-2 flex items-center gap-3">
+                  <img src="/paypal.png" alt="PayPal" className="w-8 h-8 object-contain" onError={(e)=>{e.target.style.display='none'; e.target.nextSibling.style.display='block';}} />
+                  <span style={{display:'none'}} className="text-blue-500">P</span>
+                  PAYPAL BLAGAJNA
+                </h1>
+                <p className="text-zinc-500 text-[12px] font-bold tracking-widest uppercase">Live PayPal Express Feed</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+              {paypalOrders.length === 0 ? (
+                <div className="text-center py-20 opacity-50 bg-[#0a0a0a] rounded-3xl border border-white/5">
+                  <span className="text-4xl font-black text-zinc-600 mx-auto mb-4 block">P</span>
+                  <p className="text-[12px] font-black uppercase tracking-widest text-zinc-500">Nema PayPal transakcija. Radar je čist.</p>
+                </div>
+              ) : (
+                paypalOrders.map(req => (
+                  <div key={req.id} className="bg-[#050505] border border-blue-500/20 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between hover:border-blue-500/50 shadow-[0_5px_30px_rgba(59,130,246,0.05)] transition-all">
+                    <div className="flex items-center gap-6">
+                       <div className="w-12 h-12 rounded-full bg-blue-600/10 flex items-center justify-center border border-blue-500/30">
+                         <span className="text-blue-500 font-black text-lg">P</span>
+                       </div>
+                       <div>
+                         <h3 className="text-[14px] font-black uppercase tracking-widest text-white">{req.firstName} {req.lastName}</h3>
+                         <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-1">{req.clientEmail}</p>
+                         <div className="flex items-center gap-2 mt-2">
+                           <span className="text-orange-400 text-[10px] font-black uppercase bg-orange-600/10 px-2 py-0.5 rounded-md border border-orange-500/20">{req.productName}</span>
+                           <span className="text-zinc-400 text-[10px] font-black uppercase">{req.country}</span>
+                         </div>
+                       </div>
+                    </div>
+                    <div className="flex flex-col md:items-end gap-3 mt-4 md:mt-0">
+                       <div className="text-2xl font-black text-blue-500">${req.price}</div>
+                       <div className="text-zinc-500 text-[10px] font-bold tracking-widest uppercase flex items-center gap-1"><Clock className="w-3 h-3"/> {formatTimeExact(req.requestDate)}</div>
+                       <div className="flex items-center gap-3">
+                         <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${req.status === 'completed_verified' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30' : 'bg-zinc-800/50 text-zinc-400 border-zinc-700'}`}>
+                           {req.status === 'completed_verified' ? 'VERIFIED' : req.status}
+                         </span>
+                         
+                         <button onClick={() => handleGenerateInvoice(req)} className="bg-white/10 hover:bg-white text-white hover:text-black border border-white/20 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all">
+                            <FileText className="w-3 h-3" /> PDF INVOICE
+                         </button>
+                       </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* --- TAB: CARD PAY BLAGAJNA --- */}
+        {activeTab === 'card_blagajna' && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-5xl mx-auto">
+             <div className="mb-8 flex items-center justify-between border-b border-indigo-500/20 pb-6">
+              <div>
+                <h1 className="text-3xl font-black uppercase tracking-widest text-white mb-2 flex items-center gap-3">
+                  <img src="/visa.png" alt="Visa" className="w-10 h-6 object-contain" onError={(e)=>{e.target.style.display='none'; e.target.nextSibling.style.display='block';}} />
+                  <CreditCard style={{display:'none'}} className="w-8 h-8 text-indigo-400" />
+                  CARD PAY BLAGAJNA
+                </h1>
+                <p className="text-zinc-500 text-[12px] font-bold tracking-widest uppercase">Live Credit Card Processing Feed</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+              {cardOrders.length === 0 ? (
+                <div className="text-center py-20 opacity-50 bg-[#0a0a0a] rounded-3xl border border-white/5">
+                  <CreditCard className="w-16 h-16 text-zinc-600 mx-auto mb-4" />
+                  <p className="text-[12px] font-black uppercase tracking-widest text-zinc-500">Nema kartičnih transakcija. Radar je čist.</p>
+                </div>
+              ) : (
+                cardOrders.map(req => (
+                  <div key={req.id} className="bg-[#050505] border border-indigo-500/20 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between hover:border-indigo-500/50 shadow-[0_5px_30px_rgba(99,102,241,0.05)] transition-all">
+                    <div className="flex items-center gap-6">
+                       <div className="w-12 h-12 rounded-full bg-indigo-600/10 flex items-center justify-center border border-indigo-500/30">
+                         <CreditCard className="w-5 h-5 text-indigo-400" />
+                       </div>
+                       <div>
+                         <h3 className="text-[14px] font-black uppercase tracking-widest text-white">{req.firstName} {req.lastName}</h3>
+                         <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-1">{req.clientEmail}</p>
+                         <div className="flex items-center gap-2 mt-2">
+                           <span className="text-orange-400 text-[10px] font-black uppercase bg-orange-600/10 px-2 py-0.5 rounded-md border border-orange-500/20">{req.productName}</span>
+                           <span className="text-zinc-400 text-[10px] font-black uppercase">{req.country}</span>
+                         </div>
+                       </div>
+                    </div>
+                    <div className="flex flex-col md:items-end gap-3 mt-4 md:mt-0">
+                       <div className="text-2xl font-black text-indigo-400">${req.price}</div>
+                       <div className="text-zinc-500 text-[10px] font-bold tracking-widest uppercase flex items-center gap-1"><Clock className="w-3 h-3"/> {formatTimeExact(req.requestDate)}</div>
+                       <div className="flex items-center gap-3">
+                         <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${req.status === 'completed_verified' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30' : 'bg-zinc-800/50 text-zinc-400 border-zinc-700'}`}>
+                           {req.status === 'completed_verified' ? 'VERIFIED' : req.status}
                          </span>
                          
                          <button onClick={() => handleGenerateInvoice(req)} className="bg-white/10 hover:bg-white text-white hover:text-black border border-white/20 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all">
@@ -716,7 +874,7 @@ const V8AdminDashboard = () => {
                       </div>
                       <div className="flex flex-col items-end gap-1 shrink-0">
                         <span className="text-zinc-400 text-[10px] font-bold uppercase tracking-widest">
-                          {formatTime(log.timestamp)}
+                          {formatTimeExact(log.timestamp)}
                         </span>
                         {log.durationMS && (
                           <span className="bg-white/10 text-white text-[9px] px-2 py-0.5 rounded-md font-black">
@@ -897,18 +1055,18 @@ const V8AdminDashboard = () => {
         {/* --- TAB: LIVE SALES --- */}
         {activeTab === 'live_sales' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl mx-auto">
-            <div className="mb-8 flex items-center justify-between border-b border-orange-500/20 pb-6">
+            <div className="mb-8 flex items-center justify-between border-b border-emerald-500/20 pb-6">
               <div>
                 <h1 className="text-3xl font-black uppercase tracking-widest text-white mb-2 flex items-center gap-3">
-                  <Activity className="w-8 h-8 text-orange-500" /> PAID CLIENTS HISTORY
+                  <Activity className="w-8 h-8 text-emerald-500" /> PAID CLIENTS HISTORY
                 </h1>
                 <p className="text-zinc-500 text-[12px] font-bold tracking-widest uppercase">Automated V8 transaction feed</p>
               </div>
-              <button onClick={simulateDirectPurchase} className="bg-green-600/20 text-green-500 border border-green-500/50 hover:bg-green-600 hover:text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
+              <button onClick={simulateDirectPurchase} className="bg-emerald-600/20 text-emerald-500 border border-emerald-500/50 hover:bg-emerald-600 hover:text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
                 <Zap className="w-4 h-4" /> INJECT TEST PURCHASE
               </button>
             </div>
-            <div className="bg-[#0a0a0a] border border-orange-500/20 rounded-[2rem] p-2">
+            <div className="bg-[#0a0a0a] border border-emerald-500/20 rounded-[2rem] p-2">
               {sales.length === 0 ? (
                 <div className="text-center py-20 opacity-50">
                   <DollarSign className="w-16 h-16 text-zinc-600 mx-auto mb-4" />
@@ -917,13 +1075,13 @@ const V8AdminDashboard = () => {
               ) : (
                 <div className="space-y-2">
                   {sales.map((sale) => (
-                    <div key={sale.id} className="flex flex-col md:flex-row md:items-center justify-between p-6 rounded-3xl bg-[#050505] border border-white/5 hover:border-green-500/30 transition-all group">
+                    <div key={sale.id} className="flex flex-col md:flex-row md:items-center justify-between p-6 rounded-3xl bg-[#050505] border border-white/5 hover:border-emerald-500/30 transition-all group">
                       <div className="flex items-center gap-6 mb-4 md:mb-0">
-                        <div className="w-12 h-12 rounded-full bg-green-600/10 flex items-center justify-center border border-green-500/30">
-                          <DollarSign className="w-5 h-5 text-green-500" />
+                        <div className="w-12 h-12 rounded-full bg-emerald-600/10 flex items-center justify-center border border-emerald-500/30">
+                          <DollarSign className="w-5 h-5 text-emerald-500" />
                         </div>
                         <div>
-                          <h3 className="text-[14px] font-black uppercase tracking-widest text-white group-hover:text-green-400">{sale.ime || sale.klijent || "Valued Client"}</h3>
+                          <h3 className="text-[14px] font-black uppercase tracking-widest text-white group-hover:text-emerald-400">{sale.ime || sale.klijent || "Valued Client"}</h3>
                           <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-1">{sale.email || "No email"}</p>
                           <div className="flex items-center gap-2 mt-2"><span className="text-orange-400 text-[10px] font-black uppercase bg-orange-600/10 px-2 py-0.5 rounded-md border border-orange-500/20">{sale.zeliPaket || sale.film || "V8 Digital Asset"}</span></div>
                         </div>
@@ -931,8 +1089,8 @@ const V8AdminDashboard = () => {
                       <div className="flex flex-col md:items-end gap-3 border-t border-white/5 md:border-none pt-4 md:pt-0">
                         <div className="text-2xl font-black text-white">${sale.cenaPaketa ? Math.ceil(sale.cenaPaketa / 117) : "0"}</div>
                         <div className="flex items-center gap-3">
-                          <span className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-zinc-500"><Calendar className="w-3 h-3" /> {formatTime(sale.vreme)}</span>
-                          <div className="px-3 py-1 rounded-full bg-green-500/10 border border-green-500/30 text-green-500 text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5"><CheckCircle className="w-3 h-3" /> PAID</div>
+                          <span className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-zinc-500"><Calendar className="w-3 h-3" /> {formatTimeExact(sale.vreme)}</span>
+                          <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5"><CheckCircle className="w-3 h-3" /> PAID</div>
                           
                           <button onClick={() => handleGenerateInvoice(sale)} className="bg-white/10 hover:bg-white text-white hover:text-black border border-white/20 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all">
                             <FileText className="w-3 h-3" /> PDF INVOICE

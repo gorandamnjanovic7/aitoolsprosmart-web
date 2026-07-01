@@ -1,4 +1,6 @@
 // POČETAK FAJLA: V8MasterEngine45MP.jsx
+// Ne zaboravi da ažuriraš svoj React source code link u glavnom repozitorijumu!
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Upload, Layers, Settings2, X, Diamond, Lock, DownloadCloud, Zap, ShieldCheck, AlertTriangle, FileImage, Cpu, Crown, ArrowUpCircle, CheckCircle, FileText, Archive, RefreshCcw, Download, Trash2, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -41,7 +43,7 @@ const V8MasterEngine45MP = () => {
   const [downloadStatus, setDownloadStatus] = useState('idle'); 
   const [dragActive, setDragActive] = useState(false);
   const [activeLog, setActiveLog] = useState(0);
-  const [batchError, setBatchError] = useState(null); // 🔥 ISPRAVKA: DODATA DEFINICIJA
+  const [batchError, setBatchError] = useState(null); 
   
   const [zipUrl, setZipUrl] = useState(null);
   
@@ -127,10 +129,16 @@ const V8MasterEngine45MP = () => {
     openCheckout(packageData);
   };
 
+  // 🔥 DVOZONSKI RADAR: Sluša Crypto i PayPal/Card 🔥
   useEffect(() => {
     const unsubShowcase = onSnapshot(doc(db, "v8_settings", "showcase_45mp"), (docSnap) => {
         if (docSnap.exists()) setShowcase(docSnap.data());
     });
+
+    let unsubCrypto = () => {};
+    let unsubPayPal = () => {};
+    let unsubVip = () => {};
+    let unsubTrial = () => {};
 
     const unsubAuth = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
@@ -142,11 +150,26 @@ const V8MasterEngine45MP = () => {
       const adminCheck = email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com";
       setIsAdmin(adminCheck);
       
-      const qPay = query(collection(db, "v8_payoneer_requests"), where("clientEmail", "==", email));
-      const unsubPay = onSnapshot(qPay, snap => setPayData(snap.docs.map(d => d.data())));
-      const unsubVip = onSnapshot(doc(db, "vip_users", email), snap => setVipData(snap.exists() ? snap.data() : {}));
+      let cryptoDocs = [];
+      let paypalDocs = [];
+
+      const updateAllPayData = () => {
+         setPayData([...cryptoDocs, ...paypalDocs]);
+      };
+
+      unsubCrypto = onSnapshot(query(collection(db, "v8_crypto_requests"), where("clientEmail", "==", email)), snap => {
+         cryptoDocs = snap.docs.map(d => d.data());
+         updateAllPayData();
+      });
+
+      unsubPayPal = onSnapshot(query(collection(db, "v8_paypal_requests"), where("clientEmail", "==", email)), snap => {
+         paypalDocs = snap.docs.map(d => d.data());
+         updateAllPayData();
+      });
+
+      unsubVip = onSnapshot(doc(db, "vip_users", email), snap => setVipData(snap.exists() ? snap.data() : {}));
       
-      const unsubTrial = onSnapshot(doc(db, "v8_users", user.uid), snap => {
+      unsubTrial = onSnapshot(doc(db, "v8_users", user.uid), snap => {
           if (snap.exists()) {
              const userData = snap.data();
              if (userData.credits_45mp > 0) {
@@ -158,12 +181,11 @@ const V8MasterEngine45MP = () => {
              }
           }
       });
-
-      return () => { unsubPay(); unsubVip(); unsubTrial(); };
     });
-    return () => { unsubAuth(); unsubShowcase(); };
+    return () => { unsubAuth(); unsubShowcase(); unsubCrypto(); unsubPayPal(); unsubVip(); unsubTrial(); };
   }, []);
 
+  // Obrada prikupljenih podataka o uplatama
   useEffect(() => {
     if (!currentUser) return;
     
@@ -177,7 +199,8 @@ const V8MasterEngine45MP = () => {
     let calculatedDefaultCredits = 0;
     
     payData.forEach(data => {
-      if (data.status === "paid" || data.status === "PAID") {
+      // 🔥 Podržava PLAĆENO (Kripto) i completed_verified (PayPal) 🔥
+      if (data.status === "PLAĆENO" || data.status === "completed_verified") {
         const productName = data.productName ? data.productName.toUpperCase() : "";
         if (productName.includes("EXTREME") || productName.includes("45MP") || productName.includes("SECURITY CHECKOUT")) {
           hasAccess = true;
@@ -355,14 +378,14 @@ const V8MasterEngine45MP = () => {
     setDownloadStatus('idle');
     setZipUrl(null);
     setActiveLog(0);
-    setBatchError(null); // 🔥 ISPRAVKA
+    setBatchError(null); 
 
     if (inputRef.current) inputRef.current.value = "";
   };
 
   const obrisiSlike = (e) => {
     if(e) { e.preventDefault(); e.stopPropagation(); }
-    setFiles([]); setDownloadStatus('idle'); setZipUrl(null); setActiveLog(0); setBatchError(null); // 🔥 ISPRAVKA
+    setFiles([]); setDownloadStatus('idle'); setZipUrl(null); setActiveLog(0); setBatchError(null); 
     if (inputRef.current) inputRef.current.value = "";
   };
 
@@ -389,7 +412,7 @@ const V8MasterEngine45MP = () => {
     setDownloadStatus('processing');
     setActiveLog(0);
     setZipUrl(null);
-    setBatchError(null); // 🔥 ISPRAVKA
+    setBatchError(null); 
 
     const formData = new FormData();
     files.forEach(file => { formData.append('images', file); });
@@ -437,7 +460,7 @@ const V8MasterEngine45MP = () => {
     } catch (error) {
       console.error("V8 Master Engine failure:", error);
       const message = error.message || "Greška na serveru. Da li je skripta povezana na backend?";
-      setBatchError(message); // 🔥 ISPRAVKA
+      setBatchError(message); 
       setDownloadStatus('error');
       setActiveLog(0);
     } finally {
@@ -629,7 +652,7 @@ const V8MasterEngine45MP = () => {
   };
 
   return (
-    <div className="bg-[#050505] p-8 md:p-12 rounded-[2.5rem] border border-purple-500/30 shadow-[0_0_50px_rgba(168,85,247,0.1)] max-w-6xl mx-auto mt-28 relative overflow-hidden">
+    <div className="bg-[#050505] p-8 md:p-12 rounded-[2.5rem] border border-[#FF8C00]/30 shadow-[0_0_50px_rgba(255,140,0,0.1)] max-w-6xl mx-auto mt-28 relative overflow-hidden">
       
       <FullScreenLightbox imageUrl={fullScreenImageUrl} onClose={() => setFullScreenImageUrl(null)} />
 
@@ -799,7 +822,7 @@ const V8MasterEngine45MP = () => {
          </div>
       </div>
 
-      <div className={`transition-all duration-500 ${(!isVIP && !isTrial) ? 'opacity-30 grayscale-[70%] pointer-events-none' : ''}`}>
+      <div className={`transition-all duration-500 ${(!isVIP && !isTrial && !isAdmin) ? 'opacity-30 grayscale-[70%] pointer-events-none' : ''}`}>
         
         {cooldownTime && !isAdmin && (
           <div className="mb-10 bg-red-950/40 border border-red-500/50 rounded-2xl p-6 text-center shadow-inner relative overflow-hidden">
@@ -843,7 +866,7 @@ const V8MasterEngine45MP = () => {
                             onClick={obrisiSlike} 
                             className="bg-red-600/90 text-white px-6 py-3 rounded-full text-xs font-black uppercase hover:bg-red-500 transition-all shadow-[0_0_20px_rgba(220,38,38,0.4)]"
                         >
-                             CLEAR BATCH
+                              CLEAR BATCH
                         </button>
                     </div>
                   </div>

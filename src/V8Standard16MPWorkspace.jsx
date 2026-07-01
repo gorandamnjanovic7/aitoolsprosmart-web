@@ -69,6 +69,11 @@ const V8Standard16MPWorkspace = () => {
   const inputRef = useRef(null);
   const [otvorenOpis, setOtvorenOpis] = useState(null);
 
+  // States za podatke iz Firebase-a
+  const [payData, setPayData] = useState([]);
+  const [vipData, setVipData] = useState({});
+  const [trialData, setTrialData] = useState(null);
+
   useEffect(() => {
     return () => {
       if (zipUrl) {
@@ -133,17 +138,21 @@ const V8Standard16MPWorkspace = () => {
     openCheckoutForPackage(paketName, fullPrice);
   };
 
+  // 🔥 DVOZONSKI RADAR: Sluša Crypto, PayPal, VIP i Trial baze 🔥
   useEffect(() => {
     const unsubShowcase = onSnapshot(doc(db, "v8_settings", "showcase_16mp"), (docSnap) => {
         if (docSnap.exists()) setShowcase(docSnap.data());
     });
 
+    let unsubCrypto = () => {};
+    let unsubPayPal = () => {};
     let unsubTrial = () => {};
-    let unsubPay = () => {};
+    let unsubVip = () => {};
 
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
       if (!user) {
         setUserEmail(null); setIsVIP(false); setIsAdmin(false); setCredits(0); setAmountPaid(0); setCurrentPlan('NONE'); setIsCheckingAccess(false); setIsTrial(false);
+        setPayData([]); setVipData({}); setTrialData(null);
         return;
       }
 
@@ -153,69 +162,96 @@ const V8Standard16MPWorkspace = () => {
       const adminCheck = email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com";
       setIsAdmin(adminCheck);
 
-      if (adminCheck) {
-        setIsVIP(true); setCredits(999999); setAmountPaid(550); setCurrentPlan('ENTERPRISE'); setIsCheckingAccess(false);
-        return;
-      }
-
       unsubTrial = onSnapshot(doc(db, "v8_users", user.uid), snap => {
           if (snap.exists()) {
-             const userData = snap.data();
-             if (userData.credits_16mp > 0) {
-                 setIsTrial(true);
-                 if(!isVIP) setCredits(userData.credits_16mp);
-             } else {
-                 setIsTrial(false);
-                 if(!isVIP) setCredits(0);
-             }
+             setTrialData(snap.data());
+          } else {
+             setTrialData(null);
           }
       });
 
-      const qPay = query(collection(db, "v8_payoneer_requests"), where("clientEmail", "==", email));
-      
-      unsubPay = onSnapshot(qPay, async (snap) => {
-        let hasAccess = false; let maxPaid = 0; let highestPlan = 'NONE';
-        
-        snap.docs.forEach(docSnap => {
-          const data = docSnap.data();
-          if (data.status === "paid" || data.status === "PAID") {
-            const productName = data.productName ? data.productName.toUpperCase() : "";
-            
-            // 🔥 POPRAVLJEN SKENER: Prepoznaje SECURITY CHECKOUT za tvoje test uplate
-            if (productName.includes("V8") || productName.includes("16MP") || productName.includes("SECURITY CHECKOUT")) {
-              hasAccess = true;
-              if (productName.includes("ENTERPRISE")) { if (maxPaid < 550) { maxPaid = 550; highestPlan = 'ENTERPRISE'; } } 
-              else if (productName.includes("PRO")) { if (maxPaid < 250) { maxPaid = 250; highestPlan = 'PRO'; } } 
-              else { if (maxPaid < 150) { maxPaid = 150; highestPlan = 'STARTER'; } }
-            }
-          }
-        });
+      let cryptoDocs = [];
+      let paypalDocs = [];
 
-        if (hasAccess) { 
-           setIsVIP(true); 
-           setAmountPaid(maxPaid); 
-           setCurrentPlan(highestPlan); 
-           setIsTrial(false); 
-           
-           onSnapshot(doc(db, "vip_users", email), (vipSnap) => {
-               if(vipSnap.exists() && vipSnap.data().optimizerCredits !== undefined) {
-                   setCredits(vipSnap.data().optimizerCredits);
-               }
-           });
-        } else { 
-           setIsVIP(false); setAmountPaid(0); setCurrentPlan('NONE'); 
-        }
-        setIsCheckingAccess(false);
+      const updateAllPayData = () => {
+         setPayData([...cryptoDocs, ...paypalDocs]);
+      };
+
+      unsubCrypto = onSnapshot(query(collection(db, "v8_crypto_requests"), where("clientEmail", "==", email)), snap => {
+         cryptoDocs = snap.docs.map(d => d.data());
+         updateAllPayData();
+      });
+
+      unsubPayPal = onSnapshot(query(collection(db, "v8_paypal_requests"), where("clientEmail", "==", email)), snap => {
+         paypalDocs = snap.docs.map(d => d.data());
+         updateAllPayData();
+      });
+
+      unsubVip = onSnapshot(doc(db, "vip_users", email), snap => {
+         setVipData(snap.exists() ? snap.data() : {});
       });
     });
 
     return () => {
         unsubscribeAuth();
         unsubShowcase();
+        unsubCrypto();
+        unsubPayPal();
         unsubTrial();
-        unsubPay();
+        unsubVip();
     };
-  }, [isVIP]);
+  }, []);
+
+  // 🔥 OBRADA PODATAKA: Određivanje planova i kredita na osnovu uplate 🔥
+  useEffect(() => {
+    if (!userEmail) return;
+
+    if (isAdmin) {
+      setIsVIP(true); setCredits(999999); setAmountPaid(550); setCurrentPlan('ENTERPRISE'); setIsCheckingAccess(false); setIsTrial(false);
+      return;
+    }
+
+    let hasAccess = false; 
+    let maxPaid = 0; 
+    let highestPlan = 'NONE';
+    
+    payData.forEach(data => {
+      if (data.status === "PLAĆENO" || data.status === "completed_verified") {
+        const productName = data.productName ? data.productName.toUpperCase() : "";
+        
+        if (productName.includes("V8") || productName.includes("16MP") || productName.includes("SECURITY CHECKOUT")) {
+          hasAccess = true;
+          if (productName.includes("ENTERPRISE")) { if (maxPaid < 550) { maxPaid = 550; highestPlan = 'ENTERPRISE'; } } 
+          else if (productName.includes("PRO")) { if (maxPaid < 250) { maxPaid = 250; highestPlan = 'PRO'; } } 
+          else { if (maxPaid < 150) { maxPaid = 150; highestPlan = 'STARTER'; } }
+        }
+      }
+    });
+
+    if (hasAccess) { 
+       setIsVIP(true); 
+       setAmountPaid(maxPaid); 
+       setCurrentPlan(highestPlan); 
+       setIsTrial(false); 
+       
+       if(vipData.optimizerCredits !== undefined) {
+           setCredits(vipData.optimizerCredits);
+       }
+    } else { 
+       setIsVIP(false); 
+       setAmountPaid(0); 
+       setCurrentPlan('NONE'); 
+       
+       if (trialData && trialData.credits_16mp > 0) {
+           setIsTrial(true);
+           setCredits(trialData.credits_16mp);
+       } else {
+           setIsTrial(false);
+           setCredits(0);
+       }
+    }
+    setIsCheckingAccess(false);
+  }, [payData, vipData, trialData, userEmail, isAdmin]);
 
   const handleShowcaseUpload = async (e, type) => {
     const file = e.target.files[0];
@@ -606,7 +642,7 @@ const V8Standard16MPWorkspace = () => {
                  
                  {isAdmin ? (
                    <span className="text-[15px] font-black tracking-widest leading-none mt-1 text-purple-500 drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]">
-                     MASTER ADMIN : ∞
+                      MASTER ADMIN : ∞
                    </span>
                  ) : (
                    <span className={`text-[15px] font-black tracking-widest leading-none mt-1 ${(credits > 10) ? 'text-emerald-400' : 'text-red-500'}`}>

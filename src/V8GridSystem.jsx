@@ -294,7 +294,12 @@ export default function V8GridSystem() {
       localStorage.setItem('v8_negative', JSON.stringify(includeNegative));
   }, [categories1, categories2, categories3, categories4, seed, presetName, aspectRatio, gridFormat, strictNoBrand, includeNegative]);
 
+  // 🔥 DVOZONSKI RADAR (KRIPTO + PAYPAL) UMESTO PAYONEER-A 🔥
   useEffect(() => {
+    let unsubCrypto = () => {};
+    let unsubPayPal = () => {};
+    let unsubVip = () => {};
+
     const unsubAuth = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
 
@@ -315,26 +320,34 @@ export default function V8GridSystem() {
         email === "aitoolsprosmart@gmail.com"
       );
 
-      const qPay = query(
-        collection(db, "v8_payoneer_requests"),
-        where("clientEmail", "==", email)
-      );
+      let cryptoDocs = [];
+      let paypalDocs = [];
 
-      const unsubPay = onSnapshot(qPay, (snap) => {
-        setPayData(snap.docs.map((d) => d.data()));
+      const updateAllPayData = () => {
+         setPayData([...cryptoDocs, ...paypalDocs]);
+      };
+
+      unsubCrypto = onSnapshot(query(collection(db, "v8_crypto_requests"), where("clientEmail", "==", email)), snap => {
+         cryptoDocs = snap.docs.map(d => d.data());
+         updateAllPayData();
       });
 
-      const unsubVip = onSnapshot(doc(db, "vip_users", email), (snap) => {
+      unsubPayPal = onSnapshot(query(collection(db, "v8_paypal_requests"), where("clientEmail", "==", email)), snap => {
+         paypalDocs = snap.docs.map(d => d.data());
+         updateAllPayData();
+      });
+
+      unsubVip = onSnapshot(doc(db, "vip_users", email), (snap) => {
         setVipData(snap.exists() ? snap.data() : {});
       });
-
-      return () => {
-        unsubPay();
-        unsubVip();
-      };
     });
 
-    return () => unsubAuth();
+    return () => {
+      unsubAuth();
+      unsubCrypto();
+      unsubPayPal();
+      unsubVip();
+    };
   }, []);
 
   useEffect(() => {
@@ -367,7 +380,8 @@ export default function V8GridSystem() {
     let highestPlan = 'NONE';
 
     payData.forEach((data) => {
-      if (data.status === "paid" || data.status === "PAID") {
+      // Skeniramo status iz Kripto i PayPal baza
+      if (data.status === "PLAĆENO" || data.status === "completed_verified") {
         const productName = data.productName ? data.productName.toUpperCase() : "";
 
         if (productName.includes("PROMPT") || productName.includes("GRID") || productName.includes("BUNDLE") || productName.includes("MASTER") || productName.includes("SECURITY CHECKOUT")) {
@@ -902,7 +916,7 @@ export default function V8GridSystem() {
         price={checkoutPrice}
         onLoginSuccess={(user) => {
           if (user?.email) {
-            setUserEmail(user.email.toLowerCase());
+            setCurrentUser(user);
           }
           setIsCheckoutOpen(true);
         }}

@@ -40,7 +40,7 @@ const V8MasterEngine33MP = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [downloadStatus, setDownloadStatus] = useState('idle'); 
   const [dragActive, setDragActive] = useState(false);
-  const [batchError, setBatchError] = useState(null); // OVO JE BILO OVDE, TO JE DOBRO
+  const [batchError, setBatchError] = useState(null); 
   const [activeLog, setActiveLog] = useState(0);
   
   const [zipUrl, setZipUrl] = useState(null);
@@ -125,10 +125,16 @@ const V8MasterEngine33MP = () => {
     openSecureCheckout();
   };
 
+  // 🔥 DVOZONSKI RADAR - Sabira SAMO Kripto i PayPal/Kartice 🔥
   useEffect(() => {
     const unsubShowcase = onSnapshot(doc(db, "v8_settings", "showcase_33mp"), (docSnap) => {
         if (docSnap.exists()) setShowcase(docSnap.data());
     });
+
+    let unsubCrypto = () => {};
+    let unsubPayPal = () => {};
+    let unsubVip = () => {};
+    let unsubTrial = () => {};
 
     const unsubAuth = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
@@ -136,15 +142,30 @@ const V8MasterEngine33MP = () => {
         setPayData([]); setVipData({}); setIsCheckingAccess(false); setAmountPaid(0); setCurrentPlan('NONE'); setIsVIP(false); setIsAdmin(false); setIsTrial(false); setCredits(0);
         return;
       }
+      
       const email = user.email.toLowerCase();
       const adminCheck = email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com";
       setIsAdmin(adminCheck);
       
-      const qPay = query(collection(db, "v8_payoneer_requests"), where("clientEmail", "==", email));
-      const unsubPay = onSnapshot(qPay, snap => setPayData(snap.docs.map(d => d.data())));
-      const unsubVip = onSnapshot(doc(db, "vip_users", email), snap => setVipData(snap.exists() ? snap.data() : {}));
+      let cryptoDocs = [];
+      let paypalDocs = [];
 
-      const unsubTrial = onSnapshot(doc(db, "v8_users", user.uid), snap => {
+      const updateAllPayData = () => {
+         setPayData([...cryptoDocs, ...paypalDocs]);
+      };
+
+      unsubCrypto = onSnapshot(query(collection(db, "v8_crypto_requests"), where("clientEmail", "==", email)), snap => {
+         cryptoDocs = snap.docs.map(d => d.data());
+         updateAllPayData();
+      });
+      unsubPayPal = onSnapshot(query(collection(db, "v8_paypal_requests"), where("clientEmail", "==", email)), snap => {
+         paypalDocs = snap.docs.map(d => d.data());
+         updateAllPayData();
+      });
+
+      unsubVip = onSnapshot(doc(db, "vip_users", email), snap => setVipData(snap.exists() ? snap.data() : {}));
+
+      unsubTrial = onSnapshot(doc(db, "v8_users", user.uid), snap => {
           if (snap.exists()) {
              const userData = snap.data();
              if (userData.credits_33mp > 0) {
@@ -156,12 +177,15 @@ const V8MasterEngine33MP = () => {
              }
           }
       });
-
-      return () => { unsubPay(); unsubVip(); unsubTrial(); };
     });
-    return () => { unsubAuth(); unsubShowcase(); };
+    
+    return () => { 
+        unsubAuth(); unsubShowcase(); 
+        unsubCrypto(); unsubPayPal(); unsubVip(); unsubTrial(); 
+    };
   }, []);
 
+  // Obrada prikupljenih podataka o uplatama
   useEffect(() => {
     if (!currentUser) return;
     
@@ -175,8 +199,10 @@ const V8MasterEngine33MP = () => {
     let calculatedDefaultCredits = 0;
     
     payData.forEach(data => {
-      if (data.status === "paid" || data.status === "PAID") {
+      // 🔥 Podržani statusi iz SAMO Kripto i PayPal baze
+      if (data.status === "PLAĆENO" || data.status === "completed_verified") {
         const productName = data.productName ? data.productName.toUpperCase() : "";
+        
         if (productName.includes("MASTER") || productName.includes("33MP") || productName.includes("SECURITY CHECKOUT")) {
           hasAccess = true;
           if (productName.includes("ENTERPRISE")) { if (maxPaid < 550) { maxPaid = 550; highestPlan = 'ENTERPRISE'; } calculatedDefaultCredits = Math.max(calculatedDefaultCredits, 10000); } 
@@ -337,14 +363,14 @@ const V8MasterEngine33MP = () => {
     setDownloadStatus('idle');
     setZipUrl(null);
     setActiveLog(0);
-    setBatchError(null); // RESETOVANJE GREŠKE KAD SE DODA NOVA SLIKA
+    setBatchError(null); 
 
     if (inputRef.current) inputRef.current.value = "";
   };
 
   const obrisiSlike = (e) => {
     if(e) { e.preventDefault(); e.stopPropagation(); }
-    setFiles([]); setDownloadStatus('idle'); setZipUrl(null); setActiveLog(0); setBatchError(null); // RESET GREŠKE
+    setFiles([]); setDownloadStatus('idle'); setZipUrl(null); setActiveLog(0); setBatchError(null); 
     if (inputRef.current) inputRef.current.value = "";
   };
 
@@ -371,7 +397,7 @@ const V8MasterEngine33MP = () => {
     setDownloadStatus('processing');
     setActiveLog(0);
     setZipUrl(null);
-    setBatchError(null); // RESETOVANJE PRE POČETKA NOVOG PROCESA
+    setBatchError(null); 
 
     const formData = new FormData();
     files.forEach(file => { formData.append('images', file); });
@@ -401,7 +427,6 @@ const V8MasterEngine33MP = () => {
       setActiveLog(v8Logs.length);
       setDownloadStatus('success');
       
-      // ADMIN NIKADA NE GUBI KREDITE
       if (auth.currentUser && !isAdmin) {
           const novaKolicina = credits - files.length;
           
@@ -420,7 +445,7 @@ const V8MasterEngine33MP = () => {
     } catch (error) {
       console.error("V8 Master Engine failure:", error);
       const message = error.message || "Greška na serveru. Da li je skripta povezana na backend?";
-      setBatchError(message); // 🔥 ISPRAVKA: SETOVANJE GREŠKE
+      setBatchError(message); 
       setDownloadStatus('error');
       setActiveLog(0);
     } finally {
@@ -824,7 +849,7 @@ const V8MasterEngine33MP = () => {
                             onClick={obrisiSlike} 
                             className="bg-red-600/90 text-white px-6 py-3 rounded-full text-xs font-black uppercase hover:bg-red-500 transition-all shadow-[0_0_20px_rgba(220,38,38,0.4)]"
                         >
-                             CLEAR BATCH
+                              CLEAR BATCH
                         </button>
                     </div>
                   </div>

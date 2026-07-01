@@ -2,17 +2,18 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom'; 
 import { db, auth } from './firebase'; 
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, onSnapshot } from 'firebase/firestore';
 import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from 'firebase/auth'; 
 import { motion } from 'framer-motion'; 
-import { ShieldCheck, Mail, BellRing, Key, X, Lock, Earth, CheckCircle, Bitcoin, Wallet, Zap, CreditCard, Link } from 'lucide-react';
+import { ShieldCheck, Mail, BellRing, Key, X, Lock, Earth, CheckCircle, Bitcoin, Wallet, Zap, CreditCard, Link, Download, Radar, Loader2 } from 'lucide-react';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js"; 
 
 const countryList = [
   "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia", "Cameroon", "Canada", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo", "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "North Macedonia", "Norway", "Oman", "Pakistan", "Palau", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"
 ];
 
-const V8SecureCheckout = ({ isOpen, onClose, productName, price }) => {
+// 🔥 DODATO: zipLink u props, da znamo sta se skida! 🔥
+const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
   const [user, setUser] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('card'); 
   const [firstName, setFirstName] = useState('');
@@ -21,8 +22,11 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price }) => {
   const [country, setCountry] = useState(''); 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  
   const [showPayPalModal, setShowPayPalModal] = useState(false);
+  
+  // 🔥 NOVI STATE ZA DOWNLOAD DUGME I RADAR 🔥
+  const [downloadUrl, setDownloadUrl] = useState(null);
+  const [cryptoOrderId, setCryptoOrderId] = useState(null);
 
   const initialOptions = {
     "client-id": import.meta.env.VITE_PAYPAL_CLIENT_ID,
@@ -49,8 +53,25 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price }) => {
       setLoading(false);
       setSuccess(false);
       setShowPayPalModal(false);
+      setDownloadUrl(null);
+      setCryptoOrderId(null);
     }
   }, [isOpen]);
+
+  // 🔥 FIREBASE RADAR: Osluškujemo Kripto uplatu 🔥
+  useEffect(() => {
+    if (cryptoOrderId && paymentMethod === 'crypto') {
+      const unsub = onSnapshot(doc(db, "v8_crypto_requests", cryptoOrderId), (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data.status === 'PLAĆENO') {
+            setDownloadUrl(data.zipLink);
+          }
+        }
+      });
+      return () => unsub();
+    }
+  }, [cryptoOrderId, paymentMethod]);
 
   const handleGoogleLogin = async () => {
     try {
@@ -77,29 +98,33 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price }) => {
     try {
       if (paymentMethod === 'payoneer') {
         await addDoc(collection(db, "v8_payoneer_requests"), {
-          clientEmail: email, firstName, lastName, country, productName, price,
+          clientEmail: email, firstName, lastName, country, productName, price, zipLink: zipLink || "",
           method: "payoneer", handledBy: "info@aitoolsprosmart.com", status: "pending", requestDate: serverTimestamp()
         });
         setSuccess(true);
         setLoading(false);
       } else if (paymentMethod === 'crypto') {
         const docRef = await addDoc(collection(db, "v8_crypto_requests"), {
-          clientEmail: email, firstName, lastName, country, productName, price,
+          clientEmail: email, firstName, lastName, country, productName, price, zipLink: zipLink || "",
           method: "crypto", status: "initiating_gateway", requestDate: serverTimestamp()
         });
         
         const isLocal = import.meta.env.DEV || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const backendUrl = isLocal ? "http://localhost:8080" : "https://aitoolsprosmart-becend-production.up.railway.app";
+        const backendUrl = isLocal ? "http://localhost:8080" : import.meta.env.VITE_BACKEND_URL;
 
         const response = await fetch(`${backendUrl}/api/crypto-checkout`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orderId: docRef.id, clientEmail: email, productName, price })
+          body: JSON.stringify({ orderId: docRef.id, clientEmail: email, productName, price, zipLink })
         });
 
         const data = await response.json();
         if (response.ok && data.paymentUrl) {
-          window.location.href = data.paymentUrl;
+          // Otvaramo NOWPayments u novom tabu!
+          window.open(data.paymentUrl, '_blank');
+          setCryptoOrderId(docRef.id);
+          setSuccess(true);
+          setLoading(false);
         } else {
           alert("Gateway connection failed. Please try again later or use Card / B2B Link.");
           setLoading(false);
@@ -191,16 +216,53 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price }) => {
 
             {success ? (
               <div className="flex-1 flex flex-col items-center justify-center text-center py-6 relative z-10 my-auto">
-                <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/30 mb-4 shadow-[0_0_30px_rgba(16,185,129,0.2)]">
-                  <CheckCircle className="w-8 h-8 text-emerald-400" />
-                </div>
-                <h2 className="text-lg sm:text-xl font-black text-white uppercase tracking-widest mb-3">Request Secured</h2>
-                <div className="bg-emerald-950/20 border border-emerald-900/50 rounded-xl p-5 shadow-inner">
-                  <p className="text-emerald-100 text-xs sm:text-[13px] leading-relaxed mb-3">
-                    Thank you, <strong className="text-white">{firstName}</strong>. Your payment for <strong className="text-white">{productName}</strong> has been successfully processed.
-                  </p>
-                </div>
-                <button onClick={onClose} className="mt-6 px-8 py-3.5 bg-transparent border border-zinc-700 text-zinc-400 hover:border-white hover:text-white rounded-xl font-bold uppercase text-xs tracking-wider transition-all duration-300">
+                
+                {downloadUrl ? (
+                  // 🔥 SLUČAJ 1: PARE SU LEGLE, PRIKAZUJ DUGME 🔥
+                  <motion.div initial={{scale:0.8, opacity:0}} animate={{scale:1, opacity:1}} className="flex flex-col items-center">
+                    <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center border-2 border-emerald-500 mb-6 shadow-[0_0_50px_rgba(16,185,129,0.4)]">
+                      <Download className="w-10 h-10 text-emerald-400 animate-bounce" />
+                    </div>
+                    <h2 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-widest mb-2">ACCESS GRANTED</h2>
+                    <p className="text-emerald-400 text-sm font-bold mb-8">V8 Master Engine is permanently unlocked.</p>
+                    <a href={downloadUrl} target="_blank" rel="noopener noreferrer" className="px-10 py-5 bg-gradient-to-r from-emerald-600 to-green-500 hover:from-green-500 hover:to-emerald-400 text-white rounded-2xl font-black uppercase tracking-widest text-sm shadow-[0_0_40px_rgba(16,185,129,0.6)] transition-all transform hover:scale-105 outline-none flex items-center gap-3">
+                      <Download size={20} /> PREUZMI V8 PAKET
+                    </a>
+                  </motion.div>
+                ) : paymentMethod === 'crypto' ? (
+                  // 🔥 SLUČAJ 2: RADAR OSLUŠKUJE BLOCKCHAIN 🔥
+                  <div className="flex flex-col items-center">
+                    <div className="relative w-24 h-24 mb-6 flex items-center justify-center">
+                      <div className="absolute inset-0 rounded-full border-2 border-orange-500/30 animate-ping"></div>
+                      <div className="absolute inset-2 rounded-full border border-orange-500/50 animate-spin"></div>
+                      <Radar className="w-10 h-10 text-orange-400 animate-pulse" />
+                    </div>
+                    <h2 className="text-xl sm:text-2xl font-black text-white uppercase tracking-widest mb-3 text-orange-400">BLOCKCHAIN RADAR ACTIVE</h2>
+                    <div className="bg-orange-950/20 border border-orange-900/50 rounded-xl p-5 shadow-inner max-w-md">
+                      <p className="text-orange-100 text-xs sm:text-[13px] leading-relaxed mb-2">
+                        Otvorili smo Vam NOWPayments u novom tabu. Završite transakciju tamo.
+                      </p>
+                      <p className="text-orange-300/80 text-[11px] font-mono flex items-center justify-center gap-2 mt-4">
+                        <Loader2 size={12} className="animate-spin" /> Čekamo potvrdu mreže... Dugme se stvara ovde.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  // 🔥 SLUČAJ 3: PAYONEER STANDARDNA PORUKA 🔥
+                  <div className="flex flex-col items-center">
+                    <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center border border-blue-500/30 mb-4 shadow-[0_0_30px_rgba(37,99,235,0.2)]">
+                      <CheckCircle className="w-8 h-8 text-blue-400" />
+                    </div>
+                    <h2 className="text-lg sm:text-xl font-black text-white uppercase tracking-widest mb-3">Request Secured</h2>
+                    <div className="bg-blue-950/20 border border-blue-900/50 rounded-xl p-5 shadow-inner max-w-md">
+                      <p className="text-blue-100 text-xs sm:text-[13px] leading-relaxed">
+                        Thank you, <strong className="text-white">{firstName}</strong>. Vaš zahtev za <strong className="text-white">{productName}</strong> je primljen. B2B link će biti poslat na Vaš email.
+                      </p>
+                    </div>
+                  </div>
+                )}
+                
+                <button onClick={onClose} className="mt-8 px-8 py-3.5 bg-transparent border border-zinc-700 text-zinc-400 hover:border-white hover:text-white rounded-xl font-bold uppercase text-xs tracking-wider transition-all duration-300">
                   Close Window
                 </button>
               </div>
@@ -340,7 +402,7 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price }) => {
 
         </motion.div>
 
-        {/* 🔥 NOVI SPLIT-SCREEN SUB-MODAL ZA PAYPAL FORMU 🔥 */}
+        {/* 🔥 PAYPAL FORMA 🔥 */}
         {showPayPalModal && (
           <div className="absolute inset-0 z-[10000000] flex items-center justify-center p-4 sm:p-6 bg-[#02040a]/80 backdrop-blur-md">
             <motion.div 
@@ -349,7 +411,6 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price }) => {
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               className="relative flex flex-col md:flex-row w-full max-w-4xl bg-[#050914] border border-blue-600/50 rounded-2xl shadow-[0_0_100px_rgba(37,99,235,0.2)] overflow-hidden max-h-[90vh]"
             >
-              {/* 🔥 X DUGME: Sada je fiksirano za ceo prozor i uvek vidljivo! 🔥 */}
               <button
                 type="button"
                 onClick={() => setShowPayPalModal(false)}
@@ -358,15 +419,11 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price }) => {
                 <X size={18} />
               </button>
 
-              {/* Leva strana: Slika (vidljiva samo na tablet/desktop uređajima) */}
               <div 
                 className="hidden md:flex md:w-1/2 relative bg-cover bg-center"
                 style={{ backgroundImage: "url('/checkout-bg.webp')" }}
               >
-                {/* Crni gradijent koji se preliva na formu */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#050914]/50 to-[#050914]"></div>
-                
-                {/* Tekst preko slike */}
                 <div className="absolute bottom-10 left-8 z-10 pr-8">
                   <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-900/50 border border-blue-500/50 backdrop-blur-sm mb-3">
                     <ShieldCheck className="w-4 h-4 text-blue-400" />
@@ -381,9 +438,7 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price }) => {
                 </div>
               </div>
 
-              {/* Desna strana: Forma - DODATO OTVARANJE SKROLA (overflow-y-auto) */}
               <div className="w-full md:w-1/2 p-6 sm:p-10 pt-16 flex flex-col relative bg-[#050914] overflow-y-auto custom-scrollbar">
-                
                 <div className="mb-8">
                   <h3 className="text-white font-black text-lg sm:text-xl uppercase tracking-widest mb-1">
                     Complete Payment
@@ -409,7 +464,7 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price }) => {
                               const details = await actions.order.capture();
                               
                               const isLocal = import.meta.env.DEV || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-                              const backendUrl = isLocal ? "http://localhost:8080" : "https://aitoolsprosmart-becend-production.up.railway.app";
+                              const backendUrl = isLocal ? "http://localhost:8080" : import.meta.env.VITE_BACKEND_URL;
                               
                               const response = await fetch(`${backendUrl}/api/paypal-verify`, {
                                   method: 'POST',
@@ -421,12 +476,16 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price }) => {
                                       lastName, 
                                       country, 
                                       productName, 
-                                      price 
+                                      price,
+                                      zipLink // 🔥 Šaljemo link serveru
                                   })
                               });
                               
-                              if(response.ok) {
+                              const resData = await response.json();
+                              
+                              if(resData.success) {
                                   setShowPayPalModal(false); 
+                                  setDownloadUrl(resData.downloadUrl); // Hvatamo link za dugme
                                   setSuccess(true);          
                               } else {
                                   alert("Payment verification failed on the server. Please contact support.");
