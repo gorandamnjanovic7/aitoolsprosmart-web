@@ -2,6 +2,7 @@
 // Ne zaboravi da ažuriraš svoj React source code link u glavnom repozitorijumu!
 
 import React, { useState, useRef, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async'; // 🔥 DODATO ZA SEO 🔥
 import { Upload, Code, ShieldCheck, RefreshCcw, Diamond, Copy, CheckCircle, FileImage, Crown, Zap, DownloadCloud, X, FileText, ArrowUpCircle, Layers, Cpu, Eye, Trash2, Timer } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
@@ -518,6 +519,13 @@ const V8JsonDeBrendingExtractorPage = () => {
 
   return (
     <div className="bg-[#050505] p-8 md:p-12 rounded-[2.5rem] border border-[#FF8C00]/30 shadow-[0_0_50px_rgba(255,140,0,0.1)] max-w-6xl mx-auto mt-28 relative">
+
+      {/* 🔥 SEO TAGOVI SAMO ZA OVU STRANICU 🔥 */}
+      <Helmet>
+        <title>React Source Code For Sale | White-Label SaaS Engine</title>
+        <meta name="description" content="Buy premium, ready-to-deploy React/Vite source codes. Get our De-Branding DNA and JSON Extractor to launch your elite AI startup instantly. Security Checkout included." />
+        <meta name="keywords" content="react source code, buy saas source code, white label ai engine, debrand images, json visual extractor" />
+      </Helmet>
 
       <FullScreenLightbox imageUrl={fullScreenImageUrl} onClose={() => setFullScreenImageUrl(null)} />
 

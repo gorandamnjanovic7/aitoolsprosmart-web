@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
-import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay, CheckCircle, ChevronUp, Bitcoin, CreditCard, DollarSign, X, Landmark } from 'lucide-react';
+import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay, CheckCircle, ChevronUp, Bitcoin, CreditCard, DollarSign, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ScanOverlay from './ScanOverlay'; 
 
@@ -236,7 +236,25 @@ const V8AlertModalContainer = () => {
 
           {/* Middle: Ikona/Slika Pripadajućeg Sistema */}
           <div className="flex justify-center items-center py-6 bg-black/20 rounded-xl mb-4 border border-white/10 shadow-inner">
-            {modalData.icon === 'b2b' && <Landmark className="w-16 h-16 text-white drop-shadow-md" />}
+            
+            {/* 🔥 NOVI ORIGINALNI PAYONEER LOGO 🔥 */}
+            {modalData.icon === 'b2b' && (
+              <svg viewBox="0 0 250 60" className="w-48 h-auto drop-shadow-xl" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="payoneerGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#ff5a00"/>
+                    <stop offset="35%" stopColor="#ff004a"/>
+                    <stop offset="70%" stopColor="#9000ff"/>
+                    <stop offset="100%" stopColor="#00b4ff"/>
+                  </linearGradient>
+                </defs>
+                {/* Payoneer Šareni Krug */}
+                <circle cx="30" cy="30" r="16" fill="none" stroke="url(#payoneerGradient)" strokeWidth="8" />
+                {/* Payoneer Tekst */}
+                <text x="58" y="40" fontFamily="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" fontWeight="700" fontSize="32" fill="white" letterSpacing="-0.5">Payoneer</text>
+              </svg>
+            )}
+
             {modalData.icon === 'crypto' && <Bitcoin className="w-16 h-16 text-white drop-shadow-md" />}
             {modalData.icon === 'paypal' && (
               <svg viewBox="0 0 24 24" fill="white" className="w-16 h-16 drop-shadow-md">
@@ -603,7 +621,11 @@ function AppContent({ appsData, refreshData }) {
               <Route path="/admin" element={<V8PageWrapper><V8DatabaseAdmin apps={appsData} refreshData={refreshData} /></V8PageWrapper>} />
               <Route path="/dashboard" element={<V8PageWrapper><V8AdminDashboard /></V8PageWrapper>} />
               <Route path="/admin-payoneer" element={<V8PageWrapper><V8PayoneerDashboard /></V8PageWrapper>} />
+              
+              
               <Route path="/stock" element={<V8PageWrapper><V8StockBerza /></V8PageWrapper>} />
+              
+              
               <Route path="/showroom" element={<V8PageWrapper><V8Showroom /></V8PageWrapper>} />
               <Route path="/terms" element={<V8PageWrapper><V8Terms /></V8PageWrapper>} />
               <Route path="/privacy" element={<V8PageWrapper><V8Privacy /></V8PageWrapper>} />

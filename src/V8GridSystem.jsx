@@ -1,5 +1,6 @@
 // POČETAK FAJLA: V8GridSystem.jsx
 import React, { useState, useEffect, useRef, useCallback, memo } from "react";
+import { Helmet } from 'react-helmet-async'; // 🔥 DODATO ZA SEO 🔥
 import { Copy, RefreshCw, Zap, Lock, ShieldCheck, FileText, Code, Trash2, LayoutGrid, ChevronDown, Timer, Crown, Diamond, ArrowUpCircle, Download, CheckCircle, Cpu, Archive, X, Eye, Upload, Database, AlertTriangle } from "lucide-react";
 import { auth, db } from './firebase'; 
 import { doc, getDoc, setDoc, onSnapshot, collection, query, where, increment, serverTimestamp } from 'firebase/firestore';
@@ -729,7 +730,6 @@ export default function V8GridSystem() {
       </div>
     );
   };
-  // KRAJ FUNKCIJE: renderPricingPlans
 
   const renderV8Manifest = () => {
     const specifikacije = [
@@ -811,6 +811,13 @@ export default function V8GridSystem() {
   return (
     <div className="relative min-h-screen pt-10 pb-20 px-4 md:px-8 text-white font-sans overflow-hidden" onClick={() => { setOpenDropdown1(null); setOpenDropdown2(null); setOpenDropdown3(null); setOpenDropdown4(null); }}>
       
+      {/* 🔥 SEO TAGOVI SAMO ZA OVU STRANICU 🔥 */}
+      <Helmet>
+        <title>Cinematic Grid Prompts | V8 Grid System Generator</title>
+        <meta name="description" content="Generate 100+ unique cinematic grid prompts instantly. The ultimate text-generation algorithm strictly optimized for Google Nano Banana 2 and commercial AI platforms." />
+        <meta name="keywords" content="cinematic AI prompts, grid system prompt generator, nano banana 2 prompts, professional AI art prompts, commercial AI templates" />
+      </Helmet>
+
       {/* V8SmartQuota - Embedovan Centralni Brojač */}
       {(isVIP || isAdmin) && (
         <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50">

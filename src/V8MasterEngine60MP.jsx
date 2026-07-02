@@ -1,5 +1,6 @@
 // POČETAK FAJLA: V8MasterEngine60MP.jsx
 import React, { useState, useRef, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async'; // 🔥 DODATO ZA SEO 🔥
 import {
   Upload,
   Layers,
@@ -95,7 +96,7 @@ const V8MasterEngine60MP = () => {
   const [downloadStatus, setDownloadStatus] = useState('idle');
   const [dragActive, setDragActive] = useState(false);
   const [activeLog, setActiveLog] = useState(0);
-  const [batchError, setBatchError] = useState(null); // 🔥 ISPRAVKA: DODATA DEFINICIJA
+  const [batchError, setBatchError] = useState(null);
 
   const [zipUrl, setZipUrl] = useState(null);
 
@@ -199,7 +200,6 @@ const V8MasterEngine60MP = () => {
     }, 250);
   };
 
-  // 🔥 DVOZONSKI RADAR: Sluša Crypto i PayPal/Card 🔥
   useEffect(() => {
     const unsubShowcase = onSnapshot(doc(db, "v8_settings", "showcase_60mp"), (docSnap) => {
       if (docSnap.exists()) {
@@ -547,7 +547,7 @@ const V8MasterEngine60MP = () => {
     setDownloadStatus('idle');
     setZipUrl(null);
     setActiveLog(0);
-    setBatchError(null); // 🔥 ISPRAVKA
+    setBatchError(null); 
 
     if (inputRef.current) inputRef.current.value = "";
   };
@@ -562,7 +562,7 @@ const V8MasterEngine60MP = () => {
     setDownloadStatus('idle');
     setZipUrl(null);
     setActiveLog(0);
-    setBatchError(null); // 🔥 ISPRAVKA
+    setBatchError(null); 
 
     if (inputRef.current) inputRef.current.value = "";
   };
@@ -592,7 +592,7 @@ const V8MasterEngine60MP = () => {
     setDownloadStatus('processing');
     setActiveLog(0);
     setZipUrl(null);
-    setBatchError(null); // 🔥 ISPRAVKA
+    setBatchError(null); 
 
     const formData = new FormData();
 
@@ -609,7 +609,6 @@ const V8MasterEngine60MP = () => {
         });
       }, 1500);
 
-      // ISPRAVLJENA LOGIKA: Ako je korisnik VIP (što uključuje i admina), ide na pravi proces bez žiga!
       const backendRoute = isVIP
         ? '/api/v8-60mp-process'
         : '/api/v8-60mp-trial-process';
@@ -660,7 +659,7 @@ const V8MasterEngine60MP = () => {
     } catch (error) {
       console.error("V8 Master Engine failure:", error);
       const message = error.message || "Greška na serveru. Da li je skripta povezana na backend?";
-      setBatchError(message); // 🔥 ISPRAVKA: SETOVANJE GREŠKE
+      setBatchError(message); 
       setDownloadStatus('error');
       setActiveLog(0);
     } finally {
@@ -969,6 +968,14 @@ const V8MasterEngine60MP = () => {
 
   return (
     <div className="bg-[#050505] p-8 md:p-12 rounded-[2.5rem] border border-red-500/30 shadow-[0_0_50px_rgba(220,38,38,0.1)] max-w-6xl mx-auto mt-28 relative overflow-hidden">
+      
+      {/* 🔥 SEO TAGOVI SAMO ZA OVU STRANICU 🔥 */}
+      <Helmet>
+        <title>60MP Cinematic AI Engine | God Tier Upscaler</title>
+        <meta name="description" content="Access the 60MP God Tier Upscaler. Turn raw AI images into flawless commercial assets with precise LANCZOS interpolation and sRGB color profiles." />
+        <meta name="keywords" content="60MP AI upscaler, cinematic AI assets, buy 60MP photos, commercial AI tools, high-resolution AI upscaling" />
+      </Helmet>
+
       <FullScreenLightbox
         imageUrl={fullScreenImageUrl}
         onClose={() => setFullScreenImageUrl(null)}

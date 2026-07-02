@@ -1,5 +1,6 @@
 // POČETAK FAJLA: V8JsonExtractorPage.jsx
 import React, { useState, useRef, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async'; // 🔥 DODATO ZA SEO 🔥
 import { Upload, Code, ShieldCheck, RefreshCcw, Diamond, Lock, Copy, CheckCircle, FileImage, Crown, Zap, DownloadCloud, X, ArrowUpCircle, Layers, Cpu, Eye, Trash2, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
@@ -379,17 +380,17 @@ const V8JsonExtractorPage = () => {
         </div>
 
         {amountPaid > 0 && amountPaid < 550 && (
-           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-4xl mx-auto mt-12 mb-10 bg-gradient-to-r from-[#0a192f]/90 to-[#020617]/90 border border-cyan-500/40 p-6 md:p-8 rounded-[2rem] flex flex-col md:flex-row items-center justify-center gap-8 shadow-[0_0_40px_rgba(6,182,212,0.2)] relative overflow-hidden backdrop-blur-md">
-             <div className="absolute inset-0 bg-cyan-500/5 mix-blend-overlay"></div>
-             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50"></div>
+           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-4xl mx-auto mt-12 mb-10 bg-gradient-to-r from-blue-950/80 to-blue-900/30 border border-blue-500/40 p-6 md:p-8 rounded-[2rem] flex flex-col md:flex-row items-center justify-center gap-8 shadow-[0_0_40px_rgba(59,130,246,0.25)] relative overflow-hidden backdrop-blur-md">
+             <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay"></div>
+             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50"></div>
              
-             <div className="w-16 h-16 bg-cyan-950/50 rounded-full flex items-center justify-center border border-cyan-500/50 relative flex-shrink-0 shadow-[0_0_20px_rgba(6,182,212,0.3)]">
-                <div className="absolute inset-0 rounded-full border-t-2 border-cyan-400 animate-spin"></div>
-                <ArrowUpCircle className="w-8 h-8 text-cyan-400" />
+             <div className="w-16 h-16 bg-blue-900/40 rounded-full flex items-center justify-center border border-blue-500/50 relative flex-shrink-0 shadow-[0_0_20px_rgba(59,130,246,0.4)]">
+                <div className="absolute inset-0 rounded-full border-t-2 border-blue-400 animate-spin"></div>
+                <ArrowUpCircle className="w-8 h-8 text-blue-400" />
              </div>
 
              <div className="text-center md:text-left relative z-10">
-                <div className="inline-block bg-cyan-900/30 border border-cyan-500/30 px-3 py-1 rounded-full text-cyan-300 font-bold uppercase tracking-widest text-[9px] mb-3">
+                <div className="inline-block bg-blue-900/50 border border-blue-500/30 px-3 py-1 rounded-full text-blue-300 font-bold uppercase tracking-widest text-[9px] mb-3">
                   SMART UPGRADE SYSTEM ACTIVE
                 </div>
                 <h3 className="text-white text-lg md:text-xl font-black uppercase tracking-widest mb-2 drop-shadow-md">
@@ -400,7 +401,7 @@ const V8JsonExtractorPage = () => {
                 </p>
              </div>
            </motion.div>
-         )}
+        )}
       </div>
     );
   };
@@ -480,6 +481,13 @@ const V8JsonExtractorPage = () => {
 
   return (
     <div className="bg-[#050505] p-8 md:p-12 rounded-[2.5rem] border border-cyan-500/30 shadow-[0_0_50px_rgba(6,182,212,0.1)] max-w-6xl mx-auto mt-28 relative">
+
+      {/* 🔥 SEO TAGOVI SAMO ZA OVU STRANICU 🔥 */}
+      <Helmet>
+        <title>React Source Code For Sale | White-Label SaaS Engine</title>
+        <meta name="description" content="Buy premium, ready-to-deploy React/Vite source codes. Get our De-Branding DNA and JSON Extractor to launch your elite AI startup instantly. Security Checkout included." />
+        <meta name="keywords" content="react source code, buy saas source code, white label ai engine, debrand images, json visual extractor" />
+      </Helmet>
 
       <FullScreenLightbox imageUrl={fullScreenImageUrl} onClose={() => setFullScreenImageUrl(null)} />
 

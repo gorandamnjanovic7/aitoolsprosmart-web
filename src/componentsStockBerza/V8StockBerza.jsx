@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { Helmet } from 'react-helmet-async'; // 🔥 DODATO ZA SEO 🔥
 import { CLOUDINARY_UPLOAD_PRESET, CLOUDINARY_CLOUD_NAME } from '../data';
 import { Zap, X, Image as ImageIcon, Images, DownloadCloud, Crown, AlertCircle, Type, Layers, FolderArchive, FileText, Wallet, MonitorPlay, Link as LinkIcon, Diamond, RefreshCcw, Aperture } from 'lucide-react';
 import { db, auth } from '../firebase';
@@ -462,6 +463,13 @@ const V8StockBerza = () => {
   return (
     <div className="min-h-screen bg-[#050505] font-sans text-white relative transition-all duration-1000 ease-in-out">
       
+      {/* 🔥 SEO TAGOVI SAMO ZA OVU STRANICU 🔥 */}
+      <Helmet>
+        <title>Premium AI Stock Marketplace | Commercial Visual Bundles</title>
+        <meta name="description" content="Browse the elite AI stock marketplace. Download exclusive commercial bundles, hyper-realistic visual assets, and high-end showroom photography for your business. Security Checkout included." />
+        <meta name="keywords" content="AI stock marketplace, buy premium AI images, commercial stock bundles, AI showroom gallery, hyper-realistic photography, sell digital assets" />
+      </Helmet>
+
       {/* 🌟 GLOBALNA POZADINA ZA CELU STRANICU 🌟 */}
       {activeTab !== 'ultra150' && (
         <div 

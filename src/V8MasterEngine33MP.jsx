@@ -1,5 +1,8 @@
 // POČETAK FAJLA: V8MasterEngine33MP.jsx
+// Ne zaboravi da ažuriraš svoj React source code link u glavnom repozitorijumu!
+
 import React, { useState, useRef, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async'; // 🔥 DODATO ZA SEO 🔥
 import { Upload, Layers, Settings2, X, Diamond, Lock, DownloadCloud, Zap, ShieldCheck, AlertTriangle, FileImage, Cpu, Crown, ArrowUpCircle, CheckCircle, FileText, Archive, RefreshCcw, Download, Trash2, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
@@ -529,10 +532,10 @@ const V8MasterEngine33MP = () => {
           )}
 
           {amountPaid < 550 && (
-            <div className="w-full md:w-[calc(33.333%-1rem)] max-w-sm bg-[#050505] border border-purple-500/30 rounded-[2rem] p-8 flex flex-col hover:border-purple-500/60 transition-all shadow-xl">
-                <div className="w-12 h-12 flex items-center justify-center rounded-full bg-purple-500/10 mb-6 mx-auto"><Crown className="w-6 h-6 text-purple-500" /></div>
+            <div className="w-full md:w-[calc(33.333%-1rem)] max-w-sm bg-[#050505] border border-blue-500/30 rounded-[2rem] p-8 flex flex-col hover:border-blue-500/60 transition-all shadow-xl">
+                <div className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-500/10 mb-6 mx-auto"><Crown className="w-6 h-6 text-blue-500" /></div>
                 <h3 className="text-xl font-black text-white uppercase text-center">Enterprise</h3>
-                <span className="text-4xl font-black text-purple-400 my-4 text-center flex items-center justify-center gap-3">
+                <span className="text-4xl font-black text-blue-400 my-4 text-center flex items-center justify-center gap-3">
                    {amountPaid > 0 ? `$${550 - amountPaid}` : "$550"}
                 </span>
                 <div className="w-full text-left space-y-3 mb-8 text-[11px] text-zinc-400 font-bold uppercase tracking-widest flex-grow">
@@ -540,7 +543,7 @@ const V8MasterEngine33MP = () => {
                    <p className="flex items-center gap-2">⏳ High-Speed Priority Server</p>
                    <p className="flex items-center gap-2">🔄 Lifetime Access</p>
                 </div>
-                <button onClick={() => pokreniKupovinu('ENTERPRISE', 550)} className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-[13px] transition-all shadow-md ${amountPaid > 0 ? 'bg-gradient-to-r from-purple-700 to-purple-500 text-white' : 'bg-zinc-800 text-white hover:bg-purple-500'}`}>
+                <button onClick={() => pokreniKupovinu('ENTERPRISE', 550)} className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-[13px] transition-all shadow-md ${amountPaid > 0 ? 'bg-gradient-to-r from-blue-700 to-blue-500 text-white' : 'bg-zinc-800 text-white hover:bg-blue-500'}`}>
                    {amountPaid > 0 ? "UPGRADE TO ENTERPRISE" : "SELECT ENTERPRISE"}
                 </button>
             </div>
@@ -638,8 +641,15 @@ const V8MasterEngine33MP = () => {
   };
 
   return (
-    <div className="bg-[#050505] p-8 md:p-12 rounded-[2.5rem] border border-yellow-500/30 shadow-[0_0_50px_rgba(234,179,8,0.1)] max-w-6xl mx-auto mt-28 relative overflow-hidden">
+    <div className="bg-[#050505] p-8 md:p-12 rounded-[2.5rem] border border-[#FF8C00]/30 shadow-[0_0_50px_rgba(234,179,8,0.1)] max-w-6xl mx-auto mt-28 relative overflow-hidden">
       
+      {/* 🔥 SEO TAGOVI SAMO ZA OVU STRANICU 🔥 */}
+      <Helmet>
+        <title>33.2MP AI Upscaler | Professional Master Engine</title>
+        <meta name="description" content="Enhance your AI images to 33.2MP with the Master Engine. Built for production-ready, commercial, and high-end advertising aesthetics." />
+        <meta name="keywords" content="33mp ai upscaler, professional AI upscaling, high-end ai enhancement, image quality improver, ai batch processing" />
+      </Helmet>
+
       <FullScreenLightbox imageUrl={fullScreenImageUrl} onClose={() => setFullScreenImageUrl(null)} />
 
       <LoginRequiredModal

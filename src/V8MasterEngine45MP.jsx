@@ -2,6 +2,7 @@
 // Ne zaboravi da ažuriraš svoj React source code link u glavnom repozitorijumu!
 
 import React, { useState, useRef, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async'; // 🔥 DODATO ZA SEO 🔥
 import { Upload, Layers, Settings2, X, Diamond, Lock, DownloadCloud, Zap, ShieldCheck, AlertTriangle, FileImage, Cpu, Crown, ArrowUpCircle, CheckCircle, FileText, Archive, RefreshCcw, Download, Trash2, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
@@ -654,6 +655,13 @@ const V8MasterEngine45MP = () => {
   return (
     <div className="bg-[#050505] p-8 md:p-12 rounded-[2.5rem] border border-[#FF8C00]/30 shadow-[0_0_50px_rgba(255,140,0,0.1)] max-w-6xl mx-auto mt-28 relative overflow-hidden">
       
+      {/* 🔥 SEO TAGOVI SAMO ZA OVU STRANICU 🔥 */}
+      <Helmet>
+        <title>45MP AI Upscaler | Extreme Resolution Engine</title>
+        <meta name="description" content="Process your AI images through the 45.1MP Extreme Engine. Premium sharpness, texture-safe cleanup, and commercial-ready quality for your digital assets." />
+        <meta name="keywords" content="45mp ai upscaler, extreme resolution AI, commercial AI image processing, premium ai enhancement, batch upscale ai" />
+      </Helmet>
+
       <FullScreenLightbox imageUrl={fullScreenImageUrl} onClose={() => setFullScreenImageUrl(null)} />
 
       <LoginRequiredModal
