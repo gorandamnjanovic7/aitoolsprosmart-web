@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom';
 import { CLOUDINARY_UPLOAD_PRESET, CLOUDINARY_CLOUD_NAME } from '../data';
 import { Zap, X, Image as ImageIcon, Images, DownloadCloud, Crown, AlertCircle, Type, Layers, FolderArchive, FileText, Wallet, MonitorPlay, Link as LinkIcon, Diamond, RefreshCcw, Aperture } from 'lucide-react';
 import { db, auth } from '../firebase';
-import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, serverTimestamp, query, orderBy, getDoc, setDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, serverTimestamp, query, orderBy, getDoc, setDoc, where, onSnapshot } from 'firebase/firestore';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { v8Toast } from '../v8Utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,6 +20,7 @@ import V10UltraPrintAssets from './V10UltraPrintAssets';
 import V8SecureCheckout from '../V8SecureCheckout';
 import LoginRequiredModal from '../LoginRequiredModal';
 
+// POČETAK FUNKCIJE: FullScreenLightbox
 const FullScreenLightbox = ({ imageUrl, onClose }) => {
   useEffect(() => {
       if (imageUrl) {
@@ -42,7 +43,9 @@ const FullScreenLightbox = ({ imageUrl, onClose }) => {
       </div>, document.body
   );
 };
+// KRAJ FUNKCIJE: FullScreenLightbox
 
+// POČETAK FUNKCIJE: V8StockBerza
 const V8StockBerza = () => {
   const [paketi, setPaketi] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -57,8 +60,24 @@ const V8StockBerza = () => {
   const [editingPaketId, setEditingPaketId] = useState(null); 
   const [fullScreenImageUrl, setFullScreenImageUrl] = useState(null);
   
-  const [activeTab, setActiveTab] = useState('premium'); 
+  // 🔥 ZAKUCAVANJE TABA U MEMORIJU BROWSERA 🔥
+  const [activeTab, setActiveTab] = useState(() => {
+    return localStorage.getItem('v8_active_stock_tab') || 'premium';
+  }); 
+
+  // Svaki put kad promeni tab, pamtimo ga zauvek (dok ga opet ne promeni)
+  useEffect(() => {
+    localStorage.setItem('v8_active_stock_tab', activeTab);
+  }, [activeTab]);
+
   const [otvoreniOpisi, setOtvoreniOpisi] = useState([]);
+
+  const [kupljeniPaketiIds, setKupljeniPaketiIds] = useState([]);
+  
+  // Pojedinačni usisni nizovi za spajanje kupljenih licenci
+  const [paidPayoneer, setPaidPayoneer] = useState([]);
+  const [paidCrypto, setPaidCrypto] = useState([]);
+  const [paidPaypal, setPaidPaypal] = useState([]);
 
   const [noviNazivEn, setNoviNazivEn] = useState('');
   const [noviVolume, setNoviVolume] = useState('');
@@ -80,11 +99,50 @@ const V8StockBerza = () => {
       if (user) {
           setCurrentUser(user);
           setIsAdmin(user.email === "damnjanovicgoran7@gmail.com" || user.email === "aitoolsprosmart@gmail.com");
-      } else { setCurrentUser(null); setIsAdmin(false); }
+      } else { setCurrentUser(null); setIsAdmin(false); setKupljeniPaketiIds([]); }
     });
     fetchPaketi();
     return () => unsub();
   }, []);
+
+  // 🔥 RADARSKI SISTEM: SLUŠA SVE TRI POD-KASE ZA PROVERU REALNIH KUPACA 🔥
+  useEffect(() => {
+    if (!currentUser) {
+      setPaidPayoneer([]);
+      setPaidCrypto([]);
+      setPaidPaypal([]);
+      return;
+    }
+
+    // 1. Slušaj B2B / Payoneer uplate
+    const qPayoneer = query(collection(db, "v8_payoneer_requests"), where("uid", "==", currentUser.uid), where("isPaid", "==", true));
+    const unsubPayoneer = onSnapshot(qPayoneer, (snap) => {
+      const items = []; snap.forEach(doc => { if(doc.data().paketId) items.push(doc.data().paketId); });
+      setPaidPayoneer(items);
+    });
+
+    // 2. Slušaj Kripto uplate
+    const qCrypto = query(collection(db, "v8_crypto_requests"), where("uid", "==", currentUser.uid), where("isPaid", "==", true));
+    const unsubCrypto = onSnapshot(qCrypto, (snap) => {
+      const items = []; snap.forEach(doc => { if(doc.data().paketId) items.push(doc.data().paketId); });
+      setPaidCrypto(items);
+    });
+
+    // 3. Slušaj PayPal / Card Pay uplate
+    const qPaypal = query(collection(db, "v8_paypal_requests"), where("uid", "==", currentUser.uid), where("isPaid", "==", true));
+    const unsubPaypal = onSnapshot(qPaypal, (snap) => {
+      const items = []; snap.forEach(doc => { if(doc.data().paketId) items.push(doc.data().paketId); });
+      setPaidPaypal(items);
+    });
+
+    return () => { unsubPayoneer(); unsubCrypto(); unsubPaypal(); };
+  }, [currentUser]);
+
+  // Spajanje svih sigurnih uplata u jedan master niz za render dugmića
+  useEffect(() => {
+    const allPaid = Array.from(new Set([...paidPayoneer, ...paidCrypto, ...paidPaypal]));
+    setKupljeniPaketiIds(allPaid);
+  }, [paidPayoneer, paidCrypto, paidPaypal]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.gtag) {
@@ -103,7 +161,7 @@ const V8StockBerza = () => {
         localStorage.removeItem('v8_pending_stock_paket_id'); 
         if(trazeniPaket) {
             try {
-                await snimiKupcaUBazu(auth.currentUser, trazeniPaket);
+                await snimiKupcaUPayoneerBazu(auth.currentUser, trazeniPaket);
                 if (typeof window !== 'undefined' && window.gtag) {
                     window.gtag('event', 'purchase', {
                         transaction_id: `V8_TX_${Date.now()}`,
@@ -153,37 +211,46 @@ const V8StockBerza = () => {
         setNoviOpisEn("V8 SIGNATURE BUNDLE: COMPLETE COLLECTION OF 45 PREMIUM VISUALS FOR 8K IN 60 MEGAPIXELS RESOLUTION. INCLUDES 16:9 ( 15 Images ), 9:16 ( 15 Images ) AND 21:9 ( 15 Images ) ASPECT RATIOS. Utilizing precision LANCZOS interpolation. An advanced MedianFilter systematically wipes out digital noise and compression artifacts. Custom NumPy matrix processing applies a smooth rolloff to prevent blown-out whites and retain intricate highlight textures. Strict conversion to the sRGB ICC profile ensures color accuracy across all digital devices and professional reference monitors. Signature Gaussian Noise distribution breaks artificial AI smoothness, creating an authentic, tangible photographic look. Zero text, watermarks, or logos. 100% IP Safe. Fully production-ready."); 
     }
     else if (noviFormat === '150MP ULTRA PRINT BUNDLE') { 
-        setNoviOpisEn("V10 ULTRA PRINT BUNDLE: MASSIVE 150MP RESOLUTION FOR ELITE PRINT & COMMERCIAL WORK. Processed through the V10 Master Engine utilizing precision LANCZOS interpolation. Includes advanced UnsharpMask micro-contrast, custom NumPy matrix processing for highlight rolloff and shadow depth, and organic anti-plastic grain. Strict sRGB ICC profile embedding. 100% IP-Safe metadata cleanup. Perfect for billboards, fine-art printing, and extreme cropping. Zero text, watermarks, or logos. Fully production-ready."); 
+        setNoviOpisEn("V10 ULTRA PRINT BUNDLE: MASSIVE 150MP RESOLUTION FOR ELITE PRINT & COMMERCIAL WORK. INCLUDES A CURATED 15-FILE COLLECTION: 16:9 ( 5 Images ), 9:16 ( 5 Images ), AND 21:9 ( 5 Images ) ASPECT RATIOS. Processed through the V10 Master Engine utilizing precision LANCZOS interpolation. Includes advanced UnsharpMask micro-contrast, custom NumPy matrix processing for highlight rolloff and shadow depth, and organic anti-plastic grain. Strict sRGB ICC profile embedding. 100% IP-Safe metadata cleanup. Perfect for billboards, fine-art printing, and extreme cropping. Zero text, watermarks, or logos. Fully production-ready."); 
     }
   }, [noviFormat, editingPaketId]); 
 
+  // POČETAK FUNKCIJE: fetchPaketi
   const fetchPaketi = async () => {
     const q = query(collection(db, "v8_stock_paketi"), orderBy("createdAt", "desc"));
     const snap = await getDocs(q);
     setPaketi(snap.docs.map(d => ({ id: d.id, ...d.data() })));
   };
+  // KRAJ FUNKCIJE: fetchPaketi
 
+  // POČETAK FUNKCIJE: otvoriCheckoutIliPaddle
   const otvoriCheckoutIliPaddle = async (user, paket) => {
     if (!user || !paket) return;
     const fullName = paket.volume ? `${paket.nazivEn} - ${paket.volume}` : paket.nazivEn;
     const finalPrice = getGlobalCena(paket.cena);
-    await snimiKupcaUBazu(user, paket);
+    await snimiKupcaUPayoneerBazu(user, paket);
     if (paket.paddleLink && paket.paddleLink.trim() !== "") {
       window.location.href = paket.paddleLink;
       return;
     }
     setCheckoutData({ isOpen: true, name: fullName, price: finalPrice });
   };
+  // KRAJ FUNKCIJE: otvoriCheckoutIliPaddle
 
+  // POČETAK FUNKCIJE: prijavaIKupovina
   const prijavaIKupovina = async (paket) => {
     if (paket.isFree || paket.cena === "0.00" || parseFloat(paket.cena) === 0) {
         if(typeof v8Toast !== 'undefined') v8Toast.success("🚀 ACCESS GRANTED: Downloading Free V8 Asset...");
-        if (typeof window !== 'undefined' && window.gtag) {
-            window.gtag('event', 'free_download', { event_category: 'Lead_Generation', event_label: paket.nazivEn });
-        }
         window.open(paket.zipLink, '_blank');
         return;
     }
+    
+    if (kupljeniPaketiIds.includes(paket.id)) {
+        if(typeof v8Toast !== 'undefined') v8Toast.success("🚀 DOWNLOADING PURCHASED ASSET...");
+        window.open(paket.zipLink, '_blank');
+        return;
+    }
+
     const fullName = paket.volume ? `${paket.nazivEn} - ${paket.volume}` : paket.nazivEn;
     const finalPrice = getGlobalCena(paket.cena);
     const userNow = currentUser || auth.currentUser;
@@ -198,10 +265,22 @@ const V8StockBerza = () => {
     }
     setLoginRequiredData({ isOpen: true, paket, name: fullName, price: finalPrice });
   };
+  // KRAJ FUNKCIJE: prijavaIKupovina
 
-  const snimiKupcaUBazu = async (user, paket) => {
+  // POČETAK FUNKCIJE: snimiKupcaUPayoneerBazu
+  const snimiKupcaUPayoneerBazu = async (user, paket) => {
       try {
-          await addDoc(collection(db, "v8_kupci"), { ime: user.displayName || "Client", email: user.email, uid: user.uid, zeliPaket: paket.nazivEn || "Premium", cenaPaketa: paket.cena, vreme: serverTimestamp(), isPaid: false });
+          await addDoc(collection(db, "v8_payoneer_requests"), { 
+            ime: user.displayName || "Client", 
+            email: user.email, 
+            uid: user.uid, 
+            zeliPaket: paket.nazivEn || "Premium", 
+            paketId: paket.id, 
+            cenaPaketa: paket.cena, 
+            vreme: serverTimestamp(), 
+            isPaid: false 
+          });
+
           if (paket.format && (paket.format.toUpperCase().includes('MASTERWORK') || paket.format.toUpperCase().includes('SIGNATURE') || paket.format.toUpperCase().includes('150MP'))) {
               const userRef = doc(db, "vip_users", user.email.toLowerCase());
               const userSnap = await getDoc(userRef);
@@ -213,7 +292,9 @@ const V8StockBerza = () => {
           }
       } catch (error) { console.error(error); }
   };
+  // KRAJ FUNKCIJE: snimiKupcaUPayoneerBazu
 
+  // POČETAK FUNKCIJE: handleUploadPreview
   const handleUploadPreview = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -225,7 +306,9 @@ const V8StockBerza = () => {
       setPreviewUrl(resData.secure_url);
     } catch (err) { v8Toast.error("Upload error!"); } finally { setIsUploading(false); e.target.value = null; }
   };
+  // KRAJ FUNKCIJE: handleUploadPreview
 
+  // POČETAK FUNKCIJE: handleUploadPrimeri
   const handleUploadPrimeri = async (e) => {
     const files = Array.from(e.target.files); 
     if (files.length === 0) return;
@@ -249,10 +332,17 @@ const V8StockBerza = () => {
       setPrimeriUrls(prev => [...prev, ...noveSlike]);
     } catch (err) {} finally { setIsUploadingPrimer(false); e.target.value = null; }
   };
+  // KRAJ FUNKCIJE: handleUploadPrimeri
 
+  // POČETAK FUNKCIJE: removeMainImage
   const removeMainImage = () => setPreviewUrl('');
+  // KRAJ FUNKCIJE: removeMainImage
+  
+  // POČETAK FUNKCIJE: removeThumbnail
   const removeThumbnail = (indexToRemove) => setPrimeriUrls(prev => prev.filter((_, idx) => idx !== indexToRemove));
+  // KRAJ FUNKCIJE: removeThumbnail
 
+  // POČETAK FUNKCIJE: dodajPaket
   const dodajPaket = async (e) => {
     e.preventDefault();
     if (!previewUrl || !zipLink) { v8Toast.error("Image & ZIP needed!"); return; }
@@ -263,13 +353,27 @@ const V8StockBerza = () => {
         stoziEdit(); fetchPaketi();
     } catch (error) { v8Toast.error(error.message); }
   };
+  // KRAJ FUNKCIJE: dodajPaket
 
+  // POČETAK FUNKCIJE: startEditPaket
   const startEditPaket = (paket) => { setEditingPaketId(paket.id); setNoviNazivEn(paket.nazivEn || ''); setNoviVolume(paket.volume || ''); setNoviFormat(paket.format || '16:9 ONLY (SINGLE)'); setNovaKategorijaEn(paket.kategorijaEn || ''); setNovaCena(paket.cena || '49.99'); setNoviOpisEn(paket.opisEn || ''); setPreviewUrl(paket.previewUrl || ''); setZipLink(paket.zipLink || ''); setIsFree(paket.isFree || false); setPrimeriUrls(paket.primeri || []); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  // KRAJ FUNKCIJE: startEditPaket
+  
+  // POČETAK FUNKCIJE: stoziEdit
   const stoziEdit = () => { setEditingPaketId(null); setNoviNazivEn(''); setNoviVolume(''); setNoviFormat('16:9 ONLY (SINGLE)'); setNovaKategorijaEn(''); setNovaCena('49.99'); setPreviewUrl(''); setZipLink(''); setIsFree(false); setPrimeriUrls([]); };
+  // KRAJ FUNKCIJE: stoziEdit
 
+  // POČETAK FUNKCIJE: obrisiPaket
   const obrisiPaket = async (id) => { if (window.confirm("Are you sure?")) { await deleteDoc(doc(db, "v8_stock_paketi", id)); fetchPaketi(); } };
+  // KRAJ FUNKCIJE: obrisiPaket
+  
+  // POČETAK FUNKCIJE: getGlobalCena
   const getGlobalCena = (cena) => { const numCena = parseFloat(cena); return numCena > 500 ? (Math.ceil((numCena / 110) * 1.2) + 0.99).toFixed(2) : numCena.toFixed(2); };
+  // KRAJ FUNKCIJE: getGlobalCena
+  
+  // POČETAK FUNKCIJE: getAspectClass
   const getAspectClass = (format) => { return (!format || format.includes('16:9 ONLY')) ? 'aspect-video' : 'aspect-square'; };
+  // KRAJ FUNKCIJE: getAspectClass
 
   const standardPaketi = paketi.filter(p => !(p.format || "").toUpperCase().includes('MASTERWORK') && !(p.format || "").toUpperCase().includes('SIGNATURE') && !(p.format || "").toUpperCase().includes('150MP') && !(p.nazivEn || "").toUpperCase().includes('WATCHES'));
   const premiumPaketi = paketi.filter(p => { const fmt = (p.format || "").toUpperCase(); return fmt.includes('MASTERWORK') && !fmt.includes('MASTERWORK BUNDLE'); });
@@ -285,6 +389,7 @@ const V8StockBerza = () => {
     ultra150: "none" 
   };
 
+  // POČETAK FUNKCIJE: renderV8Manifest
   const renderV8Manifest = (rezolucija) => {
     const specifikacije = [
       { t: `1. Lanczos Upscale`, d: "Direct premium interpolation.", insight: `Direct premium LANCZOS interpolation to approx. ${rezolucija} by aspect ratio.` },
@@ -352,6 +457,7 @@ const V8StockBerza = () => {
       </div>
     );
   };
+  // KRAJ FUNKCIJE: renderV8Manifest
 
   return (
     <div className="min-h-screen bg-[#050505] font-sans text-white relative transition-all duration-1000 ease-in-out">
@@ -444,7 +550,6 @@ const V8StockBerza = () => {
                       {activeTab === 'bundles' && (<>V8 45MP EXTREME MASTER <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500 drop-shadow-none">STOCK BUNDLES</span></>)}
                       {activeTab === 'signature' && (<>V8 60MP <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-500 drop-shadow-none">SIGNATURE BUNDLES</span></>)}
                       {activeTab === 'ultra150' && (<>V10 150MP <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 drop-shadow-none">ULTRA PRINT</span></>)}
-                      {activeTab === 'standard' && (<>V8 PREMIUM <span className="text-[#FF8C00]">STOCK MARKET</span></>)}
                   </h1>
 
                  <p className="text-zinc-200 font-bold uppercase tracking-[0.2em] text-[10px] md:text-[12px] max-w-4xl mx-auto leading-relaxed mb-10 drop-shadow-lg bg-black/30 p-4 rounded-lg backdrop-blur-sm transition-all">
@@ -452,12 +557,15 @@ const V8StockBerza = () => {
                   {activeTab === 'bundles' && (<>THE DEFINITIVE <span className="text-[#FF8C00]">45MP</span> PRODUCTION-READY ARSENAL. BUILT FOR HIGH-END PRODUCTION. ENGINEERED FOR VISIONARY CREATORS AND SCALABLE, 100% IP-SAFE COMMERCIAL CAMPAIGNS.</>)}
                   {activeTab === 'signature' && (<>THE PINNACLE OF COMMERCIAL ASSETS. <span className="text-yellow-400">45-FILE OMNI-CHANNEL CAMPAIGNS</span> IN 60 MEGAPIXELS. BUILT FOR ELITE AGENCIES AND LUXURY BRANDS.</>)}
                   {activeTab === 'ultra150' && (<>THE ABSOLUTE PINNACLE OF RESOLUTION. <span className="text-purple-400">150 MEGAPIXELS</span> ENGINEERED SPECIFICALLY FOR BILLBOARDS, FINE-ART PRINTING, AND EXTREME CROPPING.</>)}
-                  {activeTab === 'standard' && "THE ULTIMATE ARSENAL OF ROYALTY-FREE AI ASSETS FOR HIGH-END PRODUCTION AND VISIONARY CREATORS."}
                  </p>
 
                   <div className="flex justify-center relative z-10 mt-10">
                       <div className="bg-[#050505]/80 backdrop-blur-md border border-white/10 p-1.5 rounded-full inline-flex flex-wrap items-center justify-center shadow-xl gap-1">
+                          
+                          {/* PRIVREMENO SAKRIVEN STANDARD TAB 
                           <button onClick={() => setActiveTab('standard')} className={`px-6 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 ${activeTab === 'standard' ? 'bg-zinc-800 text-white shadow-md border border-white/10' : 'text-zinc-400 hover:text-white'}`}>Standard</button>
+                          */}
+
                           <button onClick={() => setActiveTab('premium')} className={`px-6 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${activeTab === 'premium' ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-white shadow-[0_0_15px_rgba(234,88,12,0.4)]' : 'text-zinc-400 hover:text-orange-500'}`}><Zap className="w-4 h-4" /> 33MP Premium</button>
                           <button onClick={() => setActiveTab('bundles')} className={`px-6 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${activeTab === 'bundles' ? 'bg-gradient-to-r from-blue-600 to-indigo-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'text-zinc-400 hover:text-blue-400'}`}><Crown className="w-4 h-4" /> 45MP Bundles</button>
                           <button onClick={() => setActiveTab('signature')} className={`px-6 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${activeTab === 'signature' ? 'bg-zinc-900 border border-yellow-500/50 text-yellow-400 shadow-[0_0_15px_rgba(245,158,11,0.3)]' : 'text-zinc-400 hover:text-yellow-400'}`}><Diamond className="w-4 h-4" /> 60MP Signature</button>
@@ -617,64 +725,33 @@ const V8StockBerza = () => {
 
           <div className="flex flex-wrap justify-center gap-12 max-w-5xl mx-auto">
             
-            {activeTab === 'standard' && (
-              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-4xl mx-auto mt-8 bg-gradient-to-b from-[#0a192f]/80 to-[#020617]/90 border border-blue-500/30 p-10 md:p-16 rounded-[3rem] shadow-[0_0_50px_rgba(59,130,246,0.15)] relative overflow-hidden backdrop-blur-xl text-center">
-                 <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay"></div>
-                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50"></div>
-                 
-                 <div className="relative z-10 flex flex-col items-center">
-                     <div className="w-24 h-24 bg-blue-950/50 rounded-full flex items-center justify-center border border-blue-500/50 mb-8 shadow-[0_0_30px_rgba(59,130,246,0.3)] relative">
-                        <div className="absolute inset-0 rounded-full border-t-2 border-blue-400 animate-spin"></div>
-                        <Layers className="w-10 h-10 text-blue-400" />
-                     </div>
-                     
-                     <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-[0.2em] mb-4 drop-shadow-md">
-                        SYSTEM <span className="text-blue-500">COMPILATION</span>
-                     </h2>
-                     
-                     <div className="inline-block bg-blue-900/30 border border-blue-500/30 px-4 py-1.5 rounded-full text-blue-300 font-bold uppercase tracking-widest text-[10px] mb-8">
-                        V8 ENGINE PROTOCOL ACTIVE
-                     </div>
-                     
-                     <p className="text-zinc-300 text-[14px] md:text-[16px] leading-relaxed max-w-2xl font-medium mb-6">
-                        We are currently processing a massive pipeline of new Standard Assets through our <strong className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">Deep-Pixel Rendering Engine</strong>. 
-                     </p>
-                     <p className="text-zinc-400 text-[13px] md:text-[15px] leading-relaxed max-w-2xl">
-                        Due to our uncompromising quality control—which includes advanced upscaling, noise reduction, and color recalibration—this repository is temporarily locked. The full, production-ready library will be deployed imminently.
-                     </p>
-                     
-                     <div className="mt-10 flex items-center justify-center gap-3 text-blue-400 font-black uppercase tracking-widest text-[12px] bg-black/40 px-6 py-4 rounded-xl border border-blue-500/20 shadow-inner">
-                        <RefreshCcw className="w-4 h-4 animate-spin" /> ESTIMATING COMPLETION TIME...
-                     </div>
-                 </div>
-              </motion.div>
-            )}
+            {/* PRIVREMENO SAKRIVENA STANDARD SEKCIJA (SYSTEM COMPILATION) */}
             
             {activeTab === 'premium' && (
               <>
                 {renderV8Manifest("33.2MP")}
-                <V8PremiumAssets paketi={premiumPaketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} />
+                <V8PremiumAssets paketi={premiumPaketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} kupljeniPaketiIds={kupljeniPaketiIds} />
               </>
             )}
             
             {activeTab === 'bundles' && (
               <>
                 {renderV8Manifest("45MP")}
-                <V8MasterBundles paketi={bundlePaketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} />
+                <V8MasterBundles paketi={bundlePaketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} kupljeniPaketiIds={kupljeniPaketiIds} />
               </>
             )}
 
             {activeTab === 'signature' && (
               <>
                 {renderV8Manifest("60MP")}
-                <V8SignatureBundles paketi={signaturePaketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} />
+                <V8SignatureBundles paketi={signaturePaketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} kupljeniPaketiIds={kupljeniPaketiIds} />
               </>
             )}
 
             {activeTab === 'ultra150' && (
               <>
                 {renderV8Manifest("150MP")}
-                <V10UltraPrintAssets paketi={ultra150Paketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} />
+                <V10UltraPrintAssets paketi={ultra150Paketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} kupljeniPaketiIds={kupljeniPaketiIds} />
               </>
             )}
 
