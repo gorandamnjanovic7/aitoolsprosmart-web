@@ -1,13 +1,75 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- GLAVNA STRANA -->
   <url>
     <loc>https://aitoolsprosmart.com/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
+  
+  <!-- 🔥 MASTER UPSCALERS (Najveći prioritet za Sitelinkove) 🔥 -->
+  <url>
+    <loc>https://aitoolsprosmart.com/master-60mp</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://aitoolsprosmart.com/master-45mp</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://aitoolsprosmart.com/master-33mp</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://aitoolsprosmart.com/v8-standard-16mp</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- 🔥 V8 PREMIUM TOOLS & STOCK 🔥 -->
   <url>
     <loc>https://aitoolsprosmart.com/enxance</loc>
     <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://aitoolsprosmart.com/stock</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://aitoolsprosmart.com/showroom</loc>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://aitoolsprosmart.com/grid-system</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- 🔥 DODATNI ALATI 🔥 -->
+  <url>
+    <loc>https://aitoolsprosmart.com/extractor</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://aitoolsprosmart.com/v8-debranding-extractor</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://aitoolsprosmart.com/seedance</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://aitoolsprosmart.com/kling</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
 </urlset>
