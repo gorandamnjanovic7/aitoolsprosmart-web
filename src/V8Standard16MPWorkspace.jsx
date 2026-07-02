@@ -2,6 +2,7 @@
 // Ne zaboravi da ažuriraš svoj React source code link u glavnom repozitorijumu!
 
 import React, { useState, useRef, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async'; // 🔥 DODATO ZA SEO 🔥
 import { Upload, Images, ShieldCheck, RefreshCcw, Diamond, Crown, Zap, DownloadCloud, X, ArrowUpCircle, Layers, Archive, Download, Trash2, Eye, FileText, Cpu, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
@@ -609,8 +610,15 @@ const V8Standard16MPWorkspace = () => {
   };
 
   return (
-    <div className="bg-[#050505] p-8 md:p-12 rounded-[2.5rem] border border-[#FF8C00]/30 shadow-[0_0_50px_rgba(255,140,0,0.1)] max-w-6xl mx-auto mt-28 relative">
+    <div className="bg-[#050505] p-8 md:p-12 rounded-[2.5rem] border-[#FF8C00]/30 shadow-[0_0_50px_rgba(255,140,0,0.1)] max-w-6xl mx-auto mt-28 relative">
       
+      {/* 🔥 SEO TAGOVI SAMO ZA OVU STRANICU 🔥 */}
+      <Helmet>
+        <title>16MP AI Workspace | Standard Production Assets</title>
+        <meta name="description" content="Upscale your AI generated images to 16MP Standard Production format. Enhance contrast, apply realistic film grain, and export perfect production-ready JPGs." />
+        <meta name="keywords" content="16mp ai upscale, standard production ai, image enhancer, high-end ai upscaling, commercial ai assets" />
+      </Helmet>
+
       <FullScreenLightbox imageUrl={fullScreenImageUrl} onClose={() => setFullScreenImageUrl(null)} />
 
       <LoginRequiredModal

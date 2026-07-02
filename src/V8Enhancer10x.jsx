@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom'; // 🔥 DODATO: Za zakucavanje modala na centar ekrana
 import { Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { Helmet } from 'react-helmet-async'; // 🔥 DODATO ZA SEO 🔥
 import { Zap, Loader2, Eye, Trash2, UploadCloud, Dices, History, Lock, X, PlayCircle, ShieldAlert, ChevronLeft, DownloadCloud } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
@@ -407,6 +407,14 @@ const V8Enhancer10x = () => {
 
   return (
     <div ref={containerRef} className="pt-32 pb-24 px-6 max-w-[1600px] mx-auto font-sans text-left text-white min-h-screen relative flex flex-col xl:flex-row gap-8">
+      
+      {/* 🔥 SEO TAGOVI SAMO ZA OVU STRANICU 🔥 */}
+      <Helmet>
+        <title>10X AI Image Enhancer | Premium Upscaling Tool</title>
+        <meta name="description" content="Use the 10X AI Enhancer to transform raw prompts into ultra-detailed, photorealistic, and cinematic visions. Generate premium commercial concepts instantly." />
+        <meta name="keywords" content="10x ai image enhancer, premium prompt builder, cinematic ai generator, photorealistic ai concepts, improve ai prompts" />
+      </Helmet>
+
       <style>{`
         @keyframes scanLineAmber { 0% { top: 0%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
         .animate-scan-amber { position: absolute; left: 0; width: 100%; height: 2px; background: #fbbf24; box-shadow: 0 0 25px 3px #fbbf24; z-index: 50; animation: scanLineAmber 2.5s infinite; }
@@ -415,7 +423,6 @@ const V8Enhancer10x = () => {
         @keyframes raySpin { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
         .ray-inner { background: rgba(10,10,10,0.95); backdrop-filter: blur(20px); border-radius: calc(2rem - 2px); position: relative; z-index: 1; height: 100%; padding: 1.5rem; display: flex; flex-direction: column; }
       `}</style>
-      <Helmet><title>10X ENHANCER | AI TOOLS PRO SMART</title></Helmet>
 
       <LoginRequiredModal
         isOpen={loginRequiredData.isOpen}

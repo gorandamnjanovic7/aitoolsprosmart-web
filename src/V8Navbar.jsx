@@ -136,9 +136,10 @@ const V8Navbar = ({ handleHomeClick }) => {
   };
 
   return (
-    <div className="fixed top-0 left-0 w-full z-[1000]">
+    // 🔥 ISPRAVKA 1: w-full zamenjen sa w-screen i dodato overlow-x-hidden 🔥
+    <div className="fixed top-0 left-0 w-[100vw] overflow-x-hidden max-w-[100vw] z-[1000]">
       <nav 
-        className={`w-full transition-all duration-500 border-b-2 ${
+        className={`w-full max-w-[100vw] transition-all duration-500 border-b-2 ${
           scrolled 
           ? 'py-3 md:py-4 bg-black/60 backdrop-blur-xl border-orange-500/60 shadow-[0_10px_40px_rgba(234,88,12,0.3)]' 
           : 'py-5 md:py-7 bg-transparent border-transparent shadow-none'
@@ -152,9 +153,9 @@ const V8Navbar = ({ handleHomeClick }) => {
           backgroundRepeat: 'no-repeat'
         }}
       >
-        <div className="max-w-7xl mx-auto flex justify-between items-center px-4 md:px-8">
+        <div className="max-w-7xl mx-auto flex justify-between items-center px-4 md:px-8 w-full">
           
-          <Link to="/" onClick={() => { handleHomeClick(); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 group shrink-0 mr-4">
+          <Link to="/" onClick={() => { handleHomeClick(); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 group shrink-0 mr-2 md:mr-4">
             <img src={data.logoUrl} className={`object-contain transition-all duration-500 ${scrolled ? 'h-8 md:h-10' : 'h-10 md:h-12'} animate-pulse group-hover:scale-105`} alt="logo" />
             <div className="flex items-center gap-1.5 whitespace-nowrap">
               <span className={`font-black uppercase tracking-[0.1em] text-blue-500 italic group-hover:text-orange-500 transition-all duration-500 ${scrolled ? 'text-[10px] md:text-[12px]' : 'text-[11px] md:text-[14px]'}`}>AI TOOLS</span>
@@ -163,7 +164,7 @@ const V8Navbar = ({ handleHomeClick }) => {
           </Link>
 
           {/* DESKTOP NAVIGACIJA */}
-          <div className="flex-1 flex items-center justify-end gap-3 font-black uppercase text-[10px] md:text-[11px] tracking-widest whitespace-nowrap">
+          <div className="flex-1 flex items-center justify-end gap-3 font-black uppercase text-[10px] md:text-[11px] tracking-widest whitespace-nowrap overflow-hidden">
             
             <MagneticButton>
                <Link to="/" onClick={handleHomeClick} className="hidden lg:flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-emerald-900/30 border border-emerald-500/40 text-emerald-400 hover:text-white hover:bg-emerald-800/50 hover:border-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] cursor-pointer">
@@ -470,7 +471,7 @@ const V8Navbar = ({ handleHomeClick }) => {
         </div>
       </nav>
 
-      {/* 🔥 MOBILE FULL-SCREEN MENU OVERLAY 🔥 */}
+      {/* 🔥 ISPRAVKA 2: w-full zamenjeno sa w-screen, ubačen h-[100dvh] za mobile safari/chrome issue 🔥 */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div 
@@ -478,10 +479,10 @@ const V8Navbar = ({ handleHomeClick }) => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed inset-0 w-full h-full bg-[#050505]/95 backdrop-blur-3xl z-[99999] flex flex-col overflow-y-auto pb-20"
+            className="fixed top-0 left-0 w-screen h-[100dvh] bg-[#050505]/95 backdrop-blur-3xl z-[99999] flex flex-col overflow-y-auto overflow-x-hidden pb-20"
           >
             {/* Header Mob Menija */}
-            <div className="flex justify-between items-center p-6 border-b border-white/10">
+            <div className="flex justify-between items-center p-6 border-b border-white/10 w-full shrink-0">
               <div className="flex items-center gap-3">
                 <img src={data.logoUrl} className="h-8 object-contain" alt="logo" />
                 <span className="font-black uppercase tracking-[0.1em] text-orange-500 italic text-[12px]">V8 NAV SYSTEM</span>
@@ -494,16 +495,16 @@ const V8Navbar = ({ handleHomeClick }) => {
               </button>
             </div>
 
-            <div className="flex flex-col p-6 gap-8">
+            <div className="flex flex-col p-4 sm:p-6 gap-8 w-full max-w-[100vw] overflow-x-hidden">
               
               {/* Sekcija: Nalog i Krediti */}
               {user ? (
-                <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-5 flex flex-col gap-4">
+                <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-5 flex flex-col gap-4 mx-auto w-full">
                   <div className="flex items-center gap-3 pb-4 border-b border-white/10">
                     <User className="w-8 h-8 text-emerald-500 bg-emerald-500/10 p-1.5 rounded-full" />
-                    <div>
-                      <h3 className="font-black text-white text-[14px] uppercase tracking-widest">{user.displayName || "V8 KLIJENT"}</h3>
-                      <p className="text-[10px] text-zinc-500 uppercase font-bold">{user.email}</p>
+                    <div className="overflow-hidden">
+                      <h3 className="font-black text-white text-[14px] uppercase tracking-widest truncate">{user.displayName || "V8 KLIJENT"}</h3>
+                      <p className="text-[10px] text-zinc-500 uppercase font-bold truncate">{user.email}</p>
                     </div>
                   </div>
 
@@ -513,27 +514,27 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </button>
                   )}
 
-                  <div className="grid grid-cols-2 gap-3 mt-2">
+                  <div className="grid grid-cols-2 gap-3 mt-2 w-full">
                     <div className="bg-black/50 border border-white/5 rounded-xl p-3 flex flex-col items-center justify-center">
-                      <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">16MP Credits</span>
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">16MP</span>
                       <span className="text-xl font-black text-blue-400">{isAdmin ? '∞' : userCredits.credits_16mp}</span>
                     </div>
                     <div className="bg-black/50 border border-white/5 rounded-xl p-3 flex flex-col items-center justify-center">
-                      <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">33MP Credits</span>
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">33MP</span>
                       <span className="text-xl font-black text-yellow-400">{isAdmin ? '∞' : userCredits.credits_33mp}</span>
                     </div>
                     <div className="bg-black/50 border border-white/5 rounded-xl p-3 flex flex-col items-center justify-center">
-                      <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">45MP Credits</span>
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">45MP</span>
                       <span className="text-xl font-black text-amber-500">{isAdmin ? '∞' : userCredits.credits_45mp}</span>
                     </div>
                     <div className="bg-black/50 border border-white/5 rounded-xl p-3 flex flex-col items-center justify-center">
-                      <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">60MP Credits</span>
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">60MP</span>
                       <span className="text-xl font-black text-rose-500">{isAdmin ? '∞' : '0'}</span>
                     </div>
                   </div>
 
                   {(isAdmin || isVIP) && (
-                    <div className="flex flex-col gap-2 mt-2">
+                    <div className="flex flex-col gap-2 mt-2 w-full">
                       {isAdmin && (
                         <>
                           <Link to="/admin" onClick={handleMobileLinkClick} className="w-full bg-red-950/30 text-red-500 border border-red-500/30 rounded-xl py-3 flex items-center justify-center gap-2 font-black text-[11px] uppercase tracking-widest">
@@ -557,7 +558,7 @@ const V8Navbar = ({ handleHomeClick }) => {
                   </button>
                 </div>
               ) : (
-                <button onClick={handleLogin} className="w-full bg-zinc-800 text-white border border-zinc-600 rounded-3xl py-6 flex flex-col items-center justify-center gap-3 shadow-xl">
+                <button onClick={handleLogin} className="w-full bg-zinc-800 text-white border border-zinc-600 rounded-3xl py-6 flex flex-col items-center justify-center gap-3 shadow-xl mx-auto">
                   <User className="w-8 h-8 text-zinc-400" />
                   <span className="font-black text-[16px] uppercase tracking-widest">LOGIN TO V8</span>
                   <span className="text-[10px] text-zinc-500 font-bold uppercase">Pristupi Premium Alatima</span>
@@ -565,103 +566,103 @@ const V8Navbar = ({ handleHomeClick }) => {
               )}
 
               {/* Sekcija: Navigacija */}
-              <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-6 w-full">
                 
                 <div className="flex flex-col gap-3">
                   <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2">Glavni Meni</h4>
-                  <Link to="/" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform">
-                    <div className="bg-emerald-500/10 p-3 rounded-xl"><Globe className="w-6 h-6 text-emerald-500" /></div>
-                    <span className="text-[14px] font-black uppercase tracking-widest text-white">Početna Strana</span>
+                  <Link to="/" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full">
+                    <div className="bg-emerald-500/10 p-3 rounded-xl shrink-0"><Globe className="w-6 h-6 text-emerald-500" /></div>
+                    <span className="text-[14px] font-black uppercase tracking-widest text-white truncate">Početna Strana</span>
                   </Link>
                 </div>
 
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-3 w-full">
                   <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2">Master Upscalers</h4>
-                  <div className="grid grid-cols-2 gap-3">
-                    <Link to="/v8-standard-16mp" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-blue-500/20 p-4 rounded-2xl flex flex-col items-center gap-3">
+                  <div className="grid grid-cols-2 gap-3 w-full">
+                    <Link to="/v8-standard-16mp" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-blue-500/20 p-4 rounded-2xl flex flex-col items-center gap-3 w-full">
                       <ImageIcon className="w-8 h-8 text-blue-500" />
                       <span className="text-[11px] font-black text-white tracking-widest">16MP</span>
                     </Link>
-                    <Link to="/master-33mp" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-yellow-500/20 p-4 rounded-2xl flex flex-col items-center gap-3">
+                    <Link to="/master-33mp" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-yellow-500/20 p-4 rounded-2xl flex flex-col items-center gap-3 w-full">
                       <Cpu className="w-8 h-8 text-yellow-500" />
                       <span className="text-[11px] font-black text-white tracking-widest">33MP</span>
                     </Link>
-                    <Link to="/master-45mp" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-amber-500/20 p-4 rounded-2xl flex flex-col items-center gap-3">
+                    <Link to="/master-45mp" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-amber-500/20 p-4 rounded-2xl flex flex-col items-center gap-3 w-full">
                       <Zap className="w-8 h-8 text-amber-500" />
                       <span className="text-[11px] font-black text-white tracking-widest">45MP</span>
                     </Link>
-                    <Link to="/master-60mp" onClick={handleMobileLinkClick} className="bg-rose-950/20 border border-rose-500/40 p-4 rounded-2xl flex flex-col items-center gap-3 shadow-[0_0_15px_rgba(244,63,94,0.1)]">
+                    <Link to="/master-60mp" onClick={handleMobileLinkClick} className="bg-rose-950/20 border border-rose-500/40 p-4 rounded-2xl flex flex-col items-center gap-3 shadow-[0_0_15px_rgba(244,63,94,0.1)] w-full">
                       <Cpu className="w-8 h-8 text-rose-500" />
-                      <span className="text-[11px] font-black text-white tracking-widest">60MP MAX</span>
+                      <span className="text-[11px] font-black text-white tracking-widest text-center leading-tight">60MP<br/>MAX</span>
                     </Link>
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-3 w-full">
                   <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2">V8 Premium Tools</h4>
                   
-                  <Link to="/enxance" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform">
-                    <div className="bg-orange-500/10 p-3 rounded-xl"><Zap className="w-6 h-6 text-orange-500" /></div>
-                    <div className="flex flex-col">
-                      <span className="text-[13px] font-black uppercase tracking-widest text-white">10X Enhancer</span>
-                      <span className="text-[10px] text-zinc-500 font-bold uppercase">AI Engine</span>
+                  <Link to="/enxance" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full">
+                    <div className="bg-orange-500/10 p-3 rounded-xl shrink-0"><Zap className="w-6 h-6 text-orange-500" /></div>
+                    <div className="flex flex-col overflow-hidden">
+                      <span className="text-[13px] font-black uppercase tracking-widest text-white truncate">10X Enhancer</span>
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase truncate">AI Engine</span>
                     </div>
                   </Link>
 
-                  <Link to="/#marketplace" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform">
-                    <div className="bg-blue-500/10 p-3 rounded-xl"><Award className="w-6 h-6 text-blue-500" /></div>
-                    <div className="flex flex-col">
-                      <span className="text-[13px] font-black uppercase tracking-widest text-white">AI Store</span>
-                      <span className="text-[10px] text-zinc-500 font-bold uppercase">Marketplace</span>
+                  <Link to="/#marketplace" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full">
+                    <div className="bg-blue-500/10 p-3 rounded-xl shrink-0"><Award className="w-6 h-6 text-blue-500" /></div>
+                    <div className="flex flex-col overflow-hidden">
+                      <span className="text-[13px] font-black uppercase tracking-widest text-white truncate">AI Store</span>
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase truncate">Marketplace</span>
                     </div>
                   </Link>
 
-                  <Link to="/grid-system" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform">
-                    <div className="bg-yellow-500/10 p-3 rounded-xl"><LayoutGrid className="w-6 h-6 text-yellow-500" /></div>
-                    <div className="flex flex-col">
-                      <span className="text-[13px] font-black uppercase tracking-widest text-white">Grid System</span>
-                      <span className="text-[10px] text-zinc-500 font-bold uppercase">Cinematic Gen</span>
+                  <Link to="/grid-system" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full">
+                    <div className="bg-yellow-500/10 p-3 rounded-xl shrink-0"><LayoutGrid className="w-6 h-6 text-yellow-500" /></div>
+                    <div className="flex flex-col overflow-hidden">
+                      <span className="text-[13px] font-black uppercase tracking-widest text-white truncate">Grid System</span>
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase truncate">Cinematic Gen</span>
                     </div>
                   </Link>
 
-                  <Link to="/extractor" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform">
-                    <div className="bg-cyan-500/10 p-3 rounded-xl"><Code className="w-6 h-6 text-cyan-500" /></div>
-                    <div className="flex flex-col">
-                      <span className="text-[13px] font-black uppercase tracking-widest text-white">JSON Extractor</span>
-                      <span className="text-[10px] text-zinc-500 font-bold uppercase">Visual DNA</span>
+                  <Link to="/extractor" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full">
+                    <div className="bg-cyan-500/10 p-3 rounded-xl shrink-0"><Code className="w-6 h-6 text-cyan-500" /></div>
+                    <div className="flex flex-col overflow-hidden">
+                      <span className="text-[13px] font-black uppercase tracking-widest text-white truncate">JSON Extractor</span>
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase truncate">Visual DNA</span>
                     </div>
                   </Link>
 
-                  <Link to="/v8-debranding-extractor" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-emerald-950/20 border border-emerald-500/30 p-4 rounded-2xl active:scale-95 transition-transform relative overflow-hidden">
+                  <Link to="/v8-debranding-extractor" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-emerald-950/20 border border-emerald-500/30 p-4 rounded-2xl active:scale-95 transition-transform relative overflow-hidden w-full">
                     <div className="absolute top-0 right-0 bg-emerald-600 text-white text-[8px] font-black px-3 py-1 rounded-bl-xl">NEW</div>
-                    <div className="bg-emerald-500/20 p-3 rounded-xl"><ShieldCheck className="w-6 h-6 text-emerald-400" /></div>
-                    <div className="flex flex-col">
-                      <span className="text-[13px] font-black uppercase tracking-widest text-white">De-Branding DNA</span>
-                      <span className="text-[10px] text-zinc-500 font-bold uppercase">White-Label Engine</span>
+                    <div className="bg-emerald-500/20 p-3 rounded-xl shrink-0"><ShieldCheck className="w-6 h-6 text-emerald-400" /></div>
+                    <div className="flex flex-col overflow-hidden">
+                      <span className="text-[13px] font-black uppercase tracking-widest text-white truncate">De-Branding DNA</span>
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase truncate">White-Label Engine</span>
                     </div>
                   </Link>
 
-                  <div className="grid grid-cols-2 gap-3 mt-2">
-                    <Link to="/seedance" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-green-500/20 p-4 rounded-2xl flex flex-col items-center text-center gap-2">
+                  <div className="grid grid-cols-2 gap-3 mt-2 w-full">
+                    <Link to="/seedance" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-green-500/20 p-4 rounded-2xl flex flex-col items-center text-center gap-2 w-full">
                       <MonitorPlay className="w-6 h-6 text-green-500" />
-                      <span className="text-[11px] font-black text-white uppercase tracking-widest">Seedance 2.0</span>
+                      <span className="text-[11px] font-black text-white uppercase tracking-widest leading-tight">Seedance<br/>2.0</span>
                     </Link>
-                    <Link to="/kling" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-red-500/20 p-4 rounded-2xl flex flex-col items-center text-center gap-2">
+                    <Link to="/kling" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-red-500/20 p-4 rounded-2xl flex flex-col items-center text-center gap-2 w-full">
                       <Video className="w-6 h-6 text-red-500" />
-                      <span className="text-[11px] font-black text-white uppercase tracking-widest">Kling 3.0</span>
+                      <span className="text-[11px] font-black text-white uppercase tracking-widest leading-tight">Kling<br/>3.0</span>
                     </Link>
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-3 w-full">
                   <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2">Premium Stock</h4>
-                  <Link to="/stock" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform">
-                    <div className="bg-blue-500/10 p-3 rounded-xl"><Layers className="w-6 h-6 text-blue-500" /></div>
-                    <span className="text-[13px] font-black uppercase tracking-widest text-white">Stock Bundles</span>
+                  <Link to="/stock" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full">
+                    <div className="bg-blue-500/10 p-3 rounded-xl shrink-0"><Layers className="w-6 h-6 text-blue-500" /></div>
+                    <span className="text-[13px] font-black uppercase tracking-widest text-white truncate">Stock Bundles</span>
                   </Link>
-                  <Link to="/showroom" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform">
-                    <div className="bg-purple-500/10 p-3 rounded-xl"><ImageIcon className="w-6 h-6 text-purple-500" /></div>
-                    <span className="text-[13px] font-black uppercase tracking-widest text-white">V8 Showroom</span>
+                  <Link to="/showroom" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full">
+                    <div className="bg-purple-500/10 p-3 rounded-xl shrink-0"><ImageIcon className="w-6 h-6 text-purple-500" /></div>
+                    <span className="text-[13px] font-black uppercase tracking-widest text-white truncate">V8 Showroom</span>
                   </Link>
                 </div>
 
