@@ -3,7 +3,8 @@ export const CLOUDINARY_CLOUD_NAME = "drllxycnh";
 export const CLOUDINARY_UPLOAD_PRESET = "uploads";
 
 // --- TVOJI ORIGINALNI IMAGE IMPORTS ---
-// V8 ELITE CAROUSEL IMAGES
+// --- TVOJI ORIGINALNI IMAGE IMPORTS ---
+import v10UltraImg from './banner-v10-spartan.webp'; // 🔥 1. TVOJ NOVI IMPORT JE NA VRHU
 import sl1Img from './sl1.webp';
 import sl2Img from './sl2.webp';
 import sl3Img from './sl3.webp';
@@ -14,65 +15,81 @@ import mojLogo from './logo.png';
 import macroHelmet from './praetorian-macro.jpg';
 import godTierFistImg from './banner-v8-godtier-fist.jpg';
 
-// Napomena: Ako si slike stavio direktno u 'src' a ne u 'assets' folder, 
-// onda izbriši '/assets' iz putanje (npr. import sl1Img from './sl1.jpg';)
 // ============================================================================
 // OSNOVNI PODACI I POMOĆNE KOMPONENTE
 // ============================================================================
 
-export const bannerUrl = sl1Img; // Koristimo novu Obsidian sliku umesto starog zmaja
-export const logoUrl = mojLogo; // NAPOMENA: Proveri da li negde na samom vrhu fajla imaš import za mojLogo! 
+// 🔥 Vraćamo pesnicu kao glavnu pozadinu za sajt
+export const bannerUrl = godTierFistImg; 
+export const logoUrl = mojLogo; 
 
 // ============================================================================
 // POČETAK: BANNER_DATA NIZ (PODACI ZA NASLOVNI KARUSEL)
 // ============================================================================
 export const BANNER_DATA = [
   { 
-    image: godTierFistImg, // Nova 60MP zver (Pesnica/Skiptar)
+    // 1. MESTO
+    image: godTierFistImg, 
+    badge: "V10 ULTRA ENGINE // 150MP APEX PROTOCOL", 
+    title: "150MP UNYIELDING SUPREMACY", 
+    subtitle: "The absolute zenith of digital asset engineering. Forged through the V10 Master Engine, this 150 Megapixel titan shatters the boundaries of commercial resolution. Experience microscopic obsidian fractures, hyper-luminous molten gold textures, and flawless sRGB micro-contrast. Engineered exclusively for elite fine-art printing, colossal billboards, and visionary global campaigns.",
+    duration: 168000, 
+  },
+  { 
+    // 2. MESTO
+    image: v10UltraImg, 
     badge: "GOD TIER // 60MP MAXIMUM PROTOCOL", 
     title: "60MP UNCOMPROMISED SUPREMACY", 
     subtitle: "The absolute zenith of digital asset engineering. Flawless macro-resolution, extreme textural protection, and real sRGB hardware color locking, tailored exclusively for ultra-premium corporations.",
     duration: 168000, 
   },
   { 
-    image: macroHelmet, // Tvoja 45MP Macro zver
+    // 3. MESTO
+    image: macroHelmet, 
     badge: "LANCZOS 45MP MACRO-PROTOCOL", 
     title: "45MP CINEMATIC SUPREMACY", 
     subtitle: "Experience absolute textural fidelity. Extreme macro-resolution and perfect sRGB grading, engineered for elite Hollywood-tier visual assets.",
     duration: 168000,
   },
   { 
-    image: sl2Img, // Roman Helmet (Cela kaciga)
+    // 4. MESTO
+    image: sl2Img, 
     badge: "HISTORICAL MASTERWORK", 
     title: "CINEMATIC 33.2MP REALISM", 
     subtitle: "Unleash Hollywood-grade historical textures. Perfect lighting and material accuracy for elite visual storytelling.",
     duration: 168000 
   },
   { 
-    image: sl1Img, // Fluid Obsidian
-    badge: "V8 CORE ARCHITECTURE", 
-    title: "OBSIDIAN & GOLD: THE V8 STANDARD", 
-    subtitle: "Uncompromising aesthetic precision. Fluid dynamic rendering designed for ultra-luxury brand positioning." 
+    // 5. MESTO
+    image: sl5Img, 
+    badge: "VELOCITY & POWER", 
+    title: "ENGINEERED FOR DOMINANCE", 
+    subtitle: "The ultimate fusion of aerodynamic carbon and V8 energy. Supreme automotive rendering capabilities.",
+     duration: 168000, 
   },
   { 
-    image: sl3Img, // Futuristic Boardroom
+    // 6. MESTO
+    image: sl3Img, 
     badge: "VISIONARY ENVIRONMENTS", 
     title: "ARCHITECTURAL SUPREMACY", 
     subtitle: "Design the future of business. Hyper-realistic interior generation for visionary agencies and real estate titans." 
   },
   { 
-    image: sl5Img, // V8 Hypercar
-    badge: "VELOCITY & POWER", 
-    title: "ENGINEERED FOR DOMINANCE", 
-    subtitle: "The ultimate fusion of aerodynamic carbon and V8 energy. Supreme automotive rendering capabilities." 
+    // 7. MESTO
+    image: sl1Img, 
+    badge: "V8 CORE ARCHITECTURE", 
+    title: "OBSIDIAN & GOLD: THE V8 STANDARD", 
+    subtitle: "Uncompromising aesthetic precision. Fluid dynamic rendering designed for ultra-luxury brand positioning." 
   },
   { 
-    image: sl6Img, // Strawberry Splash
+    // 8. MESTO
+    image: sl6Img, 
     badge: "COMMERCIAL PRECISION", 
     title: "GOURMET KINETICS", 
     subtitle: "Microsecond macro capture simulations. Absolute perfection for high-end Food & Beverage commercial assets." 
   },
   {
+    // 9. MESTO
     image: "/banner-v8-fluid.webp",
     badge: "V8 MASTERWORK EDITION",
     title: "BEYOND PIXELS",
