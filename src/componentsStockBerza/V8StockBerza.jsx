@@ -369,7 +369,10 @@ const V8StockBerza = () => {
   // KRAJ FUNKCIJE: obrisiPaket
   
   // POČETAK FUNKCIJE: getGlobalCena
-  const getGlobalCena = (cena) => { const numCena = parseFloat(cena); return numCena > 500 ? (Math.ceil((numCena / 110) * 1.2) + 0.99).toFixed(2) : numCena.toFixed(2); };
+  const getGlobalCena = (cena) => { 
+    const numCena = parseFloat(cena); 
+    return isNaN(numCena) ? "0.00" : numCena.toFixed(2); 
+  };
   // KRAJ FUNKCIJE: getGlobalCena
   
   // POČETAK FUNKCIJE: getAspectClass
