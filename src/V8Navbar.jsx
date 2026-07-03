@@ -134,12 +134,12 @@ const V8Navbar = ({ handleHomeClick }) => {
   };
 
   return (
-    <div className="fixed top-0 left-0 w-full z-[1000]">
+    <div className="fixed top-0 left-0 w-full z-[1000] overflow-x-hidden">
       <nav 
         className={`w-full transition-all duration-500 border-b-2 ${
           scrolled 
           ? 'py-3 md:py-4 bg-black/60 backdrop-blur-xl border-orange-500/60 shadow-[0_10px_40px_rgba(234,88,12,0.3)]' 
-          : 'py-5 md:py-7 bg-transparent border-transparent shadow-none'
+          : 'py-4 md:py-7 bg-transparent border-transparent shadow-none'
         }`}
         style={{
           backgroundImage: scrolled 
@@ -150,18 +150,18 @@ const V8Navbar = ({ handleHomeClick }) => {
           backgroundRepeat: 'no-repeat'
         }}
       >
-        <div className="max-w-7xl mx-auto flex justify-between items-center px-4 md:px-8 w-full">
+        <div className="max-w-7xl mx-auto flex justify-between items-center px-3 sm:px-4 md:px-8 w-full">
           
-          <Link to="/" onClick={() => { handleHomeClick(); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 group shrink-0 mr-2 md:mr-4">
-            <img src={data.logoUrl} className={`object-contain transition-all duration-500 ${scrolled ? 'h-8 md:h-10' : 'h-10 md:h-12'} animate-pulse group-hover:scale-105`} alt="logo" />
-            <div className="flex items-center gap-1.5 whitespace-nowrap">
-              <span className={`font-black uppercase tracking-[0.1em] text-blue-500 italic group-hover:text-orange-500 transition-all duration-500 ${scrolled ? 'text-[10px] md:text-[12px]' : 'text-[11px] md:text-[14px]'}`}>AI TOOLS</span>
-              <span className={`font-black uppercase tracking-[0.1em] text-orange-500 italic group-hover:text-blue-500 transition-all duration-500 ${scrolled ? 'text-[10px] md:text-[12px]' : 'text-[11px] md:text-[14px]'}`}>PRO SMART</span>
+          <Link to="/" onClick={() => { handleHomeClick(); setIsMobileMenuOpen(false); }} className="flex items-center gap-2 sm:gap-3 group shrink-0 mr-1 sm:mr-2 md:mr-4">
+            <img src={data.logoUrl} className={`object-contain transition-all duration-500 ${scrolled ? 'h-8 md:h-10' : 'h-9 md:h-12'} animate-pulse group-hover:scale-105`} alt="logo" />
+            <div className="flex items-center gap-1 sm:gap-1.5 whitespace-nowrap">
+              <span className={`font-black uppercase tracking-[0.1em] text-blue-500 italic group-hover:text-orange-500 transition-all duration-500 ${scrolled ? 'text-[9px] sm:text-[10px] md:text-[12px]' : 'text-[10px] sm:text-[11px] md:text-[14px]'}`}>AI TOOLS</span>
+              <span className={`font-black uppercase tracking-[0.1em] text-orange-500 italic group-hover:text-blue-500 transition-all duration-500 ${scrolled ? 'text-[9px] sm:text-[10px] md:text-[12px]' : 'text-[10px] sm:text-[11px] md:text-[14px]'}`}>PRO SMART</span>
             </div>
           </Link>
 
           {/* DESKTOP NAVIGACIJA */}
-          <div className="flex-1 flex items-center justify-end gap-3 font-black uppercase text-[10px] md:text-[11px] tracking-widest whitespace-nowrap">
+          <div className="flex-1 flex items-center justify-end gap-1 sm:gap-3 font-black uppercase text-[10px] md:text-[11px] tracking-widest whitespace-nowrap min-w-0">
             
             <MagneticButton>
                <Link to="/" onClick={handleHomeClick} className="hidden lg:flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-emerald-900/30 border border-emerald-500/40 text-emerald-400 hover:text-white hover:bg-emerald-800/50 hover:border-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] cursor-pointer">
@@ -358,17 +358,18 @@ const V8Navbar = ({ handleHomeClick }) => {
 
             {/* MASTER USER DROPDOWN */}
             {user ? (
-               <div className="flex items-center gap-2 ml-2 lg:border-l lg:border-white/10 lg:pl-4 relative group">
+               <div className="flex items-center gap-1.5 md:gap-2 ml-1 sm:ml-2 lg:border-l lg:border-white/10 lg:pl-4 relative group shrink-0">
                  <MagneticButton>
-                   <button className="flex items-center gap-2 px-4 py-2 md:py-2.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-700/50 text-white transition-all shadow-md cursor-pointer">
+                   <button className="flex items-center gap-1.5 md:gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-700/50 text-white transition-all shadow-md cursor-pointer">
                      {userCredits?.trialClaimed === false && !isAdmin ? (
                        <>
-                          <Gift className="w-3.5 h-3.5 text-fuchsia-400 animate-pulse" /> 
-                          <span className="font-black text-[10px] tracking-widest uppercase">CLAIM TRIAL</span>
+                          <Gift className="w-4 h-4 text-fuchsia-400 animate-pulse shrink-0" /> 
+                          {/* 🔥 TEKST SAKRIVEN NA MALIM EKRANIMA, VIDLJIV TEK OD 'SM' BREAKPOINT-A 🔥 */}
+                          <span className="hidden sm:inline font-black text-[10px] tracking-widest uppercase">CLAIM TRIAL</span>
                        </>
                      ) : (
                        <>
-                          <Zap className="w-3.5 h-3.5 text-emerald-400 animate-pulse" /> 
+                          <Zap className="w-3.5 h-3.5 text-emerald-400 animate-pulse shrink-0" /> 
                           <span className="hidden sm:inline font-black text-[10px] tracking-widest uppercase">{isAdmin ? 'ADMIN' : 'ACCOUNT'}</span>
                        </>
                      )}
@@ -447,7 +448,7 @@ const V8Navbar = ({ handleHomeClick }) => {
                  </div>
                </div>
             ) : (
-               <div className="hidden lg:block ml-2 border-l border-white/10 pl-4">
+               <div className="hidden lg:block ml-2 border-l border-white/10 pl-4 shrink-0">
                  <MagneticButton>
                    <button onClick={handleLogin} className="bg-zinc-800 px-4 md:px-5 py-2 md:py-2.5 rounded-full text-zinc-400 shadow-xl hover:bg-zinc-700 hover:text-white transition-all border border-white/5 cursor-pointer">
                      <User className="w-4 h-4 inline mr-2" /> LOGIN
@@ -456,12 +457,12 @@ const V8Navbar = ({ handleHomeClick }) => {
                </div>
             )}
 
-            {/* 🔥 HAMBURGER DUGME (SAMO ZA MOBILNE) 🔥 */}
+            {/* 🔥 HAMBURGER DUGME (SAMO ZA MOBILNE - OSIGURANO PROTIV GUŽVANJA) 🔥 */}
             <button 
               onClick={() => setIsMobileMenuOpen(true)}
-              className="lg:hidden ml-2 bg-orange-600/20 text-orange-500 border border-orange-500/40 p-2.5 rounded-xl hover:bg-orange-600 hover:text-white transition-all shadow-[0_0_15px_rgba(249,115,22,0.3)]"
+              className="lg:hidden ml-1 sm:ml-2 bg-orange-600/20 text-orange-500 border border-orange-500/40 p-2 sm:p-2.5 rounded-xl hover:bg-orange-600 hover:text-white transition-all shadow-[0_0_15px_rgba(249,115,22,0.3)] shrink-0"
             >
-              <Menu className="w-5 h-5" />
+              <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
 
           </div>
