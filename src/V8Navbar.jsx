@@ -21,7 +21,7 @@ const V8Navbar = ({ handleHomeClick }) => {
   const [user, setUser] = useState(null);
   const [isVIPInDB, setIsVIPInDB] = useState(false);
   
-  // 🔥 NOVO: Stanje za Mobilni Meni 🔥
+  // Stanje za Mobilni Meni
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Stanje za praćenje kredita (SVI MOTORI)
@@ -69,15 +69,15 @@ const V8Navbar = ({ handleHomeClick }) => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = 'auto';
+      document.body.style.overflow = '';
     }
-    return () => { document.body.style.overflow = 'auto'; };
+    return () => { document.body.style.overflow = ''; };
   }, [isMobileMenuOpen]);
 
   const handleLogout = async () => {
     await signOut(auth);
     if(typeof v8Toast !== 'undefined') v8Toast.success("V8 Disconnected.");
-    setIsMobileMenuOpen(false); // Zatvori meni
+    setIsMobileMenuOpen(false); 
     window.location.reload(); 
   };
 
@@ -86,7 +86,7 @@ const V8Navbar = ({ handleHomeClick }) => {
       const result = await signInWithPopup(auth, provider);
       const loggedUser = result.user;
       if(typeof v8Toast !== 'undefined') v8Toast.success("V8 IGNITED!");
-      setIsMobileMenuOpen(false); // Zatvori meni
+      setIsMobileMenuOpen(false); 
 
       const userRef = doc(db, "v8_users", loggedUser.uid);
       const userSnap = await getDoc(userRef);
@@ -105,10 +105,8 @@ const V8Navbar = ({ handleHomeClick }) => {
         };
         await setDoc(userRef, newUserProfile);
         setUserCredits(newUserProfile);
-        console.log("[V8 SYSTEM] Novi klijent registrovan. Čeka se preuzimanje Trial-a.");
       } else {
         setUserCredits(userSnap.data());
-        console.log("[V8 SYSTEM] Postojeći klijent ulogovan.");
       }
       
     } catch (err) { console.error("[V8 AUTH ERROR]:", err); }
@@ -136,10 +134,9 @@ const V8Navbar = ({ handleHomeClick }) => {
   };
 
   return (
-    // 🔥 ISPRAVKA 1: w-full zamenjen sa w-screen i dodato overlow-x-hidden 🔥
-    <div className="fixed top-0 left-0 w-[100vw] overflow-x-hidden max-w-[100vw] z-[1000]">
+    <div className="fixed top-0 left-0 w-full z-[1000]">
       <nav 
-        className={`w-full max-w-[100vw] transition-all duration-500 border-b-2 ${
+        className={`w-full transition-all duration-500 border-b-2 ${
           scrolled 
           ? 'py-3 md:py-4 bg-black/60 backdrop-blur-xl border-orange-500/60 shadow-[0_10px_40px_rgba(234,88,12,0.3)]' 
           : 'py-5 md:py-7 bg-transparent border-transparent shadow-none'
@@ -164,7 +161,7 @@ const V8Navbar = ({ handleHomeClick }) => {
           </Link>
 
           {/* DESKTOP NAVIGACIJA */}
-          <div className="flex-1 flex items-center justify-end gap-3 font-black uppercase text-[10px] md:text-[11px] tracking-widest whitespace-nowrap overflow-hidden">
+          <div className="flex-1 flex items-center justify-end gap-3 font-black uppercase text-[10px] md:text-[11px] tracking-widest whitespace-nowrap">
             
             <MagneticButton>
                <Link to="/" onClick={handleHomeClick} className="hidden lg:flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-emerald-900/30 border border-emerald-500/40 text-emerald-400 hover:text-white hover:bg-emerald-800/50 hover:border-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] cursor-pointer">
@@ -471,7 +468,7 @@ const V8Navbar = ({ handleHomeClick }) => {
         </div>
       </nav>
 
-      {/* 🔥 ISPRAVKA 2: w-full zamenjeno sa w-screen, ubačen h-[100dvh] za mobile safari/chrome issue 🔥 */}
+      {/* 🔥 MOBILNI MENI (OVERFLOW X SAKRIVEN, 100DVH FIKSIRAN) 🔥 */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div 
@@ -479,7 +476,7 @@ const V8Navbar = ({ handleHomeClick }) => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed top-0 left-0 w-screen h-[100dvh] bg-[#050505]/95 backdrop-blur-3xl z-[99999] flex flex-col overflow-y-auto overflow-x-hidden pb-20"
+            className="fixed inset-0 w-full h-[100dvh] bg-[#050505]/95 backdrop-blur-3xl z-[99999] flex flex-col overflow-y-auto overflow-x-hidden pb-20"
           >
             {/* Header Mob Menija */}
             <div className="flex justify-between items-center p-6 border-b border-white/10 w-full shrink-0">
@@ -495,14 +492,14 @@ const V8Navbar = ({ handleHomeClick }) => {
               </button>
             </div>
 
-            <div className="flex flex-col p-4 sm:p-6 gap-8 w-full max-w-[100vw] overflow-x-hidden">
+            <div className="flex flex-col p-4 sm:p-6 gap-8 w-full">
               
               {/* Sekcija: Nalog i Krediti */}
               {user ? (
                 <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-5 flex flex-col gap-4 mx-auto w-full">
                   <div className="flex items-center gap-3 pb-4 border-b border-white/10">
-                    <User className="w-8 h-8 text-emerald-500 bg-emerald-500/10 p-1.5 rounded-full" />
-                    <div className="overflow-hidden">
+                    <User className="w-8 h-8 text-emerald-500 bg-emerald-500/10 p-1.5 rounded-full shrink-0" />
+                    <div className="overflow-hidden w-full">
                       <h3 className="font-black text-white text-[14px] uppercase tracking-widest truncate">{user.displayName || "V8 KLIJENT"}</h3>
                       <p className="text-[10px] text-zinc-500 uppercase font-bold truncate">{user.email}</p>
                     </div>
