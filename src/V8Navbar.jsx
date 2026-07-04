@@ -32,9 +32,15 @@ const V8Navbar = ({ handleHomeClick }) => {
   const isVIP = isAdmin || isVIPInDB;
 
   useEffect(() => {
-    let unsubTrial = () => {};
+    let unsubTrial = null; // Zadržavamo referencu na pravom nivou
 
-    const unsub = onAuthStateChanged(auth, async (currentUser) => {
+    const unsubAuth = onAuthStateChanged(auth, async (currentUser) => {
+      // 1. Očisti prethodni snapshot listener ako postoji da sprečimo memory leak
+      if (unsubTrial) {
+        unsubTrial();
+        unsubTrial = null;
+      }
+
       if (currentUser) {
         setUser(currentUser);
         if (currentUser.email.toLowerCase() !== "damnjanovicgoran7@gmail.com" && 
@@ -43,6 +49,7 @@ const V8Navbar = ({ handleHomeClick }) => {
             const docSnap = await getDoc(doc(db, "vip_users", currentUser.email.toLowerCase()));
             setIsVIPInDB(docSnap.exists());
 
+            // 2. Kreiraj novi snapshot
             unsubTrial = onSnapshot(doc(db, "v8_users", currentUser.uid), (userSnap) => {
               if (userSnap.exists()) {
                 setUserCredits(userSnap.data());
@@ -55,7 +62,12 @@ const V8Navbar = ({ handleHomeClick }) => {
         setUser(null); setIsVIPInDB(false); setUserCredits({ credits_16mp: 0, credits_33mp: 0, credits_45mp: 0, trialClaimed: true });
       }
     });
-    return () => { unsub(); unsubTrial(); };
+
+    // Cleanup funkcija za demontažu komponente
+    return () => { 
+      unsubAuth(); 
+      if (unsubTrial) unsubTrial(); 
+    };
   }, []);
 
   useEffect(() => {
@@ -160,11 +172,11 @@ const V8Navbar = ({ handleHomeClick }) => {
             </div>
           </Link>
 
-          {/* DESKTOP NAVIGACIJA */}
-          <div className="flex-1 flex items-center justify-end gap-1 sm:gap-3 font-black uppercase text-[10px] md:text-[11px] tracking-widest min-w-0">
+          {/* DESKTOP NAVIGACIJA - Prilagođena za sprečavanje loma na 1024px ekranima */}
+          <div className="flex-1 flex items-center justify-end gap-1 sm:gap-2 xl:gap-3 font-black uppercase tracking-widest min-w-0">
             
             <MagneticButton>
-               <Link to="/" onClick={handleHomeClick} className="hidden lg:flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-emerald-900/30 border border-emerald-500/40 text-emerald-400 hover:text-white hover:bg-emerald-800/50 hover:border-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] cursor-pointer whitespace-nowrap">
+               <Link to="/" onClick={handleHomeClick} className="hidden xl:flex items-center gap-2 px-3 xl:px-5 py-2 md:py-2.5 rounded-full bg-emerald-900/30 border border-emerald-500/40 text-emerald-400 text-[9px] xl:text-[11px] hover:text-white hover:bg-emerald-800/50 hover:border-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] cursor-pointer whitespace-nowrap">
                  <Globe className="w-4 h-4" /> Home
                </Link>
             </MagneticButton>
@@ -172,8 +184,8 @@ const V8Navbar = ({ handleHomeClick }) => {
             {/* MASTER UPSCALERS DROPDOWN */}
             <div className="relative group hidden lg:block">
               <MagneticButton>
-                <button className="flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-yellow-900/30 to-amber-900/30 border border-yellow-500/50 text-yellow-500 hover:text-white hover:border-yellow-400 transition-all shadow-[0_0_15px_rgba(234,179,8,0.15)] cursor-pointer whitespace-nowrap">
-                  <Maximize className="w-4 h-4 text-yellow-400 drop-shadow-[0_0_8px_rgba(234,179,8,0.8)]" /> 
+                <button className="flex items-center gap-1 xl:gap-2 px-3 xl:px-5 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-yellow-900/30 to-amber-900/30 border border-yellow-500/50 text-yellow-500 text-[9px] xl:text-[11px] hover:text-white hover:border-yellow-400 transition-all shadow-[0_0_15px_rgba(234,179,8,0.15)] cursor-pointer whitespace-nowrap">
+                  <Maximize className="w-3 h-3 xl:w-4 xl:h-4 text-yellow-400 drop-shadow-[0_0_8px_rgba(234,179,8,0.8)]" /> 
                   <span>MASTER UPSCALERS</span>
                   <ChevronDown className="w-3 h-3 text-yellow-400 group-hover:rotate-180 transition-transform duration-300" />
                 </button>
@@ -232,8 +244,8 @@ const V8Navbar = ({ handleHomeClick }) => {
             {/* V8 MASTER TOOLS DROPDOWN */}
             <div className="relative group hidden lg:block">
               <MagneticButton>
-                <button className="flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-red-600/90 via-orange-600/90 to-red-600/90 border border-orange-400 text-white transition-all shadow-[0_0_15px_rgba(249,115,22,0.4)] hover:shadow-[0_0_25px_rgba(249,115,22,0.8)] cursor-pointer relative overflow-hidden whitespace-nowrap">
-                  <Zap className="w-4 h-4 text-yellow-300 animate-pulse drop-shadow-[0_0_8px_rgba(253,224,71,1)]" strokeWidth={2.5} /> 
+                <button className="flex items-center gap-1 xl:gap-2 px-3 xl:px-5 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-red-600/90 via-orange-600/90 to-red-600/90 border border-orange-400 text-white text-[9px] xl:text-[11px] transition-all shadow-[0_0_15px_rgba(249,115,22,0.4)] hover:shadow-[0_0_25px_rgba(249,115,22,0.8)] cursor-pointer relative overflow-hidden whitespace-nowrap">
+                  <Zap className="w-3 h-3 xl:w-4 xl:h-4 text-yellow-300 animate-pulse drop-shadow-[0_0_8px_rgba(253,224,71,1)]" strokeWidth={2.5} /> 
                   <span>V8 MASTER TOOLS</span>
                   <ChevronDown className="w-3 h-3 text-yellow-300 group-hover:rotate-180 transition-transform duration-300" />
                 </button>
@@ -322,15 +334,16 @@ const V8Navbar = ({ handleHomeClick }) => {
             {/* PREMIUM STOCK DROPDOWN */}
             <div className="relative group hidden lg:block">
               <MagneticButton>
-                <button className="flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-blue-900/30 to-indigo-900/30 border border-blue-500/50 text-blue-300 hover:text-white hover:border-blue-400 transition-all shadow-[0_0_15px_rgba(59,130,246,0.15)] cursor-pointer whitespace-nowrap">
-                  <ImageIcon className="w-4 h-4 text-blue-400 drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]" /> 
+                <button className="flex items-center gap-1 xl:gap-2 px-3 xl:px-5 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-blue-900/30 to-indigo-900/30 border border-blue-500/50 text-blue-300 text-[9px] xl:text-[11px] hover:text-white hover:border-blue-400 transition-all shadow-[0_0_15px_rgba(59,130,246,0.15)] cursor-pointer whitespace-nowrap">
+                  <ImageIcon className="w-3 h-3 xl:w-4 xl:h-4 text-blue-400 drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]" /> 
                   <span>PREMIUM STOCK</span>
                   <ChevronDown className="w-3 h-3 text-blue-400 group-hover:rotate-180 transition-transform duration-300" />
                 </button>
               </MagneticButton>
               
               <div className="absolute top-full right-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-400 z-[9999]">
-                <div className="bg-black/80 backdrop-blur-2xl border border-white/10 border-t-blue-500/60 border-b-purple-500/30 rounded-2xl p-2 w-64 shadow-[0_30px_60px_rgba(0,0,0,0.8)] flex flex-col gap-1 relative overflow-hidden">
+                {/* Malo proširen panel (w-72) da bi legalna klauzula stala lepše */}
+                <div className="bg-black/80 backdrop-blur-2xl border border-white/10 border-t-blue-500/60 border-b-purple-500/30 rounded-2xl p-2 w-72 shadow-[0_30px_60px_rgba(0,0,0,0.8)] flex flex-col gap-1 relative overflow-hidden">
                   <div className="absolute -top-12 -right-12 w-32 h-32 bg-blue-600/20 rounded-full blur-[40px] pointer-events-none z-0"></div>
                   
                   <Link to="/stock" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-400 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-blue-500/30">
@@ -352,25 +365,34 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Visual Gallery</span>
                     </div>
                   </Link>
+
+                  {/* 🔥 LEGALNA KLAUZULA INTEGRISANA U UI 🔥 */}
+                  <div className="mt-1 px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-start gap-2 relative z-10">
+                    <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span className="text-[7px] font-black uppercase tracking-widest text-emerald-400 leading-relaxed">
+                      INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP
+                    </span>
+                  </div>
+
                 </div>
               </div>
             </div>
 
             {/* MASTER USER DROPDOWN */}
             {user ? (
-               <div className="flex items-center gap-1.5 md:gap-2 ml-1 sm:ml-2 lg:border-l lg:border-white/10 lg:pl-4 relative group shrink-0">
+               <div className="flex items-center gap-1.5 md:gap-2 ml-1 sm:ml-2 lg:border-l lg:border-white/10 lg:pl-3 xl:pl-4 relative group shrink-0">
                  <MagneticButton>
                    <button className="flex items-center gap-1.5 md:gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-700/50 text-white transition-all shadow-md cursor-pointer whitespace-nowrap">
                      {userCredits?.trialClaimed === false && !isAdmin ? (
                        <>
                           <Gift className="w-4 h-4 text-fuchsia-400 animate-pulse shrink-0" /> 
                           {/* 🔥 TEKST SAKRIVEN NA MALIM EKRANIMA, VIDLJIV TEK OD 'SM' BREAKPOINT-A 🔥 */}
-                          <span className="hidden sm:inline font-black text-[10px] tracking-widest uppercase">CLAIM TRIAL</span>
+                          <span className="hidden sm:inline font-black text-[9px] xl:text-[10px] tracking-widest uppercase">CLAIM TRIAL</span>
                        </>
                      ) : (
                        <>
                           <Zap className="w-3.5 h-3.5 text-emerald-400 animate-pulse shrink-0" /> 
-                          <span className="hidden sm:inline font-black text-[10px] tracking-widest uppercase">{isAdmin ? 'ADMIN' : 'ACCOUNT'}</span>
+                          <span className="hidden sm:inline font-black text-[9px] xl:text-[10px] tracking-widest uppercase">{isAdmin ? 'ADMIN' : 'ACCOUNT'}</span>
                        </>
                      )}
                      <ChevronDown className="hidden lg:block w-3 h-3 text-zinc-400 group-hover:rotate-180 transition-transform duration-300" />
@@ -448,10 +470,10 @@ const V8Navbar = ({ handleHomeClick }) => {
                  </div>
                </div>
             ) : (
-               <div className="hidden lg:block ml-2 border-l border-white/10 pl-4 shrink-0">
+               <div className="hidden lg:block ml-2 border-l border-white/10 pl-3 xl:pl-4 shrink-0">
                  <MagneticButton>
-                   <button onClick={handleLogin} className="bg-zinc-800 px-4 md:px-5 py-2 md:py-2.5 rounded-full text-zinc-400 shadow-xl hover:bg-zinc-700 hover:text-white transition-all border border-white/5 cursor-pointer whitespace-nowrap">
-                     <User className="w-4 h-4 inline mr-2" /> LOGIN
+                   <button onClick={handleLogin} className="bg-zinc-800 px-3 xl:px-5 py-2 md:py-2.5 rounded-full text-zinc-400 shadow-xl hover:bg-zinc-700 hover:text-white transition-all border border-white/5 cursor-pointer whitespace-nowrap text-[9px] xl:text-[11px]">
+                     <User className="w-4 h-4 inline mr-1 xl:mr-2" /> LOGIN
                    </button>
                  </MagneticButton>
                </div>
@@ -653,7 +675,18 @@ const V8Navbar = ({ handleHomeClick }) => {
                 </div>
 
                 <div className="flex flex-col gap-3 w-full">
-                  <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2">Premium Stock</h4>
+                  <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2 flex justify-between items-center">
+                    <span>Premium Stock</span>
+                  </h4>
+                  
+                  {/* 🔥 LEGALNA KLAUZULA U MOBILNOM MENIJU 🔥 */}
+                  <div className="bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl flex items-center gap-2 mb-1 w-full">
+                    <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span className="text-[7.5px] text-emerald-400 font-black uppercase tracking-widest leading-relaxed">
+                      INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP
+                    </span>
+                  </div>
+
                   <Link to="/stock" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full">
                     <div className="bg-blue-500/10 p-3 rounded-xl shrink-0"><Layers className="w-6 h-6 text-blue-500" /></div>
                     <span className="text-[13px] font-black uppercase tracking-widest text-white truncate">Stock Bundles</span>

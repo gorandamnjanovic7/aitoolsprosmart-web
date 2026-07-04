@@ -741,7 +741,7 @@ const V8MasterEngine33MP = () => {
                 <p className="text-zinc-400 text-[11px] font-bold">Download 33MP Specs (TXT)</p>
             </div>
         </a>
-        <a href="/V8_Commercial_License.pdf" download className="flex-1 bg-black/40 border border-yellow-500/30 hover:border-yellow-400 p-6 rounded-2xl flex items-center gap-5 transition-all duration-300 hover:bg-yellow-900/20 group hover:-translate-y-1 shadow-lg hover:shadow-[0_10px_30px_rgba(234,179,8,0.2)]">
+        <a href="/v8-license.pdf" download className="flex-1 bg-black/40 border border-yellow-500/30 hover:border-yellow-400 p-6 rounded-2xl flex items-center gap-5 transition-all duration-300 hover:bg-yellow-900/20 group hover:-translate-y-1 shadow-lg hover:shadow-[0_10px_30px_rgba(234,179,8,0.2)]">
             <div className="bg-yellow-500/10 p-4 rounded-full border border-yellow-500/20 group-hover:bg-yellow-500/20 transition-all"><FileText className="w-8 h-8 text-yellow-400" /></div>
             <div className="text-left">
                 <h4 className="text-white font-black uppercase tracking-widest text-[13px] mb-1">Commercial License</h4>

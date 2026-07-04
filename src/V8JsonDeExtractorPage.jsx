@@ -464,7 +464,7 @@ const V8JsonExtractorPage = () => {
               <DownloadCloud className="ml-auto text-zinc-600 group-hover:text-cyan-500 transition-colors w-5 h-5" />
             </a>
 
-            <a href="/V8_Commercial_License.pdf" download className="flex items-center gap-4 bg-black/40 hover:bg-emerald-500/10 border border-white/5 hover:border-emerald-500/50 p-6 rounded-2xl transition-all group shadow-inner">
+            <a href="/v8-license.pdf" download className="flex items-center gap-4 bg-black/40 hover:bg-emerald-500/10 border border-white/5 hover:border-emerald-500/50 p-6 rounded-2xl transition-all group shadow-inner">
               <ShieldCheck className="text-emerald-500 w-8 h-8 group-hover:scale-110 transition-transform" />
               <div className="flex flex-col text-left">
                 <span className="text-white font-black uppercase tracking-widest text-[13px] group-hover:text-emerald-400 transition-colors">Commercial License</span>

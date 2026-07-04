@@ -461,6 +461,15 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
              <h4 className={`${currentEngine === "SEEDANCE 2.0" ? "text-green-500 border-green-500/20" : "text-orange-500 border-orange-500/20"} font-black uppercase tracking-[0.2em] text-[13px] border-b pb-3 mb-4 flex items-center gap-2`}>
                 <ShieldCheck className="w-5 h-5" /> V8 LICENSE PROTOCOL
              </h4>
+
+             {/* 🔥 OBAVEZNA IP-SAFE KLAUZULA DODATA OVDE 🔥 */}
+             <div className="bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl flex items-start gap-2 mb-4">
+                <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
+                <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest text-emerald-400 leading-relaxed">
+                   INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP
+                </span>
+             </div>
+
              <p className="text-[13px] md:text-[14px] text-zinc-300"><strong className="text-white">1. ONE-TIME PAYMENT:</strong> Pay once. Secure your Lifetime License. Zero monthly subscriptions.</p>
              <p className="text-[13px] md:text-[14px] text-zinc-300"><strong className="text-white">2. THE ROLLING QUOTA:</strong> You get a dedicated pool of credits based on your tier. Use them in 24 hours or stretch them across 365 days. Your cycle only ends when your credits hit zero.</p>
              <p className="text-[13px] md:text-[14px] text-zinc-300"><strong className="text-white">3. THE 24H AUTO-REFILL:</strong> Burned through your entire quota? The Extractor Core enters a mandatory 24-hour cooling phase. After exactly 24 hours, your credits auto-replenish to full capacity. <span className="text-emerald-400 font-black">For free. Forever.</span></p>
@@ -566,7 +575,7 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
       ];
 
       return (
-        <div className="w-full max-w-5xl mx-auto mb-16 bg-black/40 border border-white/5 rounded-[2rem] p-8 md:p-10 relative z-10 shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
+        <div className="w-full max-w-5xl mx-auto mb-10 bg-black/40 border border-white/5 rounded-[2rem] p-8 md:p-10 relative z-10 shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
           <div className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-black uppercase tracking-[0.2em] text-white">PROMPT ENGINE ARCHITECTURE</h2>
             <p className="text-[12px] md:text-[14px] text-orange-400 font-bold uppercase tracking-[0.3em] mt-3 italic">Technical Specifications</p>
@@ -822,6 +831,27 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
       </div>
 
       {renderV8Manifest()}
+
+      {/* 🔥 DODATO DUGME ZA DOWNLOAD LICENCE ISPOD MANIFESTA 🔥 */}
+      <div className="flex justify-center max-w-4xl mx-auto mb-16 relative z-10 px-4">
+        <a
+          href="/v8-license.pdf"
+          download
+          className={`flex-1 max-w-md bg-black/40 border p-6 rounded-2xl flex items-center gap-5 transition-all duration-300 shadow-lg group hover:-translate-y-1 ${currentEngine === "SEEDANCE 2.0" ? "border-green-500/30 hover:border-green-400 hover:bg-green-900/20 hover:shadow-[0_10px_30px_rgba(34,197,94,0.2)]" : "border-orange-500/30 hover:border-orange-400 hover:bg-orange-900/20 hover:shadow-[0_10px_30px_rgba(234,88,12,0.2)]"}`}
+        >
+          <div className={`p-4 rounded-full border transition-all ${currentEngine === "SEEDANCE 2.0" ? "bg-green-500/10 border-green-500/20 group-hover:bg-green-500/20" : "bg-orange-500/10 border-orange-500/20 group-hover:bg-orange-500/20"}`}>
+            <FileText className={`w-8 h-8 ${currentEngine === "SEEDANCE 2.0" ? "text-green-400" : "text-orange-400"}`} />
+          </div>
+          <div className="text-left">
+            <h4 className="text-white font-black uppercase tracking-widest text-[13px] mb-1">
+              Commercial License
+            </h4>
+            <p className="text-zinc-400 text-[11px] font-bold">
+              Download Legal Terms (PDF)
+            </p>
+          </div>
+        </a>
+      </div>
 
       <div className={`transition-all duration-500 ${!isVIP && !isAdmin ? 'opacity-30 grayscale-[70%] pointer-events-none' : ''}`}>
         

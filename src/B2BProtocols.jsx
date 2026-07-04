@@ -52,9 +52,18 @@ export default function B2BProtocols() {
             <h3 className="text-white font-black uppercase tracking-widest text-[14px] mb-3">
               Lifetime Commercial License
             </h3>
-            <p className="text-zinc-400 text-[12px] leading-relaxed">
-              100% IP-safe assets. Legally cleared for YouTube monetization, freelance projects, global marketing, and high-end digital ad campaigns.
+            <p className="text-zinc-400 text-[12px] leading-relaxed mb-4">
+              INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Legally cleared for YouTube monetization, freelance projects, global marketing, and high-end digital ad campaigns.
             </p>
+            {/* Dugme za PDF Licencu koje sada ispravno gađa v8-license.pdf */}
+            <a 
+              href="/v8-license.pdf" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-400 border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 rounded-lg hover:bg-emerald-500 hover:text-black transition-all"
+            >
+              <FileText size={12} /> View Full License Agreement
+            </a>
           </div>
 
           {/* Card 3: Payments Setup */}
