@@ -134,7 +134,7 @@ const V8Navbar = ({ handleHomeClick }) => {
   };
 
   return (
-    <div className="fixed top-0 left-0 w-full z-[1000] overflow-x-hidden">
+    <div className="fixed top-0 left-0 w-full z-[1000]">
       <nav 
         className={`w-full transition-all duration-500 border-b-2 ${
           scrolled 
@@ -152,19 +152,19 @@ const V8Navbar = ({ handleHomeClick }) => {
       >
         <div className="max-w-7xl mx-auto flex justify-between items-center px-3 sm:px-4 md:px-8 w-full">
           
-          <Link to="/" onClick={() => { handleHomeClick(); setIsMobileMenuOpen(false); }} className="flex items-center gap-2 sm:gap-3 group shrink-0 mr-1 sm:mr-2 md:mr-4">
-            <img src={data.logoUrl} className={`object-contain transition-all duration-500 ${scrolled ? 'h-8 md:h-10' : 'h-9 md:h-12'} animate-pulse group-hover:scale-105`} alt="logo" />
-            <div className="flex items-center gap-1 sm:gap-1.5 whitespace-nowrap">
+          <Link to="/" onClick={() => { handleHomeClick(); setIsMobileMenuOpen(false); }} className="flex items-center gap-2 sm:gap-3 group shrink-0 mr-1 sm:mr-2 md:mr-4 min-w-0">
+            <img src={data.logoUrl} className={`object-contain transition-all duration-500 shrink-0 ${scrolled ? 'h-8 md:h-10' : 'h-9 md:h-12'} animate-pulse group-hover:scale-105`} alt="logo" />
+            <div className="flex items-center gap-1 sm:gap-1.5 whitespace-nowrap overflow-hidden">
               <span className={`font-black uppercase tracking-[0.1em] text-blue-500 italic group-hover:text-orange-500 transition-all duration-500 ${scrolled ? 'text-[9px] sm:text-[10px] md:text-[12px]' : 'text-[10px] sm:text-[11px] md:text-[14px]'}`}>AI TOOLS</span>
               <span className={`font-black uppercase tracking-[0.1em] text-orange-500 italic group-hover:text-blue-500 transition-all duration-500 ${scrolled ? 'text-[9px] sm:text-[10px] md:text-[12px]' : 'text-[10px] sm:text-[11px] md:text-[14px]'}`}>PRO SMART</span>
             </div>
           </Link>
 
           {/* DESKTOP NAVIGACIJA */}
-          <div className="flex-1 flex items-center justify-end gap-1 sm:gap-3 font-black uppercase text-[10px] md:text-[11px] tracking-widest whitespace-nowrap min-w-0">
+          <div className="flex-1 flex items-center justify-end gap-1 sm:gap-3 font-black uppercase text-[10px] md:text-[11px] tracking-widest min-w-0">
             
             <MagneticButton>
-               <Link to="/" onClick={handleHomeClick} className="hidden lg:flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-emerald-900/30 border border-emerald-500/40 text-emerald-400 hover:text-white hover:bg-emerald-800/50 hover:border-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] cursor-pointer">
+               <Link to="/" onClick={handleHomeClick} className="hidden lg:flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-emerald-900/30 border border-emerald-500/40 text-emerald-400 hover:text-white hover:bg-emerald-800/50 hover:border-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] cursor-pointer whitespace-nowrap">
                  <Globe className="w-4 h-4" /> Home
                </Link>
             </MagneticButton>
@@ -172,7 +172,7 @@ const V8Navbar = ({ handleHomeClick }) => {
             {/* MASTER UPSCALERS DROPDOWN */}
             <div className="relative group hidden lg:block">
               <MagneticButton>
-                <button className="flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-yellow-900/30 to-amber-900/30 border border-yellow-500/50 text-yellow-500 hover:text-white hover:border-yellow-400 transition-all shadow-[0_0_15px_rgba(234,179,8,0.15)] cursor-pointer">
+                <button className="flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-yellow-900/30 to-amber-900/30 border border-yellow-500/50 text-yellow-500 hover:text-white hover:border-yellow-400 transition-all shadow-[0_0_15px_rgba(234,179,8,0.15)] cursor-pointer whitespace-nowrap">
                   <Maximize className="w-4 h-4 text-yellow-400 drop-shadow-[0_0_8px_rgba(234,179,8,0.8)]" /> 
                   <span>MASTER UPSCALERS</span>
                   <ChevronDown className="w-3 h-3 text-yellow-400 group-hover:rotate-180 transition-transform duration-300" />
@@ -188,8 +188,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <ImageIcon className="w-5 h-5 text-orange-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-orange-400 transition-all drop-shadow-md">16MP WORKSPACE</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Standard V8 Engine</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-orange-400 transition-all drop-shadow-md whitespace-nowrap">16MP WORKSPACE</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Standard V8 Engine</span>
                     </div>
                   </Link>
                   
@@ -198,8 +198,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <Cpu className="w-5 h-5 text-yellow-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-yellow-400 transition-all drop-shadow-md">33.2MP ENGINE</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Premium Upscaler</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-yellow-400 transition-all drop-shadow-md whitespace-nowrap">33.2MP ENGINE</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Premium Upscaler</span>
                     </div>
                   </Link>
 
@@ -208,8 +208,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <Cpu className="w-5 h-5 text-amber-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-amber-400 transition-all drop-shadow-md">45MP ENGINE</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Pro Marketplace</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-amber-400 transition-all drop-shadow-md whitespace-nowrap">45MP ENGINE</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Pro Marketplace</span>
                     </div>
                   </Link>
 
@@ -219,8 +219,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                         <Cpu className="w-5 h-5 text-rose-400 transition-transform group-hover/item:scale-110" />
                       </div>
                       <div className="flex flex-col text-left">
-                        <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-rose-400 transition-all drop-shadow-md">60MP ENGINE</span>
-                        <span className="text-[9px] font-bold text-zinc-500 tracking-wider">God Tier Resolution</span>
+                        <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-rose-400 transition-all drop-shadow-md whitespace-nowrap">60MP ENGINE</span>
+                        <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">God Tier Resolution</span>
                       </div>
                     </div>
                     <span className="text-[8px] bg-rose-600 text-white px-2 py-0.5 rounded font-black tracking-widest shadow-[0_0_8px_rgba(244,63,94,0.5)]">MAX</span>
@@ -232,7 +232,7 @@ const V8Navbar = ({ handleHomeClick }) => {
             {/* V8 MASTER TOOLS DROPDOWN */}
             <div className="relative group hidden lg:block">
               <MagneticButton>
-                <button className="flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-red-600/90 via-orange-600/90 to-red-600/90 border border-orange-400 text-white transition-all shadow-[0_0_15px_rgba(249,115,22,0.4)] hover:shadow-[0_0_25px_rgba(249,115,22,0.8)] cursor-pointer relative overflow-hidden">
+                <button className="flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-red-600/90 via-orange-600/90 to-red-600/90 border border-orange-400 text-white transition-all shadow-[0_0_15px_rgba(249,115,22,0.4)] hover:shadow-[0_0_25px_rgba(249,115,22,0.8)] cursor-pointer relative overflow-hidden whitespace-nowrap">
                   <Zap className="w-4 h-4 text-yellow-300 animate-pulse drop-shadow-[0_0_8px_rgba(253,224,71,1)]" strokeWidth={2.5} /> 
                   <span>V8 MASTER TOOLS</span>
                   <ChevronDown className="w-3 h-3 text-yellow-300 group-hover:rotate-180 transition-transform duration-300" />
@@ -248,8 +248,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <Zap className="w-5 h-5 text-orange-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-orange-400 transition-all drop-shadow-md">10X ENHANCER</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Premium AI Engine</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-orange-400 transition-all drop-shadow-md whitespace-nowrap">10X ENHANCER</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Premium AI Engine</span>
                     </div>
                   </Link>
 
@@ -258,8 +258,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <Award className="w-5 h-5 text-blue-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-blue-400 transition-all drop-shadow-md">AI STORE</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Asset Marketplace</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-blue-400 transition-all drop-shadow-md whitespace-nowrap">AI STORE</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Asset Marketplace</span>
                     </div>
                   </Link>
 
@@ -268,8 +268,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <LayoutGrid className="w-5 h-5 text-yellow-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-yellow-400 transition-all drop-shadow-md">V8 GRID SYSTEM</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Cinematic Matrix Gen</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-yellow-400 transition-all drop-shadow-md whitespace-nowrap">V8 GRID SYSTEM</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Cinematic Matrix Gen</span>
                     </div>
                   </Link>
 
@@ -278,8 +278,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <Code className="w-5 h-5 text-cyan-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-cyan-400 transition-all drop-shadow-md">JSON EXTRACTOR</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Visual DNA Reverse Engine</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-cyan-400 transition-all drop-shadow-md whitespace-nowrap">JSON EXTRACTOR</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Visual DNA Reverse Engine</span>
                     </div>
                   </Link>
 
@@ -289,8 +289,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                         <ShieldCheck className="w-5 h-5 text-emerald-400 transition-transform group-hover/item:scale-110" />
                       </div>
                       <div className="flex flex-col text-left">
-                        <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-emerald-400 transition-all drop-shadow-md">DE-BRANDING DNA</span>
-                        <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Clean White-Label Engine</span>
+                        <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-emerald-400 transition-all drop-shadow-md whitespace-nowrap">DE-BRANDING DNA</span>
+                        <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Clean White-Label Engine</span>
                       </div>
                     </div>
                     <span className="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded font-black tracking-widest shadow-[0_0_8px_rgba(16,185,129,0.5)]">NEW</span>
@@ -301,8 +301,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <MonitorPlay className="w-5 h-5 text-green-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-green-400 transition-all drop-shadow-md">SEEDANCE 2.0</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Cinematic Video Prompting</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-green-400 transition-all drop-shadow-md whitespace-nowrap">SEEDANCE 2.0</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Cinematic Video Prompting</span>
                     </div>
                   </Link>
 
@@ -311,8 +311,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <Video className="w-5 h-5 text-red-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-red-400 transition-all drop-shadow-md">KLING 3.0</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Hyper-Real Motion Engine</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-red-400 transition-all drop-shadow-md whitespace-nowrap">KLING 3.0</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Hyper-Real Motion Engine</span>
                     </div>
                   </Link>
                 </div>
@@ -322,7 +322,7 @@ const V8Navbar = ({ handleHomeClick }) => {
             {/* PREMIUM STOCK DROPDOWN */}
             <div className="relative group hidden lg:block">
               <MagneticButton>
-                <button className="flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-blue-900/30 to-indigo-900/30 border border-blue-500/50 text-blue-300 hover:text-white hover:border-blue-400 transition-all shadow-[0_0_15px_rgba(59,130,246,0.15)] cursor-pointer">
+                <button className="flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-blue-900/30 to-indigo-900/30 border border-blue-500/50 text-blue-300 hover:text-white hover:border-blue-400 transition-all shadow-[0_0_15px_rgba(59,130,246,0.15)] cursor-pointer whitespace-nowrap">
                   <ImageIcon className="w-4 h-4 text-blue-400 drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]" /> 
                   <span>PREMIUM STOCK</span>
                   <ChevronDown className="w-3 h-3 text-blue-400 group-hover:rotate-180 transition-transform duration-300" />
@@ -338,8 +338,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <Layers className="w-5 h-5 text-blue-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-all">MASTER STOCK BUNDLES</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">High-End Visuals</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-all whitespace-nowrap">MASTER STOCK BUNDLES</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">High-End Visuals</span>
                     </div>
                   </Link>
                   
@@ -348,8 +348,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <ImageIcon className="w-5 h-5 text-purple-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:drop-shadow-[0_0_8px_rgba(168,85,247,0.5)] transition-all">Showroom</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider">Visual Gallery</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:drop-shadow-[0_0_8px_rgba(168,85,247,0.5)] transition-all whitespace-nowrap">Showroom</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Visual Gallery</span>
                     </div>
                   </Link>
                 </div>
@@ -360,7 +360,7 @@ const V8Navbar = ({ handleHomeClick }) => {
             {user ? (
                <div className="flex items-center gap-1.5 md:gap-2 ml-1 sm:ml-2 lg:border-l lg:border-white/10 lg:pl-4 relative group shrink-0">
                  <MagneticButton>
-                   <button className="flex items-center gap-1.5 md:gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-700/50 text-white transition-all shadow-md cursor-pointer">
+                   <button className="flex items-center gap-1.5 md:gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-700/50 text-white transition-all shadow-md cursor-pointer whitespace-nowrap">
                      {userCredits?.trialClaimed === false && !isAdmin ? (
                        <>
                           <Gift className="w-4 h-4 text-fuchsia-400 animate-pulse shrink-0" /> 
@@ -450,7 +450,7 @@ const V8Navbar = ({ handleHomeClick }) => {
             ) : (
                <div className="hidden lg:block ml-2 border-l border-white/10 pl-4 shrink-0">
                  <MagneticButton>
-                   <button onClick={handleLogin} className="bg-zinc-800 px-4 md:px-5 py-2 md:py-2.5 rounded-full text-zinc-400 shadow-xl hover:bg-zinc-700 hover:text-white transition-all border border-white/5 cursor-pointer">
+                   <button onClick={handleLogin} className="bg-zinc-800 px-4 md:px-5 py-2 md:py-2.5 rounded-full text-zinc-400 shadow-xl hover:bg-zinc-700 hover:text-white transition-all border border-white/5 cursor-pointer whitespace-nowrap">
                      <User className="w-4 h-4 inline mr-2" /> LOGIN
                    </button>
                  </MagneticButton>
