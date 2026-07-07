@@ -1,6 +1,6 @@
 // POČETAK FAJLA: V8GridSystem.jsx
 import React, { useState, useEffect, useRef, useCallback, memo } from "react";
-import { Helmet } from 'react-helmet-async'; // 🔥 DODATO ZA SEO 🔥
+import { Helmet } from 'react-helmet-async'; 
 import { Copy, RefreshCw, Zap, Lock, ShieldCheck, FileText, Code, Trash2, LayoutGrid, ChevronDown, Timer, Crown, Diamond, ArrowUpCircle, Download, CheckCircle, Cpu, Archive, X, Eye, Upload, Database, AlertTriangle } from "lucide-react";
 import { auth, db } from './firebase'; 
 import { doc, getDoc, setDoc, onSnapshot, collection, query, where, increment, serverTimestamp } from 'firebase/firestore';
@@ -9,7 +9,6 @@ import { v8Toast } from './v8Utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import V8SecureCheckout from './V8SecureCheckout';
 import LoginRequiredModal from './LoginRequiredModal';
-import V8SmartQuota from './V8SmartQuota';
 
 import { DEFAULT_CATEGORIES, SUB_CATEGORIES_DB, DEFAULT_CATEGORIES_2, SUB_CATEGORIES_DB_2, DEFAULT_CATEGORIES_3, SUB_CATEGORIES_DB_3, DEFAULT_CATEGORIES_4, SUB_CATEGORIES_DB_4, STYLE_PRESETS, CAMERA_PRESETS, LIGHTING_PRESETS } from './V8_Database';
 
@@ -45,8 +44,13 @@ function seededShuffle(array, seed) {
 
 // POČETAK FUNKCIJE: autoDescription
 function autoDescription(category, originalIndex, seed, promptIndex, dbType = 1) {
-  const baseList = dbType === 1 ? DEFAULT_CATEGORIES : dbType === 2 ? DEFAULT_CATEGORIES_2 : dbType === 3 ? DEFAULT_CATEGORIES_3 : DEFAULT_CATEGORIES_4;
-  const subDb = dbType === 1 ? SUB_CATEGORIES_DB : dbType === 2 ? SUB_CATEGORIES_DB_2 : dbType === 3 ? SUB_CATEGORIES_DB_3 : SUB_CATEGORIES_DB_4;
+  // Za DB 5 - Ako korisnik nije kucao ništa, izbacujemo placeholder
+  if (dbType === 5 && (!category || category.trim() === "")) {
+     return "Awaiting custom input to generate V8 Smart Blueprint...";
+  }
+
+  const baseList = dbType === 1 ? DEFAULT_CATEGORIES : dbType === 2 ? DEFAULT_CATEGORIES_2 : dbType === 3 ? DEFAULT_CATEGORIES_3 : dbType === 4 ? DEFAULT_CATEGORIES_4 : [];
+  const subDb = dbType === 1 ? SUB_CATEGORIES_DB : dbType === 2 ? SUB_CATEGORIES_DB_2 : dbType === 3 ? SUB_CATEGORIES_DB_3 : dbType === 4 ? SUB_CATEGORIES_DB_4 : {};
   
   const baseCat = baseList[originalIndex] ? baseList[originalIndex].toLowerCase() : category.toLowerCase();
   
@@ -84,19 +88,17 @@ function autoDescription(category, originalIndex, seed, promptIndex, dbType = 1)
 // KRAJ FUNKCIJE: autoDescription
 
 // POČETAK FUNKCIJE: makeSinglePrompt
-function makeSinglePrompt({ categories, seed, presetName, strictNoBrand, includeNegative, promptIndex, aspectRatio, selectedIndices, gridFormat }) {
+function makeSinglePrompt({ categories, seed, presetName, strictNoBrand, includeNegative, promptIndex, aspectRatio, selectedIndices, gridFormat, activeDB }) {
   const preset = STYLE_PRESETS[presetName] || STYLE_PRESETS["Nano Banana 2 / Pro"];
-  const descriptions = categories.map((cat, i) => autoDescription(cat, selectedIndices[i], seed, promptIndex, DEFAULT_CATEGORIES_4.includes(cat) ? 4 : DEFAULT_CATEGORIES_3.includes(cat) ? 3 : DEFAULT_CATEGORIES_2.includes(cat) ? 2 : 1));
+  const descriptions = categories.map((cat, i) => autoDescription(cat, selectedIndices[i], seed, promptIndex, activeDB));
   
   let rows, cols;
   if (aspectRatio === "9:16") {
-      // Dinamična rotacija za vertikalne ekrane
       if (gridFormat === "2x6") { rows = 6; cols = 2; }
       else if (gridFormat === "2x4") { rows = 4; cols = 2; }
       else if (gridFormat === "2x3") { rows = 3; cols = 2; }
       else { rows = 2; cols = 2; }
   } else {
-      // Standardni položeni ekrani
       if (gridFormat === "2x6") { rows = 2; cols = 6; }
       else if (gridFormat === "2x4") { rows = 2; cols = 4; }
       else if (gridFormat === "2x3") { rows = 2; cols = 3; }
@@ -105,7 +107,6 @@ function makeSinglePrompt({ categories, seed, presetName, strictNoBrand, include
 
   const totalPanels = rows * cols;
   
-  // 🔥 ZADRŽANA TVOJA STRIKTNA LOGIKA ZA GRID (NETAKNUTA) 🔥
   const gridHeader = `Strict split-screen composition: A perfect ${cols}x${rows} grid layout containing EXACTLY ${totalPanels} distinct images. Arranged specifically in ${cols} vertical columns and ${rows} horizontal rows. Seamless transitions, no borders.`;
   
   const panelText = descriptions.slice(0, totalPanels).map((d,i) => `[Panel ${i+1}]: ${d}`).join(" | ");
@@ -132,7 +133,6 @@ function makeSinglePrompt({ categories, seed, presetName, strictNoBrand, include
       }
   });
 
-  // Dodatna zaštita za 12 panela: da bi ugasili 4x3 halucinaciju!
   if (totalPanels === 12) {
       negativeArr.push("4x3 grid layout", "3x4 grid layout", "3 columns and 4 rows", "4 columns and 3 rows");
   }
@@ -155,7 +155,6 @@ function makeSinglePrompt({ categories, seed, presetName, strictNoBrand, include
 
 // POČETAK FUNKCIJE: makeVariations
 function makeVariations(options) {
-  // 🔥 Ubačen 2x6 panel kalkulator (12 slika) 🔥
   const panelsPerPrompt = options.gridFormat === "2x6" ? 12 : options.gridFormat === "2x4" ? 8 : options.gridFormat === "2x3" ? 6 : 4;
   return Array.from({ length: 100 }, (_, promptIndex) => {
     const currentSeed = options.seed + promptIndex * 101;
@@ -167,17 +166,19 @@ function makeVariations(options) {
 
 // POČETAK FUNKCIJE: MemoizedPanel
 const MemoizedPanel = memo(({ index, category, autoDesc, subOptions, updateCategory, openDropdown, setOpenDropdown }) => (
-  <div className="rounded-2xl border border-white/5 bg-[#050505]/90 p-5 relative group hover:border-orange-500/30 transition-colors flex flex-col">
+  <div className="rounded-2xl border border-white/5 bg-[#050505]/90 p-4 md:p-5 relative group hover:border-orange-500/30 transition-colors flex flex-col">
     <div className="absolute top-0 right-0 bg-white/5 text-zinc-500 text-[8px] font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest">PANEL: {index + 1}</div>
     <label className="mb-2 block text-[9px] font-black uppercase tracking-widest text-blue-500 mt-2">SUBJECT CATEGORY</label>
     <div className="relative mb-4">
         <div className="v8-magic-border w-full">
-            <div className="v8-magic-inner flex items-center justify-between px-4 py-3 cursor-pointer" onClick={(e) => { e.stopPropagation(); setOpenDropdown(openDropdown === index ? null : index); }}>
+            <div className="v8-magic-inner flex items-center justify-between px-3 md:px-4 py-2.5 md:py-3 cursor-pointer" onClick={(e) => { e.stopPropagation(); if(subOptions && subOptions.length > 0) setOpenDropdown(openDropdown === index ? null : index); }}>
                 <input value={category} onChange={(e) => updateCategory(index, e.target.value)} className="bg-transparent text-white font-bold text-xs outline-none w-full cursor-text" placeholder={`Subject for panel ${index + 1}`} onClick={(e) => e.stopPropagation()} />
-                <ChevronDown size={14} className={`text-orange-500 transition-transform ${openDropdown === index ? 'rotate-180' : ''}`} />
+                {subOptions && subOptions.length > 0 && (
+                  <ChevronDown size={14} className={`text-orange-500 transition-transform ${openDropdown === index ? 'rotate-180' : ''}`} />
+                )}
             </div>
         </div>
-        {openDropdown === index && subOptions.length > 0 && (
+        {openDropdown === index && subOptions && subOptions.length > 0 && (
           <div className="absolute z-[999] top-[105%] left-0 w-full bg-[#0a0a0a] border border-orange-500/50 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.9)] max-h-[220px] overflow-y-auto v8-gradient-scrollbar py-2">
             {subOptions.map((sub, subIdx) => (
               <div 
@@ -193,7 +194,7 @@ const MemoizedPanel = memo(({ index, category, autoDesc, subOptions, updateCateg
     </div>
     <label className="mb-2 block text-[9px] font-black uppercase tracking-widest text-emerald-500">V8 SMART BLUEPRINT</label>
     <div className="v8-magic-border flex-grow w-full">
-        <textarea readOnly value={autoDesc} className="v8-magic-inner p-3 font-mono text-[11px] text-zinc-400 leading-relaxed outline-none resize-none v8-gradient-scrollbar h-full min-h-[120px] cursor-not-allowed opacity-80" />
+        <textarea readOnly value={autoDesc} className="v8-magic-inner p-3 font-mono text-[10px] md:text-[11px] text-zinc-400 leading-relaxed outline-none resize-none v8-gradient-scrollbar h-full min-h-[100px] md:min-h-[120px] cursor-not-allowed opacity-80" />
     </div>
   </div>
 ));
@@ -215,9 +216,12 @@ export default function V8GridSystem() {
   const [categories4, setCategories4] = useState(() => JSON.parse(localStorage.getItem('v8_categories4')) || DEFAULT_CATEGORIES_4);
   const [openDropdown4, setOpenDropdown4] = useState(null);
 
+  // Dodata DB 5 (Prazna Custom Baza)
+  const [categories5, setCategories5] = useState(() => JSON.parse(localStorage.getItem('v8_categories5')) || Array(12).fill(""));
+  const [openDropdown5, setOpenDropdown5] = useState(null);
+
   const [seed, setSeed] = useState(() => Number(localStorage.getItem('v8_seed')) || 2026);
   const [presetName, setPresetName] = useState(() => localStorage.getItem('v8_preset') || "Nano Banana 2 / Pro");
-  // Default format promenjen na 2x6 kako si tražio da bude prvi
   const [aspectRatio, setAspectRatio] = useState(() => localStorage.getItem('v8_aspect') || "16:9");
   const [gridFormat, setGridFormat] = useState(() => localStorage.getItem('v8_gridFormat') || "2x6");
   const [strictNoBrand, setStrictNoBrand] = useState(() => JSON.parse(localStorage.getItem('v8_nobrand')) ?? true);
@@ -252,6 +256,7 @@ export default function V8GridSystem() {
   const dropdownRef2 = useRef(null);
   const dropdownRef3 = useRef(null);
   const dropdownRef4 = useRef(null);
+  const dropdownRef5 = useRef(null);
 
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isLoginRequiredOpen, setIsLoginRequiredOpen] = useState(false);
@@ -265,7 +270,6 @@ export default function V8GridSystem() {
     { value: "21:9", ratio: "21 / 9", badge: "21:9 ULTRAWIDE" }
   ];
 
-  // 🔥 2x6 JE SADA NA PRVOM MESTU 🔥
   const GRID_TIERS = [
     { format: "2x6", title: "PREMIUM 2x6 GRID TIER DELIVERABLES" },
     { format: "2x4", title: "PREMIUM 2x4 GRID TIER DELIVERABLES" },
@@ -287,16 +291,17 @@ export default function V8GridSystem() {
       localStorage.setItem('v8_categories2', JSON.stringify(categories2));
       localStorage.setItem('v8_categories3', JSON.stringify(categories3));
       localStorage.setItem('v8_categories4', JSON.stringify(categories4));
+      localStorage.setItem('v8_categories5', JSON.stringify(categories5));
       localStorage.setItem('v8_seed', seed);
       localStorage.setItem('v8_preset', presetName);
       localStorage.setItem('v8_aspect', aspectRatio);
       localStorage.setItem('v8_gridFormat', gridFormat);
       localStorage.setItem('v8_nobrand', JSON.stringify(strictNoBrand));
       localStorage.setItem('v8_negative', JSON.stringify(includeNegative));
-  }, [categories1, categories2, categories3, categories4, seed, presetName, aspectRatio, gridFormat, strictNoBrand, includeNegative]);
+  }, [categories1, categories2, categories3, categories4, categories5, seed, presetName, aspectRatio, gridFormat, strictNoBrand, includeNegative]);
 
-  // 🔥 DVOZONSKI RADAR (KRIPTO + PAYPAL) UMESTO PAYONEER-A 🔥
   useEffect(() => {
+    let unsubPayoneer = () => {};
     let unsubCrypto = () => {};
     let unsubPayPal = () => {};
     let unsubVip = () => {};
@@ -321,12 +326,18 @@ export default function V8GridSystem() {
         email === "aitoolsprosmart@gmail.com"
       );
 
+      let payoneerDocs = [];
       let cryptoDocs = [];
       let paypalDocs = [];
 
       const updateAllPayData = () => {
-         setPayData([...cryptoDocs, ...paypalDocs]);
+         setPayData([...payoneerDocs, ...cryptoDocs, ...paypalDocs]);
       };
+
+      unsubPayoneer = onSnapshot(query(collection(db, "v8_payoneer_requests"), where("clientEmail", "==", email)), snap => {
+         payoneerDocs = snap.docs.map(d => d.data());
+         updateAllPayData();
+      });
 
       unsubCrypto = onSnapshot(query(collection(db, "v8_crypto_requests"), where("clientEmail", "==", email)), snap => {
          cryptoDocs = snap.docs.map(d => d.data());
@@ -345,6 +356,7 @@ export default function V8GridSystem() {
 
     return () => {
       unsubAuth();
+      unsubPayoneer();
       unsubCrypto();
       unsubPayPal();
       unsubVip();
@@ -381,19 +393,26 @@ export default function V8GridSystem() {
     let highestPlan = 'NONE';
 
     payData.forEach((data) => {
-      // Skeniramo status iz Kripto i PayPal baza
-      if (data.status === "PLAĆENO" || data.status === "completed_verified") {
+      if (data.status === "paid" || data.status === "PAID" || data.status === "PLAĆENO" || data.status === "completed_verified") {
         const productName = data.productName ? data.productName.toUpperCase() : "";
+        const price = Number(data.price) || 0;
 
-        if (productName.includes("PROMPT") || productName.includes("GRID") || productName.includes("BUNDLE") || productName.includes("MASTER") || productName.includes("SECURITY CHECKOUT")) {
+        if (productName.includes("PROMPT FACTORY") || productName.includes("MATRIX")) {
+            return; 
+        }
+
+        if (productName.includes("GRID") || productName.includes("BUNDLE") || productName.includes("SYSTEM") || productName.includes("SECURITY CHECKOUT")) {
           hasAccess = true;
 
-          if (productName.includes("ENTERPRISE")) {
+          if (productName.includes("ENTERPRISE") || price >= 549) {
             if (maxPaid < 549) { maxPaid = 549; highestPlan = 'ENTERPRISE'; }
             calculatedLimit = Math.max(calculatedLimit, 100000);
-          } else if (productName.includes("PRO")) {
+          } else if (productName.includes("PRO") || price >= 249) {
             if (maxPaid < 249) { maxPaid = 249; highestPlan = 'PRO'; }
             calculatedLimit = Math.max(calculatedLimit, 25000);
+          } else if (productName.includes("STARTER") || price >= 149) {
+            if (maxPaid < 149) { maxPaid = 149; highestPlan = 'STARTER'; }
+            calculatedLimit = Math.max(calculatedLimit, 5000);
           } else {
             if (maxPaid < 149) { maxPaid = 149; highestPlan = 'STARTER'; }
             calculatedLimit = Math.max(calculatedLimit, 5000);
@@ -477,6 +496,7 @@ export default function V8GridSystem() {
       if (dropdownRef2.current && !dropdownRef2.current.contains(event.target)) setOpenDropdown2(null);
       if (dropdownRef3.current && !dropdownRef3.current.contains(event.target)) setOpenDropdown3(null);
       if (dropdownRef4.current && !dropdownRef4.current.contains(event.target)) setOpenDropdown4(null);
+      if (dropdownRef5.current && !dropdownRef5.current.contains(event.target)) setOpenDropdown5(null);
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -486,6 +506,7 @@ export default function V8GridSystem() {
   const updateCategory2 = useCallback((index, value) => setCategories2(prev => { const next = [...prev]; next[index] = value; return next; }), []);
   const updateCategory3 = useCallback((index, value) => setCategories3(prev => { const next = [...prev]; next[index] = value; return next; }), []);
   const updateCategory4 = useCallback((index, value) => setCategories4(prev => { const next = [...prev]; next[index] = value; return next; }), []);
+  const updateCategory5 = useCallback((index, value) => setCategories5(prev => { const next = [...prev]; next[index] = value; return next; }), []);
 
   const recordUsage = async () => {
       if (currentUser && isVIP && !isAdmin) {
@@ -540,8 +561,8 @@ export default function V8GridSystem() {
       if (!isVIP) { v8Toast.error("Access Restricted. Select a Plan."); return; }
       
       setActiveDB(dbType); 
-      const activeCategories = dbType === 1 ? categories1 : dbType === 2 ? categories2 : dbType === 3 ? categories3 : categories4;
-      const newPrompts = makeVariations({ categories: activeCategories, seed, presetName, strictNoBrand, includeNegative, aspectRatio, gridFormat });
+      const activeCategories = dbType === 1 ? categories1 : dbType === 2 ? categories2 : dbType === 3 ? categories3 : dbType === 4 ? categories4 : categories5;
+      const newPrompts = makeVariations({ categories: activeCategories, seed, presetName, strictNoBrand, includeNegative, aspectRatio, gridFormat, activeDB: dbType });
       
       setGeneratedPrompts(newPrompts);
       setCurrentPage(1); 
@@ -556,8 +577,8 @@ export default function V8GridSystem() {
 
       const newSeed = Math.floor(Math.random() * 999999);
       setSeed(newSeed);
-      const activeCategories = dbType === 1 ? categories1 : dbType === 2 ? categories2 : dbType === 3 ? categories3 : categories4;
-      const newPrompts = makeVariations({ categories: activeCategories, seed: newSeed, presetName, strictNoBrand, includeNegative, aspectRatio, gridFormat });
+      const activeCategories = dbType === 1 ? categories1 : dbType === 2 ? categories2 : dbType === 3 ? categories3 : dbType === 4 ? categories4 : categories5;
+      const newPrompts = makeVariations({ categories: activeCategories, seed: newSeed, presetName, strictNoBrand, includeNegative, aspectRatio, gridFormat, activeDB: dbType });
       
       setGeneratedPrompts(newPrompts);
       setCurrentPage(1); 
@@ -608,17 +629,16 @@ export default function V8GridSystem() {
     v8Toast.success(`Prompt copied!`);
   };
 
-  // POČETAK FUNKCIJE: renderPricingPlans
   const renderPricingPlans = () => {
     if (amountPaid >= 549) {
       return (
         <div className="w-full max-w-5xl mx-auto mt-16 px-4 mb-16">
-           <div className="bg-gradient-to-r from-[#1a0b2e] to-[#050505] border border-purple-500/40 rounded-[2.5rem] p-12 text-center shadow-[0_0_50px_rgba(168,85,247,0.15)] relative overflow-hidden">
-              <Crown className="w-20 h-20 text-purple-400 mx-auto mb-6 drop-shadow-[0_0_20px_rgba(168,85,247,0.6)]" />
-              <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-widest mb-4">
-                ENTERPRISE TIER <span className="text-purple-500">UNLOCKED</span>
+           <div className="bg-gradient-to-r from-[#1a0b2e] to-[#050505] border border-purple-500/40 rounded-[2.5rem] p-8 md:p-12 text-center shadow-[0_0_50px_rgba(168,85,247,0.15)] relative overflow-hidden">
+              <Crown className="w-16 h-16 md:w-20 md:h-20 text-purple-400 mx-auto mb-6 drop-shadow-[0_0_20px_rgba(168,85,247,0.6)]" />
+              <h2 className="text-2xl md:text-4xl font-black text-white uppercase tracking-widest mb-4">
+                ENTERPRISE TIER <span className="text-purple-500 block md:inline">UNLOCKED</span>
               </h2>
-              <p className="text-purple-200/60 font-bold uppercase tracking-widest text-[11px] md:text-sm max-w-2xl mx-auto">
+              <p className="text-purple-200/60 font-bold uppercase tracking-widest text-[10px] md:text-sm max-w-2xl mx-auto">
                 You possess the highest level V8 License. All protocols are fully operational at maximum capacity.
               </p>
            </div>
@@ -627,76 +647,76 @@ export default function V8GridSystem() {
     }
 
     return (
-      <div className="w-full max-w-5xl mx-auto mt-16 px-4 mb-16 relative z-30">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-black text-white uppercase tracking-widest mb-4">
-            {amountPaid > 0 ? "V8 UPGRADE PROTOCOL." : "LIFETIME ACCESS."} <span className={amountPaid > 0 ? "text-blue-500 block md:inline mt-2 md:mt-0" : "text-orange-500 block md:inline mt-2 md:mt-0"}>
+      <div className="w-full max-w-5xl mx-auto mt-12 md:mt-16 px-4 mb-16 relative z-30">
+        <div className="text-center mb-10 md:mb-12">
+          <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-widest mb-4">
+            {amountPaid > 0 ? "V8 UPGRADE PROTOCOL." : "LIFETIME ACCESS."} <span className={amountPaid > 0 ? "text-blue-500 block lg:inline mt-2 lg:mt-0" : "text-orange-500 block lg:inline mt-2 lg:mt-0"}>
               {amountPaid > 0 ? "UNLOCK HIGHER TIERS." : "CHOOSE YOUR V8 PLAN."}
             </span>
           </h2>
           
-          <div className="mt-8 bg-[#0a0a0a]/90 backdrop-blur-md border border-white/10 rounded-2xl p-8 text-left space-y-4 shadow-inner max-w-4xl mx-auto mb-8">
-             <h4 className="text-orange-500 font-black uppercase tracking-[0.2em] text-[13px] border-b border-orange-500/20 pb-3 mb-4 flex items-center gap-2">
+          <div className="mt-6 md:mt-8 bg-[#0a0a0a]/90 backdrop-blur-md border border-white/10 rounded-2xl p-6 md:p-8 text-left space-y-4 shadow-inner max-w-4xl mx-auto mb-8">
+             <h4 className="text-orange-500 font-black uppercase tracking-[0.2em] text-[11px] md:text-[13px] border-b border-orange-500/20 pb-3 mb-4 flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5" /> V8 LICENSE PROTOCOL
              </h4>
-             <p className="text-[13px] md:text-[14px] text-zinc-300"><strong className="text-white">1. ONE-TIME PAYMENT:</strong> Pay once. Secure your Lifetime License. Zero monthly subscriptions.</p>
-             <p className="text-[13px] md:text-[14px] text-zinc-300"><strong className="text-white">2. THE ROLLING QUOTA:</strong> You get a dedicated pool of prompts based on your tier. Use them in 24 hours or stretch them across 365 days. Your cycle only ends when your prompts hit zero.</p>
-             <p className="text-[13px] md:text-[14px] text-zinc-300"><strong className="text-white">3. THE 30-DAY AUTO-REFILL:</strong> Burned through your entire quota? The Engine enters a mandatory 30-day cooling phase. After exactly 30 days, your prompts auto-replenish to full capacity. <span className="text-emerald-400 font-black">For free. Forever.</span></p>
+             <p className="text-[12px] md:text-[14px] text-zinc-300"><strong className="text-white">1. ONE-TIME PAYMENT:</strong> Pay once. Secure your Lifetime License. Zero monthly subscriptions.</p>
+             <p className="text-[12px] md:text-[14px] text-zinc-300"><strong className="text-white">2. THE ROLLING QUOTA:</strong> You get a dedicated pool of prompts based on your tier. Use them in 24 hours or stretch them across 365 days. Your cycle only ends when your prompts hit zero.</p>
+             <p className="text-[12px] md:text-[14px] text-zinc-300"><strong className="text-white">3. THE 30-DAY AUTO-REFILL:</strong> Burned through your entire quota? The Engine enters a mandatory 30-day cooling phase. After exactly 30 days, your prompts auto-replenish to full capacity. <span className="text-emerald-400 font-black">For free. Forever.</span></p>
           </div>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-6 w-full z-10 relative">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full max-w-sm lg:max-w-none mx-auto z-10 relative">
           
           {amountPaid < 149 && (
-            <div className="w-full md:w-[calc(33.333%-1rem)] max-w-sm bg-[#050505] border border-blue-500/30 rounded-[2rem] p-8 flex flex-col hover:border-blue-500/60 transition-all shadow-xl">
-                <div className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-500/10 mb-6 mx-auto"><Diamond className="w-6 h-6 text-blue-500" /></div>
-                <h3 className="text-xl font-black text-white uppercase text-center">Starter</h3>
-                <span className="text-4xl font-black text-blue-400 my-4 text-center">$149</span>
-                <div className="w-full text-left space-y-3 mb-8 text-[11px] text-zinc-400 font-bold uppercase tracking-widest flex-grow">
-                   <p className="flex items-center gap-2">✅ 5,000 Prompts Included</p>
-                   <p className="flex items-center gap-2">⏳ Use in 24h or stretch over 365 days</p>
-                   <p className="flex items-center gap-2">🔄 Rolling Quota (No expiry)</p>
+            <div className="w-full bg-[#050505] border border-blue-500/30 rounded-3xl p-6 md:p-8 flex flex-col hover:border-blue-500/60 transition-all shadow-xl">
+                <div className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-blue-500/10 mb-4 md:mb-6 mx-auto"><Diamond className="w-5 h-5 md:w-6 md:h-6 text-blue-500" /></div>
+                <h3 className="text-lg md:text-xl font-black text-white uppercase text-center">Starter</h3>
+                <span className="text-3xl md:text-4xl font-black text-blue-400 my-4 text-center">$149</span>
+                <div className="w-full text-left space-y-3 mb-8 text-[11px] md:text-[12px] text-zinc-400 font-bold uppercase tracking-widest flex-grow">
+                   <p className="flex items-start gap-2"><span className="shrink-0">✅</span> 5,000 Prompts Included</p>
+                   <p className="flex items-start gap-2"><span className="shrink-0">⏳</span> Use in 24h or stretch over 365 days</p>
+                   <p className="flex items-start gap-2"><span className="shrink-0">🔄</span> Rolling Quota (No expiry)</p>
                 </div>
-                <button onClick={() => pokreniKupovinu('STARTER', 149)} className="w-full bg-zinc-800 text-white hover:bg-blue-500 py-4 rounded-xl font-black uppercase tracking-widest text-[13px] transition-all shadow-md">
+                <button onClick={() => pokreniKupovinu('STARTER', 149)} className="w-full bg-zinc-800 text-white hover:bg-blue-500 py-3 md:py-4 rounded-xl font-black uppercase tracking-widest text-[12px] md:text-[13px] transition-all shadow-md">
                    SELECT STARTER
                 </button>
             </div>
           )}
 
           {amountPaid < 249 && (
-            <div className="w-full md:w-[calc(33.333%-1rem)] max-w-sm bg-[#050505] border-2 border-orange-500/50 rounded-[2rem] p-8 flex flex-col relative hover:border-orange-500/80 transition-all shadow-[0_0_30px_rgba(234,88,12,0.15)] transform md:scale-105 z-10">
-                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-orange-600 to-amber-500 rounded-t-[1.9rem]"></div>
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-orange-500 text-black px-6 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest shadow-lg">Bestseller</div>
+            <div className="w-full bg-[#050505] border-2 border-orange-500/50 rounded-3xl p-6 md:p-8 flex flex-col relative hover:border-orange-500/80 transition-all shadow-[0_0_30px_rgba(234,88,12,0.15)] transform lg:scale-105 z-10">
+                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-orange-600 to-amber-500 rounded-t-[1.4rem]"></div>
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-orange-500 text-black px-6 py-1.5 rounded-full font-black text-[9px] md:text-[10px] uppercase tracking-widest shadow-lg">Bestseller</div>
                 
-                <div className="w-12 h-12 flex items-center justify-center rounded-full bg-orange-500/10 mb-6 mx-auto mt-2"><Zap className="w-6 h-6 text-orange-500" /></div>
-                <h3 className="text-xl font-black text-white uppercase text-center">Pro</h3>
-                <span className="text-4xl font-black text-orange-500 my-4 text-center flex items-center justify-center gap-3">
+                <div className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-orange-500/10 mb-4 md:mb-6 mx-auto mt-2"><Zap className="w-5 h-5 md:w-6 md:h-6 text-orange-500" /></div>
+                <h3 className="text-lg md:text-xl font-black text-white uppercase text-center">Pro</h3>
+                <span className="text-3xl md:text-4xl font-black text-orange-500 my-4 text-center flex items-center justify-center gap-3">
                    {amountPaid > 0 ? `$${249 - amountPaid}` : "$249"}
                 </span>
-                <div className="w-full text-left space-y-3 mb-8 text-[11px] text-zinc-300 font-bold uppercase tracking-widest flex-grow">
-                   <p className="flex items-center gap-2">✅ 25,000 Prompts Included</p>
-                   <p className="flex items-center gap-2">⏳ Use in 24h or stretch over 365 days</p>
-                   <p className="flex items-center gap-2">🔄 Rolling Quota (No expiry)</p>
+                <div className="w-full text-left space-y-3 mb-8 text-[11px] md:text-[12px] text-zinc-300 font-bold uppercase tracking-widest flex-grow">
+                   <p className="flex items-start gap-2"><span className="shrink-0">✅</span> 25,000 Prompts Included</p>
+                   <p className="flex items-start gap-2"><span className="shrink-0">⏳</span> Use in 24h or stretch over 365 days</p>
+                   <p className="flex items-start gap-2"><span className="shrink-0">🔄</span> Rolling Quota (No expiry)</p>
                 </div>
-                <button onClick={() => pokreniKupovinu('PRO', 249)} className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-[13px] transition-all ${amountPaid > 0 ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-white shadow-[0_0_20px_rgba(234,88,12,0.4)]' : 'bg-orange-500 text-white hover:bg-orange-400 shadow-[0_0_20px_rgba(234,88,12,0.4)]'}`}>
+                <button onClick={() => pokreniKupovinu('PRO', 249)} className={`w-full py-3 md:py-4 rounded-xl font-black uppercase tracking-widest text-[12px] md:text-[13px] transition-all ${amountPaid > 0 ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-white shadow-[0_0_20px_rgba(234,88,12,0.4)]' : 'bg-orange-500 text-white hover:bg-orange-400 shadow-[0_0_20px_rgba(234,88,12,0.4)]'}`}>
                    {amountPaid > 0 ? "UPGRADE TO PRO" : "SELECT PRO"}
                 </button>
             </div>
           )}
 
           {amountPaid < 549 && (
-            <div className="w-full md:w-[calc(33.333%-1rem)] max-w-sm bg-[#050505] border border-purple-500/30 rounded-[2rem] p-8 flex flex-col hover:border-purple-500/60 transition-all shadow-xl">
-                <div className="w-12 h-12 flex items-center justify-center rounded-full bg-purple-500/10 mb-6 mx-auto"><Crown className="w-6 h-6 text-purple-500" /></div>
-                <h3 className="text-xl font-black text-white uppercase text-center">Enterprise</h3>
-                <span className="text-4xl font-black text-purple-400 my-4 text-center flex items-center justify-center gap-3">
+            <div className="w-full bg-[#050505] border border-purple-500/30 rounded-3xl p-6 md:p-8 flex flex-col hover:border-purple-500/60 transition-all shadow-xl">
+                <div className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-purple-500/10 mb-4 md:mb-6 mx-auto"><Crown className="w-5 h-5 md:w-6 md:h-6 text-purple-500" /></div>
+                <h3 className="text-lg md:text-xl font-black text-white uppercase text-center">Enterprise</h3>
+                <span className="text-3xl md:text-4xl font-black text-purple-400 my-4 text-center flex items-center justify-center gap-3">
                    {amountPaid > 0 ? `$${549 - amountPaid}` : "$549"}
                 </span>
-                <div className="w-full text-left space-y-3 mb-8 text-[11px] text-zinc-400 font-bold uppercase tracking-widest flex-grow">
-                   <p className="flex items-center gap-2">✅ 100,000 Prompts Included</p>
-                   <p className="flex items-center gap-2">⏳ Use in 24h or stretch over 365 days</p>
-                   <p className="flex items-center gap-2">🔄 Lifetime Access (Rolling Quota)</p>
+                <div className="w-full text-left space-y-3 mb-8 text-[11px] md:text-[12px] text-zinc-400 font-bold uppercase tracking-widest flex-grow">
+                   <p className="flex items-start gap-2"><span className="shrink-0">✅</span> 100,000 Prompts Included</p>
+                   <p className="flex items-start gap-2"><span className="shrink-0">⏳</span> Use in 24h or stretch over 365 days</p>
+                   <p className="flex items-start gap-2"><span className="shrink-0">🔄</span> Lifetime Access (Rolling Quota)</p>
                 </div>
-                <button onClick={() => pokreniKupovinu('ENTERPRISE', 549)} className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-[13px] transition-all shadow-md ${amountPaid > 0 ? 'bg-gradient-to-r from-purple-700 to-purple-500 hover:from-purple-600 hover:to-purple-400 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)]' : 'bg-zinc-800 text-white hover:bg-purple-500'}`}>
+                <button onClick={() => pokreniKupovinu('ENTERPRISE', 549)} className={`w-full py-3 md:py-4 rounded-xl font-black uppercase tracking-widest text-[12px] md:text-[13px] transition-all shadow-md ${amountPaid > 0 ? 'bg-gradient-to-r from-purple-700 to-purple-500 hover:from-purple-600 hover:to-purple-400 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)]' : 'bg-zinc-800 text-white hover:bg-purple-500'}`}>
                    {amountPaid > 0 ? "UPGRADE TO ENTERPRISE" : "SELECT ENTERPRISE"}
                 </button>
             </div>
@@ -704,23 +724,23 @@ export default function V8GridSystem() {
         </div>
 
         {amountPaid > 0 && amountPaid < 549 && (
-           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-4xl mx-auto mt-12 bg-gradient-to-r from-blue-950/80 to-blue-900/30 border border-blue-500/40 p-6 md:p-8 rounded-[2rem] flex flex-col md:flex-row items-center justify-center gap-8 shadow-[0_0_40px_rgba(59,130,246,0.25)] relative overflow-hidden backdrop-blur-md">
+           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-4xl mx-auto mt-10 md:mt-12 bg-gradient-to-r from-blue-950/80 to-blue-900/30 border border-blue-500/40 p-6 md:p-8 rounded-3xl md:rounded-[2rem] flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8 shadow-[0_0_40px_rgba(59,130,246,0.25)] relative overflow-hidden backdrop-blur-md">
              <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay"></div>
              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50"></div>
              
-             <div className="w-16 h-16 bg-blue-900/40 rounded-full flex items-center justify-center border border-blue-500/50 relative flex-shrink-0 shadow-[0_0_20px_rgba(59,130,246,0.4)]">
+             <div className="w-12 h-12 md:w-16 md:h-16 bg-blue-900/40 rounded-full flex items-center justify-center border border-blue-500/50 relative flex-shrink-0 shadow-[0_0_20px_rgba(59,130,246,0.4)]">
                 <div className="absolute inset-0 rounded-full border-t-2 border-blue-400 animate-spin"></div>
-                <ArrowUpCircle className="w-8 h-8 text-blue-400" />
+                <ArrowUpCircle className="w-6 h-6 md:w-8 md:h-8 text-blue-400" />
              </div>
 
              <div className="text-center md:text-left relative z-10">
-                <div className="inline-block bg-blue-900/50 border border-blue-500/30 px-3 py-1 rounded-full text-blue-300 font-bold uppercase tracking-widest text-[9px] mb-3">
+                <div className="inline-block bg-blue-900/50 border border-blue-500/30 px-3 py-1 rounded-full text-blue-300 font-bold uppercase tracking-widest text-[9px] md:text-[10px] mb-3">
                   SMART UPGRADE SYSTEM ACTIVE
                 </div>
                 <h3 className="text-white text-lg md:text-xl font-black uppercase tracking-widest mb-2 drop-shadow-md">
                   PRORATED UPGRADE POLICY
                 </h3>
-                <p className="text-zinc-300 text-[13px] md:text-[14px] leading-relaxed max-w-2xl font-medium">
+                <p className="text-zinc-300 text-[12px] md:text-[14px] leading-relaxed max-w-2xl font-medium">
                   System radar has detected your active V8 License valued at <strong className="text-blue-400">${amountPaid}</strong>. 
                   You can upgrade to a higher tier by paying <strong className="text-white border-b border-blue-500/50 pb-0.5">ONLY THE PRICE DIFFERENCE</strong>. The package prices displayed above have already been automatically reduced!
                 </p>
@@ -731,56 +751,55 @@ export default function V8GridSystem() {
     );
   };
 
-  const renderV8Manifest = () => {
-    const specifikacije = [
-        { t: "1. 100-Prompt Batch Engine", d: "Instantly generates 100 unique cinematic grid prompts.", insight: "Automates massive prompt lists optimized for Google Nano Banana 2 / Pro architecture in a single click." },
-        { t: "2. Dynamic Grid Geometry", d: "Intelligent format rotation.", insight: "Automatically switches 2x4 (wide) to 4x2 (vertical) for 9:16 ratios, preventing thin, broken, or stretched image slices." },
-        { t: "3. Visual Prompt Protection", d: "FATAL OVERRIDE: No Text, No Logos.", insight: "Injects strict negative overrides to prevent AI from generating gibberish text, watermarks, or brand logos." },
-        { t: "4. Framing Lock Integration", d: "Anti-cropping spatial controls.", insight: "Forces the AI to frame the main subject perfectly in the center with adequate negative space, avoiding cut-off edges." },
-        { t: "5. Deterministic AI Seeding", d: "Mathematical shuffling algorithms.", insight: "Uses seededRandom() and seededShuffle() to guarantee 100% unique panel combinations without repeating subjects." },
-        { t: "6. Cinematic Metadata Injection", d: "Real camera & lighting arrays.", insight: "Automatically injects premium camera gear (ARRI Alexa, RED V-RAPTOR) and high-end commercial lighting setups into each panel." },
-        { t: "7. TXT & JSON Export", d: "Developer and studio-ready files.", insight: "Downloads the entire 100-prompt batch locally as a clean TXT file or a structured JSON file for API/bot integrations." },
-        { t: "8. Sub-grid Prevention", d: "Strict panel isolation.", insight: "Explicitly forbids the AI from creating 'picture-in-picture' or stacked images inside a single panel slot." },
-        { t: "9. Auto-Save Memory", d: "Local storage persistence.", insight: "All 28 panels, seeds, and settings are saved locally in the browser so no client work is lost upon refreshing." },
-        { t: "10. 100% IP Safe", d: "Commercial-safe asset creation.", insight: "This engine ensures that resulting visuals are clean and ready for elite stock agencies and commercial ad campaigns." }
+  const renderPromptSecrets = () => {
+    const secrets = [
+        { t: "1. IMG_2047.ARW", d: "Sony Alpha Full-Frame RAW", insight: "Mimics ultra-high-resolution RAW files shot on Sony Alpha full-frame cameras. Triggers the model to favor natural shadows, full dynamic range, and unedited DSLR realism." },
+        { t: "2. DSC_0402.NEF", d: "Nikon RAW Format", insight: "Injects Nikon DSLR realism with accurate skin tones, neutral color grading, and crisp optics. AI tools associate this with high optical clarity and lens fidelity." },
+        { t: "3. Cinematic Still, Paramount", d: "Hollywood Studio Archive", insight: "Produces frames that look pulled from a Hollywood film, with film grain, anamorphic blur, and cinematic color grading. Perfect for storytelling visuals." },
+        { t: "4. iPhone ProRAW, IMG_4490", d: "Apple Mobile RAW", insight: "Renders unfiltered, iPhone-quality realism with HDR balance and slight motion blur. Ideal for Instagram-style casual photorealistic shots." },
+        { t: "5. Kodak Portra 800, scanned", d: "Vintage Film Stock", insight: "Produces a vintage film look with authentic grain, creamy tones, and slight fading. Guides the sampler toward Portra's signature warm skin tones." },
+        { t: "6. contact sheet scan, vogue.com", d: "Editorial Proof Spreads", insight: "Simulates editorial proof sheet spreads, often seen in Vogue fashion test shoots. Yields multiple-frame storytelling with natural posing variations." },
+        { t: "7. Leica M10 Monochrom, 35mm", d: "High-End B&W Photography", insight: "Ultra-shallow depth of field, creamy bokeh, and black & white realism. Leica gear is synonymous with photojournalistic quality and minimalist tones." },
+        { t: "8. Fuji Superia 400, point-and-shoot", d: "90s Casual Aesthetic", insight: "Captures spontaneous 90s-style images in parties with color shifts and soft flash. Fuels the model to emulate disposable camera charm." },
+        { t: "9. Scanned 120mm medium format", d: "Medium Format Studio", insight: "Generates museum-grade fashion portraits with unparalleled detail and ultra-sharp skin texture. Medium format tags trigger sensor realism." },
+        { t: "10. GettyImages watermark, editorial", d: "Commercial Photojournalism", insight: "Replicates commercial photojournalism style with watermarked authenticity and journalistic framing. Perfect for 'on-location' event coverage realism." }
     ];
 
     return (
-        <div className="w-full max-w-5xl mx-auto mb-10 bg-black/40 border border-white/5 rounded-[2rem] p-8 md:p-10 relative z-10 shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
+        <div className="w-full max-w-5xl mx-auto mb-10 bg-black/40 border border-white/5 rounded-3xl md:rounded-[2rem] p-6 md:p-10 relative z-10 shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
           
-          <div className="absolute inset-0 bg-[url('/v8-manifest-bg.webp')] bg-cover bg-center opacity-50 z-0 pointer-events-none"></div>
           <div className="absolute inset-0 bg-[#050505]/60 z-0 pointer-events-none"></div>
 
-          <div className="text-center mb-10 relative z-10">
-            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-[0.2em] text-white">V8 GRID ENGINE</h2>
-            <p className="text-[12px] md:text-[14px] text-orange-500 font-bold uppercase tracking-[0.3em] mt-3 italic">Technical Specifications</p>
+          <div className="text-center mb-8 md:mb-10 relative z-10">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-black uppercase tracking-[0.2em] text-white">TOP 10 HIDDEN SECRETS</h2>
+            <p className="text-[10px] md:text-[12px] text-orange-500 font-bold uppercase tracking-[0.3em] mt-3 italic">Cheat Sheet of Hidden Tokens</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start relative z-10">
-            {specifikacije.map((item, i) => {
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 items-start relative z-10">
+            {secrets.map((item, i) => {
               const isOpen = otvorenOpis === i;
               return (
                 <div 
                   key={i} 
                   onClick={() => setOtvorenOpis(isOpen ? null : i)}
-                  className={`bg-white/5 border p-6 rounded-2xl cursor-pointer transition-all duration-300 ${
+                  className={`bg-white/5 border p-5 md:p-6 rounded-2xl cursor-pointer transition-all duration-300 ${
                     isOpen ? 'border-orange-500/50 bg-black/40 shadow-[0_0_15px_rgba(234,88,12,0.15)]' : 'border-white/5 hover:border-white/20'
                   }`}
                 >
                   <div className="flex justify-between items-center gap-4">
-                    <div>
-                      <h4 className="text-orange-500 font-black uppercase">{item.t}</h4>
-                      <p className="text-xs text-zinc-400 mt-1">{item.d}</p>
+                    <div className="pr-4">
+                      <h4 className="text-orange-500 font-black uppercase text-[12px] md:text-[14px] leading-tight">{item.t}</h4>
+                      <p className="text-[10px] md:text-[12px] text-zinc-400 mt-1.5">{item.d}</p>
                     </div>
                     <ChevronDown 
-                      size={20} 
+                      size={18} 
                       className={`flex-shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180 text-orange-500 drop-shadow-[0_0_8px_rgba(234,88,12,0.8)]' : 'text-zinc-600 group-hover:text-zinc-400'}`} 
                     />
                   </div>
                   {isOpen && (
                     <div className="mt-4 pt-4 border-t border-white/10">
-                      <p className="text-[11px] text-zinc-300 font-mono leading-relaxed border-l-2 border-orange-500 pl-3">
-                        <span className="text-orange-500 font-bold">Insight:</span> {item.insight}
+                      <p className="text-[11px] md:text-[12px] text-zinc-300 font-mono leading-relaxed border-l-2 border-orange-500 pl-3">
+                        <span className="text-orange-500 font-bold">Effect Triggered:</span> {item.insight}
                       </p>
                     </div>
                   )}
@@ -792,7 +811,6 @@ export default function V8GridSystem() {
     );
   };
 
-  // 🔥 PRILAGOĐEN BROJ PANELA ZA NOVI 2x6 FORMAT 🔥
   const visiblePanelsCount = gridFormat === "2x6" ? 12 : gridFormat === "2x4" ? 8 : gridFormat === "2x3" ? 6 : 4;
 
   const indexOfLastPrompt = currentPage * promptsPerPage;
@@ -809,46 +827,47 @@ export default function V8GridSystem() {
   };
 
   return (
-    <div className="relative min-h-screen pt-10 pb-20 px-4 md:px-8 text-white font-sans overflow-hidden" onClick={() => { setOpenDropdown1(null); setOpenDropdown2(null); setOpenDropdown3(null); setOpenDropdown4(null); }}>
+    <div className="relative min-h-screen pt-8 md:pt-10 pb-20 px-4 md:px-8 text-white font-sans overflow-hidden" onClick={() => { setOpenDropdown1(null); setOpenDropdown2(null); setOpenDropdown3(null); setOpenDropdown4(null); setOpenDropdown5(null); }}>
       
       {/* 🔥 SEO TAGOVI SAMO ZA OVU STRANICU 🔥 */}
       <Helmet>
-        <title>Cinematic Grid Prompts | V8 Grid System Generator</title>
+        <title>Cinematic Grid Prompts | V8 Grid System</title>
         <meta name="description" content="Generate 100+ unique cinematic grid prompts instantly. The ultimate text-generation algorithm strictly optimized for Google Nano Banana 2 and commercial AI platforms." />
         <meta name="keywords" content="cinematic AI prompts, grid system prompt generator, nano banana 2 prompts, professional AI art prompts, commercial AI templates" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
       </Helmet>
 
       {/* V8SmartQuota - Embedovan Centralni Brojač */}
       {(isVIP || isAdmin) && (
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50">
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 w-max max-w-[90vw]">
           <motion.div
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className={`bg-black/80 backdrop-blur-xl border px-6 py-2 rounded-full flex items-center gap-4 shadow-lg w-max mx-auto ${
+            className={`bg-black/80 backdrop-blur-xl border px-4 md:px-6 py-2 rounded-full flex items-center gap-3 md:gap-4 shadow-lg w-full justify-center ${
               isEngineCoolingDown ? 'border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.3)]' : 'border-orange-500/50 shadow-[0_0_20px_rgba(234,88,12,0.3)]'
             }`}
           >
             {isEngineCoolingDown ? (
-              <Timer className="w-5 h-5 text-red-500 animate-pulse" />
+              <Timer className="w-4 h-4 md:w-5 md:h-5 text-red-500 animate-pulse shrink-0" />
             ) : (
-              <ShieldCheck className="w-5 h-5 text-orange-500 animate-pulse" />
+              <ShieldCheck className="w-4 h-4 md:w-5 md:h-5 text-orange-500 animate-pulse shrink-0" />
             )}
             
             <div className="flex flex-col items-center">
-               <span className="text-[9px] uppercase tracking-[0.2em] font-black text-zinc-400 leading-none">
+               <span className="text-[8px] md:text-[9px] uppercase tracking-[0.2em] font-black text-zinc-400 leading-none">
                  {isEngineCoolingDown ? 'COOLING DOWN' : 'MONTHLY QUOTA'}
                </span>
                
                {isEngineCoolingDown ? (
-                  <span className="text-[14px] font-mono font-black tracking-widest leading-none mt-1 text-red-500">
+                  <span className="text-[12px] md:text-[14px] font-mono font-black tracking-widest leading-none mt-1 text-red-500">
                      {cooldownDisplay}
                   </span>
                ) : isAdmin ? (
-                  <span className="text-[15px] font-black tracking-widest leading-none mt-1 text-purple-500 drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]">
+                  <span className="text-[13px] md:text-[15px] font-black tracking-widest leading-none mt-1 text-purple-500 drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]">
                      MASTER ADMIN : ∞
                   </span>
                ) : (
-                  <span className={`text-[15px] font-black tracking-widest leading-none mt-1 ${promptsUsed >= promptLimit ? 'text-red-500' : 'text-emerald-400'}`}>
+                  <span className={`text-[13px] md:text-[15px] font-black tracking-widest leading-none mt-1 ${promptsUsed >= promptLimit ? 'text-red-500' : 'text-emerald-400'}`}>
                      {promptsUsed} / {promptLimit}
                   </span>
                )}
@@ -857,6 +876,7 @@ export default function V8GridSystem() {
         </div>
       )}
 
+      {/* 🔥 GLOBALNA POZADINA (CELA STRANICA) 🔥 */}
       <video autoPlay loop muted playsInline className="fixed top-0 left-0 w-screen h-screen object-cover z-0 opacity-60 pointer-events-none">
         <source src="/v8-liquid-obsidian.mp4" type="video/mp4" />
       </video>
@@ -896,19 +916,19 @@ export default function V8GridSystem() {
              animate={{ opacity: 1 }} 
              exit={{ opacity: 0 }} 
              style={{ zIndex: 2147483640 }}
-             className="fixed inset-0 w-screen h-screen flex items-center justify-center bg-[#050505]"
+             className="fixed inset-0 w-screen h-screen flex items-center justify-center bg-[#050505] p-4"
              onClick={() => setFullscreenImage(null)}
            >
               <button 
                 onClick={(e) => { e.stopPropagation(); setFullscreenImage(null); }}
                 style={{ zIndex: 2147483647 }}
-                className="fixed top-24 right-6 md:top-32 md:right-12 bg-red-600 hover:bg-red-500 text-white p-4 rounded-full shadow-[0_0_20px_rgba(220,38,38,0.8)] cursor-pointer border-2 border-white/20"
+                className="absolute top-6 right-6 md:top-12 md:right-12 bg-red-600 hover:bg-red-500 text-white p-3 md:p-4 rounded-full shadow-[0_0_20px_rgba(220,38,38,0.8)] cursor-pointer border-2 border-white/20"
               >
-                <X size={32} strokeWidth={3} />
+                <X size={24} md:size={32} strokeWidth={3} />
               </button>
               <img 
                 src={fullscreenImage} 
-                className="max-w-[70vw] max-h-[70vh] object-contain"
+                className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-[0_0_40px_rgba(234,88,12,0.2)]"
                 onClick={(e) => e.stopPropagation()} 
                 alt="Fullscreen Preview"
               />
@@ -940,55 +960,90 @@ export default function V8GridSystem() {
         )}
       </AnimatePresence>
 
-      <div className="mx-auto max-w-[1600px] space-y-8 relative z-10 mt-16">
+      <div className="mx-auto max-w-[1600px] space-y-8 relative z-10 mt-16 md:mt-20">
         
-        <div className="rounded-[2.5rem] border border-orange-500/30 px-8 py-24 md:py-36 shadow-[0_0_50px_rgba(234,88,12,0.15)] relative overflow-hidden max-w-7xl mx-auto bg-black/40 backdrop-blur-sm mb-12">
-          <div className="absolute inset-0 bg-[url('/v8-hero-grid.webp')] bg-cover bg-center opacity-30 z-0 pointer-events-none"></div>
-          <div className="absolute inset-0 bg-[#050505]/65 z-0 pointer-events-none"></div>
-          <div className="absolute top-0 right-0 w-80 h-80 bg-orange-600/15 rounded-full blur-[100px] pointer-events-none z-0"></div>
-          
-          <div className="flex flex-col items-center text-center gap-6 relative z-10">
-            <div className="flex flex-col items-center">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-500/40 bg-orange-500/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-orange-400 shadow-inner backdrop-blur-md">
-                <Zap size={12} className="animate-pulse" /> V8 GRID SYSTEM
+        {/* 🔥 HEADER BOX SA NOVIM NANO BANANA VIDEOM 🔥 */}
+        <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="rounded-3xl md:rounded-[2.5rem] border border-orange-500/30 px-6 py-16 md:px-8 md:py-36 shadow-[0_0_50px_rgba(234,88,12,0.15)] relative overflow-hidden max-w-7xl mx-auto bg-[#050505] mb-12"
+        >
+            <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-80 z-0 pointer-events-none mix-blend-screen">
+               <source src="/nano-banana-bg.mp4" type="video/mp4" />
+            </video>
+            
+            <div className="absolute inset-0 z-0 bg-black/30"></div>
+            <div className="absolute inset-0 z-0 bg-gradient-to-b from-transparent to-[#050505]/80"></div>
+            <div className="absolute top-0 right-0 w-80 h-80 bg-orange-600/15 rounded-full blur-[100px] pointer-events-none z-0"></div>
+            
+            <div className="flex flex-col items-center text-center gap-6 relative z-10">
+              <div className="flex flex-col items-center">
+                <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-500/40 bg-orange-500/10 px-4 py-1.5 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-orange-400 shadow-[0_0_15px_rgba(234,88,12,0.2)] backdrop-blur-md">
+                  <Zap size={12} className="animate-pulse" /> V8 GRID SYSTEM
+                </div>
+                <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-white uppercase italic drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)]">
+                  CINEMATIC GRID <span className="text-orange-500 block sm:inline">SYSTEM</span>
+                </h1>
+                <p className="mt-4 max-w-2xl text-zinc-300 text-xs md:text-base font-medium mx-auto drop-shadow-md px-4">
+                  The ultimate text-generation algorithm strictly optimized for Google Nano Banana 2. Selectable cinematic aspect ratios.
+                </p>
               </div>
-              <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-white uppercase italic drop-shadow-lg">
-                CINEMATIC GRID <span className="text-orange-500">SYSTEM</span>
-              </h1>
-              <p className="mt-4 max-w-2xl text-zinc-300 text-sm md:text-base font-medium mx-auto drop-shadow-md">
-                The ultimate text-generation algorithm strictly optimized for Google Nano Banana 2. Selectable cinematic aspect ratios.
-              </p>
             </div>
-          </div>
-        </div>
 
-        {renderV8Manifest()}
+            {/* 🔥 PRAVI KORISNIČKI BROJAČI PROMPTOVA 🔥 */}
+            {(isVIP || isAdmin) && (
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 mt-8 md:mt-12 relative z-20 w-full max-w-3xl mx-auto px-4">
+                
+                <div className="bg-[#050505]/80 backdrop-blur-xl border border-emerald-500/30 px-5 md:px-6 py-4 rounded-2xl flex items-center justify-center sm:justify-start gap-4 md:gap-5 shadow-[0_0_30px_rgba(16,185,129,0.15)] w-full sm:w-1/2 group">
+                   <div className="bg-emerald-900/40 p-2.5 md:p-3 rounded-xl border border-emerald-500/20 shrink-0">
+                      <Database className="text-emerald-400 w-5 h-5 md:w-6 md:h-6" />
+                   </div>
+                   <div className="flex flex-col text-left">
+                      <span className="text-[8px] md:text-[9px] text-emerald-300 font-black uppercase tracking-[0.2em] mb-1">AVAILABLE PROMPTS</span>
+                      <span className="text-xl md:text-2xl font-black text-white tracking-widest drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
+                         {isAdmin ? '∞' : promptLimit - promptsUsed}
+                      </span>
+                   </div>
+                </div>
+                
+                <div className="bg-[#050505]/80 backdrop-blur-xl border border-orange-500/30 px-5 md:px-6 py-4 rounded-2xl flex items-center justify-center sm:justify-start gap-4 md:gap-5 shadow-[0_0_30px_rgba(234,88,12,0.15)] w-full sm:w-1/2 group">
+                   <div className="bg-orange-900/40 p-2.5 md:p-3 rounded-xl border border-orange-500/20 shrink-0">
+                      <Zap className="text-orange-400 w-5 h-5 md:w-6 md:h-6" />
+                   </div>
+                   <div className="flex flex-col text-left">
+                      <span className="text-[8px] md:text-[9px] text-orange-300 font-black uppercase tracking-[0.2em] mb-1">PROMPTS GENERATED</span>
+                      <span className="text-xl md:text-2xl font-black text-white tracking-widest flex items-center gap-3">
+                         {isAdmin ? '∞' : promptsUsed}
+                      </span>
+                   </div>
+                </div>
+              </div>
+            )}
+        </motion.div>
 
-        <div className="flex flex-col md:flex-row justify-center gap-6 max-w-4xl mx-auto mb-16 relative z-10">
-          <a href="/V8_Grid_Technical_Manifest.txt" download className="flex-1 bg-black/40 border border-blue-500/30 hover:border-blue-400 p-6 rounded-2xl flex items-center gap-5 transition-all duration-300 hover:bg-blue-900/20 group hover:-translate-y-1 shadow-lg hover:shadow-[0_10px_30px_rgba(59,130,246,0.2)]">
-              <div className="bg-blue-500/10 p-4 rounded-full border border-blue-500/20 group-hover:bg-blue-500/20 transition-all"><Download className="w-8 h-8 text-blue-400" /></div>
+        {/* 🔥 NOVI ACCORDION: 10 SECRET PROMPTS 🔥 */}
+        {renderPromptSecrets()}
+
+        {/* 🔥 DOWNLOAD DUGME (SAMO LICENCA) 🔥 */}
+        <div className="flex justify-center max-w-md mx-auto mb-16 relative z-10 w-full px-4 md:px-0">
+          <a href="/v8-license.pdf" download className="w-full bg-black/40 border border-orange-500/30 hover:border-orange-400 p-5 md:p-6 rounded-2xl flex items-center gap-4 md:gap-5 transition-all duration-300 hover:bg-orange-900/20 group hover:-translate-y-1 shadow-lg hover:shadow-[0_10px_30px_rgba(234,88,12,0.2)]">
+              <div className="bg-orange-500/10 p-3 md:p-4 rounded-full border border-orange-500/20 group-hover:bg-orange-500/20 transition-all shrink-0"><FileText className="w-6 h-6 md:w-8 md:h-8 text-orange-400" /></div>
               <div className="text-left">
-                  <h4 className="text-white font-black uppercase tracking-widest text-[13px] mb-1">Technical Manifest</h4>
-                  <p className="text-zinc-400 text-[11px] font-bold">Download System Specs (TXT)</p>
+                  <h4 className="text-white font-black uppercase tracking-widest text-[12px] md:text-[13px] mb-1">Commercial License</h4>
+                  <p className="text-zinc-400 text-[10px] md:text-[11px] font-bold">Download Legal Terms (PDF)</p>
               </div>
           </a>
-          <a href="/v8-license.pdf" download className="flex-1 bg-black/40 border border-orange-500/30 hover:border-orange-400 p-6 rounded-2xl flex items-center gap-5 transition-all duration-300 hover:bg-orange-900/20 group hover:-translate-y-1 shadow-lg hover:shadow-[0_10px_30px_rgba(234,88,12,0.2)]">
-              <div className="bg-orange-500/10 p-4 rounded-full border border-orange-500/20 group-hover:bg-orange-500/20 transition-all"><FileText className="w-8 h-8 text-orange-400" /></div>
-              <div className="text-left">
-                  <h4 className="text-white font-black uppercase tracking-widest text-[13px] mb-1">Commercial License</h4>
-                  <p className="text-zinc-400 text-[11px] font-bold">Download Legal Terms (PDF)</p>
-              </div>
-          </a>
         </div>
 
-        <div className="w-full max-w-6xl mx-auto mb-16 relative z-10 space-y-16">
+        <div className="w-full max-w-6xl mx-auto mb-16 relative z-10 space-y-12 md:space-y-16 px-4">
           {GRID_TIERS.map(tier => (
             <div key={tier.format}>
-               <div className="text-center mb-8">
-                  <h2 className="text-2xl font-black uppercase tracking-[0.2em] text-white">{tier.title}</h2>
+               <div className="text-center mb-6 md:mb-8">
+                  <h2 className="text-xl md:text-2xl font-black uppercase tracking-[0.1em] md:tracking-[0.2em] text-white">{tier.title}</h2>
                </div>
                
-               <div className="flex flex-wrap justify-center gap-6 pt-2">
+               <div className="flex flex-wrap justify-center gap-4 md:gap-6 pt-2">
                   {ASPECT_OPTIONS.map(opt => {
                      const isSelected = aspectRatio === opt.value && gridFormat === tier.format;
                      const safeValue = opt.value.replace(':', '-');
@@ -1005,16 +1060,16 @@ export default function V8GridSystem() {
                            className="relative group cursor-pointer flex flex-col items-center"
                          >
                             <div
-                              className={`relative rounded-[1.35rem] p-[3px] transition-all duration-500 ${
+                              className={`relative rounded-2xl md:rounded-[1.35rem] p-[3px] transition-all duration-500 ${
                                 isSelected
                                   ? 'bg-orange-500 shadow-[0_0_35px_rgba(234,88,12,0.35)] scale-105'
                                   : 'bg-orange-500/45 hover:bg-orange-500 hover:shadow-[0_0_28px_rgba(234,88,12,0.25)]'
                               }`}
-                              style={{ width: opt.value === '9:16' ? '150px' : opt.value === '21:9' ? '300px' : opt.value === '16:9' ? '270px' : '220px' }}
+                              style={{ width: opt.value === '9:16' ? '120px' : opt.value === '21:9' ? '240px' : opt.value === '16:9' ? '210px' : '180px' }}
                             >
-                              <div className="rounded-[1.18rem] bg-[#050505] p-[5px] border border-orange-500/30">
+                              <div className="rounded-[1.1rem] md:rounded-[1.18rem] bg-[#050505] p-[4px] md:p-[5px] border border-orange-500/30">
                                 <div
-                                  className={`relative rounded-2xl overflow-hidden bg-black border transition-all duration-500 ${
+                                  className={`relative rounded-xl md:rounded-2xl overflow-hidden bg-black border transition-all duration-500 ${
                                     isSelected
                                       ? 'border-orange-400 shadow-inner'
                                       : 'border-orange-500/40 group-hover:border-orange-400'
@@ -1040,21 +1095,21 @@ export default function V8GridSystem() {
                                   >
                                     <span className={`flex items-center justify-center rounded-full backdrop-blur-md border transition-all duration-300 ${
                                       isSelected
-                                        ? 'w-16 h-16 bg-orange-500 text-black border-orange-300 shadow-[0_0_24px_rgba(234,88,12,0.6)]'
-                                        : 'w-14 h-14 bg-black/55 text-white border-orange-500/50 group-hover:bg-orange-500 group-hover:text-black group-hover:border-orange-300 group-hover:shadow-[0_0_22px_rgba(234,88,12,0.55)]'
+                                        ? 'w-12 h-12 md:w-16 md:h-16 bg-orange-500 text-black border-orange-300 shadow-[0_0_24px_rgba(234,88,12,0.6)]'
+                                        : 'w-10 h-10 md:w-14 md:h-14 bg-black/55 text-white border-orange-500/50 group-hover:bg-orange-500 group-hover:text-black group-hover:border-orange-300 group-hover:shadow-[0_0_22px_rgba(234,88,12,0.55)]'
                                     }`}>
-                                      <Eye size={26} strokeWidth={2.4} />
+                                      <Eye size={20} className="md:w-[26px] md:h-[26px]" strokeWidth={2.4} />
                                     </span>
                                   </button>
                                 </div>
                               </div>
                             </div>
 
-                            <div className="mt-4 text-center">
-                              <div className={`text-[11px] font-black uppercase tracking-[0.22em] transition-colors ${isSelected ? 'text-orange-400' : 'text-zinc-400 group-hover:text-orange-300'}`}>
+                            <div className="mt-3 md:mt-4 text-center">
+                              <div className={`text-[9px] md:text-[11px] font-black uppercase tracking-[0.2em] transition-colors ${isSelected ? 'text-orange-400' : 'text-zinc-400 group-hover:text-orange-300'}`}>
                                 {opt.badge}
                               </div>
-                              <div className="text-[9px] font-black uppercase tracking-[0.18em] text-zinc-600 mt-1">
+                              <div className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.18em] text-zinc-600 mt-1">
                                 {tier.format} Preview
                               </div>
                             </div>
@@ -1066,11 +1121,9 @@ export default function V8GridSystem() {
           ))}
         </div>
 
-        {/* PRICING PLANS SEKCIJA (POKAZUJE SE SAMO AKO KORISNIK NEMA ENTERPRISE) */}
+        {/* PRICING PLANS SEKCIJA */}
         {!isCheckingAccess && currentPlan !== 'ENTERPRISE' && (
-           <div className="relative z-20 w-full">
-              {renderPricingPlans()}
-           </div>
+           <div className="relative z-20 w-full">{renderPricingPlans()}</div>
         )}
 
         <div className={`transition-all duration-500 w-full flex flex-col items-center ${!isVIP && !isAdmin ? 'opacity-30 grayscale-[70%] pointer-events-none' : ''}`}>
@@ -1079,29 +1132,30 @@ export default function V8GridSystem() {
             <div className="mb-10 w-full max-w-7xl mx-auto bg-red-950/40 border border-red-500/50 rounded-2xl p-6 text-center shadow-inner relative overflow-hidden">
               <div className="absolute inset-0 bg-red-500/10 animate-pulse"></div>
               <AlertTriangle className="w-10 h-10 text-red-500 mx-auto mb-3 relative z-10 drop-shadow-[0_0_15px_rgba(239,68,68,0.8)]" />
-              <h4 className="text-red-400 font-black uppercase text-[16px] tracking-widest relative z-10 mb-2">
+              <h4 className="text-red-400 font-black uppercase text-[14px] md:text-[16px] tracking-widest relative z-10 mb-2">
                 V8 ENGINE COOLING PROTOCOL ACTIVE
               </h4>
-              <p className="text-zinc-300 text-[12px] font-bold tracking-widest relative z-10">
+              <p className="text-zinc-300 text-[11px] md:text-[12px] font-bold tracking-widest relative z-10">
                 You have exhausted your processing credits. System will auto-refill exactly 30 days after your last batch.
               </p>
             </div>
           )}
 
-          <div className="rounded-[2rem] border border-white/10 bg-[#0a0a0a]/80 backdrop-blur-md p-6 shadow-2xl max-w-7xl mx-auto flex flex-col items-center w-full mb-12">
-            <h2 className="mb-6 text-sm md:text-base font-black uppercase tracking-widest text-white border-b border-white/10 pb-4 w-full text-center">Engine Parameters</h2>
+          {/* ENGINE PARAMETERS */}
+          <div className="rounded-3xl md:rounded-[2rem] border border-white/10 bg-[#0a0a0a]/80 backdrop-blur-md p-5 md:p-6 shadow-2xl max-w-7xl mx-auto flex flex-col items-center w-full mb-10 md:mb-12">
+            <h2 className="mb-5 md:mb-6 text-sm md:text-base font-black uppercase tracking-widest text-white border-b border-white/10 pb-3 md:pb-4 w-full text-center">Engine Parameters</h2>
 
-            <div className="flex flex-wrap items-end justify-center gap-4 w-full pt-4">
+            <div className="flex flex-wrap items-end justify-center gap-3 md:gap-4 w-full pt-2 md:pt-4">
               
-              <div className="space-y-2 flex-grow max-w-[180px]">
-                <span className="block text-[9px] font-black uppercase tracking-widest text-orange-500 text-center">ALGORITHM SEED</span>
+              <div className="space-y-2 w-[48%] md:flex-grow md:max-w-[180px]">
+                <span className="block text-[8px] md:text-[9px] font-black uppercase tracking-widest text-orange-500 text-center">ALGORITHM SEED</span>
                 <div className="v8-magic-border w-full">
-                  <input type="number" value={seed} onChange={(e) => setSeed(Number(e.target.value || 0))} className="v8-magic-inner px-4 py-3.5 text-white font-mono text-center outline-none" />
+                  <input type="number" value={seed} onChange={(e) => setSeed(Number(e.target.value || 0))} className="v8-magic-inner px-3 py-3 md:px-4 md:py-3.5 text-white font-mono text-xs md:text-sm text-center outline-none" />
                 </div>
               </div>
 
-              <div className="space-y-2 flex-grow max-w-[200px]">
-                <span className="block text-[9px] font-black uppercase tracking-widest text-orange-500 text-center">ASPECT RATIO</span>
+              <div className="space-y-2 w-[48%] md:flex-grow md:max-w-[200px]">
+                <span className="block text-[8px] md:text-[9px] font-black uppercase tracking-widest text-orange-500 text-center">ASPECT RATIO</span>
                 <div className="v8-magic-border w-full">
                   <select 
                     value={aspectRatio} 
@@ -1109,7 +1163,7 @@ export default function V8GridSystem() {
                       setAspectRatio(e.target.value); 
                       setGeneratedPrompts([]); 
                     }} 
-                    className="v8-magic-inner px-4 py-3.5 text-white font-bold text-center uppercase outline-none cursor-pointer"
+                    className="v8-magic-inner px-2 py-3 md:px-4 md:py-3.5 text-white font-bold text-[10px] md:text-sm text-center uppercase outline-none cursor-pointer"
                   >
                     <option value="1:1">1:1 (Square)</option>
                     <option value="9:16">9:16 (Vertical)</option>
@@ -1119,8 +1173,8 @@ export default function V8GridSystem() {
                 </div>
               </div>
 
-              <div className="space-y-2 flex-grow max-w-[200px]">
-                <span className="block text-[9px] font-black uppercase tracking-widest text-emerald-500 text-center">GRID SYSTEM</span>
+              <div className="space-y-2 w-[48%] md:flex-grow md:max-w-[200px]">
+                <span className="block text-[8px] md:text-[9px] font-black uppercase tracking-widest text-emerald-500 text-center">GRID SYSTEM</span>
                 <div className="v8-magic-border w-full">
                   <select 
                     value={gridFormat} 
@@ -1128,9 +1182,8 @@ export default function V8GridSystem() {
                       setGridFormat(e.target.value); 
                       setGeneratedPrompts([]); 
                     }} 
-                    className="v8-magic-inner px-4 py-3.5 text-white font-bold text-center uppercase outline-none cursor-pointer"
+                    className="v8-magic-inner px-2 py-3 md:px-4 md:py-3.5 text-white font-bold text-[10px] md:text-sm text-center uppercase outline-none cursor-pointer"
                   >
-                    {/* 🔥 2x6 JE SADA PRVA OPCIJA U DROPDOWN-U 🔥 */}
                     <option value="2x6">2x6 (12 Panels)</option>
                     <option value="2x4">2x4 (8 Panels)</option>
                     <option value="2x3">2x3 (6 Panels)</option>
@@ -1139,60 +1192,64 @@ export default function V8GridSystem() {
                 </div>
               </div>
               
-              <div className="space-y-2 flex-grow max-w-[240px]">
-                <span className="block text-[9px] font-black uppercase tracking-widest text-orange-500 text-center">PRESET STYLE</span>
+              <div className="space-y-2 w-[48%] md:flex-grow md:max-w-[240px]">
+                <span className="block text-[8px] md:text-[9px] font-black uppercase tracking-widest text-orange-500 text-center">PRESET STYLE</span>
                 <div className="v8-magic-border w-full">
-                  <select value={presetName} onChange={(e) => setPresetName(e.target.value)} className="v8-magic-inner px-4 py-3.5 text-white font-bold uppercase text-center outline-none cursor-pointer">
+                  <select value={presetName} onChange={(e) => setPresetName(e.target.value)} className="v8-magic-inner px-2 py-3 md:px-4 md:py-3.5 text-white font-bold uppercase text-[10px] md:text-sm text-center outline-none cursor-pointer">
                     {Object.keys(STYLE_PRESETS).map((name) => (<option key={name} value={name}>{name.toUpperCase()}</option>))}
                   </select>
                 </div>
               </div>
 
-              <label className="flex items-center gap-3 rounded-xl border border-white/10 bg-black px-5 py-4 text-[10px] font-black uppercase tracking-widest text-zinc-300 cursor-pointer hover:border-orange-500/50 transition-colors">
-                <input type="checkbox" checked={strictNoBrand} onChange={(e) => setStrictNoBrand(e.target.checked)} className="accent-orange-500 w-4 h-4" />
-                NO BRAND LOCK
-              </label>
-              <label className="flex items-center gap-3 rounded-xl border border-white/10 bg-black px-5 py-4 text-[10px] font-black uppercase tracking-widest text-zinc-300 cursor-pointer hover:border-orange-500/50 transition-colors">
-                <input type="checkbox" checked={includeNegative} onChange={(e) => setIncludeNegative(e.target.checked)} className="accent-orange-500 w-4 h-4" />
-                NEGATIVE PROMPT
-              </label>
+              <div className="w-full md:w-auto flex justify-center gap-3 md:gap-4 mt-2 md:mt-0">
+                <label className="flex items-center gap-2 md:gap-3 rounded-xl border border-white/10 bg-black px-4 md:px-5 py-3 md:py-4 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-zinc-300 cursor-pointer hover:border-orange-500/50 transition-colors w-1/2 md:w-auto justify-center">
+                  <input type="checkbox" checked={strictNoBrand} onChange={(e) => setStrictNoBrand(e.target.checked)} className="accent-orange-500 w-3 h-3 md:w-4 md:h-4 shrink-0" />
+                  NO BRAND
+                </label>
+                <label className="flex items-center gap-2 md:gap-3 rounded-xl border border-white/10 bg-black px-4 md:px-5 py-3 md:py-4 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-zinc-300 cursor-pointer hover:border-orange-500/50 transition-colors w-1/2 md:w-auto justify-center">
+                  <input type="checkbox" checked={includeNegative} onChange={(e) => setIncludeNegative(e.target.checked)} className="accent-orange-500 w-3 h-3 md:w-4 md:h-4 shrink-0" />
+                  NEGATIVE
+                </label>
+              </div>
             </div>
           </div>
 
-          <div className="rounded-[1.5rem] border border-emerald-500/30 bg-emerald-900/20 backdrop-blur-sm p-4 text-xs text-emerald-200 font-medium leading-relaxed max-w-4xl mx-auto text-center mb-8">
-            <span className="font-black text-emerald-400 uppercase tracking-widest block mb-1 text-[10px]">V8 SMART BLUEPRINT ACTIVE</span>
+          <div className="rounded-2xl md:rounded-[1.5rem] border border-emerald-500/30 bg-emerald-900/20 backdrop-blur-sm p-3 md:p-4 text-[11px] md:text-xs text-emerald-200 font-medium leading-relaxed max-w-4xl mx-auto text-center mb-8 px-4">
+            <span className="font-black text-emerald-400 uppercase tracking-widest block mb-1 text-[9px] md:text-[10px]">V8 SMART BLUEPRINT ACTIVE</span>
             The V8 Engine is dynamically injecting premium cinematic metadata, lighting arrays, and specific camera equipment in real-time based on your selected subjects and seed.
           </div>
 
           {/* ===================================== */}
           {/* MASTER DATABASE CONTROL SWITCHER */}
           {/* ===================================== */}
-          <div className="flex flex-col items-center w-full max-w-7xl mx-auto mb-10">
-            <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#050505] border border-white/10 mb-6 shadow-inner">
-              <Database size={14} className="text-emerald-500" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Master Database Control</span>
+          <div className="flex flex-col items-center w-full max-w-7xl mx-auto mb-8 md:mb-10 px-2 md:px-0">
+            <div className="inline-flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-[#050505] border border-white/10 mb-5 md:mb-6 shadow-inner">
+              <Database size={12} className="md:w-[14px] md:h-[14px] text-emerald-500" />
+              <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Master Database Control</span>
             </div>
-            <div className="flex flex-wrap justify-center gap-4 w-full">
-               {[1, 2, 3, 4].map(num => {
+            
+            <div className="grid grid-cols-2 lg:grid-cols-5 md:flex md:flex-wrap justify-center gap-3 md:gap-4 w-full">
+               {[1, 2, 3, 4, 5].map(num => {
                   const isActive = activeDB === num;
                   let activeColors = "";
-                  if (num === 1) activeColors = "bg-blue-600/20 border-blue-500 text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.3)] scale-105";
-                  if (num === 2) activeColors = "bg-orange-600/20 border-orange-500 text-orange-400 shadow-[0_0_20px_rgba(234,88,12,0.3)] scale-105";
-                  if (num === 3) activeColors = "bg-purple-600/20 border-purple-500 text-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.3)] scale-105";
-                  if (num === 4) activeColors = "bg-red-600/20 border-red-500 text-red-400 shadow-[0_0_20px_rgba(220,38,38,0.3)] scale-105";
+                  if (num === 1) activeColors = "bg-blue-600/20 border-blue-500 text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.3)] scale-[1.02] md:scale-105";
+                  if (num === 2) activeColors = "bg-orange-600/20 border-orange-500 text-orange-400 shadow-[0_0_20px_rgba(234,88,12,0.3)] scale-[1.02] md:scale-105";
+                  if (num === 3) activeColors = "bg-purple-600/20 border-purple-500 text-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.3)] scale-[1.02] md:scale-105";
+                  if (num === 4) activeColors = "bg-red-600/20 border-red-500 text-red-400 shadow-[0_0_20px_rgba(220,38,38,0.3)] scale-[1.02] md:scale-105";
+                  if (num === 5) activeColors = "bg-cyan-600/20 border-cyan-500 text-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)] scale-[1.02] md:scale-105";
                   
                   return (
                     <button 
                       key={`switch-${num}`}
                       onClick={() => setActiveDB(num)}
-                      className={`w-[180px] h-[55px] rounded-2xl font-black uppercase tracking-widest transition-all duration-300 text-[10px] border flex items-center justify-center gap-2 ${
+                      className={`w-full md:w-[180px] h-[45px] md:h-[55px] rounded-xl md:rounded-2xl font-black uppercase tracking-widest transition-all duration-300 text-[9px] md:text-[10px] border flex items-center justify-center gap-1.5 md:gap-2 ${
                         isActive 
                           ? activeColors 
                           : "bg-[#050505] border-white/5 text-zinc-500 hover:border-white/20 hover:text-zinc-300"
-                      }`}
+                      } ${num === 5 ? 'col-span-2 lg:col-span-1' : ''}`}
                     >
-                      {isActive ? <CheckCircle size={14} /> : <Lock size={12} className="opacity-40" />}
-                      {isActive ? `ACTIVE: DB ${num}` : `SWITCH TO DB ${num}`}
+                      {isActive ? <CheckCircle size={12} className="md:w-[14px] md:h-[14px]" /> : <Lock size={10} className="md:w-[12px] md:h-[12px] opacity-40" />}
+                      {isActive ? `ACTIVE: DB ${num}` : num === 5 ? `CUSTOM DB 5` : `DB ${num}`}
                     </button>
                   )
                })}
@@ -1203,18 +1260,18 @@ export default function V8GridSystem() {
           {/* GRID LAYOUT DATABASE 1 */}
           {/* ===================================== */}
           <div className={`transition-all duration-500 w-full ${activeDB !== 1 ? 'opacity-20 grayscale pointer-events-none scale-[0.98] hidden' : 'scale-100 z-10 relative block'}`}>
-            <div className="rounded-[2rem] border border-white/10 bg-[#0a0a0a]/80 backdrop-blur-md p-8 shadow-2xl w-full" ref={dropdownRef1}>
-              <div className="flex flex-col mb-8">
-                <div className="flex items-center justify-between pb-3">
-                   <h2 className="text-lg font-black uppercase tracking-widest text-white">Grid Layout Database 1</h2>
-                   <span className="text-[10px] bg-zinc-800 text-zinc-300 px-3 py-1 rounded-full font-black tracking-widest">
+            <div className="rounded-3xl md:rounded-[2rem] border border-white/10 bg-[#0a0a0a]/80 backdrop-blur-md p-5 md:p-8 shadow-2xl w-full" ref={dropdownRef1}>
+              <div className="flex flex-col mb-6 md:mb-8">
+                <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 gap-2">
+                   <h2 className="text-base md:text-lg font-black uppercase tracking-widest text-white text-center md:text-left">Grid Database 1</h2>
+                   <span className="text-[9px] md:text-[10px] bg-zinc-800 text-zinc-300 px-3 py-1 rounded-full font-black tracking-widest self-center md:self-auto">
                       {visiblePanelsCount} PANELS ACTIVE
                    </span>
                 </div>
                 <div style={{ width: '100%', height: '0.5px', background: 'linear-gradient(90deg, #4285f4, #9b72cb, #d96570, #f9ab00, #4285f4)', opacity: 0.9 }}></div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                 {categories1.slice(0, visiblePanelsCount).map((category, index) => {
                   const originalCategory = DEFAULT_CATEGORIES[index];
                   const subOptions = SUB_CATEGORIES_DB[originalCategory] || [];
@@ -1242,18 +1299,18 @@ export default function V8GridSystem() {
           {/* GRID LAYOUT DATABASE 2 */}
           {/* ===================================== */}
           <div className={`transition-all duration-500 w-full ${activeDB !== 2 ? 'opacity-20 grayscale pointer-events-none scale-[0.98] hidden' : 'scale-100 z-10 relative block'}`}>
-            <div className="rounded-[2rem] border border-white/10 bg-[#0a0a0a]/80 backdrop-blur-md p-8 shadow-2xl w-full" ref={dropdownRef2}>
-              <div className="flex flex-col mb-8">
-                <div className="flex items-center justify-between pb-3">
-                   <h2 className="text-lg font-black uppercase tracking-widest text-white">Grid Layout Database 2</h2>
-                   <span className="text-[10px] bg-zinc-800 text-zinc-300 px-3 py-1 rounded-full font-black tracking-widest">
+            <div className="rounded-3xl md:rounded-[2rem] border border-white/10 bg-[#0a0a0a]/80 backdrop-blur-md p-5 md:p-8 shadow-2xl w-full" ref={dropdownRef2}>
+              <div className="flex flex-col mb-6 md:mb-8">
+                <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 gap-2">
+                   <h2 className="text-base md:text-lg font-black uppercase tracking-widest text-white text-center md:text-left">Grid Database 2</h2>
+                   <span className="text-[9px] md:text-[10px] bg-zinc-800 text-zinc-300 px-3 py-1 rounded-full font-black tracking-widest self-center md:self-auto">
                       {visiblePanelsCount} PANELS ACTIVE
                    </span>
                 </div>
                 <div style={{ width: '100%', height: '0.5px', background: 'linear-gradient(90deg, #4285f4, #9b72cb, #d96570, #f9ab00, #4285f4)', opacity: 0.9 }}></div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                 {categories2.slice(0, visiblePanelsCount).map((category, index) => {
                   const originalCategory = DEFAULT_CATEGORIES_2[index];
                   const subOptions = SUB_CATEGORIES_DB_2[originalCategory] || [];
@@ -1281,18 +1338,18 @@ export default function V8GridSystem() {
           {/* GRID LAYOUT DATABASE 3 */}
           {/* ===================================== */}
           <div className={`transition-all duration-500 w-full ${activeDB !== 3 ? 'opacity-20 grayscale pointer-events-none scale-[0.98] hidden' : 'scale-100 z-10 relative block'}`}>
-            <div className="rounded-[2rem] border border-white/10 bg-[#0a0a0a]/80 backdrop-blur-md p-8 shadow-2xl w-full" ref={dropdownRef3}>
-              <div className="flex flex-col mb-8">
-                <div className="flex items-center justify-between pb-3">
-                   <h2 className="text-lg font-black uppercase tracking-widest text-white">Grid Layout Database 3</h2>
-                   <span className="text-[10px] bg-zinc-800 text-zinc-300 px-3 py-1 rounded-full font-black tracking-widest">
+            <div className="rounded-3xl md:rounded-[2rem] border border-white/10 bg-[#0a0a0a]/80 backdrop-blur-md p-5 md:p-8 shadow-2xl w-full" ref={dropdownRef3}>
+              <div className="flex flex-col mb-6 md:mb-8">
+                <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 gap-2">
+                   <h2 className="text-base md:text-lg font-black uppercase tracking-widest text-white text-center md:text-left">Grid Database 3</h2>
+                   <span className="text-[9px] md:text-[10px] bg-zinc-800 text-zinc-300 px-3 py-1 rounded-full font-black tracking-widest self-center md:self-auto">
                       {visiblePanelsCount} PANELS ACTIVE
                    </span>
                 </div>
                 <div style={{ width: '100%', height: '0.5px', background: 'linear-gradient(90deg, #4285f4, #9b72cb, #d96570, #f9ab00, #4285f4)', opacity: 0.9 }}></div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                 {categories3.slice(0, visiblePanelsCount).map((category, index) => {
                   const originalCategory = DEFAULT_CATEGORIES_3[index];
                   const subOptions = SUB_CATEGORIES_DB_3[originalCategory] || [];
@@ -1320,18 +1377,18 @@ export default function V8GridSystem() {
           {/* GRID LAYOUT DATABASE 4 */}
           {/* ===================================== */}
           <div className={`transition-all duration-500 w-full ${activeDB !== 4 ? 'opacity-20 grayscale pointer-events-none scale-[0.98] hidden' : 'scale-100 z-10 relative block'}`}>
-            <div className="rounded-[2rem] border border-white/10 bg-[#0a0a0a]/80 backdrop-blur-md p-8 shadow-2xl w-full" ref={dropdownRef4}>
-              <div className="flex flex-col mb-8">
-                <div className="flex items-center justify-between pb-3">
-                   <h2 className="text-lg font-black uppercase tracking-widest text-white">Grid Layout Database 4</h2>
-                   <span className="text-[10px] bg-zinc-800 text-zinc-300 px-3 py-1 rounded-full font-black tracking-widest">
+            <div className="rounded-3xl md:rounded-[2rem] border border-white/10 bg-[#0a0a0a]/80 backdrop-blur-md p-5 md:p-8 shadow-2xl w-full" ref={dropdownRef4}>
+              <div className="flex flex-col mb-6 md:mb-8">
+                <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 gap-2">
+                   <h2 className="text-base md:text-lg font-black uppercase tracking-widest text-white text-center md:text-left">Grid Database 4</h2>
+                   <span className="text-[9px] md:text-[10px] bg-zinc-800 text-zinc-300 px-3 py-1 rounded-full font-black tracking-widest self-center md:self-auto">
                       {visiblePanelsCount} PANELS ACTIVE
                    </span>
                 </div>
                 <div style={{ width: '100%', height: '0.5px', background: 'linear-gradient(90deg, #4285f4, #9b72cb, #d96570, #f9ab00, #4285f4)', opacity: 0.9 }}></div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                 {categories4.slice(0, visiblePanelsCount).map((category, index) => {
                   const originalCategory = DEFAULT_CATEGORIES_4[index];
                   const subOptions = SUB_CATEGORIES_DB_4[originalCategory] || [];
@@ -1355,23 +1412,63 @@ export default function V8GridSystem() {
             <div style={{ width: '100%', height: '0.5px', background: 'linear-gradient(90deg, #4285f4, #9b72cb, #d96570, #f9ab00, #4285f4)', opacity: 0.9, marginTop: '24px', marginBottom: '24px' }}></div>
           </div>
 
+          {/* ===================================== */}
+          {/* GRID LAYOUT DATABASE 5 (CUSTOM) */}
+          {/* ===================================== */}
+          <div className={`transition-all duration-500 w-full ${activeDB !== 5 ? 'opacity-20 grayscale pointer-events-none scale-[0.98] hidden' : 'scale-100 z-10 relative block'}`}>
+            <div className="rounded-3xl md:rounded-[2rem] border border-cyan-500/30 bg-[#0a0a0a]/80 backdrop-blur-md p-5 md:p-8 shadow-[0_0_40px_rgba(6,182,212,0.15)] w-full" ref={dropdownRef5}>
+              <div className="flex flex-col mb-6 md:mb-8">
+                <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 gap-2">
+                   <h2 className="text-base md:text-lg font-black uppercase tracking-widest text-cyan-400 text-center md:text-left flex items-center gap-3">
+                     Custom Database 5 <span className="bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded text-[10px] font-bold border border-cyan-500/30">Sandbox</span>
+                   </h2>
+                   <span className="text-[9px] md:text-[10px] bg-cyan-900/50 text-cyan-300 px-3 py-1 rounded-full font-black tracking-widest self-center md:self-auto border border-cyan-500/30">
+                      {visiblePanelsCount} PANELS ACTIVE
+                   </span>
+                </div>
+                <div style={{ width: '100%', height: '0.5px', background: 'linear-gradient(90deg, #06b6d4, #3b82f6, #06b6d4)', opacity: 0.9 }}></div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+                {categories5.slice(0, visiblePanelsCount).map((category, index) => {
+                  const autoDesc = autoDescription(category, index, seed, 0, 5);
+
+                  return (
+                    <MemoizedPanel 
+                      key={`db5-${index}`}
+                      index={index}
+                      category={category}
+                      autoDesc={autoDesc}
+                      subOptions={[]} 
+                      updateCategory={updateCategory5}
+                      openDropdown={openDropdown5}
+                      setOpenDropdown={setOpenDropdown5}
+                    />
+                  )
+                })}
+              </div>
+            </div>
+            <div style={{ width: '100%', height: '0.5px', background: 'linear-gradient(90deg, #4285f4, #9b72cb, #d96570, #f9ab00, #4285f4)', opacity: 0.9, marginTop: '24px', marginBottom: '24px' }}></div>
+          </div>
+
           {/* GENERATE I REGENERATE SEKCIJA */}
-          <div className="rounded-[2.5rem] border border-orange-500/40 bg-[#0a0a0a]/90 backdrop-blur-md p-8 shadow-[0_0_40px_rgba(234,88,12,0.15)] relative mt-10 max-w-7xl mx-auto w-full">
+          <div className="rounded-[2rem] md:rounded-[2.5rem] border border-orange-500/40 bg-[#0a0a0a]/90 backdrop-blur-md p-6 md:p-8 shadow-[0_0_40px_rgba(234,88,12,0.15)] relative mt-8 md:mt-10 max-w-7xl mx-auto w-full">
             
             {generatedPrompts.length === 0 ? (
               
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <Zap className="w-16 h-16 text-zinc-700 mb-6" />
-                <h2 className="text-2xl font-black text-zinc-500 uppercase tracking-widest mb-8">SYSTEM STANDBY</h2>
+              <div className="flex flex-col items-center justify-center py-12 md:py-20 text-center">
+                <Zap className="w-12 h-12 md:w-16 md:h-16 text-zinc-700 mb-4 md:mb-6" />
+                <h2 className="text-xl md:text-2xl font-black text-zinc-500 uppercase tracking-widest mb-6 md:mb-8">SYSTEM STANDBY</h2>
                 
                 <button 
                   onClick={() => handleGenerate100(activeDB)} 
                   disabled={isEngineCoolingDown && !isAdmin}
-                  className={`w-full sm:w-[280px] h-[65px] bg-gradient-to-r text-white font-black uppercase tracking-widest rounded-2xl transition-all flex items-center justify-center text-[12px] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${
+                  className={`w-full sm:w-[280px] h-[55px] md:h-[65px] bg-gradient-to-r text-white font-black uppercase tracking-widest rounded-2xl transition-all flex items-center justify-center text-[11px] md:text-[12px] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${
                      activeDB === 1 ? 'from-blue-700 to-blue-500 hover:from-blue-600 hover:to-blue-400 shadow-[0_0_30px_rgba(59,130,246,0.3)]' :
                      activeDB === 2 ? 'from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 shadow-[0_0_30px_rgba(234,88,12,0.3)]' :
                      activeDB === 3 ? 'from-purple-700 to-purple-500 hover:from-purple-600 hover:to-purple-400 shadow-[0_0_30px_rgba(168,85,247,0.3)]' :
-                     'from-red-700 to-red-500 hover:from-red-600 hover:to-red-400 shadow-[0_0_30px_rgba(220,38,38,0.3)]'
+                     activeDB === 4 ? 'from-red-700 to-red-500 hover:from-red-600 hover:to-red-400 shadow-[0_0_30px_rgba(220,38,38,0.3)]' :
+                     'from-cyan-600 to-blue-500 hover:from-cyan-500 hover:to-blue-400 shadow-[0_0_30px_rgba(6,182,212,0.3)]'
                   } ${!isEngineCoolingDown || isAdmin ? 'hover:scale-[1.05]' : ''}`}
                 >
                    GENERATE 100 PROMPTS (DB {activeDB})
@@ -1381,56 +1478,58 @@ export default function V8GridSystem() {
             ) : (
 
               <>
-                <div ref={promptsTopRef} className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-white/10 pb-6">
+                <div ref={promptsTopRef} className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-white/10 pb-5 md:pb-6">
                   <div>
-                    <h2 className="text-xl font-black uppercase tracking-widest text-white flex items-center gap-3">
-                      <span className="bg-green-500 text-black px-3 py-1 rounded-lg text-xs font-black">100</span>
+                    <h2 className="text-lg md:text-xl font-black uppercase tracking-widest text-white flex items-center justify-center lg:justify-start gap-2 md:gap-3">
+                      <span className="bg-green-500 text-black px-2 md:px-3 py-1 rounded-lg text-[10px] md:text-xs font-black">100</span>
                       PROMPTS DEPLOYED
                     </h2>
                   </div>
-                  <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex flex-wrap items-center justify-center lg:justify-end gap-2 md:gap-3">
                     
                     <button 
                       onClick={() => handleRegenerate100(activeDB)} 
                       disabled={isEngineCoolingDown && !isAdmin}
-                      className={`flex items-center gap-2 text-white px-5 py-3.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                      className={`flex items-center gap-1.5 md:gap-2 text-white px-4 md:px-5 py-3 md:py-3.5 rounded-xl font-black text-[9px] md:text-[10px] uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                          activeDB === 1 ? 'bg-blue-600 hover:bg-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.4)]' :
                          activeDB === 2 ? 'bg-orange-600 hover:bg-orange-500 shadow-[0_0_20px_rgba(234,88,12,0.4)]' :
                          activeDB === 3 ? 'bg-purple-600 hover:bg-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.4)]' :
-                         'bg-red-600 hover:bg-red-500 shadow-[0_0_20px_rgba(220,38,38,0.4)]'
+                         activeDB === 4 ? 'bg-red-600 hover:bg-red-500 shadow-[0_0_20px_rgba(220,38,38,0.4)]' :
+                         'bg-cyan-600 hover:bg-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.4)]'
                       }`}
                     >
-                       <RefreshCw size={14} /> REGENERATE (DB {activeDB})
+                       <RefreshCw size={12} className="md:w-[14px] md:h-[14px]" /> REGEN (DB {activeDB})
                     </button>
 
-                    <div className="w-px h-8 bg-white/10 mx-2"></div>
-                    <button onClick={downloadTxt} title="Export as TXT" className="p-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-all border border-white/5"><FileText size={18} /></button>
-                    <button onClick={downloadJson} title="Export as JSON" className="p-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-all border border-white/5"><Code size={18} /></button>
-                    <button onClick={clearPrompts} title="Clear All" className="p-3 bg-red-900/20 hover:bg-red-600 text-red-500 hover:text-white rounded-xl transition-all border border-red-500/30"><Trash2 size={18} className="animate-pulse" /></button>
+                    <div className="hidden sm:block w-px h-6 md:h-8 bg-white/10 mx-1 md:mx-2"></div>
+                    
+                    <button onClick={downloadTxt} title="Export as TXT" className="p-2.5 md:p-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-all border border-white/5"><FileText size={16} className="md:w-[18px] md:h-[18px]" /></button>
+                    <button onClick={downloadJson} title="Export as JSON" className="p-2.5 md:p-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-all border border-white/5"><Code size={16} className="md:w-[18px] md:h-[18px]" /></button>
+                    <button onClick={clearPrompts} title="Clear All" className="p-2.5 md:p-3 bg-red-900/20 hover:bg-red-600 text-red-500 hover:text-white rounded-xl transition-all border border-red-500/30"><Trash2 size={16} className="md:w-[18px] md:h-[18px] animate-pulse" /></button>
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 p-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 p-1 md:p-2">
                   {currentPrompts.map((promptText, i) => {
                      const absoluteIndex = indexOfFirstPrompt + i; 
                      return (
-                         <div key={absoluteIndex} className="bg-[#050505] border border-white/5 rounded-2xl p-4 hover:border-orange-500/30 transition-colors relative group flex flex-col h-full">
-                            <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-3">
-                               <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">
+                         <div key={absoluteIndex} className="bg-[#050505] border border-white/5 rounded-xl md:rounded-2xl p-4 hover:border-orange-500/30 transition-colors relative group flex flex-col h-full">
+                            <div className="flex flex-row items-center justify-between mb-3 border-b border-white/5 pb-3">
+                               <span className="text-[9px] md:text-[10px] font-black text-orange-500 uppercase tracking-widest">
                                   PROMPT #{String(absoluteIndex + 1).padStart(3, '0')}
                                </span>
                                <button 
                                   onClick={() => copySingle(absoluteIndex, promptText)}
-                                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[9px] font-black uppercase transition-all shadow-lg ${copiedStates[absoluteIndex] ? 'bg-green-500 text-black shadow-[0_0_15px_rgba(34,197,94,0.4)]' : 'bg-orange-600 text-white hover:bg-orange-500'}`}
+                                  className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-5 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[8px] md:text-[9px] font-black uppercase transition-all shadow-lg ${copiedStates[absoluteIndex] ? 'bg-green-500 text-black shadow-[0_0_15px_rgba(34,197,94,0.4)]' : 'bg-orange-600 text-white hover:bg-orange-500'}`}
                                >
-                                  <Copy size={12} /> {copiedStates[absoluteIndex] ? 'COPIED!' : 'COPY PROMPT'}
+                                  <Copy size={10} className="md:w-[12px] md:h-[12px]" /> {copiedStates[absoluteIndex] ? 'COPIED!' : 'COPY'}
                                </button>
                             </div>
                             <div className="v8-magic-border w-full flex-grow">
                                <textarea 
                                   readOnly 
                                   value={promptText} 
-                                  className="v8-magic-inner p-3 font-mono text-[11px] text-zinc-300 resize-none outline-none v8-gradient-scrollbar h-full min-h-[250px]" 
+                                  className="v8-magic-inner p-3 font-mono text-[10px] md:text-[11px] text-zinc-300 resize-none outline-none v8-gradient-scrollbar h-full min-h-[200px] md:min-h-[250px]" 
                                />
                             </div>
                          </div>
@@ -1439,11 +1538,11 @@ export default function V8GridSystem() {
                 </div>
 
                 {totalPages > 1 && (
-                  <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-10 pt-8 border-t border-white/10 w-full">
+                  <div className="flex flex-col sm:flex-row justify-center items-center gap-3 md:gap-4 mt-8 md:mt-10 pt-6 md:pt-8 border-t border-white/10 w-full">
                      <button 
                         onClick={() => paginate(Math.max(1, currentPage - 1))}
                         disabled={currentPage === 1}
-                        className="px-6 py-3 bg-[#050505] border border-white/10 rounded-xl text-zinc-400 hover:text-orange-500 hover:border-orange-500/50 disabled:opacity-30 disabled:cursor-not-allowed transition-all font-black text-[10px] uppercase tracking-widest"
+                        className="w-full sm:w-auto px-6 py-3 bg-[#050505] border border-white/10 rounded-xl text-zinc-400 hover:text-orange-500 hover:border-orange-500/50 disabled:opacity-30 disabled:cursor-not-allowed transition-all font-black text-[9px] md:text-[10px] uppercase tracking-widest"
                      >
                         PREVIOUS
                      </button>
@@ -1453,7 +1552,7 @@ export default function V8GridSystem() {
                            <button
                               key={idx + 1}
                               onClick={() => paginate(idx + 1)}
-                              className={`w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-xl text-[11px] font-black transition-all ${
+                              className={`w-8 h-8 md:w-10 md:h-10 flex-shrink-0 flex items-center justify-center rounded-xl text-[10px] md:text-[11px] font-black transition-all ${
                                  currentPage === idx + 1 
                                     ? 'bg-orange-500 text-black shadow-[0_0_15px_rgba(234,88,12,0.4)] scale-110' 
                                     : 'bg-zinc-900/50 text-zinc-400 border border-white/5 hover:border-orange-500/30 hover:text-orange-400'
@@ -1467,7 +1566,7 @@ export default function V8GridSystem() {
                      <button 
                         onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
                         disabled={currentPage === totalPages}
-                        className="px-6 py-3 bg-[#050505] border border-white/10 rounded-xl text-zinc-400 hover:text-orange-500 hover:border-orange-500/50 disabled:opacity-30 disabled:cursor-not-allowed transition-all font-black text-[10px] uppercase tracking-widest"
+                        className="w-full sm:w-auto px-6 py-3 bg-[#050505] border border-white/10 rounded-xl text-zinc-400 hover:text-orange-500 hover:border-orange-500/50 disabled:opacity-30 disabled:cursor-not-allowed transition-all font-black text-[9px] md:text-[10px] uppercase tracking-widest"
                      >
                         NEXT
                      </button>

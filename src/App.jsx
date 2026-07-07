@@ -52,6 +52,9 @@ import V8SecureCheckout from './V8SecureCheckout';
 import LoginRequiredModal from './LoginRequiredModal';
 import V8UnlockModal from './V8UnlockModal'; 
 import V8AdminLiveNotifier from './V8AdminLiveNotifier';
+import V8PromptFactory from './V8PromptFactory';
+// 🔥 NOVI IMPORT 🔥
+import V8RawRealityEngine from './V8RawRealityEngine';
 
 // POČETAK FUNKCIJE: Initial Setup
 if (typeof window !== 'undefined') {
@@ -612,6 +615,11 @@ function AppContent({ appsData, refreshData }) {
               <Route path="/v8-debranding-extractor" element={<V8PageWrapper><V8JsonDeBrendingExtractorPage openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               <Route path="/grid-system" element={<V8PageWrapper><V8GridSystem openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               
+              <Route path="/prompt-factory" element={<V8PageWrapper><V8PromptFactory /></V8PageWrapper>} />
+              
+              {/* 🔥 NOVA RUTA ZA RAW REALITY ENGINE 🔥 */}
+              <Route path="/raw-reality" element={<V8PageWrapper><V8RawRealityEngine /></V8PageWrapper>} />
+
               <Route path="/seedance" element={<V8PageWrapper><CinematikPromptEngine initialEngine="SEEDANCE 2.0" openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               <Route path="/kling" element={<V8PageWrapper><CinematikPromptEngine initialEngine="KLING 3.0" openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               <Route path="/enxance" element={<V8PageWrapper><V8Enhancer10x openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
@@ -622,9 +630,7 @@ function AppContent({ appsData, refreshData }) {
               <Route path="/dashboard" element={<V8PageWrapper><V8AdminDashboard /></V8PageWrapper>} />
               <Route path="/admin-payoneer" element={<V8PageWrapper><V8PayoneerDashboard /></V8PageWrapper>} />
               
-              
               <Route path="/stock" element={<V8PageWrapper><V8StockBerza /></V8PageWrapper>} />
-              
               
               <Route path="/showroom" element={<V8PageWrapper><V8Showroom /></V8PageWrapper>} />
               <Route path="/terms" element={<V8PageWrapper><V8Terms /></V8PageWrapper>} />

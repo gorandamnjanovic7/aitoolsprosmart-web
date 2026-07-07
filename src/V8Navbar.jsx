@@ -1,7 +1,7 @@
 // POČETAK FAJLA: V8Navbar.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay, FileText, Code, ShieldCheck, LayoutGrid, Cpu, Maximize, Gift, Menu, X } from 'lucide-react';
+import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay, FileText, Code, ShieldCheck, LayoutGrid, Cpu, Maximize, Gift, Menu, X, Terminal, ScanLine } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // FIREBASE & TOOLS
@@ -32,7 +32,7 @@ const V8Navbar = ({ handleHomeClick }) => {
   const isVIP = isAdmin || isVIPInDB;
 
   useEffect(() => {
-    let unsubTrial = null; // Zadržavamo referencu na pravom nivou
+    let unsubTrial = null;
 
     const unsubAuth = onAuthStateChanged(auth, async (currentUser) => {
       // 1. Očisti prethodni snapshot listener ako postoji da sprečimo memory leak
@@ -172,7 +172,7 @@ const V8Navbar = ({ handleHomeClick }) => {
             </div>
           </Link>
 
-          {/* DESKTOP NAVIGACIJA - Prilagođena za sprečavanje loma na 1024px ekranima */}
+          {/* DESKTOP NAVIGACIJA */}
           <div className="flex-1 flex items-center justify-end gap-1 sm:gap-2 xl:gap-3 font-black uppercase tracking-widest min-w-0">
             
             <MagneticButton>
@@ -252,7 +252,7 @@ const V8Navbar = ({ handleHomeClick }) => {
               </MagneticButton>
               
               <div className="absolute top-full right-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-400 z-[9999]">
-                <div className="bg-black/90 backdrop-blur-2xl border border-white/10 border-t-orange-500 border-b-orange-500/30 rounded-2xl p-2 w-64 shadow-[0_30px_60px_rgba(0,0,0,0.9)] flex flex-col gap-1 relative overflow-hidden">
+                <div className="bg-black/90 backdrop-blur-2xl border border-white/10 border-t-orange-500 border-b-orange-500/30 rounded-2xl p-2 w-72 shadow-[0_30px_60px_rgba(0,0,0,0.9)] flex flex-col gap-1 relative overflow-hidden">
                   <div className="absolute -top-12 -right-12 w-32 h-32 bg-orange-600/30 rounded-full blur-[40px] pointer-events-none z-0"></div>
 
                   <Link to="/enxance" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-orange-500/30">
@@ -273,6 +273,28 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-blue-400 transition-all drop-shadow-md whitespace-nowrap">AI STORE</span>
                       <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Asset Marketplace</span>
                     </div>
+                  </Link>
+
+                  <Link to="/prompt-factory" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-blue-500/30 mt-1">
+                    <div className="bg-blue-500/20 p-2 rounded-lg group-hover/item:bg-blue-500/40 transition-colors shadow-[0_0_10px_rgba(59,130,246,0.3)]">
+                      <Terminal className="w-5 h-5 text-blue-400 transition-transform group-hover/item:scale-110" />
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-blue-400 transition-all drop-shadow-md whitespace-nowrap">PROMPT FACTORY</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">SaaS Idea Generator</span>
+                    </div>
+                  </Link>
+
+                  {/* 🔥 RAW REALITY ENGINE 🔥 */}
+                  <Link to="/raw-reality" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-orange-500/30 mt-1">
+                    <div className="bg-orange-500/20 p-2 rounded-lg group-hover/item:bg-orange-500/40 transition-colors shadow-[0_0_10px_rgba(249,115,22,0.3)]">
+                      <ScanLine className="w-5 h-5 text-orange-400 transition-transform group-hover/item:scale-110" />
+                    </div>
+                    <div className="flex flex-col text-left flex-grow">
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-orange-400 transition-all drop-shadow-md whitespace-nowrap">RAW REALITY ENGINE</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Anti-Aesthetic Generator</span>
+                    </div>
+                    <span className="text-[8px] bg-orange-600 text-white px-2 py-0.5 rounded font-black tracking-widest shadow-[0_0_8px_rgba(234,88,12,0.5)]">HOT</span>
                   </Link>
 
                   <Link to="/grid-system" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-yellow-500/30 mt-1">
@@ -342,7 +364,6 @@ const V8Navbar = ({ handleHomeClick }) => {
               </MagneticButton>
               
               <div className="absolute top-full right-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-400 z-[9999]">
-                {/* Malo proširen panel (w-72) da bi legalna klauzula stala lepše */}
                 <div className="bg-black/80 backdrop-blur-2xl border border-white/10 border-t-blue-500/60 border-b-purple-500/30 rounded-2xl p-2 w-72 shadow-[0_30px_60px_rgba(0,0,0,0.8)] flex flex-col gap-1 relative overflow-hidden">
                   <div className="absolute -top-12 -right-12 w-32 h-32 bg-blue-600/20 rounded-full blur-[40px] pointer-events-none z-0"></div>
                   
@@ -366,7 +387,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   </Link>
 
-                  {/* 🔥 LEGALNA KLAUZULA INTEGRISANA U UI 🔥 */}
                   <div className="mt-1 px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-start gap-2 relative z-10">
                     <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                     <span className="text-[7px] font-black uppercase tracking-widest text-emerald-400 leading-relaxed">
@@ -378,7 +398,7 @@ const V8Navbar = ({ handleHomeClick }) => {
               </div>
             </div>
 
-            {/* MASTER USER DROPDOWN */}
+            {/* MASTER USER DROPDOWN (SA SLIKOM AVATARA) */}
             {user ? (
                <div className="flex items-center gap-1.5 md:gap-2 ml-1 sm:ml-2 lg:border-l lg:border-white/10 lg:pl-3 xl:pl-4 relative group shrink-0">
                  <MagneticButton>
@@ -386,12 +406,18 @@ const V8Navbar = ({ handleHomeClick }) => {
                      {userCredits?.trialClaimed === false && !isAdmin ? (
                        <>
                           <Gift className="w-4 h-4 text-fuchsia-400 animate-pulse shrink-0" /> 
-                          {/* 🔥 TEKST SAKRIVEN NA MALIM EKRANIMA, VIDLJIV TEK OD 'SM' BREAKPOINT-A 🔥 */}
                           <span className="hidden sm:inline font-black text-[9px] xl:text-[10px] tracking-widest uppercase">CLAIM TRIAL</span>
                        </>
                      ) : (
                        <>
-                          <Zap className="w-3.5 h-3.5 text-emerald-400 animate-pulse shrink-0" /> 
+                          {user.photoURL ? (
+                             <>
+                                <img src={user.photoURL} alt="User Avatar" className="w-4 h-4 xl:w-5 xl:h-5 rounded-full object-cover border border-white/20 hidden sm:block" referrerPolicy="no-referrer" />
+                                <Zap className="w-3.5 h-3.5 text-emerald-400 animate-pulse shrink-0 sm:hidden" />
+                             </>
+                          ) : (
+                             <Zap className="w-3.5 h-3.5 text-emerald-400 animate-pulse shrink-0" />
+                          )}
                           <span className="hidden sm:inline font-black text-[9px] xl:text-[10px] tracking-widest uppercase">{isAdmin ? 'ADMIN' : 'ACCOUNT'}</span>
                        </>
                      )}
@@ -399,7 +425,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                    </button>
                  </MagneticButton>
 
-                 {/* DESKTOP USER DROPDOWN MENI */}
                  <div className="hidden lg:block absolute top-full right-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-400 z-[9999]">
                    <div className="bg-black/95 backdrop-blur-2xl border border-white/10 border-t-emerald-500 rounded-2xl p-4 w-64 shadow-2xl flex flex-col gap-2 relative overflow-hidden">
                      
@@ -479,7 +504,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                </div>
             )}
 
-            {/* 🔥 HAMBURGER DUGME (SAMO ZA MOBILNE - OSIGURANO PROTIV GUŽVANJA) 🔥 */}
             <button 
               onClick={() => setIsMobileMenuOpen(true)}
               className="lg:hidden ml-1 sm:ml-2 bg-orange-600/20 text-orange-500 border border-orange-500/40 p-2 sm:p-2.5 rounded-xl hover:bg-orange-600 hover:text-white transition-all shadow-[0_0_15px_rgba(249,115,22,0.3)] shrink-0"
@@ -491,7 +515,7 @@ const V8Navbar = ({ handleHomeClick }) => {
         </div>
       </nav>
 
-      {/* 🔥 MOBILNI MENI (OVERFLOW X SAKRIVEN, 100DVH FIKSIRAN) 🔥 */}
+      {/* 🔥 MOBILNI MENI 🔥 */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div 
@@ -501,27 +525,25 @@ const V8Navbar = ({ handleHomeClick }) => {
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className="fixed inset-0 w-full h-[100dvh] bg-[#050505]/95 backdrop-blur-3xl z-[99999] flex flex-col overflow-y-auto overflow-x-hidden pb-20"
           >
-            {/* Header Mob Menija */}
             <div className="flex justify-between items-center p-6 border-b border-white/10 w-full shrink-0">
               <div className="flex items-center gap-3">
                 <img src={data.logoUrl} className="h-8 object-contain" alt="logo" />
                 <span className="font-black uppercase tracking-[0.1em] text-orange-500 italic text-[12px]">V8 NAV SYSTEM</span>
               </div>
-              <button 
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="p-2 bg-zinc-900 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-800 border border-white/5"
-              >
+              <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 bg-zinc-900 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-800 border border-white/5">
                 <X className="w-6 h-6" />
               </button>
             </div>
 
             <div className="flex flex-col p-4 sm:p-6 gap-8 w-full">
-              
-              {/* Sekcija: Nalog i Krediti */}
               {user ? (
                 <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-5 flex flex-col gap-4 mx-auto w-full">
                   <div className="flex items-center gap-3 pb-4 border-b border-white/10">
-                    <User className="w-8 h-8 text-emerald-500 bg-emerald-500/10 p-1.5 rounded-full shrink-0" />
+                    {user.photoURL ? (
+                       <img src={user.photoURL} alt="Avatar" className="w-10 h-10 rounded-full border border-emerald-500/30 object-cover shrink-0" referrerPolicy="no-referrer" />
+                    ) : (
+                       <User className="w-8 h-8 text-emerald-500 bg-emerald-500/10 p-1.5 rounded-full shrink-0" />
+                    )}
                     <div className="overflow-hidden w-full">
                       <h3 className="font-black text-white text-[14px] uppercase tracking-widest truncate">{user.displayName || "V8 KLIJENT"}</h3>
                       <p className="text-[10px] text-zinc-500 uppercase font-bold truncate">{user.email}</p>
@@ -585,9 +607,7 @@ const V8Navbar = ({ handleHomeClick }) => {
                 </button>
               )}
 
-              {/* Sekcija: Navigacija */}
               <div className="flex flex-col gap-6 w-full">
-                
                 <div className="flex flex-col gap-3">
                   <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2">Glavni Meni</h4>
                   <Link to="/" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full">
@@ -637,6 +657,23 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   </Link>
 
+                  <Link to="/prompt-factory" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full">
+                    <div className="bg-blue-500/10 p-3 rounded-xl shrink-0"><Terminal className="w-6 h-6 text-blue-500" /></div>
+                    <div className="flex flex-col overflow-hidden">
+                      <span className="text-[13px] font-black uppercase tracking-widest text-white truncate">Prompt Factory</span>
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase truncate">SaaS Idea Generator</span>
+                    </div>
+                  </Link>
+
+                  {/* 🔥 RAW REALITY ENGINE (MOBILNI) 🔥 */}
+                  <Link to="/raw-reality" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-orange-500/30 p-4 rounded-2xl active:scale-95 transition-transform w-full">
+                    <div className="bg-orange-500/10 p-3 rounded-xl shrink-0"><ScanLine className="w-6 h-6 text-orange-500" /></div>
+                    <div className="flex flex-col overflow-hidden">
+                      <span className="text-[13px] font-black uppercase tracking-widest text-white truncate">Raw Reality Engine</span>
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase truncate">Anti-Aesthetic Gen</span>
+                    </div>
+                  </Link>
+
                   <Link to="/grid-system" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full">
                     <div className="bg-yellow-500/10 p-3 rounded-xl shrink-0"><LayoutGrid className="w-6 h-6 text-yellow-500" /></div>
                     <div className="flex flex-col overflow-hidden">
@@ -653,13 +690,15 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   </Link>
 
-                  <Link to="/v8-debranding-extractor" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-emerald-950/20 border border-emerald-500/30 p-4 rounded-2xl active:scale-95 transition-transform relative overflow-hidden w-full">
-                    <div className="absolute top-0 right-0 bg-emerald-600 text-white text-[8px] font-black px-3 py-1 rounded-bl-xl">NEW</div>
-                    <div className="bg-emerald-500/20 p-3 rounded-xl shrink-0"><ShieldCheck className="w-6 h-6 text-emerald-400" /></div>
-                    <div className="flex flex-col overflow-hidden">
-                      <span className="text-[13px] font-black uppercase tracking-widest text-white truncate">De-Branding DNA</span>
-                      <span className="text-[10px] text-zinc-500 font-bold uppercase truncate">White-Label Engine</span>
+                  <Link to="/v8-debranding-extractor" onClick={handleMobileLinkClick} className="flex items-center justify-between gap-2 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-emerald-500/30 mt-1">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-emerald-500/20 p-2 rounded-lg group-hover/item:bg-emerald-500/40 transition-colors shadow-[0_0_10px_rgba(16,185,129,0.3)]"><ShieldCheck className="w-5 h-5 text-emerald-400 transition-transform group-hover/item:scale-110" /></div>
+                      <div className="flex flex-col text-left">
+                        <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-emerald-400 transition-all drop-shadow-md whitespace-nowrap">DE-BRANDING DNA</span>
+                        <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Clean White-Label Engine</span>
+                      </div>
                     </div>
+                    <span className="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded font-black tracking-widest shadow-[0_0_8px_rgba(16,185,129,0.5)]">NEW</span>
                   </Link>
 
                   <div className="grid grid-cols-2 gap-3 mt-2 w-full">
@@ -678,13 +717,9 @@ const V8Navbar = ({ handleHomeClick }) => {
                   <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2 flex justify-between items-center">
                     <span>Premium Stock</span>
                   </h4>
-                  
-                  {/* 🔥 LEGALNA KLAUZULA U MOBILNOM MENIJU 🔥 */}
                   <div className="bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl flex items-center gap-2 mb-1 w-full">
                     <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span className="text-[7.5px] text-emerald-400 font-black uppercase tracking-widest leading-relaxed">
-                      INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP
-                    </span>
+                    <span className="text-[7.5px] text-emerald-400 font-black uppercase tracking-widest leading-relaxed">INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP</span>
                   </div>
 
                   <Link to="/stock" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full">
