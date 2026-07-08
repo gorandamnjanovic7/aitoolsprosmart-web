@@ -93,7 +93,11 @@ const V10UltraPrintAssets = ({ paketi = [], isAdmin, getGlobalCena, getAspectCla
             {paket.primeri && paket.primeri.length > 0 && (
                 <div className={`grid gap-2 md:gap-3 mb-4 shrink-0 max-w-full ${paket.primeri.length > 4 ? 'grid-cols-3' : 'grid-cols-4'}`}>
                     {paket.primeri.map((imgUrl, idx) => (
-                        <div key={idx} className="aspect-square rounded-xl overflow-hidden border border-purple-500/20 bg-zinc-900 shadow-xl relative cursor-pointer">
+                        <div 
+                           key={idx} 
+                           className="aspect-square rounded-xl overflow-hidden border border-purple-500/20 bg-zinc-900 shadow-xl relative cursor-pointer"
+                           onClick={() => setFullScreenImageUrl(imgUrl)} // DODAT ONCLICK ZA MALE SLIKE
+                        >
                             <img loading="lazy" src={imgUrl} className="w-full h-full object-cover opacity-70 hover:opacity-100 transition-all duration-300" alt="Preview" />
                         </div>
                     ))}
@@ -120,7 +124,6 @@ const V10UltraPrintAssets = ({ paketi = [], isAdmin, getGlobalCena, getAspectCla
               <p className="text-zinc-400 text-[10px] md:text-[11px] uppercase font-black mb-4 flex-1 leading-relaxed tracking-wider whitespace-pre-wrap break-words">{paket.opisEn}</p>
             </div>
             
-            {/* OVO JE DEO KOJI JE PRAVIO PROBLEM - SADA JE 100% RESPONSIVE */}
             <div className="mt-auto shrink-0 bg-[#050505] p-4 md:p-5 rounded-xl border border-white/5 relative overflow-hidden w-full">
               <div className="absolute inset-0 bg-gradient-to-r from-purple-900/10 to-pink-900/10 z-0 pointer-events-none"></div>
               
