@@ -35,7 +35,6 @@ const V8Navbar = ({ handleHomeClick }) => {
     let unsubTrial = null;
 
     const unsubAuth = onAuthStateChanged(auth, async (currentUser) => {
-      // 1. Očisti prethodni snapshot listener ako postoji da sprečimo memory leak
       if (unsubTrial) {
         unsubTrial();
         unsubTrial = null;
@@ -49,7 +48,6 @@ const V8Navbar = ({ handleHomeClick }) => {
             const docSnap = await getDoc(doc(db, "vip_users", currentUser.email.toLowerCase()));
             setIsVIPInDB(docSnap.exists());
 
-            // 2. Kreiraj novi snapshot
             unsubTrial = onSnapshot(doc(db, "v8_users", currentUser.uid), (userSnap) => {
               if (userSnap.exists()) {
                 setUserCredits(userSnap.data());
@@ -63,7 +61,6 @@ const V8Navbar = ({ handleHomeClick }) => {
       }
     });
 
-    // Cleanup funkcija za demontažu komponente
     return () => { 
       unsubAuth(); 
       if (unsubTrial) unsubTrial(); 
@@ -146,7 +143,7 @@ const V8Navbar = ({ handleHomeClick }) => {
   };
 
   return (
-    <div className="fixed top-0 left-0 w-full max-w-[100vw] z-[1000]">
+    <div className="fixed top-0 left-0 w-full z-[1000]">
       <nav 
         className={`w-full transition-all duration-500 border-b-2 ${
           scrolled 
@@ -162,18 +159,18 @@ const V8Navbar = ({ handleHomeClick }) => {
           backgroundRepeat: 'no-repeat'
         }}
       >
-        <div className="max-w-7xl mx-auto flex justify-between items-center px-3 sm:px-4 md:px-8 w-full">
+        <div className="max-w-7xl mx-auto flex justify-between items-center px-4 md:px-8 w-full">
           
-          <Link to="/" onClick={() => { handleHomeClick(); setIsMobileMenuOpen(false); }} className="flex items-center gap-2 sm:gap-3 group shrink-0 mr-1 sm:mr-2 md:mr-4 min-w-0 max-w-[70vw]">
+          <Link to="/" onClick={() => { handleHomeClick(); setIsMobileMenuOpen(false); }} className="flex items-center gap-2 sm:gap-3 group shrink-0">
             <img src={data.logoUrl} className={`object-contain transition-all duration-500 shrink-0 ${scrolled ? 'h-8 md:h-10' : 'h-9 md:h-12'} animate-pulse group-hover:scale-105`} alt="logo" />
-            <div className="flex items-center gap-1 sm:gap-1.5 overflow-hidden min-w-0">
-              <span className={`font-black uppercase tracking-[0.1em] text-blue-500 italic group-hover:text-orange-500 transition-all duration-500 truncate ${scrolled ? 'text-[9px] sm:text-[10px] md:text-[12px]' : 'text-[10px] sm:text-[11px] md:text-[14px]'}`}>AI TOOLS</span>
-              <span className={`font-black uppercase tracking-[0.1em] text-orange-500 italic group-hover:text-blue-500 transition-all duration-500 truncate ${scrolled ? 'text-[9px] sm:text-[10px] md:text-[12px]' : 'text-[10px] sm:text-[11px] md:text-[14px]'}`}>PRO SMART</span>
+            <div className="flex items-center gap-1 sm:gap-1.5 whitespace-nowrap">
+              <span className={`font-black uppercase tracking-[0.1em] text-blue-500 italic group-hover:text-orange-500 transition-all duration-500 ${scrolled ? 'text-[10px] md:text-[12px]' : 'text-[11px] md:text-[14px]'}`}>AI TOOLS</span>
+              <span className={`font-black uppercase tracking-[0.1em] text-orange-500 italic group-hover:text-blue-500 transition-all duration-500 ${scrolled ? 'text-[10px] md:text-[12px]' : 'text-[11px] md:text-[14px]'}`}>PRO SMART</span>
             </div>
           </Link>
 
           {/* DESKTOP NAVIGACIJA */}
-          <div className="flex-1 flex items-center justify-end gap-1 sm:gap-2 xl:gap-3 font-black uppercase tracking-widest min-w-0">
+          <div className="flex-1 flex items-center justify-end gap-2 xl:gap-3 font-black uppercase tracking-widest min-w-0">
             
             <MagneticButton>
                <Link to="/" onClick={handleHomeClick} className="hidden xl:flex items-center gap-2 px-3 xl:px-5 py-2 md:py-2.5 rounded-full bg-emerald-900/30 border border-emerald-500/40 text-emerald-400 text-[9px] xl:text-[11px] hover:text-white hover:bg-emerald-800/50 hover:border-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] cursor-pointer whitespace-nowrap">
@@ -200,8 +197,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <ImageIcon className="w-5 h-5 text-orange-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-orange-400 transition-all drop-shadow-md truncate">16MP WORKSPACE</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Standard V8 Engine</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-orange-400 transition-all drop-shadow-md whitespace-nowrap">16MP WORKSPACE</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Standard V8 Engine</span>
                     </div>
                   </Link>
                   
@@ -210,8 +207,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <Cpu className="w-5 h-5 text-yellow-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-yellow-400 transition-all drop-shadow-md truncate">33.2MP ENGINE</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Premium Upscaler</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-yellow-400 transition-all drop-shadow-md whitespace-nowrap">33.2MP ENGINE</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Premium Upscaler</span>
                     </div>
                   </Link>
 
@@ -220,8 +217,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <Cpu className="w-5 h-5 text-amber-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-amber-400 transition-all drop-shadow-md truncate">45MP ENGINE</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Pro Marketplace</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-amber-400 transition-all drop-shadow-md whitespace-nowrap">45MP ENGINE</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Pro Marketplace</span>
                     </div>
                   </Link>
 
@@ -231,8 +228,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                         <Cpu className="w-5 h-5 text-rose-400 transition-transform group-hover/item:scale-110" />
                       </div>
                       <div className="flex flex-col text-left overflow-hidden">
-                        <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-rose-400 transition-all drop-shadow-md truncate">60MP ENGINE</span>
-                        <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">God Tier Resolution</span>
+                        <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-rose-400 transition-all drop-shadow-md whitespace-nowrap">60MP ENGINE</span>
+                        <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">God Tier Resolution</span>
                       </div>
                     </div>
                     <span className="text-[8px] bg-rose-600 text-white px-2 py-0.5 rounded font-black tracking-widest shadow-[0_0_8px_rgba(244,63,94,0.5)] shrink-0">MAX</span>
@@ -260,8 +257,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <Zap className="w-5 h-5 text-orange-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-orange-400 transition-all drop-shadow-md truncate">10X ENHANCER</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Premium AI Engine</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-orange-400 transition-all drop-shadow-md whitespace-nowrap">10X ENHANCER</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Premium AI Engine</span>
                     </div>
                   </Link>
 
@@ -270,8 +267,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <Award className="w-5 h-5 text-blue-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-blue-400 transition-all drop-shadow-md truncate">AI STORE</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Asset Marketplace</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-blue-400 transition-all drop-shadow-md whitespace-nowrap">AI STORE</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Asset Marketplace</span>
                     </div>
                   </Link>
 
@@ -280,18 +277,20 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <Terminal className="w-5 h-5 text-blue-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-blue-400 transition-all drop-shadow-md truncate">PROMPT FACTORY</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">SaaS Idea Generator</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-blue-400 transition-all drop-shadow-md whitespace-nowrap">PROMPT FACTORY</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">SaaS Idea Generator</span>
                     </div>
                   </Link>
 
-                  <Link to="/raw-reality" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-orange-500/30 mt-1">
-                    <div className="bg-orange-500/20 p-2 rounded-lg group-hover/item:bg-orange-500/40 transition-colors shadow-[0_0_10px_rgba(249,115,22,0.3)] shrink-0">
-                      <ScanLine className="w-5 h-5 text-orange-400 transition-transform group-hover/item:scale-110" />
-                    </div>
-                    <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-orange-400 transition-all drop-shadow-md truncate">RAW REALITY ENGINE</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Anti-Aesthetic Generator</span>
+                  <Link to="/raw-reality" className="flex items-center justify-between gap-2 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-orange-500/30 mt-1">
+                    <div className="flex items-center gap-4 overflow-hidden">
+                      <div className="bg-orange-500/20 p-2 rounded-lg group-hover/item:bg-orange-500/40 transition-colors shadow-[0_0_10px_rgba(249,115,22,0.3)] shrink-0">
+                        <ScanLine className="w-5 h-5 text-orange-400 transition-transform group-hover/item:scale-110" />
+                      </div>
+                      <div className="flex flex-col text-left overflow-hidden">
+                        <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-orange-400 transition-all drop-shadow-md whitespace-nowrap">RAW REALITY ENGINE</span>
+                        <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Anti-Aesthetic Generator</span>
+                      </div>
                     </div>
                     <span className="text-[8px] bg-orange-600 text-white px-2 py-0.5 rounded font-black tracking-widest shadow-[0_0_8px_rgba(234,88,12,0.5)] shrink-0">HOT</span>
                   </Link>
@@ -301,8 +300,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <LayoutGrid className="w-5 h-5 text-yellow-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-yellow-400 transition-all drop-shadow-md truncate">V8 GRID SYSTEM</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Cinematic Matrix Gen</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-yellow-400 transition-all drop-shadow-md whitespace-nowrap">V8 GRID SYSTEM</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Cinematic Matrix Gen</span>
                     </div>
                   </Link>
 
@@ -311,8 +310,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <Code className="w-5 h-5 text-cyan-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-cyan-400 transition-all drop-shadow-md truncate">JSON EXTRACTOR</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Visual DNA Reverse Engine</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-cyan-400 transition-all drop-shadow-md whitespace-nowrap">JSON EXTRACTOR</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Visual DNA Reverse Engine</span>
                     </div>
                   </Link>
 
@@ -320,8 +319,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                     <div className="flex items-center gap-4 overflow-hidden">
                       <div className="bg-emerald-500/20 p-2 rounded-lg group-hover/item:bg-emerald-500/40 transition-colors shadow-[0_0_10px_rgba(16,185,129,0.3)] shrink-0"><ShieldCheck className="w-5 h-5 text-emerald-400 transition-transform group-hover/item:scale-110" /></div>
                       <div className="flex flex-col text-left overflow-hidden">
-                        <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-emerald-400 transition-all drop-shadow-md truncate">DE-BRANDING DNA</span>
-                        <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Clean White-Label Engine</span>
+                        <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-emerald-400 transition-all drop-shadow-md whitespace-nowrap">DE-BRANDING DNA</span>
+                        <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Clean White-Label Engine</span>
                       </div>
                     </div>
                     <span className="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded font-black tracking-widest shadow-[0_0_8px_rgba(16,185,129,0.5)] shrink-0">NEW</span>
@@ -332,8 +331,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <MonitorPlay className="w-5 h-5 text-green-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-green-400 transition-all drop-shadow-md truncate">SEEDANCE 2.0</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Cinematic Video Prompting</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-green-400 transition-all drop-shadow-md whitespace-nowrap">SEEDANCE 2.0</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Cinematic Video Prompting</span>
                     </div>
                   </Link>
 
@@ -342,8 +341,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <Video className="w-5 h-5 text-red-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-red-400 transition-all drop-shadow-md truncate">KLING 3.0</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Hyper-Real Motion Engine</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-red-400 transition-all drop-shadow-md whitespace-nowrap">KLING 3.0</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Hyper-Real Motion Engine</span>
                     </div>
                   </Link>
                 </div>
@@ -369,8 +368,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <Layers className="w-5 h-5 text-blue-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-all truncate">MASTER STOCK BUNDLES</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">High-End Visuals</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-all whitespace-nowrap">MASTER STOCK BUNDLES</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">High-End Visuals</span>
                     </div>
                   </Link>
                   
@@ -379,14 +378,14 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <ImageIcon className="w-5 h-5 text-purple-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:drop-shadow-[0_0_8px_rgba(168,85,247,0.5)] transition-all truncate">Showroom</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Visual Gallery</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:drop-shadow-[0_0_8px_rgba(168,85,247,0.5)] transition-all whitespace-nowrap">Showroom</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider whitespace-nowrap">Visual Gallery</span>
                     </div>
                   </Link>
 
                   <div className="mt-1 px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-start gap-2 relative z-10 overflow-hidden w-full">
                     <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                    <span className="text-[7px] font-black uppercase tracking-widest text-emerald-400 leading-relaxed break-words w-full">
+                    <span className="text-[7px] font-black uppercase tracking-widest text-emerald-400 leading-relaxed whitespace-normal break-words w-full">
                       INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP
                     </span>
                   </div>
@@ -520,55 +519,56 @@ const V8Navbar = ({ handleHomeClick }) => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed inset-0 w-full max-w-[100vw] h-[100dvh] bg-[#050505]/95 backdrop-blur-3xl z-[99999] flex flex-col overflow-y-auto overflow-x-hidden pb-20"
+            className="fixed inset-0 w-full max-w-[100vw] h-[100dvh] bg-[#050505]/95 backdrop-blur-3xl z-[99999] flex flex-col overflow-y-auto overflow-x-hidden"
           >
             <div className="flex justify-between items-center p-6 border-b border-white/10 w-full shrink-0">
-              <div className="flex items-center gap-3 overflow-hidden min-w-0">
+              <div className="flex items-center gap-3 min-w-0">
                 <img src={data.logoUrl} className="h-8 object-contain shrink-0" alt="logo" />
-                <span className="font-black uppercase tracking-[0.1em] text-orange-500 italic text-[12px] truncate w-full">V8 NAV SYSTEM</span>
+                <span className="font-black uppercase tracking-[0.1em] text-orange-500 italic text-[12px] truncate">V8 NAV SYSTEM</span>
               </div>
               <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 bg-zinc-900 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-800 border border-white/5 shrink-0 ml-2">
                 <X className="w-6 h-6" />
               </button>
             </div>
 
-            <div className="flex flex-col p-4 sm:p-6 gap-8 w-full max-w-full overflow-hidden">
+            <div className="flex flex-col p-4 sm:p-6 gap-6 w-full pb-20">
+              
               {user ? (
-                <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-5 flex flex-col gap-4 mx-auto w-full">
-                  <div className="flex items-center gap-3 pb-4 border-b border-white/10 min-w-0">
+                <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-5 flex flex-col gap-4 w-full">
+                  <div className="flex items-center gap-3 pb-4 border-b border-white/10">
                     {user.photoURL ? (
                        <img src={user.photoURL} alt="Avatar" className="w-10 h-10 rounded-full border border-emerald-500/30 object-cover shrink-0" referrerPolicy="no-referrer" />
                     ) : (
                        <User className="w-8 h-8 text-emerald-500 bg-emerald-500/10 p-1.5 rounded-full shrink-0" />
                     )}
-                    <div className="flex flex-col overflow-hidden min-w-0 flex-1">
-                      <h3 className="font-black text-white text-[14px] uppercase tracking-widest truncate w-full">{user.displayName || "V8 KLIJENT"}</h3>
-                      <p className="text-[10px] text-zinc-500 uppercase font-bold truncate w-full">{user.email}</p>
+                    <div className="flex flex-col flex-1 min-w-0">
+                      <h3 className="font-black text-white text-[14px] uppercase tracking-widest truncate">{user.displayName || "V8 KLIJENT"}</h3>
+                      <p className="text-[10px] text-zinc-500 uppercase font-bold truncate">{user.email}</p>
                     </div>
                   </div>
 
                   {userCredits?.trialClaimed === false && !isAdmin && (
-                    <button onClick={handleClaimTrial} className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-black uppercase text-[12px] py-4 rounded-2xl shadow-[0_0_20px_rgba(168,85,247,0.4)] truncate">
+                    <button onClick={handleClaimTrial} className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-black uppercase text-[12px] py-4 rounded-2xl shadow-[0_0_20px_rgba(168,85,247,0.4)]">
                       <Gift className="w-5 h-5 shrink-0" /> CLAIM 11 FREE CREDITS
                     </button>
                   )}
 
                   <div className="grid grid-cols-2 gap-3 mt-2 w-full">
-                    <div className="bg-black/50 border border-white/5 rounded-xl p-3 flex flex-col items-center justify-center overflow-hidden">
-                      <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1 truncate w-full text-center">16MP</span>
-                      <span className="text-xl font-black text-blue-400 truncate w-full text-center">{isAdmin ? '∞' : userCredits.credits_16mp}</span>
+                    <div className="bg-black/50 border border-white/5 rounded-xl p-3 flex flex-col items-center justify-center">
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">16MP</span>
+                      <span className="text-xl font-black text-blue-400">{isAdmin ? '∞' : userCredits.credits_16mp}</span>
                     </div>
-                    <div className="bg-black/50 border border-white/5 rounded-xl p-3 flex flex-col items-center justify-center overflow-hidden">
-                      <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1 truncate w-full text-center">33MP</span>
-                      <span className="text-xl font-black text-yellow-400 truncate w-full text-center">{isAdmin ? '∞' : userCredits.credits_33mp}</span>
+                    <div className="bg-black/50 border border-white/5 rounded-xl p-3 flex flex-col items-center justify-center">
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">33MP</span>
+                      <span className="text-xl font-black text-yellow-400">{isAdmin ? '∞' : userCredits.credits_33mp}</span>
                     </div>
-                    <div className="bg-black/50 border border-white/5 rounded-xl p-3 flex flex-col items-center justify-center overflow-hidden">
-                      <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1 truncate w-full text-center">45MP</span>
-                      <span className="text-xl font-black text-amber-500 truncate w-full text-center">{isAdmin ? '∞' : userCredits.credits_45mp}</span>
+                    <div className="bg-black/50 border border-white/5 rounded-xl p-3 flex flex-col items-center justify-center">
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">45MP</span>
+                      <span className="text-xl font-black text-amber-500">{isAdmin ? '∞' : userCredits.credits_45mp}</span>
                     </div>
-                    <div className="bg-black/50 border border-white/5 rounded-xl p-3 flex flex-col items-center justify-center overflow-hidden">
-                      <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1 truncate w-full text-center">60MP</span>
-                      <span className="text-xl font-black text-rose-500 truncate w-full text-center">{isAdmin ? '∞' : '0'}</span>
+                    <div className="bg-black/50 border border-white/5 rounded-xl p-3 flex flex-col items-center justify-center">
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">60MP</span>
+                      <span className="text-xl font-black text-rose-500">{isAdmin ? '∞' : '0'}</span>
                     </div>
                   </div>
 
@@ -576,157 +576,163 @@ const V8Navbar = ({ handleHomeClick }) => {
                     <div className="flex flex-col gap-2 mt-2 w-full">
                       {isAdmin && (
                         <>
-                          <Link to="/admin" onClick={handleMobileLinkClick} className="w-full bg-red-950/30 text-red-500 border border-red-500/30 rounded-xl py-3 flex items-center justify-center gap-2 font-black text-[11px] uppercase tracking-widest truncate px-2">
+                          <Link to="/admin" onClick={handleMobileLinkClick} className="w-full bg-red-950/30 text-red-500 border border-red-500/30 rounded-xl py-3 flex items-center justify-center gap-2 font-black text-[11px] uppercase tracking-widest">
                             <Settings className="w-4 h-4 shrink-0" /> CMS Baza
                           </Link>
-                          <Link to="/dashboard" onClick={handleMobileLinkClick} className="w-full bg-yellow-950/30 text-yellow-500 border border-yellow-500/30 rounded-xl py-3 flex items-center justify-center gap-2 font-black text-[11px] uppercase tracking-widest truncate px-2">
+                          <Link to="/dashboard" onClick={handleMobileLinkClick} className="w-full bg-yellow-950/30 text-yellow-500 border border-yellow-500/30 rounded-xl py-3 flex items-center justify-center gap-2 font-black text-[11px] uppercase tracking-widest">
                             <ShieldAlert className="w-4 h-4 shrink-0" /> Dashboard
                           </Link>
                         </>
                       )}
                       {isVIP && (
-                        <Link to="/trezor" onClick={handleMobileLinkClick} className="w-full bg-orange-950/30 text-orange-500 border border-orange-500/30 rounded-xl py-3 flex items-center justify-center gap-2 font-black text-[11px] uppercase tracking-widest truncate px-2">
+                        <Link to="/trezor" onClick={handleMobileLinkClick} className="w-full bg-orange-950/30 text-orange-500 border border-orange-500/30 rounded-xl py-3 flex items-center justify-center gap-2 font-black text-[11px] uppercase tracking-widest">
                           <Lock className="w-4 h-4 shrink-0" /> Vault Trezor
                         </Link>
                       )}
                     </div>
                   )}
 
-                  <button onClick={handleLogout} className="mt-4 w-full bg-red-600 hover:bg-red-500 text-white font-black text-[12px] uppercase py-4 rounded-xl flex items-center justify-center gap-2 truncate px-2">
+                  <button onClick={handleLogout} className="mt-2 w-full bg-red-600 hover:bg-red-500 text-white font-black text-[12px] uppercase py-4 rounded-xl flex items-center justify-center gap-2">
                     <LogOut className="w-5 h-5 shrink-0" /> Sign Out
                   </button>
                 </div>
               ) : (
-                <button onClick={handleLogin} className="w-full bg-zinc-800 text-white border border-zinc-600 rounded-3xl py-6 flex flex-col items-center justify-center gap-3 shadow-xl mx-auto overflow-hidden px-4">
+                <button onClick={handleLogin} className="w-full bg-zinc-800 text-white border border-zinc-600 rounded-3xl py-6 flex flex-col items-center justify-center gap-3 shadow-xl mx-auto">
                   <User className="w-8 h-8 text-zinc-400 shrink-0" />
-                  <span className="font-black text-[16px] uppercase tracking-widest truncate w-full text-center">LOGIN TO V8</span>
-                  <span className="text-[10px] text-zinc-500 font-bold uppercase truncate w-full text-center">Pristupi Premium Alatima</span>
+                  <span className="font-black text-[16px] uppercase tracking-widest">LOGIN TO V8</span>
+                  <span className="text-[10px] text-zinc-500 font-bold uppercase">Pristupi Premium Alatima</span>
                 </button>
               )}
 
-              <div className="flex flex-col gap-6 w-full max-w-full">
+              <div className="flex flex-col gap-6 w-full">
+                
+                {/* Glavni Meni */}
                 <div className="flex flex-col gap-3">
-                  <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2 truncate w-full">Glavni Meni</h4>
-                  <Link to="/" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
+                  <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2">Glavni Meni</h4>
+                  <Link to="/" onClick={handleMobileLinkClick} className="flex items-center gap-3 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full">
                     <div className="bg-emerald-500/10 p-3 rounded-xl shrink-0"><Globe className="w-6 h-6 text-emerald-500" /></div>
-                    <span className="text-[14px] font-black uppercase tracking-widest text-white truncate w-full block">Početna Strana</span>
+                    <span className="text-[14px] font-black uppercase tracking-widest text-white">Početna Strana</span>
                   </Link>
                 </div>
 
-                <div className="flex flex-col gap-3 w-full max-w-full">
-                  <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2 truncate w-full">Master Upscalers</h4>
+                {/* Master Upscalers */}
+                <div className="flex flex-col gap-3 w-full">
+                  <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2">Master Upscalers</h4>
                   <div className="grid grid-cols-2 gap-3 w-full">
-                    <Link to="/v8-standard-16mp" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-blue-500/20 p-4 rounded-2xl flex flex-col items-center gap-3 w-full overflow-hidden">
+                    <Link to="/v8-standard-16mp" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-blue-500/20 p-4 rounded-2xl flex flex-col items-center gap-3 w-full">
                       <ImageIcon className="w-8 h-8 text-blue-500 shrink-0" />
-                      <span className="text-[11px] font-black text-white tracking-widest truncate w-full text-center">16MP</span>
+                      <span className="text-[11px] font-black text-white tracking-widest text-center">16MP</span>
                     </Link>
-                    <Link to="/master-33mp" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-yellow-500/20 p-4 rounded-2xl flex flex-col items-center gap-3 w-full overflow-hidden">
+                    <Link to="/master-33mp" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-yellow-500/20 p-4 rounded-2xl flex flex-col items-center gap-3 w-full">
                       <Cpu className="w-8 h-8 text-yellow-500 shrink-0" />
-                      <span className="text-[11px] font-black text-white tracking-widest truncate w-full text-center">33MP</span>
+                      <span className="text-[11px] font-black text-white tracking-widest text-center">33MP</span>
                     </Link>
-                    <Link to="/master-45mp" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-amber-500/20 p-4 rounded-2xl flex flex-col items-center gap-3 w-full overflow-hidden">
+                    <Link to="/master-45mp" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-amber-500/20 p-4 rounded-2xl flex flex-col items-center gap-3 w-full">
                       <Zap className="w-8 h-8 text-amber-500 shrink-0" />
-                      <span className="text-[11px] font-black text-white tracking-widest truncate w-full text-center">45MP</span>
+                      <span className="text-[11px] font-black text-white tracking-widest text-center">45MP</span>
                     </Link>
-                    <Link to="/master-60mp" onClick={handleMobileLinkClick} className="bg-rose-950/20 border border-rose-500/40 p-4 rounded-2xl flex flex-col items-center gap-3 shadow-[0_0_15px_rgba(244,63,94,0.1)] w-full overflow-hidden">
+                    <Link to="/master-60mp" onClick={handleMobileLinkClick} className="bg-rose-950/20 border border-rose-500/40 p-4 rounded-2xl flex flex-col items-center gap-3 shadow-[0_0_15px_rgba(244,63,94,0.1)] w-full">
                       <Cpu className="w-8 h-8 text-rose-500 shrink-0" />
-                      <span className="text-[11px] font-black text-white tracking-widest text-center leading-tight truncate w-full">60MP<br/>MAX</span>
+                      <span className="text-[11px] font-black text-white tracking-widest text-center leading-tight">60MP<br/>MAX</span>
                     </Link>
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-3 w-full max-w-full">
-                  <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2 truncate w-full">V8 Premium Tools</h4>
+                {/* V8 Premium Tools */}
+                <div className="flex flex-col gap-3 w-full">
+                  <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2">V8 Premium Tools</h4>
                   
-                  <Link to="/enxance" onClick={handleMobileLinkClick} className="flex items-center gap-3 sm:gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
-                    <div className="bg-orange-500/10 p-3 rounded-xl shrink-0"><Zap className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" /></div>
-                    <div className="flex flex-col overflow-hidden min-w-0 flex-1">
-                      <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full block">10X Enhancer</span>
-                      <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full block">AI Engine</span>
+                  <Link to="/enxance" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full">
+                    <div className="bg-orange-500/10 p-3 rounded-xl shrink-0"><Zap className="w-6 h-6 text-orange-500" /></div>
+                    <div className="flex flex-col">
+                      <span className="text-[13px] font-black uppercase tracking-widest text-white">10X Enhancer</span>
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase">AI Engine</span>
                     </div>
                   </Link>
 
-                  <Link to="/#marketplace" onClick={handleMobileLinkClick} className="flex items-center gap-3 sm:gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
-                    <div className="bg-blue-500/10 p-3 rounded-xl shrink-0"><Award className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" /></div>
-                    <div className="flex flex-col overflow-hidden min-w-0 flex-1">
-                      <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full block">AI Store</span>
-                      <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full block">Marketplace</span>
+                  <Link to="/#marketplace" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full">
+                    <div className="bg-blue-500/10 p-3 rounded-xl shrink-0"><Award className="w-6 h-6 text-blue-500" /></div>
+                    <div className="flex flex-col">
+                      <span className="text-[13px] font-black uppercase tracking-widest text-white">AI Store</span>
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase">Marketplace</span>
                     </div>
                   </Link>
 
-                  <Link to="/prompt-factory" onClick={handleMobileLinkClick} className="flex items-center gap-3 sm:gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
-                    <div className="bg-blue-500/10 p-3 rounded-xl shrink-0"><Terminal className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" /></div>
-                    <div className="flex flex-col overflow-hidden min-w-0 flex-1">
-                      <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full block">Prompt Factory</span>
-                      <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full block">SaaS Idea Generator</span>
+                  <Link to="/prompt-factory" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full">
+                    <div className="bg-blue-500/10 p-3 rounded-xl shrink-0"><Terminal className="w-6 h-6 text-blue-500" /></div>
+                    <div className="flex flex-col">
+                      <span className="text-[13px] font-black uppercase tracking-widest text-white">Prompt Factory</span>
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase">SaaS Idea Generator</span>
                     </div>
                   </Link>
 
-                  {/* 🔥 RAW REALITY ENGINE (MOBILNI) 🔥 */}
-                  <Link to="/raw-reality" onClick={handleMobileLinkClick} className="flex items-center gap-3 sm:gap-4 bg-black border border-orange-500/30 p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0 relative">
-                    <div className="bg-orange-500/10 p-3 rounded-xl shrink-0"><ScanLine className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" /></div>
-                    <div className="flex flex-col overflow-hidden min-w-0 flex-1">
-                      <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full block pr-8">Raw Reality Engine</span>
-                      <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full block pr-8">Anti-Aesthetic Gen</span>
+                  <Link to="/raw-reality" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-orange-500/30 p-4 rounded-2xl active:scale-95 transition-transform w-full relative">
+                    <div className="bg-orange-500/10 p-3 rounded-xl shrink-0"><ScanLine className="w-6 h-6 text-orange-500" /></div>
+                    <div className="flex flex-col">
+                      <span className="text-[13px] font-black uppercase tracking-widest text-white pr-8">Raw Reality Engine</span>
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase">Anti-Aesthetic Gen</span>
                     </div>
                     <span className="text-[7px] bg-orange-600 text-white px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 absolute right-4 top-1/2 -translate-y-1/2">HOT</span>
                   </Link>
 
-                  <Link to="/grid-system" onClick={handleMobileLinkClick} className="flex items-center gap-3 sm:gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
-                    <div className="bg-yellow-500/10 p-3 rounded-xl shrink-0"><LayoutGrid className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" /></div>
-                    <div className="flex flex-col overflow-hidden min-w-0 flex-1">
-                      <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full block">Grid System</span>
-                      <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full block">Cinematic Gen</span>
+                  <Link to="/grid-system" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full">
+                    <div className="bg-yellow-500/10 p-3 rounded-xl shrink-0"><LayoutGrid className="w-6 h-6 text-yellow-500" /></div>
+                    <div className="flex flex-col">
+                      <span className="text-[13px] font-black uppercase tracking-widest text-white">Grid System</span>
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase">Cinematic Gen</span>
                     </div>
                   </Link>
 
-                  <Link to="/extractor" onClick={handleMobileLinkClick} className="flex items-center gap-3 sm:gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
-                    <div className="bg-cyan-500/10 p-3 rounded-xl shrink-0"><Code className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-500" /></div>
-                    <div className="flex flex-col overflow-hidden min-w-0 flex-1">
-                      <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full block">JSON Extractor</span>
-                      <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full block">Visual DNA</span>
+                  <Link to="/extractor" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full">
+                    <div className="bg-cyan-500/10 p-3 rounded-xl shrink-0"><Code className="w-6 h-6 text-cyan-500" /></div>
+                    <div className="flex flex-col">
+                      <span className="text-[13px] font-black uppercase tracking-widest text-white">JSON Extractor</span>
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase">Visual DNA</span>
                     </div>
                   </Link>
 
-                  <Link to="/v8-debranding-extractor" onClick={handleMobileLinkClick} className="flex items-center gap-3 sm:gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0 relative">
-                    <div className="bg-emerald-500/10 p-3 rounded-xl shrink-0"><ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-500" /></div>
-                    <div className="flex flex-col overflow-hidden min-w-0 flex-1">
-                      <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full block pr-8">DE-BRANDING DNA</span>
-                      <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full block pr-8">Clean White-Label Engine</span>
+                  <Link to="/v8-debranding-extractor" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full relative">
+                    <div className="bg-emerald-500/10 p-3 rounded-xl shrink-0"><ShieldCheck className="w-6 h-6 text-emerald-400" /></div>
+                    <div className="flex flex-col">
+                      <span className="text-[13px] font-black uppercase tracking-widest text-white pr-8">DE-BRANDING DNA</span>
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase">Clean White-Label Engine</span>
                     </div>
                     <span className="text-[7px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 absolute right-4 top-1/2 -translate-y-1/2">NEW</span>
                   </Link>
 
                   <div className="grid grid-cols-2 gap-3 mt-2 w-full">
-                    <Link to="/seedance" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-green-500/20 p-4 rounded-2xl flex flex-col items-center text-center gap-2 w-full overflow-hidden">
+                    <Link to="/seedance" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-green-500/20 p-4 rounded-2xl flex flex-col items-center text-center gap-2 w-full">
                       <MonitorPlay className="w-6 h-6 text-green-500 shrink-0" />
-                      <span className="text-[11px] font-black text-white uppercase tracking-widest leading-tight truncate w-full">Seedance<br/>2.0</span>
+                      <span className="text-[11px] font-black text-white uppercase tracking-widest leading-tight">Seedance<br/>2.0</span>
                     </Link>
-                    <Link to="/kling" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-red-500/20 p-4 rounded-2xl flex flex-col items-center text-center gap-2 w-full overflow-hidden">
+                    <Link to="/kling" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-red-500/20 p-4 rounded-2xl flex flex-col items-center text-center gap-2 w-full">
                       <Video className="w-6 h-6 text-red-500 shrink-0" />
-                      <span className="text-[11px] font-black text-white uppercase tracking-widest leading-tight truncate w-full">Kling<br/>3.0</span>
+                      <span className="text-[11px] font-black text-white uppercase tracking-widest leading-tight">Kling<br/>3.0</span>
                     </Link>
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-3 w-full max-w-full">
-                  <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2 truncate w-full">
+                {/* Premium Stock */}
+                <div className="flex flex-col gap-3 w-full">
+                  <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2">
                     Premium Stock
                   </h4>
                   
-                  <div className="bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl flex items-center gap-3 w-full overflow-hidden min-w-0 mb-1">
-                    <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
-                    <span className="text-[8px] sm:text-[9px] text-emerald-400 font-black uppercase tracking-widest leading-relaxed break-words w-full">INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP</span>
+                  <div className="bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl flex items-center gap-3 w-full mb-1">
+                    <ShieldCheck className="w-6 h-6 text-emerald-400 shrink-0" />
+                    <span className="text-[9px] text-emerald-400 font-black uppercase tracking-widest leading-relaxed break-words whitespace-normal w-full">
+                      INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP
+                    </span>
                   </div>
 
-                  <Link to="/stock" onClick={handleMobileLinkClick} className="flex items-center gap-3 sm:gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
-                    <div className="bg-blue-500/10 p-3 rounded-xl shrink-0"><Layers className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" /></div>
-                    <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full block">Stock Bundles</span>
+                  <Link to="/stock" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full">
+                    <div className="bg-blue-500/10 p-3 rounded-xl shrink-0"><Layers className="w-6 h-6 text-blue-500" /></div>
+                    <span className="text-[13px] font-black uppercase tracking-widest text-white">Stock Bundles</span>
                   </Link>
                   
-                  <Link to="/showroom" onClick={handleMobileLinkClick} className="flex items-center gap-3 sm:gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
-                    <div className="bg-purple-500/10 p-3 rounded-xl shrink-0"><ImageIcon className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500" /></div>
-                    <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full block">V8 Showroom</span>
+                  <Link to="/showroom" onClick={handleMobileLinkClick} className="flex items-center gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full">
+                    <div className="bg-purple-500/10 p-3 rounded-xl shrink-0"><ImageIcon className="w-6 h-6 text-purple-500" /></div>
+                    <span className="text-[13px] font-black uppercase tracking-widest text-white">V8 Showroom</span>
                   </Link>
                 </div>
 
