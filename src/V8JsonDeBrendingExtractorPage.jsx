@@ -15,6 +15,9 @@ import V8SecureCheckout from './V8SecureCheckout';
 import LoginRequiredModal from './LoginRequiredModal';
 import { CLOUDINARY_UPLOAD_PRESET, CLOUDINARY_CLOUD_NAME } from './data';
 
+// 🔥 GA4 ANALITIKA 🔥
+import { trackV8Action } from './utils/analytics';
+
 const BASE_BACKEND_URL = window.location.hostname === 'localhost' 
   ? "http://localhost:8000" 
   : "https://aitoolsprosmart-becend-production.up.railway.app";
@@ -97,6 +100,13 @@ const V8JsonDeBrendingExtractorPage = () => {
 
     setCheckoutProduct(naslovCheckouta);
     setCheckoutPrice(finalPrice);
+
+    // 🔥 GA4: BELEŽENJE INICIJALIZACIJE CHECKOUT-A 🔥
+    trackV8Action("checkout_initiated", { 
+        paket: paketName, 
+        cena: finalPrice, 
+        tip_klijenta: isUpgrade ? "upgrade" : "new" 
+    });
 
     if (!auth.currentUser && !userEmail) {
       setIsLoginRequiredOpen(true);
@@ -290,6 +300,11 @@ const V8JsonDeBrendingExtractorPage = () => {
     navigator.clipboard.writeText(jsonResult);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+
+    // 🔥 GA4: KLIJENT PREUZEO REZULTAT 🔥
+    trackV8Action("json_copied", { 
+        plan: currentPlan 
+    });
   };
 
   const extractDNA = async () => {
@@ -315,6 +330,12 @@ const V8JsonDeBrendingExtractorPage = () => {
         }
         
         setJsonResult(JSON.stringify(data, null, 2));
+
+        // 🔥 GA4: USPEŠNA JSON EKSTRAKCIJA 🔥
+        trackV8Action("dna_extracted", { 
+            format_slike: targetFormat,
+            krediti_status: credits
+        });
         
     } catch (error) { 
         alert("De-Branding extraction failed. Check server logs."); 
@@ -493,7 +514,7 @@ const V8JsonDeBrendingExtractorPage = () => {
           </div>
 
           <div className="mt-12 pt-10 border-t border-white/10 grid md:grid-cols-2 gap-6">
-            <a href="/V8_JSON_DNA_MANIFEST.txt" download className="flex items-center gap-4 bg-black/40 hover:bg-orange-500/10 border border-white/5 hover:border-orange-500/50 p-6 rounded-2xl transition-all group shadow-inner">
+            <a href="/V8_JSON_DNA_MANIFEST.txt" download onClick={() => trackV8Action("download_manifest")} className="flex items-center gap-4 bg-black/40 hover:bg-orange-500/10 border border-white/5 hover:border-orange-500/50 p-6 rounded-2xl transition-all group shadow-inner">
               <FileText className="text-orange-500 w-8 h-8 group-hover:scale-110 transition-transform" />
               <div className="flex flex-col text-left">
                 <span className="text-white font-black uppercase tracking-widest text-[13px] group-hover:text-orange-400 transition-colors">De-Branding Manifest</span>
@@ -502,7 +523,7 @@ const V8JsonDeBrendingExtractorPage = () => {
               <DownloadCloud className="ml-auto text-zinc-600 group-hover:text-orange-500 transition-colors w-5 h-5" />
             </a>
 
-            <a href="/v8-license.pdf" download className="flex items-center gap-4 bg-black/40 hover:bg-emerald-500/10 border border-white/5 hover:border-emerald-500/50 p-6 rounded-2xl transition-all group shadow-inner">
+            <a href="/v8-license.pdf" download onClick={() => trackV8Action("download_license")} className="flex items-center gap-4 bg-black/40 hover:bg-emerald-500/10 border border-white/5 hover:border-emerald-500/50 p-6 rounded-2xl transition-all group shadow-inner">
               <ShieldCheck className="text-emerald-500 w-8 h-8 group-hover:scale-110 transition-transform" />
               <div className="flex flex-col text-left">
                 <span className="text-white font-black uppercase tracking-widest text-[13px] group-hover:text-emerald-400 transition-colors">Commercial License</span>

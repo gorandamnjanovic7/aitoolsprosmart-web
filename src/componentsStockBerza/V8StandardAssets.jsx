@@ -5,6 +5,9 @@ import { db, auth } from '../firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
+// 🔥 GA4 ANALITIKA 🔥
+import { trackV8Action } from '../utils/analytics';
+
 const V8StandardAssets = ({ paketi = [], isAdmin, getGlobalCena, getAspectClass, prijavaIKupovina, startEditPaket, obrisiPaket, setFullScreenImageUrl }) => {
   const [userEmail, setUserEmail] = useState(null);
   const [kupljeniPaketi, setKupljeniPaketi] = useState([]);
@@ -101,7 +104,13 @@ const V8StandardAssets = ({ paketi = [], isAdmin, getGlobalCena, getAspectClass,
                 
                 <div className="w-full sm:w-auto flex justify-center sm:justify-end">
                   {isAdmin || jeKupljen ? (
-                    <a href={paket.zipLink} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-3 md:px-6 md:py-4 rounded-xl font-black text-[9px] md:text-[12px] uppercase tracking-wider md:tracking-widest flex items-center justify-center gap-1.5 md:gap-2 shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all">
+                    <a 
+                      href={paket.zipLink} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      onClick={() => trackV8Action("download_standard_asset", { asset_name: tacanNaziv })}
+                      className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-3 md:px-6 md:py-4 rounded-xl font-black text-[9px] md:text-[12px] uppercase tracking-wider md:tracking-widest flex items-center justify-center gap-1.5 md:gap-2 shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all"
+                    >
                       DOWNLOAD <Download className="w-3 h-3 md:w-5 md:h-5 hidden sm:block" />
                     </a>
                   ) : (

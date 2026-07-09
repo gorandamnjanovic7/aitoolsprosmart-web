@@ -15,6 +15,9 @@ import V8SecureCheckout from './V8SecureCheckout';
 import LoginRequiredModal from './LoginRequiredModal';
 import { CLOUDINARY_UPLOAD_PRESET, CLOUDINARY_CLOUD_NAME } from './data';
 
+// 🔥 GA4 ANALITIKA 🔥
+import { trackV8Action } from './utils/analytics';
+
 const BASE_BACKEND_URL = window.location.hostname === 'localhost' 
   ? "http://localhost:8000" 
   : "https://aitoolsprosmart-becend-production.up.railway.app";
@@ -119,6 +122,17 @@ const V8MasterEngine33MP = () => {
 
   const pokreniKupovinu = (paketName, fullPrice) => {
     prepareCheckoutPackage(paketName, fullPrice);
+
+    const razlika = fullPrice - amountPaid;
+    const finalPrice = razlika > 0 ? razlika : fullPrice;
+    const isUpgrade = amountPaid > 0;
+
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action("33mp_checkout_initiated", { 
+        paket: paketName, 
+        cena: finalPrice, 
+        tip_klijenta: isUpgrade ? "upgrade" : "new" 
+    });
 
     if (!currentUser && !auth.currentUser) {
       setIsLoginRequiredOpen(true);
@@ -382,6 +396,12 @@ const V8MasterEngine33MP = () => {
     const a = document.createElement('a'); a.href = zipUrl;
     a.download = `V8_33MP_Master_Batch_${Date.now()}.zip`;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
+
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action("33mp_zip_downloaded", { 
+        broj_fajlova: files.length,
+        plan: currentPlan
+    });
   };
 
   const handleUpscaleAndDownload = async () => {
@@ -395,6 +415,12 @@ const V8MasterEngine33MP = () => {
     if (zipUrl) {
       window.URL.revokeObjectURL(zipUrl);
     }
+
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action("33mp_processing_started", { 
+        broj_fajlova: files.length,
+        tip_korisnika: isVIP ? "vip" : "trial"
+    });
 
     setIsProcessing(true);
     setDownloadStatus('processing');
@@ -734,14 +760,14 @@ const V8MasterEngine33MP = () => {
       {renderV8Manifest()}
 
       <div className="flex flex-col md:flex-row justify-center gap-6 max-w-4xl mx-auto mb-16 relative z-10">
-        <a href="/V8_33MP_Technical_Manifest.txt" download className="flex-1 bg-black/40 border border-blue-500/30 hover:border-blue-400 p-6 rounded-2xl flex items-center gap-5 transition-all duration-300 hover:bg-blue-900/20 group hover:-translate-y-1 shadow-lg hover:shadow-[0_10px_30px_rgba(59,130,246,0.2)]">
+        <a href="/V8_33MP_Technical_Manifest.txt" download onClick={() => trackV8Action("download_33mp_manifest")} className="flex-1 bg-black/40 border border-blue-500/30 hover:border-blue-400 p-6 rounded-2xl flex items-center gap-5 transition-all duration-300 hover:bg-blue-900/20 group hover:-translate-y-1 shadow-lg hover:shadow-[0_10px_30px_rgba(59,130,246,0.2)]">
             <div className="bg-blue-500/10 p-4 rounded-full border border-blue-500/20 group-hover:bg-blue-500/20 transition-all"><Download className="w-8 h-8 text-blue-400" /></div>
             <div className="text-left">
                 <h4 className="text-white font-black uppercase tracking-widest text-[13px] mb-1">Technical Manifest</h4>
                 <p className="text-zinc-400 text-[11px] font-bold">Download 33MP Specs (TXT)</p>
             </div>
         </a>
-        <a href="/v8-license.pdf" download className="flex-1 bg-black/40 border border-yellow-500/30 hover:border-yellow-400 p-6 rounded-2xl flex items-center gap-5 transition-all duration-300 hover:bg-yellow-900/20 group hover:-translate-y-1 shadow-lg hover:shadow-[0_10px_30px_rgba(234,179,8,0.2)]">
+        <a href="/v8-license.pdf" download onClick={() => trackV8Action("download_33mp_license")} className="flex-1 bg-black/40 border border-yellow-500/30 hover:border-yellow-400 p-6 rounded-2xl flex items-center gap-5 transition-all duration-300 hover:bg-yellow-900/20 group hover:-translate-y-1 shadow-lg hover:shadow-[0_10px_30px_rgba(234,179,8,0.2)]">
             <div className="bg-yellow-500/10 p-4 rounded-full border border-yellow-500/20 group-hover:bg-yellow-500/20 transition-all"><FileText className="w-8 h-8 text-yellow-400" /></div>
             <div className="text-left">
                 <h4 className="text-white font-black uppercase tracking-widest text-[13px] mb-1">Commercial License</h4>

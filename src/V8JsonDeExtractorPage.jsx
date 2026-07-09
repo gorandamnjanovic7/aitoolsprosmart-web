@@ -13,6 +13,9 @@ import V8SecureCheckout from './V8SecureCheckout';
 import LoginRequiredModal from './LoginRequiredModal';
 import { CLOUDINARY_UPLOAD_PRESET, CLOUDINARY_CLOUD_NAME } from './data';
 
+// 🔥 GA4 ANALITIKA 🔥
+import { trackV8Action } from './utils/analytics';
+
 const BASE_BACKEND_URL = window.location.hostname === 'localhost' 
   ? "http://localhost:8000" 
   : "https://aitoolsprosmart-becend-production.up.railway.app";
@@ -240,6 +243,11 @@ const V8JsonExtractorPage = () => {
     navigator.clipboard.writeText(jsonResult);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+
+    // 🔥 GA4: KLIJENT KOPIRAO JSON REZULTAT 🔥
+    trackV8Action("extractor_json_copied", { 
+        plan: currentPlan 
+    });
   };
 
   const extractDNA = async () => {
@@ -258,6 +266,13 @@ const V8JsonExtractorPage = () => {
         const data = await response.json(); 
         if (!response.ok) throw new Error(data.error || "Greska na serveru");
         setJsonResult(JSON.stringify(data, null, 2));
+
+        // 🔥 GA4: USPEŠNA JSON EKSTRAKCIJA 🔥
+        trackV8Action("extractor_dna_extracted", { 
+            format_slike: targetFormat,
+            krediti_status: credits
+        });
+
     } catch (error) { 
         alert("Extraction failed. Check server logs."); console.error("V8 FRONTEND ERROR:", error);
     } finally { setIsExtracting(false); }
@@ -275,6 +290,13 @@ const V8JsonExtractorPage = () => {
 
     setCheckoutProduct(naslovCheckouta);
     setCheckoutPrice(finalPrice);
+
+    // 🔥 GA4: BELEŽENJE INICIJALIZACIJE CHECKOUT-A 🔥
+    trackV8Action("extractor_checkout_initiated", { 
+        paket: paketName, 
+        cena: finalPrice, 
+        tip_klijenta: isUpgrade ? "upgrade" : "new" 
+    });
 
     if (!userNow) {
       setIsLoginRequiredOpen(true);
@@ -330,7 +352,6 @@ const V8JsonExtractorPage = () => {
                    <p className="flex items-center gap-2">⏳ Use in 24h or stretch over 365 days</p>
                    <p className="flex items-center gap-2">🔄 Rolling Quota (No expiry)</p>
                 </div>
-                {/* 🔥 IZJEDNAČENA VISINA I KLASIK ZA DUGME: py-4 text-[13px] rounded-xl */}
                 <button onClick={() => pokreniKupovinu('STARTER', 150)} className="w-full bg-zinc-800 text-white hover:bg-cyan-500 py-4 rounded-xl font-black uppercase tracking-widest text-[13px] transition-all shadow-md">
                    SELECT STARTER
                 </button>
@@ -352,7 +373,6 @@ const V8JsonExtractorPage = () => {
                    <p className="flex items-center gap-2">⏳ Use in 24h or stretch over 365 days</p>
                    <p className="flex items-center gap-2">🔄 Rolling Quota (No expiry)</p>
                 </div>
-                {/* 🔥 IZJEDNAČENA VISINA I KLASIK ZA DUGME: py-4 text-[13px] rounded-xl */}
                 <button onClick={() => pokreniKupovinu('PRO', 250)} className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-[13px] transition-all ${amountPaid > 0 ? 'bg-gradient-to-r from-cyan-600 to-blue-500 text-white shadow-[0_0_20px_rgba(6,182,212,0.4)]' : 'bg-cyan-500 text-white hover:bg-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.4)]'}`}>
                    {amountPaid > 0 ? "UPGRADE TO PRO" : "SELECT PRO"}
                 </button>
@@ -371,7 +391,6 @@ const V8JsonExtractorPage = () => {
                    <p className="flex items-center gap-2">⏳ Use in 24h or stretch over 365 days</p>
                    <p className="flex items-center gap-2">🔄 Lifetime Access (Rolling Quota)</p>
                 </div>
-                {/* 🔥 IZJEDNAČENA VISINA I KLASIK ZA DUGME: py-4 text-[13px] rounded-xl */}
                 <button onClick={() => pokreniKupovinu('ENTERPRISE', 550)} className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-[13px] transition-all shadow-md ${amountPaid > 0 ? 'bg-gradient-to-r from-purple-700 to-purple-500 hover:from-purple-600 hover:to-purple-400 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)]' : 'bg-zinc-800 text-white hover:bg-purple-500'}`}>
                    {amountPaid > 0 ? "UPGRADE TO ENTERPRISE" : "SELECT ENTERPRISE"}
                 </button>
@@ -455,7 +474,7 @@ const V8JsonExtractorPage = () => {
           </div>
 
           <div className="mt-12 pt-10 border-t border-white/10 grid md:grid-cols-2 gap-6">
-            <a href="/V8_EXTRACTOR_MANIFEST.txt" download className="flex items-center gap-4 bg-black/40 hover:bg-cyan-500/10 border border-white/5 hover:border-cyan-500/50 p-6 rounded-2xl transition-all group shadow-inner">
+            <a href="/V8_EXTRACTOR_MANIFEST.txt" download onClick={() => trackV8Action("download_extractor_manifest")} className="flex items-center gap-4 bg-black/40 hover:bg-cyan-500/10 border border-white/5 hover:border-cyan-500/50 p-6 rounded-2xl transition-all group shadow-inner">
               <FileText className="text-cyan-500 w-8 h-8 group-hover:scale-110 transition-transform" />
               <div className="flex flex-col text-left">
                 <span className="text-white font-black uppercase tracking-widest text-[13px] group-hover:text-cyan-400 transition-colors">Extractor Manifest</span>
@@ -464,7 +483,7 @@ const V8JsonExtractorPage = () => {
               <DownloadCloud className="ml-auto text-zinc-600 group-hover:text-cyan-500 transition-colors w-5 h-5" />
             </a>
 
-            <a href="/v8-license.pdf" download className="flex items-center gap-4 bg-black/40 hover:bg-emerald-500/10 border border-white/5 hover:border-emerald-500/50 p-6 rounded-2xl transition-all group shadow-inner">
+            <a href="/v8-license.pdf" download onClick={() => trackV8Action("download_extractor_license")} className="flex items-center gap-4 bg-black/40 hover:bg-emerald-500/10 border border-white/5 hover:border-emerald-500/50 p-6 rounded-2xl transition-all group shadow-inner">
               <ShieldCheck className="text-emerald-500 w-8 h-8 group-hover:scale-110 transition-transform" />
               <div className="flex flex-col text-left">
                 <span className="text-white font-black uppercase tracking-widest text-[13px] group-hover:text-emerald-400 transition-colors">Commercial License</span>

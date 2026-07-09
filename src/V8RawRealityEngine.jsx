@@ -17,6 +17,9 @@ import { starterVault, proVault, enterpriseVault, generateRawMatrix } from './V8
 import V8SecureCheckout from './V8SecureCheckout';
 import LoginRequiredModal from './LoginRequiredModal';
 
+// 🔥 GA4 ANALITIKA 🔥
+import { trackV8Action } from './utils/analytics';
+
 // POČETAK FUNKCIJE: FullScreenLightbox
 const FullScreenLightbox = ({ imageUrl, onClose }) => {
   useEffect(() => {
@@ -107,13 +110,22 @@ const V8RawRealityEngine = () => {
 
   const pokreniKupovinu = (paketName, fullPrice) => {
     const userNow = currentUser || auth.currentUser;
+    const razlika = fullPrice - amountPaid;
+    const finalPrice = razlika > 0 ? razlika : fullPrice;
+    const isUpgrade = amountPaid > 0;
+
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action("raw_checkout_initiated", { 
+        paket: paketName, 
+        cena: finalPrice, 
+        tip_klijenta: isUpgrade ? "upgrade" : "new" 
+    });
+
     if (userNow) {
       openCheckoutForPackage(paketName, fullPrice);
       return;
     }
-    const razlika = fullPrice - amountPaid;
-    const finalPrice = razlika > 0 ? razlika : fullPrice;
-    const isUpgrade = amountPaid > 0;
+
     setCheckoutProduct(isUpgrade ? `V8 RAW REALITY - ${paketName.toUpperCase()} (UPGRADE)` : `V8 RAW REALITY - ${paketName.toUpperCase()}`);
     setCheckoutPrice(finalPrice);
     setIsLoginRequiredOpen(true);
@@ -296,6 +308,12 @@ const V8RawRealityEngine = () => {
     const finalIdea = customIdea || selectedVaultIdea;
     if (!finalIdea) { alert("Please enter your idea or select one from the Forensic Vault."); return; }
     
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action("raw_generation_started", { 
+        is_custom_idea: customIdea !== '',
+        expected_count: getMaxPromptsCount()
+    });
+
     setIsGenerating(true);
     setCurrentPage(1);
     setCopiedStates({});
@@ -344,6 +362,9 @@ const V8RawRealityEngine = () => {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action("raw_download_txt", { count: generatedPrompts.length });
   };
 
   const clearResults = () => { setGeneratedPrompts([]); setCurrentPage(1); };
@@ -351,6 +372,9 @@ const V8RawRealityEngine = () => {
   const copySingle = async (index, text) => {
     await navigator.clipboard.writeText(text);
     setCopiedStates(prev => ({ ...prev, [index]: true }));
+
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action("raw_copied_single", { plan: currentPlan });
   };
 
   // 6. RENDER FUNKCIJE ZA KOMPONENTE
@@ -391,8 +415,13 @@ const V8RawRealityEngine = () => {
           </div>
 
           <AnimatePresence>
-            {isOpen && isActive && !isSelected && (
-              <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className={`absolute top-[calc(100%+8px)] left-0 w-full bg-[#000a0a] border ${borderColorClass} rounded-2xl shadow-2xl z-50 overflow-hidden`}>
+            {isOpen && !isSelected && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className={`absolute top-[calc(100%+8px)] left-0 w-full bg-[#0a0a0a] border ${borderColorClass} rounded-2xl shadow-2xl z-50 overflow-hidden`}
+              >
                 <div className="max-h-56 overflow-y-auto custom-scrollbar">
                   {vaultData.map((idea, index) => (
                     <div 
@@ -403,8 +432,11 @@ const V8RawRealityEngine = () => {
                         setSelectedVaultTier(tier); 
                         setCustomIdea(''); 
                         setOpenVaultDropdown(null); 
+                        
+                        // 🔥 GA4 ANALITIKA 🔥
+                        trackV8Action("raw_vault_idea_selected", { vault_tier: tier });
                       }} 
-                      className="p-4 border-b border-white/5 text-[12px] text-zinc-400 hover:bg-cyan-500/20 hover:text-white cursor-pointer transition-colors leading-relaxed"
+                      className={`p-4 border-b border-white/5 text-[11px] text-zinc-400 hover:text-white cursor-pointer transition-colors leading-relaxed hover:bg-${colorClass.replace('text-', '')}/10`}
                     >
                       {idea}
                     </div>
@@ -418,10 +450,24 @@ const V8RawRealityEngine = () => {
   };
 
   const renderPricingPlans = () => {
-    if (amountPaid >= 95) return null;
+    if (amountPaid >= 299) {
+      return (
+        <div className="w-full max-w-5xl mx-auto mt-12 md:mt-16 px-4">
+           <div className="bg-gradient-to-r from-[#020617]/80 to-[#0f172a]/80 backdrop-blur-md border border-cyan-500/40 rounded-3xl md:rounded-[2.5rem] p-8 md:p-12 text-center shadow-[0_0_50px_rgba(6,182,212,0.15)] relative overflow-hidden">
+              <Crown className="w-16 h-16 md:w-20 md:h-20 text-cyan-400 mx-auto mb-6 drop-shadow-[0_0_20px_rgba(6,182,212,0.6)]" />
+              <h2 className="text-2xl md:text-4xl font-black text-white uppercase tracking-widest mb-4">
+                ENTERPRISE TIER <span className="text-cyan-500 block md:inline mt-2 md:mt-0">UNLOCKED</span>
+              </h2>
+              <p className="text-cyan-200/60 font-bold uppercase tracking-widest text-[10px] md:text-sm max-w-2xl mx-auto">
+                You possess the highest level V8 License. All Raw Reality protocols are fully operational at maximum capacity.
+              </p>
+           </div>
+        </div>
+      );
+    }
 
     return (
-      <div className="w-full max-w-5xl mx-auto mt-16 px-4 relative z-10 mb-16">
+      <div className="w-full max-w-5xl mx-auto mt-12 md:mt-16 px-4 relative z-10 mb-16">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-black text-white uppercase tracking-widest mb-4">
             {amountPaid > 0 ? "UPGRADE YOUR ENGINE." : "LIFETIME ACCESS."} <span className="text-cyan-500 block md:inline mt-2 md:mt-0">CHOOSE YOUR V8 PLAN.</span>
@@ -680,7 +726,7 @@ const V8RawRealityEngine = () => {
 
         {/* DOWNLOAD DUGME (SAMO LICENCA) */}
         <div className="flex justify-center max-w-md mx-auto mb-16 relative z-10 w-full">
-          <a href="/v8-license.pdf" download className="w-full bg-black/40 border border-cyan-500/30 hover:border-cyan-400 p-6 rounded-2xl flex items-center gap-5 transition-all duration-300 hover:bg-cyan-900/20 group hover:-translate-y-1 shadow-lg hover:shadow-[0_10px_30px_rgba(6,182,212,0.2)]">
+          <a href="/v8-license.pdf" download onClick={() => trackV8Action("download_raw_license")} className="w-full bg-black/40 border border-cyan-500/30 hover:border-cyan-400 p-6 rounded-2xl flex items-center gap-5 transition-all duration-300 hover:bg-cyan-900/20 group hover:-translate-y-1 shadow-lg hover:shadow-[0_10px_30px_rgba(6,182,212,0.2)]">
               <div className="bg-cyan-500/10 p-4 rounded-full border border-cyan-500/20 group-hover:bg-cyan-500/20 transition-all"><FileText className="w-8 h-8 text-cyan-400" /></div>
               <div className="text-left">
                   <h4 className="text-white font-black uppercase tracking-widest text-[13px] mb-1">Commercial License</h4>
@@ -883,7 +929,17 @@ const V8RawRealityEngine = () => {
                         <button onClick={() => handlePageChange(Math.max(1, currentPage - 1))} disabled={currentPage === 1} className="px-4 py-2 bg-white/5 text-zinc-400 rounded-xl text-[10px] font-black uppercase tracking-widest disabled:opacity-30">PREV</button>
                         <div className="flex gap-2 overflow-x-auto max-w-[50vw] custom-scrollbar px-2">
                           {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                            <button key={page} onClick={() => handlePageChange(page)} className={`w-10 h-10 flex items-center justify-center rounded-xl text-[13px] font-black transition-all ${currentPage === page ? 'bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)] scale-110' : 'bg-white/5 text-zinc-400 hover:text-cyan-400 hover:border-cyan-500/50 border border-transparent'}`}>{page}</button>
+                            <button
+                              key={page}
+                              onClick={() => handlePageChange(page)}
+                              className={`w-8 h-8 md:w-10 md:h-10 flex-shrink-0 flex items-center justify-center rounded-xl text-[10px] md:text-[11px] font-black transition-all ${
+                                 currentPage === page 
+                                    ? 'bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)] scale-110' 
+                                    : 'bg-zinc-900/50 text-zinc-400 border border-white/5 hover:border-cyan-500/30 hover:text-cyan-400'
+                              }`}
+                            >
+                              {page}
+                            </button>
                           ))}
                         </div>
                         <button onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages} className="px-4 py-2 bg-white/5 text-zinc-400 rounded-xl text-[10px] font-black uppercase tracking-widest disabled:opacity-30">NEXT</button>

@@ -1,9 +1,39 @@
 // POČETAK FAJLA: V8PremiumAssets.jsx
 import React, { useState, useEffect } from 'react';
-import { ImageIcon, Video, Download, Zap, Pencil } from 'lucide-react';
+import { ImageIcon, Video, Download, Zap, Pencil, X } from 'lucide-react';
 import { db, auth } from '../firebase';
-import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
+import { createPortal } from 'react-dom';
+
+// 🔥 GA4 ANALITIKA 🔥
+import { trackV8Action } from '../utils/analytics';
+
+// POČETAK FUNKCIJE: FullScreenLightbox
+// Napomena: Ako se FullScreenLightbox nalazi samo u roditeljskoj komponenti (V8StockBerza), 
+// ovu definiciju i njen import (createPortal, X) možeš obrisati odavde.
+const FullScreenLightbox = ({ imageUrl, onClose }) => {
+  useEffect(() => {
+      if (imageUrl) {
+          document.body.style.overflow = 'hidden';
+          // 🔥 GA4 ANALITIKA 🔥
+          trackV8Action('image_zoom', { event_category: 'Engagement' });
+      }
+      else {
+          document.body.style.overflow = '';
+      }
+      return () => { document.body.style.overflow = ''; };
+  }, [imageUrl]);
+
+  if (!imageUrl) return null;
+  return createPortal(
+      <div className="fixed inset-0 z-[999999] bg-[#0f172a]/95 flex items-center justify-center p-4" onClick={onClose}>
+          <button type="button" onClick={(e) => { e.stopPropagation(); onClose(); }} className="absolute top-6 right-6 md:top-10 md:right-10 bg-[#FF8C00] text-white p-4 rounded-full font-black z-[1000000] shadow-[0_0_20px_rgba(255,140,0,0.5)]"><X size={32} strokeWidth={3} /></button>
+          <img src={imageUrl} alt="Full Screen Preview" className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-[0_0_80px_rgba(255,140,0,0.4)] border border-[#FF8C00]/30 relative z-[999999]" onClick={(e) => e.stopPropagation()} />
+      </div>, document.body
+  );
+};
+// KRAJ FUNKCIJE: FullScreenLightbox
 
 const V8PremiumAssets = ({ paketi = [], isAdmin, getGlobalCena, getAspectClass, prijavaIKupovina, startEditPaket, obrisiPaket, setFullScreenImageUrl }) => {
   const [userEmail, setUserEmail] = useState(null);
@@ -99,7 +129,15 @@ const V8PremiumAssets = ({ paketi = [], isAdmin, getGlobalCena, getAspectClass, 
               <div className="flex items-center justify-between">
                 <span className="text-2xl font-black text-white drop-shadow-md">${getGlobalCena(paket.cena)}</span>
                 {isAdmin || jeKupljen ? (
-                  <a href={paket.zipLink} target="_blank" rel="noopener noreferrer" className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest flex items-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all">DOWNLOAD <Download className="w-4 h-4" /></a>
+                  <a 
+                     href={paket.zipLink} 
+                     target="_blank" 
+                     rel="noopener noreferrer" 
+                     onClick={() => trackV8Action("download_premium_asset", { asset_name: tacanNaziv })}
+                     className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest flex items-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all"
+                  >
+                    DOWNLOAD <Download className="w-4 h-4" />
+                  </a>
                 ) : (
                     <button onClick={() => prijavaIKupovina(paket)} className="hover:scale-105 text-white px-5 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest flex items-center gap-2 transition-all shadow-lg bg-gradient-to-r from-orange-600 to-amber-500 shadow-[0_0_15px_rgba(234,88,12,0.4)]">
                       GET LICENSE <Zap className="w-4 h-4" />

@@ -17,6 +17,9 @@ import { vaultIdeas } from './V8PromptData';
 import V8SecureCheckout from './V8SecureCheckout';
 import LoginRequiredModal from './LoginRequiredModal';
 
+// 🔥 GA4 ANALITIKA 🔥
+import { trackV8Action } from './utils/analytics';
+
 // POČETAK FUNKCIJE: FullScreenLightbox
 const FullScreenLightbox = ({ imageUrl, onClose }) => {
   useEffect(() => {
@@ -77,7 +80,7 @@ const V8PromptFactory = () => {
   const getAvailableIdeas = () => {
     if (selectedEngine === 'STARTER') return vaultIdeas.slice(0, 51); 
     if (selectedEngine === 'PRO') return vaultIdeas.slice(0, 151);    
-    return vaultIdeas;                                              
+    return vaultIdeas;                                                
   };
 
   const getPromptCount = () => {
@@ -96,6 +99,13 @@ const V8PromptFactory = () => {
 
     setCheckoutProduct(naslovCheckouta);
     setCheckoutPrice(finalPrice);
+
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action("prompt_factory_checkout_initiated", { 
+        paket: paketName, 
+        cena: finalPrice, 
+        tip_klijenta: isUpgrade ? "upgrade" : "new" 
+    });
 
     if (!auth.currentUser && !userEmail) {
       setIsLoginRequiredOpen(true);
@@ -219,6 +229,9 @@ const V8PromptFactory = () => {
     navigator.clipboard.writeText(generatedResult);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action("factory_copied_all", { plan: currentPlan });
   };
 
   const copySingle = async (index, text) => {
@@ -227,6 +240,9 @@ const V8PromptFactory = () => {
     setTimeout(() => {
        setCopiedStates(prev => ({ ...prev, [index]: false }));
     }, 2000);
+
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action("factory_copied_single", { plan: currentPlan });
   };
 
   const generisiPromptove = async () => {
@@ -241,6 +257,13 @@ const V8PromptFactory = () => {
       return;
     }
     
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action("factory_generation_started", { 
+        engine: selectedEngine,
+        is_custom_idea: customIdea !== '',
+        expected_count: getPromptCount()
+    });
+
     setIsGenerating(true);
     setGeneratedResult(null);
     setCurrentPage(1);
@@ -262,6 +285,9 @@ const V8PromptFactory = () => {
 
       const data = await response.json();
       setGeneratedResult(data.result);
+
+      // 🔥 GA4 ANALITIKA 🔥
+      trackV8Action("factory_generation_success", { engine: selectedEngine });
 
     } catch (error) {
       console.error("V8 Engine failure:", error);
@@ -304,6 +330,9 @@ const V8PromptFactory = () => {
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
+
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action("factory_download_txt", { count: parsedPrompts.length });
   };
 
   const downloadJson = () => {
@@ -315,6 +344,9 @@ const V8PromptFactory = () => {
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
+
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action("factory_download_json", { count: parsedPrompts.length });
   };
 
   const clearResults = () => {
@@ -446,16 +478,16 @@ const V8PromptFactory = () => {
 
   const renderPromptSecrets = () => {
     const secrets = [
-        { t: "1. IMG_2047.ARW", d: "Sony Alpha Full-Frame RAW", insight: "Mimics ultra-high-resolution RAW files shot on Sony Alpha full-frame cameras. Triggers the model to favor natural shadows, full dynamic range, and unedited DSLR realism." },
-        { t: "2. DSC_0402.NEF", d: "Nikon RAW Format", insight: "Injects Nikon DSLR realism with accurate skin tones, neutral color grading, and crisp optics. AI tools associate this with high optical clarity and lens fidelity." },
-        { t: "3. Cinematic Still, Paramount", d: "Hollywood Studio Archive", insight: "Produces frames that look pulled from a Hollywood film, with film grain, anamorphic blur, and cinematic color grading. Perfect for storytelling visuals." },
-        { t: "4. iPhone ProRAW, IMG_4490", d: "Apple Mobile RAW", insight: "Renders unfiltered, iPhone-quality realism with HDR balance and slight motion blur. Ideal for Instagram-style casual photorealistic shots." },
-        { t: "5. Kodak Portra 800, scanned", d: "Vintage Film Stock", insight: "Produces a vintage film look with authentic grain, creamy tones, and slight fading. Guides the sampler toward Portra's signature warm skin tones." },
-        { t: "6. contact sheet scan, vogue.com", d: "Editorial Proof Spreads", insight: "Simulates editorial proof sheet spreads, often seen in Vogue fashion test shoots. Yields multiple-frame storytelling with natural posing variations." },
-        { t: "7. Leica M10 Monochrom, 35mm", d: "High-End B&W Photography", insight: "Ultra-shallow depth of field, creamy bokeh, and black & white realism. Leica gear is synonymous with photojournalistic quality and minimalist tones." },
-        { t: "8. Fuji Superia 400, point-and-shoot", d: "90s Casual Aesthetic", insight: "Captures spontaneous 90s-style images in parties with color shifts and soft flash. Fuels the model to emulate disposable camera charm." },
-        { t: "9. Scanned 120mm medium format", d: "Medium Format Studio", insight: "Generates museum-grade fashion portraits with unparalleled detail and ultra-sharp skin texture. Medium format tags trigger sensor realism." },
-        { t: "10. GettyImages watermark, editorial", d: "Commercial Photojournalism", insight: "Replicates commercial photojournalism style with watermarked authenticity and journalistic framing. Perfect for 'on-location' event coverage realism." }
+        { t: "1. The Rule of Extremes", d: "High-end cinematic visuals", insight: "V8 Factory automatically injects extreme angles (like 'low-angle drone shot') and dramatic lighting ('high-contrast chiaroscuro') to ensure images look highly produced, not basic." },
+        { t: "2. The 'Raw/Unedited' Token", d: "Hyper-realistic rendering", insight: "By appending 'raw unedited photography' to prompts, the AI disables its internal 'painting/plastic' filters, forcing a photographic output style." },
+        { t: "3. Format Directives", d: "Midjourney parameters", insight: "The Factory inherently adds aspect ratios (--ar 16:9) and styling parameters (--style raw) that most beginners forget, locking in the cinematic frame." },
+        { t: "4. Explicit Light Placement", d: "Studio-level lighting setups", insight: "Instead of saying 'bright', the Factory uses terms like 'rim lit from behind, soft key light'. This controls the actual 3D rendering of the light within the AI." },
+        { t: "5. Negative Guardrails", d: "Preventing AI hallucinations", insight: "The matrix adds negative constraints (e.g. '--no text, watermark, plastic, blurry') to physically block the AI from generating unwanted artifacts." },
+        { t: "6. Semantic Weighting", d: "Controlling subject focus", insight: "The system organizes words so the primary subject is always first. AI models lose focus on words placed at the end of long prompts." },
+        { t: "7. Hardware Emulation", d: "Camera and Lens specific", insight: "Using tags like 'shot on 35mm lens, f/1.4, Sony A7R IV' forces the AI to emulate depth of field and bokeh characteristics of real equipment." },
+        { t: "8. The Concept of 'Chaos'", d: "Controlled variations", insight: "When generating 500 prompts, V8 uses a seed algorithm to introduce 'controlled chaos', ensuring every prompt is genuinely unique while staying on-topic." },
+        { t: "9. Atmosphere & Weather", d: "Adding narrative depth", insight: "A car is just a car, but a car 'in pouring rain with neon reflections on wet asphalt' tells a story. The Factory always adds environmental context." },
+        { t: "10. De-Branding Locks", d: "Commercial safety", insight: "The system uses specific terminology ('unbranded', 'debadged') to ensure the generated assets are legally safe for commercial use and resale." }
     ];
 
     return (
@@ -578,7 +610,7 @@ const V8PromptFactory = () => {
                        <div className="flex flex-col text-left">
                           <span className="text-[8px] md:text-[9px] text-blue-300 font-black uppercase tracking-[0.2em] mb-1">AVAILABLE CREDITS</span>
                           <span className="text-xl md:text-2xl font-black text-white tracking-widest drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
-                             {credits}
+                              {credits}
                           </span>
                        </div>
                     </div>
@@ -590,7 +622,7 @@ const V8PromptFactory = () => {
                        <div className="flex flex-col text-left">
                           <span className="text-[8px] md:text-[9px] text-indigo-300 font-black uppercase tracking-[0.2em] mb-1">CREDITS SPENT</span>
                           <span className="text-xl md:text-2xl font-black text-white tracking-widest flex items-center gap-3">
-                             {totalInitialCredits - credits}
+                              {totalInitialCredits - credits}
                           </span>
                        </div>
                     </div>
@@ -604,7 +636,7 @@ const V8PromptFactory = () => {
 
         {/* 🔥 DOWNLOAD DUGME (SAMO LICENCA) 🔥 */}
         <div className="flex justify-center max-w-md mx-auto mb-16 relative z-10 w-full px-4 md:px-0">
-          <a href="/v8-license.pdf" download className="w-full bg-black/40 border border-indigo-500/30 hover:border-indigo-400 p-5 md:p-6 rounded-2xl flex items-center gap-4 md:gap-5 transition-all duration-300 hover:bg-indigo-900/20 group hover:-translate-y-1 shadow-lg hover:shadow-[0_10px_30px_rgba(99,102,241,0.2)]">
+          <a href="/v8-license.pdf" download onClick={() => trackV8Action("download_factory_license")} className="w-full bg-black/40 border border-indigo-500/30 hover:border-indigo-400 p-5 md:p-6 rounded-2xl flex items-center gap-4 md:gap-5 transition-all duration-300 hover:bg-indigo-900/20 group hover:-translate-y-1 shadow-lg hover:shadow-[0_10px_30px_rgba(99,102,241,0.2)]">
               <div className="bg-indigo-500/10 p-3 md:p-4 rounded-full border border-indigo-500/20 group-hover:bg-indigo-500/20 transition-all shrink-0"><FileText className="w-6 h-6 md:w-8 md:h-8 text-indigo-400" /></div>
               <div className="text-left">
                   <h4 className="text-white font-black uppercase tracking-widest text-[12px] md:text-[13px] mb-1">Commercial License</h4>
@@ -761,88 +793,68 @@ const V8PromptFactory = () => {
                           className="absolute top-[calc(100%+8px)] left-0 w-full bg-[#0a0a0a] border border-indigo-500/30 rounded-2xl shadow-2xl z-50 overflow-hidden"
                         >
                           <div className="max-h-56 md:max-h-64 overflow-y-auto custom-scrollbar">
-                            {availableIdeas.filter(idea => idea !== "").map((idea, index) => (
-                              <div 
-                                key={index}
-                                onClick={() => {
-                                  setSelectedVaultIdea(idea);
-                                  setCustomIdea('');
-                                  setIsDropdownOpen(false);
-                                }}
-                                className="p-3 md:p-4 border-b border-white/5 text-[11px] md:text-[12px] text-zinc-400 hover:bg-indigo-500/20 hover:text-white cursor-pointer transition-colors leading-relaxed"
-                              >
-                                {idea}
-                              </div>
-                            ))}
+                            {availableIdeas.map((idea, idx) => {
+                              if (idea === "") return null;
+                              return (
+                                <div 
+                                  key={idx} 
+                                  onClick={() => {
+                                    setSelectedVaultIdea(idea);
+                                    setIsDropdownOpen(false);
+                                  }}
+                                  className="p-3 md:p-4 hover:bg-indigo-600/20 text-zinc-300 hover:text-white text-[12px] md:text-[13px] border-b border-white/5 last:border-b-0 cursor-pointer transition-colors"
+                                >
+                                  {idea}
+                                </div>
+                              );
+                            })}
                           </div>
                         </motion.div>
                       )}
                     </AnimatePresence>
                   </div>
-                  <style>{`
-                    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-                    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-                    .custom-scrollbar::-webkit-scrollbar-thumb { background: #4f46e5; border-radius: 10px; }
-                    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #6366f1; }
-                  `}</style>
                 </div>
-
               </div>
 
-              {/* ENGINE SETTINGS */}
-              <div className="flex flex-col gap-6 md:gap-8 h-full">
+              {/* POLJE 3: ENGINE I GENERISANJE */}
+              <div className="flex flex-col gap-6 md:gap-8 h-full bg-[#050505]/50 border border-blue-500/20 p-6 md:p-8 rounded-3xl relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-900/10 to-transparent pointer-events-none"></div>
                 
-                <div className="flex flex-col gap-3">
-                   <label className="text-zinc-400 font-black text-[10px] md:text-[11px] tracking-widest uppercase flex items-center gap-2">
-                     <Cpu size={14} /> 3. SELECT V8 ENGINE TIER
-                   </label>
-                   <div className="flex flex-col gap-2 md:gap-3">
+                <div className="flex flex-col gap-3 relative z-10">
+                  <label className="font-black text-[10px] md:text-[11px] tracking-widest uppercase flex items-center gap-2 text-indigo-400">
+                    <Settings2 size={14} /> 3. MATRIX CORE SELECTOR
+                  </label>
+                  <div className="grid grid-cols-3 gap-2 md:gap-3">
+                    {['STARTER', 'PRO', 'ENTERPRISE'].map((tier) => {
+                      const isLocked = (tier === 'PRO' && isProLocked) || (tier === 'ENTERPRISE' && isEnterpriseLocked);
                       
-                      <button 
-                        onClick={() => setSelectedEngine('STARTER')} 
-                        className={`p-3 md:p-4 rounded-xl font-black text-[11px] md:text-[12px] uppercase flex items-center justify-between transition-all border ${selectedEngine === 'STARTER' ? 'bg-blue-600/20 border-blue-500 text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'bg-black/50 border-white/10 text-zinc-500 hover:border-white/30'}`}
-                      >
-                        <span className="flex items-center gap-2"><MonitorPlay size={14} md:size={16} /> Starter Engine</span>
-                        <span className="text-[9px] md:text-[10px] text-zinc-400">Generates 50 Prompts</span>
-                      </button>
+                      let activeStyle = "";
+                      if (tier === 'STARTER') activeStyle = "bg-blue-600 border-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.4)]";
+                      if (tier === 'PRO') activeStyle = "bg-indigo-600 border-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.4)]";
+                      if (tier === 'ENTERPRISE') activeStyle = "bg-purple-600 border-purple-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]";
 
-                      <button 
-                        onClick={() => !isProLocked && setSelectedEngine('PRO')} 
-                        disabled={isProLocked}
-                        className={`p-3 md:p-4 rounded-xl font-black text-[11px] md:text-[12px] uppercase flex items-center justify-between transition-all border ${
-                          isProLocked 
-                            ? 'bg-zinc-900/50 border-white/5 text-zinc-600 cursor-not-allowed'
-                            : selectedEngine === 'PRO' 
-                              ? 'bg-indigo-600/20 border-indigo-500 text-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.2)]' 
-                              : 'bg-black/50 border-white/10 text-zinc-500 hover:border-white/30'
-                        }`}
-                      >
-                        <span className="flex items-center gap-2">
-                          {isProLocked ? <Lock size={14} md:size={16} className="text-red-500" /> : <Zap size={14} md:size={16} />}
-                          Pro Engine
-                        </span>
-                        <span className="text-[9px] md:text-[10px] text-zinc-400">Generates 150 Prompts</span>
-                      </button>
-
-                      <button 
-                        onClick={() => !isEnterpriseLocked && setSelectedEngine('ENTERPRISE')}
-                        disabled={isEnterpriseLocked} 
-                        className={`p-3 md:p-4 rounded-xl font-black text-[11px] md:text-[12px] uppercase flex items-center justify-between transition-all border ${
-                          isEnterpriseLocked
-                            ? 'bg-zinc-900/50 border-white/5 text-zinc-600 cursor-not-allowed'
-                            : selectedEngine === 'ENTERPRISE' 
-                              ? 'bg-purple-600/20 border-purple-500 text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.2)]' 
-                              : 'bg-black/50 border-white/10 text-zinc-500 hover:border-white/30'
-                        }`}
-                      >
-                        <span className="flex items-center gap-2">
-                          {isEnterpriseLocked ? <Lock size={14} md:size={16} className="text-red-500" /> : <Cpu size={14} md:size={16} />} 
-                          Enterprise Engine
-                        </span>
-                        <span className="text-[9px] md:text-[10px] text-zinc-400">Generates 500 Prompts</span>
-                      </button>
-
-                   </div>
+                      return (
+                        <button
+                          key={tier}
+                          onClick={() => setSelectedEngine(tier)}
+                          disabled={isLocked}
+                          className={`relative p-3 md:p-4 rounded-2xl font-black text-[9px] md:text-[11px] uppercase tracking-widest transition-all border flex flex-col items-center justify-center gap-1 md:gap-2 ${
+                            selectedEngine === tier
+                              ? activeStyle
+                              : isLocked
+                                ? 'bg-[#050505] border-white/5 text-zinc-600 cursor-not-allowed opacity-50'
+                                : 'bg-[#0a0a0a] border-white/10 text-zinc-400 hover:border-white/30 hover:text-white'
+                          }`}
+                        >
+                          {isLocked && <Lock size={12} className="absolute top-2 right-2 md:top-3 md:right-3 opacity-50" />}
+                          {tier === 'STARTER' && <MonitorPlay size={16} md:size={20} className={selectedEngine === tier ? 'text-white' : 'text-blue-500/50'}/>}
+                          {tier === 'PRO' && <Zap size={16} md:size={20} className={selectedEngine === tier ? 'text-white' : 'text-indigo-500/50'}/>}
+                          {tier === 'ENTERPRISE' && <Cpu size={16} md:size={20} className={selectedEngine === tier ? 'text-white' : 'text-purple-500/50'}/>}
+                          <span>{tier}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <div className="mt-auto pt-6 md:pt-8 border-t border-white/10">

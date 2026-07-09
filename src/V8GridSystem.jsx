@@ -12,6 +12,9 @@ import LoginRequiredModal from './LoginRequiredModal';
 
 import { DEFAULT_CATEGORIES, SUB_CATEGORIES_DB, DEFAULT_CATEGORIES_2, SUB_CATEGORIES_DB_2, DEFAULT_CATEGORIES_3, SUB_CATEGORIES_DB_3, DEFAULT_CATEGORIES_4, SUB_CATEGORIES_DB_4, STYLE_PRESETS, CAMERA_PRESETS, LIGHTING_PRESETS } from './V8_Database';
 
+// 🔥 GA4 ANALITIKA 🔥
+import { trackV8Action } from './utils/analytics';
+
 // --- HELPERS (ANTI-BLEED & STRICT GEOMETRY ENGINE) ---
 const DYNAMIC_ANGLES = ["Eye-level perspective", "High-angle shot", "Low-angle dynamic shot", "Extreme macro close-up", "Wide environmental frame", "Overhead top-down view", "Dutch angle", "Isometric perspective", "Shallow focus depth", "Direct front profile"];
 const DYNAMIC_MOODS = ["dramatic atmospheric", "clean studio isolated", "moody cinematic", "high-key bright", "vibrant color contrast", "golden hour natural", "harsh stark shadow", "soft ethereal diffused", "sharp rim-lit", "dark moody silhouette"];
@@ -538,13 +541,22 @@ export default function V8GridSystem() {
 
   const pokreniKupovinu = (paketName, fullPrice) => {
     const userNow = currentUser || auth.currentUser;
+    const isUpgrade = amountPaid > 0;
+    const razlika = fullPrice - amountPaid;
+    const finalPrice = razlika > 0 ? razlika : fullPrice;
+
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action("grid_checkout_initiated", { 
+        paket: paketName, 
+        cena: finalPrice, 
+        tip_klijenta: isUpgrade ? "upgrade" : "new" 
+    });
+
     if (userNow) {
       openCheckoutForPackage(paketName, fullPrice);
       return;
     }
-    const razlika = fullPrice - amountPaid;
-    const finalPrice = razlika > 0 ? razlika : fullPrice;
-    const isUpgrade = amountPaid > 0;
+    
     setCheckoutProduct(isUpgrade ? `V8 GRID SYSTEM - ${paketName.toUpperCase()} (UPGRADE)` : `V8 GRID SYSTEM - ${paketName.toUpperCase()}`);
     setCheckoutPrice(finalPrice);
     setIsLoginRequiredOpen(true);
@@ -568,6 +580,10 @@ export default function V8GridSystem() {
       setCurrentPage(1); 
       setCopiedStates({});
       recordUsage();
+
+      // 🔥 GA4 ANALITIKA 🔥
+      trackV8Action("prompts_generated", { db_type: dbType, preset: presetName, grid_format: gridFormat });
+      
       v8Toast.success(`100 Unique Prompts Generated from DB ${dbType}!`);
   };
 
@@ -584,6 +600,10 @@ export default function V8GridSystem() {
       setCurrentPage(1); 
       setCopiedStates({});
       recordUsage();
+
+      // 🔥 GA4 ANALITIKA 🔥
+      trackV8Action("prompts_regenerated", { db_type: dbType, preset: presetName, grid_format: gridFormat });
+
       v8Toast.success(`Regenerated 100 New Prompts from DB ${dbType}!`);
   };
 
@@ -606,6 +626,9 @@ export default function V8GridSystem() {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
+
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action("download_txt", { type: "grid_prompts" });
   };
 
   const downloadJson = () => {
@@ -620,12 +643,19 @@ export default function V8GridSystem() {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
+
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action("download_json", { type: "grid_prompts" });
   };
 
   const copySingle = async (index, text) => {
     if (isEngineCoolingDown || !isVIP) { v8Toast.error("Engine Cooling Down. Wait for refill."); return; }
     await navigator.clipboard.writeText(text);
     setCopiedStates(prev => ({ ...prev, [index]: true }));
+
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action("prompt_copied", { format: gridFormat, preset: presetName });
+
     v8Toast.success(`Prompt copied!`);
   };
 
@@ -1027,7 +1057,7 @@ export default function V8GridSystem() {
 
         {/* 🔥 DOWNLOAD DUGME (SAMO LICENCA) 🔥 */}
         <div className="flex justify-center max-w-md mx-auto mb-16 relative z-10 w-full px-4 md:px-0">
-          <a href="/v8-license.pdf" download className="w-full bg-black/40 border border-orange-500/30 hover:border-orange-400 p-5 md:p-6 rounded-2xl flex items-center gap-4 md:gap-5 transition-all duration-300 hover:bg-orange-900/20 group hover:-translate-y-1 shadow-lg hover:shadow-[0_10px_30px_rgba(234,88,12,0.2)]">
+          <a href="/v8-license.pdf" download onClick={() => trackV8Action("download_grid_license")} className="w-full bg-black/40 border border-orange-500/30 hover:border-orange-400 p-5 md:p-6 rounded-2xl flex items-center gap-4 md:gap-5 transition-all duration-300 hover:bg-orange-900/20 group hover:-translate-y-1 shadow-lg hover:shadow-[0_10px_30px_rgba(234,88,12,0.2)]">
               <div className="bg-orange-500/10 p-3 md:p-4 rounded-full border border-orange-500/20 group-hover:bg-orange-500/20 transition-all shrink-0"><FileText className="w-6 h-6 md:w-8 md:h-8 text-orange-400" /></div>
               <div className="text-left">
                   <h4 className="text-white font-black uppercase tracking-widest text-[12px] md:text-[13px] mb-1">Commercial License</h4>
@@ -1143,7 +1173,7 @@ export default function V8GridSystem() {
 
           {/* ENGINE PARAMETERS */}
           <div className="rounded-3xl md:rounded-[2rem] border border-white/10 bg-[#0a0a0a]/80 backdrop-blur-md p-5 md:p-6 shadow-2xl max-w-7xl mx-auto flex flex-col items-center w-full mb-10 md:mb-12">
-            <h2 className="mb-5 md:mb-6 text-sm md:text-base font-black uppercase tracking-widest text-white border-b border-white/10 pb-3 md:pb-4 w-full text-center">Engine Parameters</h2>
+            <h2 className="text-sm md:text-base font-black uppercase tracking-widest text-white border-b border-white/10 pb-3 md:pb-4 w-full text-center">Engine Parameters</h2>
 
             <div className="flex flex-wrap items-end justify-center gap-3 md:gap-4 w-full pt-2 md:pt-4">
               

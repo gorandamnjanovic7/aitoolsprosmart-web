@@ -1,9 +1,37 @@
 // POČETAK FAJLA: V8MasterBundles.jsx
 import React, { useState, useEffect } from 'react';
-import { ImageIcon, Video, Download, Zap, Pencil, Crown, ShieldCheck } from 'lucide-react';
+import { ImageIcon, Video, Download, Zap, Pencil, Crown, ShieldCheck, Layers, X } from 'lucide-react';
 import { db, auth } from '../firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
+import { createPortal } from 'react-dom';
+
+// 🔥 GA4 ANALITIKA 🔥
+import { trackV8Action } from '../utils/analytics';
+
+// POČETAK FUNKCIJE: FullScreenLightbox
+const FullScreenLightbox = ({ imageUrl, onClose }) => {
+  useEffect(() => {
+      if (imageUrl) {
+          document.body.style.overflow = 'hidden';
+          // 🔥 GA4 ANALITIKA 🔥
+          trackV8Action('image_zoom', { event_category: 'Engagement' });
+      }
+      else {
+          document.body.style.overflow = '';
+      }
+      return () => { document.body.style.overflow = ''; };
+  }, [imageUrl]);
+
+  if (!imageUrl) return null;
+  return createPortal(
+      <div className="fixed inset-0 z-[999999] bg-[#0f172a]/95 flex items-center justify-center p-4" onClick={onClose}>
+          <button type="button" onClick={(e) => { e.stopPropagation(); onClose(); }} className="absolute top-6 right-6 md:top-10 md:right-10 bg-[#FF8C00] text-white p-4 rounded-full font-black z-[1000000] shadow-[0_0_20px_rgba(255,140,0,0.5)]"><X size={32} strokeWidth={3} /></button>
+          <img src={imageUrl} alt="Full Screen Preview" className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-[0_0_80px_rgba(255,140,0,0.4)] border border-[#FF8C00]/30 relative z-[999999]" onClick={(e) => e.stopPropagation()} />
+      </div>, document.body
+  );
+};
+// KRAJ FUNKCIJE: FullScreenLightbox
 
 const V8MasterBundles = ({ paketi = [], isAdmin, getGlobalCena, getAspectClass, prijavaIKupovina, startEditPaket, obrisiPaket, setFullScreenImageUrl }) => {
   const [userEmail, setUserEmail] = useState(null);
@@ -130,7 +158,13 @@ const V8MasterBundles = ({ paketi = [], isAdmin, getGlobalCena, getAspectClass, 
                 
                 <div className="w-full sm:w-auto flex justify-center sm:justify-end">
                   {isAdmin || jeKupljen ? (
-                    <a href={paket.zipLink} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-3 md:px-6 md:py-4 rounded-xl font-black text-[9px] md:text-[12px] uppercase tracking-wider md:tracking-widest flex items-center justify-center gap-1.5 md:gap-2 shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all">
+                    <a 
+                      href={paket.zipLink} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      onClick={() => trackV8Action("download_45mp_bundle", { asset_name: tacanNaziv })}
+                      className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-3 md:px-6 md:py-4 rounded-xl font-black text-[9px] md:text-[12px] uppercase tracking-wider md:tracking-widest flex items-center justify-center gap-1.5 md:gap-2 shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all"
+                    >
                       DOWNLOAD <Download className="w-3 h-3 md:w-5 md:h-5 hidden sm:block" />
                     </a>
                   ) : (

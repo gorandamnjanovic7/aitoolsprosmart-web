@@ -21,14 +21,16 @@ import V10UltraPrintAssets from './V10UltraPrintAssets';
 import V8SecureCheckout from '../V8SecureCheckout';
 import LoginRequiredModal from '../LoginRequiredModal';
 
+// 🔥 GA4 ANALITIKA 🔥
+import { trackV8Action } from '../utils/analytics';
+
 // POČETAK FUNKCIJE: FullScreenLightbox
 const FullScreenLightbox = ({ imageUrl, onClose }) => {
   useEffect(() => {
       if (imageUrl) {
           document.body.style.overflow = 'hidden';
-          if (typeof window !== 'undefined' && window.gtag) {
-              window.gtag('event', 'image_zoom', { event_category: 'Engagement' });
-          }
+          // 🔥 GA4 ANALITIKA 🔥
+          trackV8Action('image_zoom', { event_category: 'Engagement' });
       }
       else {
           document.body.style.overflow = '';
@@ -146,12 +148,11 @@ const V8StockBerza = () => {
   }, [paidPayoneer, paidCrypto, paidPaypal]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'tab_view', {
-        event_category: 'Navigation',
-        event_label: activeTab 
-      });
-    }
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action('tab_view', {
+      event_category: 'Navigation',
+      event_label: activeTab 
+    });
   }, [activeTab]);
 
   useEffect(() => {
@@ -163,14 +164,15 @@ const V8StockBerza = () => {
         if(trazeniPaket) {
             try {
                 await snimiKupcaUPayoneerBazu(auth.currentUser, trazeniPaket);
-                if (typeof window !== 'undefined' && window.gtag) {
-                    window.gtag('event', 'purchase', {
-                        transaction_id: `V8_TX_${Date.now()}`,
-                        value: Number(trazeniPaket.cena),
-                        currency: 'USD',
-                        items: [{ item_id: trazeniPaket.id, item_name: trazeniPaket.nazivEn, price: Number(trazeniPaket.cena) }]
-                    });
-                }
+                
+                // 🔥 GA4 ANALITIKA 🔥
+                trackV8Action('purchase', {
+                    transaction_id: `V8_TX_${Date.now()}`,
+                    value: Number(trazeniPaket.cena),
+                    currency: 'USD',
+                    items: [{ item_id: trazeniPaket.id, item_name: trazeniPaket.nazivEn, price: Number(trazeniPaket.cena) }]
+                });
+                
                 if (trazeniPaket.paddleLink && trazeniPaket.paddleLink.trim() !== "") {
                     window.location.href = trazeniPaket.paddleLink;
                 } else {
@@ -241,12 +243,18 @@ const V8StockBerza = () => {
   // POČETAK FUNKCIJE: prijavaIKupovina
   const prijavaIKupovina = async (paket) => {
     if (paket.isFree || paket.cena === "0.00" || parseFloat(paket.cena) === 0) {
+        // 🔥 GA4 ANALITIKA 🔥
+        trackV8Action('free_asset_download', { asset_name: paket.nazivEn });
+        
         if(typeof v8Toast !== 'undefined') v8Toast.success("🚀 ACCESS GRANTED: Downloading Free V8 Asset...");
         window.open(paket.zipLink, '_blank');
         return;
     }
     
     if (kupljeniPaketiIds.includes(paket.id)) {
+        // 🔥 GA4 ANALITIKA 🔥
+        trackV8Action('owned_asset_download', { asset_name: paket.nazivEn });
+        
         if(typeof v8Toast !== 'undefined') v8Toast.success("🚀 DOWNLOADING PURCHASED ASSET...");
         window.open(paket.zipLink, '_blank');
         return;
@@ -256,9 +264,13 @@ const V8StockBerza = () => {
     const finalPrice = getGlobalCena(paket.cena);
     const userNow = currentUser || auth.currentUser;
 
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'begin_checkout', { event_category: 'B2B_Sales', event_label: fullName, value: Number(finalPrice), currency: 'USD', items: [{ item_name: fullName, price: Number(finalPrice) }] });
-    }
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action('checkout_initiated', { 
+      event_category: 'B2B_Sales', 
+      item_name: fullName, 
+      value: Number(finalPrice), 
+      currency: 'USD' 
+    });
 
     if (userNow) {
         await otvoriCheckoutIliPaddle(userNow, paket);
@@ -425,8 +437,9 @@ const V8StockBerza = () => {
               <div key={i} onClick={() => {
                   setOtvoreniOpisi(prev => {
                       const isNowOpen = !prev.includes(i);
-                      if (isNowOpen && typeof window !== 'undefined' && window.gtag) {
-                          window.gtag('event', 'manifest_read', { event_category: 'Engagement', event_label: item.t });
+                      if (isNowOpen) {
+                          // 🔥 GA4 ANALITIKA 🔥
+                          trackV8Action('manifest_read', { event_category: 'Engagement', event_label: item.t });
                       }
                       return isNowOpen ? [...prev, i] : prev.filter(x => x !== i);
                   });
@@ -573,10 +586,6 @@ const V8StockBerza = () => {
                   <div className="flex justify-center relative z-10 mt-10">
                       <div className="bg-[#050505]/80 backdrop-blur-md border border-white/10 p-1.5 rounded-full inline-flex flex-wrap items-center justify-center shadow-xl gap-1">
                           
-                          {/* PRIVREMENO SAKRIVEN STANDARD TAB 
-                          <button onClick={() => setActiveTab('standard')} className={`px-6 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 ${activeTab === 'standard' ? 'bg-zinc-800 text-white shadow-md border border-white/10' : 'text-zinc-400 hover:text-white'}`}>Standard</button>
-                          */}
-
                           <button onClick={() => setActiveTab('premium')} className={`px-6 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${activeTab === 'premium' ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-white shadow-[0_0_15px_rgba(234,88,12,0.4)]' : 'text-zinc-400 hover:text-orange-500'}`}><Zap className="w-4 h-4" /> 33MP Premium</button>
                           <button onClick={() => setActiveTab('bundles')} className={`px-6 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${activeTab === 'bundles' ? 'bg-gradient-to-r from-blue-600 to-indigo-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'text-zinc-400 hover:text-blue-400'}`}><Crown className="w-4 h-4" /> 45MP Bundles</button>
                           <button onClick={() => setActiveTab('signature')} className={`px-6 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${activeTab === 'signature' ? 'bg-zinc-900 border border-yellow-500/50 text-yellow-400 shadow-[0_0_15px_rgba(245,158,11,0.3)]' : 'text-zinc-400 hover:text-yellow-400'}`}><Diamond className="w-4 h-4" /> 60MP Signature</button>
@@ -735,8 +744,6 @@ const V8StockBerza = () => {
           )}
 
           <div className="flex flex-wrap justify-center gap-12 max-w-5xl mx-auto">
-            
-            {/* PRIVREMENO SAKRIVENA STANDARD SEKCIJA (SYSTEM COMPILATION) */}
             
             {activeTab === 'premium' && (
               <>

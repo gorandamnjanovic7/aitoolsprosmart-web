@@ -42,6 +42,9 @@ import V8SecureCheckout from './V8SecureCheckout';
 import LoginRequiredModal from './LoginRequiredModal';
 import { CLOUDINARY_UPLOAD_PRESET, CLOUDINARY_CLOUD_NAME } from './data';
 
+// 🔥 GA4 ANALITIKA 🔥
+import { trackV8Action } from './utils/analytics';
+
 const BASE_BACKEND_URL = window.location.hostname === 'localhost'
   ? "http://localhost:8000"
   : "https://aitoolsprosmart-becend-production.up.railway.app";
@@ -172,15 +175,21 @@ const V8MasterEngine60MP = () => {
 
   const pokreniKupovinu = (paketName, fullPrice) => {
     const userNow = currentUser || auth.currentUser;
+    const razlika = fullPrice - amountPaid;
+    const finalPrice = razlika > 0 ? razlika : fullPrice;
+    const isUpgrade = amountPaid > 0;
+
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action("60mp_checkout_initiated", { 
+        paket: paketName, 
+        cena: finalPrice, 
+        tip_klijenta: isUpgrade ? "upgrade" : "new" 
+    });
 
     if (userNow) {
       openCheckoutForPackage(paketName, fullPrice);
       return;
     }
-
-    const razlika = fullPrice - amountPaid;
-    const finalPrice = razlika > 0 ? razlika : fullPrice;
-    const isUpgrade = amountPaid > 0;
 
     const naslovCheckouta = isUpgrade
       ? `GOD TIER 60MP - ${paketName.toUpperCase()} (UPGRADE)`
@@ -294,7 +303,7 @@ const V8MasterEngine60MP = () => {
       if (data.status === "PLAĆENO" || data.status === "completed_verified") {
         const productName = data.productName ? data.productName.toUpperCase() : "";
 
-        if (productName.includes("GOD TIER") || productName.includes("60MP")) {
+        if (productName.includes("GOD TIER") || productName.includes("60MP") || productName.includes("SECURITY CHECKOUT")) {
           hasAccess = true;
 
           if (productName.includes("ENTERPRISE")) {
@@ -578,6 +587,12 @@ const V8MasterEngine60MP = () => {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action("60mp_zip_downloaded", { 
+        broj_fajlova: files.length,
+        plan: currentPlan
+    });
   };
 
   const handleUpscaleAndDownload = async () => {
@@ -587,6 +602,12 @@ const V8MasterEngine60MP = () => {
       alert(`NEMATE DOVOLJNO KREDITA! Pokušavate da obradite ${files.length} slika, ali imate samo ${credits} kredita.`);
       return;
     }
+
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action("60mp_processing_started", { 
+        broj_fajlova: files.length,
+        tip_korisnika: isVIP ? "vip" : "trial"
+    });
 
     setIsProcessing(true);
     setDownloadStatus('processing');
@@ -1081,6 +1102,7 @@ const V8MasterEngine60MP = () => {
         <a
           href="/V8_60MP_Technical_Manifest.txt"
           download
+          onClick={() => trackV8Action("download_60mp_manifest")}
           className="flex-1 bg-black/40 border border-blue-500/30 hover:border-blue-400 p-6 rounded-2xl flex items-center gap-5 transition-all duration-300 hover:bg-blue-900/20 group hover:-translate-y-1 shadow-lg hover:shadow-[0_10px_30px_rgba(59,130,246,0.2)]"
         >
           <div className="bg-blue-500/10 p-4 rounded-full border border-blue-500/20 group-hover:bg-blue-500/20 transition-all">
@@ -1101,6 +1123,7 @@ const V8MasterEngine60MP = () => {
         <a
           href="/v8-license.pdf"
           download
+          onClick={() => trackV8Action("download_60mp_license")}
           className="flex-1 bg-black/40 border border-red-500/30 hover:border-red-400 p-6 rounded-2xl flex items-center gap-5 transition-all duration-300 hover:bg-red-900/20 group hover:-translate-y-1 shadow-lg hover:shadow-[0_10px_30px_rgba(220,38,38,0.2)]"
         >
           <div className="bg-red-500/10 p-4 rounded-full border border-red-500/20 group-hover:bg-red-500/20 transition-all">
