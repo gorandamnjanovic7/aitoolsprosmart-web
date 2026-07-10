@@ -13,6 +13,9 @@ import * as data from './data';
 import navBg from './navbar-bg.webp';
 import MagneticButton from './MagneticButton';
 
+// 🔥 GA4 ANALITIKA 🔥
+import { trackV8Action } from './utils/analytics';
+
 const V8Navbar = ({ handleHomeClick }) => {
   // POČETAK FUNKCIJE: V8Navbar
   const location = useLocation();
@@ -84,6 +87,9 @@ const V8Navbar = ({ handleHomeClick }) => {
   }, [isMobileMenuOpen]);
 
   const handleLogout = async () => {
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action("user_logout");
+
     await signOut(auth);
     if(typeof v8Toast !== 'undefined') v8Toast.success("V8 Disconnected.");
     setIsMobileMenuOpen(false); 
@@ -91,9 +97,16 @@ const V8Navbar = ({ handleHomeClick }) => {
   };
 
   const handleLogin = async () => {
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action("login_initiated");
+
     try {
       const result = await signInWithPopup(auth, provider);
       const loggedUser = result.user;
+      
+      // 🔥 GA4 ANALITIKA 🔥
+      trackV8Action("login_success");
+
       if(typeof v8Toast !== 'undefined') v8Toast.success("V8 IGNITED!");
       setIsMobileMenuOpen(false); 
 
@@ -131,6 +144,10 @@ const V8Navbar = ({ handleHomeClick }) => {
         credits_45mp: 3,
         trialClaimed: true 
       });
+
+      // 🔥 GA4 ANALITIKA 🔥
+      trackV8Action("trial_claimed", { email: user.email });
+
       if(typeof v8Toast !== 'undefined') v8Toast.success("TRIAL UNLOCKED: 11 Premium Credits Added!");
     } catch (error) {
       console.error("Error claiming trial:", error);
@@ -501,7 +518,11 @@ const V8Navbar = ({ handleHomeClick }) => {
             )}
 
             <button 
-              onClick={() => setIsMobileMenuOpen(true)}
+              onClick={() => {
+                setIsMobileMenuOpen(true);
+                // 🔥 GA4 ANALITIKA 🔥
+                trackV8Action("mobile_menu_opened");
+              }}
               className="lg:hidden ml-1 sm:ml-2 bg-orange-600/20 text-orange-500 border border-orange-500/40 p-2 sm:p-2.5 rounded-xl hover:bg-orange-600 hover:text-white transition-all shadow-[0_0_15px_rgba(249,115,22,0.3)] shrink-0"
             >
               <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -688,13 +709,15 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   </Link>
 
-                  <Link to="/v8-debranding-extractor" onClick={handleMobileLinkClick} className="flex items-center gap-3 sm:gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0 relative">
-                    <div className="bg-emerald-500/10 p-3 rounded-xl shrink-0"><ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-500" /></div>
-                    <div className="flex flex-col overflow-hidden min-w-0 flex-1">
-                      <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full block pr-8">DE-BRANDING DNA</span>
-                      <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full block pr-8">Clean White-Label Engine</span>
+                  <Link to="/v8-debranding-extractor" onClick={handleMobileLinkClick} className="flex items-center justify-between gap-2 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-emerald-500/30 mt-1">
+                    <div className="flex items-center gap-4 overflow-hidden">
+                      <div className="bg-emerald-500/20 p-2 rounded-lg group-hover/item:bg-emerald-500/40 transition-colors shadow-[0_0_10px_rgba(16,185,129,0.3)] shrink-0"><ShieldCheck className="w-5 h-5 text-emerald-400 transition-transform group-hover/item:scale-110" /></div>
+                      <div className="flex flex-col text-left overflow-hidden">
+                        <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-emerald-400 transition-all drop-shadow-md truncate">DE-BRANDING DNA</span>
+                        <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Clean White-Label Engine</span>
+                      </div>
                     </div>
-                    <span className="text-[7px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 absolute right-4 top-1/2 -translate-y-1/2">NEW</span>
+                    <span className="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded font-black tracking-widest shadow-[0_0_8px_rgba(16,185,129,0.5)] shrink-0">NEW</span>
                   </Link>
 
                   <div className="grid grid-cols-2 gap-3 mt-2 w-full">
