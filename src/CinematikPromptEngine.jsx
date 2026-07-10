@@ -2,6 +2,7 @@
 // Ne zaboravi da ažuriraš svoj React source code link u glavnom repozitorijumu!
 
 import React, { useState, useRef, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async'; // 🔥 DODATO ZA SEO 🔥
 import { Upload, FileImage, Clock, Wand2, MonitorPlay, Smartphone, Video, Settings2, X, Diamond, Lock, DownloadCloud, Zap, ShieldCheck, AlertTriangle, Copy, CheckCircle, RefreshCcw, Crown, ArrowUpCircle, FileText, Trash2, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
@@ -14,6 +15,9 @@ import V8SecureCheckout from './V8SecureCheckout';
 import LoginRequiredModal from './LoginRequiredModal';
 import { CLOUDINARY_UPLOAD_PRESET, CLOUDINARY_CLOUD_NAME } from './data';
 
+// 🔥 GA4 ANALITIKA 🔥
+import { trackV8Action } from './utils/analytics';
+
 const BASE_BACKEND_URL = window.location.hostname === 'localhost' 
   ? "http://localhost:8000" 
   : "https://aitoolsprosmart-becend-production.up.railway.app";
@@ -24,8 +28,14 @@ const FullScreenVideoPlayer = ({ src, onClose }) => {
   const [isEnded, setIsEnded] = useState(false);
 
   useEffect(() => {
-      if (src) document.body.style.overflow = 'hidden';
-      else document.body.style.overflow = '';
+      if (src) {
+          document.body.style.overflow = 'hidden';
+          // 🔥 GA4 ANALITIKA 🔥
+          trackV8Action('video_fullscreen', { event_category: 'Engagement' });
+      }
+      else {
+          document.body.style.overflow = '';
+      }
       return () => { document.body.style.overflow = ''; };
   }, [src]);
 
@@ -35,6 +45,8 @@ const FullScreenVideoPlayer = ({ src, onClose }) => {
       if (videoRef.current) {
           videoRef.current.play();
           setIsEnded(false);
+          // 🔥 GA4 ANALITIKA 🔥
+          trackV8Action('video_replay', { event_category: 'Engagement' });
       }
   };
 
@@ -157,6 +169,14 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
     const isUpgrade = amountPaid > 0;
     const engineKeyword = currentEngine.split(" ")[0].toUpperCase();
     const naslovCheckouta = isUpgrade ? `${engineKeyword} - ${paketName.toUpperCase()} (UPGRADE)` : `${engineKeyword} - ${paketName.toUpperCase()}`;
+
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action("cinematik_checkout_initiated", { 
+        engine: engineKeyword,
+        paket: paketName, 
+        cena: finalPrice, 
+        tip_klijenta: isUpgrade ? "upgrade" : "new" 
+    });
 
     if (!currentUser && !auth.currentUser) {
       setLoginRequiredData({
@@ -363,6 +383,9 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
     navigator.clipboard.writeText(text);
     setCopiedIndex(`${index}-${type}`);
     setTimeout(() => setCopiedIndex(null), 2000);
+
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action("cinematik_prompt_copied", { engine: currentEngine });
   };
 
   const generisiMasterPrompt = async () => {
@@ -375,6 +398,12 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
         alert("ENGINE COOLING: You have 0 prompts left. Please wait for the 24h reset cycle.");
         return;
     }
+
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action("cinematik_generation_started", { 
+        engine: currentEngine,
+        is_image_mode: isImageModeActive
+    });
 
     setIsGenerating(true);
     setGeneratedPrompts(null); 
@@ -399,6 +428,8 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
       
       if(data) {
           setGeneratedPrompts(data);
+          // 🔥 GA4 ANALITIKA 🔥
+          trackV8Action("cinematik_generation_success", { engine: currentEngine });
       }
       
       if (auth.currentUser && !isAdmin) {
@@ -426,6 +457,12 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const handleEngineChange = (newEngine) => {
+    setCurrentEngine(newEngine);
+    // 🔥 GA4 ANALITIKA 🔥
+    trackV8Action("cinematik_engine_changed", { engine: newEngine });
   };
 
   const renderPricingPlans = () => {
@@ -584,7 +621,13 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
             {specifikacije.map((item, i) => {
               const isOpen = otvorenOpis === i;
               return (
-                <div key={i} onClick={() => setOtvorenOpis(isOpen ? null : i)} className={`bg-white/5 border p-6 rounded-2xl transition-all duration-500 cursor-pointer relative overflow-hidden group ${isOpen ? 'border-orange-500/50 shadow-[0_0_15px_rgba(249,115,22,0.1)]' : 'border-white/5 hover:border-white/20'}`}>
+                <div key={i} onClick={() => {
+                  setOtvorenOpis(isOpen ? null : i);
+                  if (!isOpen) {
+                    // 🔥 GA4 ANALITIKA 🔥
+                    trackV8Action('manifest_read', { event_category: 'Engagement', event_label: item.t });
+                  }
+                }} className={`bg-white/5 border p-6 rounded-2xl transition-all duration-500 cursor-pointer relative overflow-hidden group ${isOpen ? 'border-orange-500/50 shadow-[0_0_15px_rgba(249,115,22,0.1)]' : 'border-white/5 hover:border-white/20'}`}>
                   <div className="relative z-10 flex justify-between items-center">
                     <div>
                       <h4 className={`text-[13px] md:text-[15px] font-black uppercase transition-colors duration-300 flex items-center gap-3 mb-2 ${isOpen ? 'text-orange-400' : 'text-blue-400'}`}>
@@ -613,6 +656,13 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
   return (
     <div className="bg-[#050505] p-8 md:p-12 rounded-[2.5rem] border border-[#FF8C00]/30 shadow-[0_0_50px_rgba(255,140,0,0.1)] max-w-5xl mx-auto mt-28 relative overflow-hidden">
       
+      {/* 🔥 SEO TAGOVI SAMO ZA OVU STRANICU 🔥 */}
+      <Helmet>
+        <title>Cinematic Video Prompt Engine | V8 AI Tools</title>
+        <meta name="description" content="Generate master-level cinematic video prompts optimized for Seedance and Kling AI models. Command hyper-realistic physics and flawless kinetic motion." />
+        <meta name="keywords" content="cinematic video prompts, ai video generation, kling ai prompts, seedance ai prompts, text to video ai" />
+      </Helmet>
+
       <FullScreenVideoPlayer src={fullScreenVideo} onClose={() => setFullScreenVideo(null)} />
 
       <LoginRequiredModal
@@ -679,14 +729,14 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
 
       <div className="flex flex-wrap justify-center gap-4 mb-8 relative z-20 mt-8">
           <button 
-              onClick={() => setCurrentEngine("SEEDANCE 2.0")}
+              onClick={() => handleEngineChange("SEEDANCE 2.0")}
               className={`px-8 py-3.5 rounded-full font-black text-[11px] tracking-widest uppercase transition-all flex items-center gap-2 ${currentEngine === "SEEDANCE 2.0" ? 'bg-green-500 text-black shadow-[0_0_20px_rgba(34,197,94,0.4)]' : 'bg-[#0a0a0a] border border-white/10 text-zinc-400 hover:text-white hover:border-white/30'}`}
           >
               <MonitorPlay size={16} /> SEEDANCE 2.0
           </button>
           
           <button 
-              onClick={() => setCurrentEngine("KLING 3.0")}
+              onClick={() => handleEngineChange("KLING 3.0")}
               className={`px-8 py-3.5 rounded-full font-black text-[11px] tracking-widest uppercase transition-all flex items-center gap-2 ${currentEngine !== "SEEDANCE 2.0" ? 'bg-orange-500 text-white shadow-[0_0_20px_rgba(234,88,12,0.4)]' : 'bg-[#0a0a0a] border border-white/10 text-zinc-400 hover:text-white hover:border-white/30'}`}
           >
               <Video size={16} /> KLING 3.0
@@ -832,27 +882,6 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
 
       {renderV8Manifest()}
 
-      {/* 🔥 DODATO DUGME ZA DOWNLOAD LICENCE ISPOD MANIFESTA 🔥 */}
-      <div className="flex justify-center max-w-4xl mx-auto mb-16 relative z-10 px-4">
-        <a
-          href="/v8-license.pdf"
-          download
-          className={`flex-1 max-w-md bg-black/40 border p-6 rounded-2xl flex items-center gap-5 transition-all duration-300 shadow-lg group hover:-translate-y-1 ${currentEngine === "SEEDANCE 2.0" ? "border-green-500/30 hover:border-green-400 hover:bg-green-900/20 hover:shadow-[0_10px_30px_rgba(34,197,94,0.2)]" : "border-orange-500/30 hover:border-orange-400 hover:bg-orange-900/20 hover:shadow-[0_10px_30px_rgba(234,88,12,0.2)]"}`}
-        >
-          <div className={`p-4 rounded-full border transition-all ${currentEngine === "SEEDANCE 2.0" ? "bg-green-500/10 border-green-500/20 group-hover:bg-green-500/20" : "bg-orange-500/10 border-orange-500/20 group-hover:bg-orange-500/20"}`}>
-            <FileText className={`w-8 h-8 ${currentEngine === "SEEDANCE 2.0" ? "text-green-400" : "text-orange-400"}`} />
-          </div>
-          <div className="text-left">
-            <h4 className="text-white font-black uppercase tracking-widest text-[13px] mb-1">
-              Commercial License
-            </h4>
-            <p className="text-zinc-400 text-[11px] font-bold">
-              Download Legal Terms (PDF)
-            </p>
-          </div>
-        </a>
-      </div>
-
       <div className={`transition-all duration-500 ${!isVIP && !isAdmin ? 'opacity-30 grayscale-[70%] pointer-events-none' : ''}`}>
         
         {/* 🔥 Prikazujemo COOLDOWN obaveštenje samo ako nema kredita i prošlo je manje od 24h 🔥 */}
@@ -899,6 +928,12 @@ const CinematikPromptEngine = ({ initialEngine = "SEEDANCE 2.0", openCheckout })
                   <button onClick={() => setImageDescription('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 hover:text-red-400 bg-red-500/10 hover:bg-red-500/20 p-1.5 rounded-full transition-all"><X size={16} strokeWidth={3} /></button>
                 )}
               </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div className="h-px bg-white/10 flex-1"></div>
+              <span className="text-zinc-600 font-black text-[10px] uppercase tracking-widest">OR</span>
+              <div className="h-px bg-white/10 flex-1"></div>
             </div>
 
             <div className="flex flex-col gap-3">

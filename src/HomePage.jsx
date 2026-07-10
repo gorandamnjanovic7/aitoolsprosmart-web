@@ -1,13 +1,15 @@
+// POČETAK FAJLA: HomePage.jsx
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
 // V8 KOCKICE
 import HeroBanner from './HeroBanner';
-// 🔥 UVOZ NOVE B2B KOMPONENTE 🔥
 import B2BProtocols from './B2BProtocols';
+// 🔥 UVOZ NOVE V8 DECKS KOMPONENTE SA PDF-OVIMA 🔥
+import V8Decks from './V8Decks'; 
 import IntelProtocols from './IntelProtocols';
-import UnlockTheBeast from './UnlockTheBeast'; // 🔥 TVOJ NOVI MAGNET UVEZEN OVDE
+import UnlockTheBeast from './UnlockTheBeast'; 
 import EnhancerPromo from './EnhancerPromo';
 import StockBundles from './StockBundles';
 import Marketplace from './Marketplace';
@@ -32,6 +34,9 @@ export default function HomePage({ apps = [] }) {
         {/* 🔥 UBACENA B2B SEKCIJA TAČNO IZNAD YOUTUBE VIDEA 🔥 */}
         <B2BProtocols />
         
+        {/* 🔥 V8 PDF GALERIJA - ODMAH ISPOD B2B PROTOKOLA 🔥 */}
+        <V8Decks />
+        
         <IntelProtocols />
         
         {/* 🔥 NOVI MAGNET POSTAVLJEN TAČNO IZMEĐU PROTOKOLA I ENHANCER-A 🔥 */}
@@ -44,3 +49,4 @@ export default function HomePage({ apps = [] }) {
     </>
   );
 }
+// KRAJ FAJLA: HomePage.jsx

@@ -34,6 +34,12 @@ const V8Navbar = ({ handleHomeClick }) => {
   const isAdmin = currentUserEmail === "damnjanovicgoran7@gmail.com" || currentUserEmail === "aitoolsprosmart@gmail.com";
   const isVIP = isAdmin || isVIPInDB;
 
+  // 🔥 NUKLEARNA OPCIJA: TRAJNO UBIJANJE HORIZONTALNOG SKROLA NA CELOM SAJTU 🔥
+  useEffect(() => {
+    document.documentElement.style.overflowX = 'hidden';
+    document.body.style.overflowX = 'hidden';
+  }, []);
+
   useEffect(() => {
     let unsubTrial = null;
 
@@ -76,19 +82,14 @@ const V8Navbar = ({ handleHomeClick }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Zaključavanje pozadine i sprečavanje H-scrolla na HTML nivou
+  // Zaključavanje pozadine kada je mobilni meni otvoren
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';
-      document.documentElement.style.overflowX = 'hidden'; 
     } else {
       document.body.style.overflow = '';
-      document.documentElement.style.overflowX = ''; 
     }
-    return () => { 
-      document.body.style.overflow = ''; 
-      document.documentElement.style.overflowX = ''; 
-    };
+    return () => { document.body.style.overflow = ''; };
   }, [isMobileMenuOpen]);
 
   const handleLogout = async () => {
@@ -158,7 +159,7 @@ const V8Navbar = ({ handleHomeClick }) => {
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 w-full z-[1000]">
+    <div className="fixed top-0 inset-x-0 w-full z-[1000]">
       <nav 
         className={`w-full transition-all duration-500 border-b-2 ${
           scrolled 
@@ -176,19 +177,20 @@ const V8Navbar = ({ handleHomeClick }) => {
       >
         <div className="max-w-7xl mx-auto flex justify-between items-center px-4 md:px-8 w-full">
           
-          <Link to="/" onClick={() => { handleHomeClick(); setIsMobileMenuOpen(false); }} className="flex items-center gap-2 sm:gap-3 group shrink-0 min-w-0">
+          {/* LOGO - Ograničen na max 60% širine ekrana da nikad ne bi izgurao dugmiće */}
+          <Link to="/" onClick={() => { handleHomeClick(); setIsMobileMenuOpen(false); }} className="flex items-center gap-2 sm:gap-3 group shrink min-w-0 mr-auto max-w-[60%]">
             <img src={data.logoUrl} className={`object-contain transition-all duration-500 shrink-0 ${scrolled ? 'h-8 md:h-10' : 'h-9 md:h-12'} animate-pulse group-hover:scale-105`} alt="logo" />
-            <div className="flex items-center gap-1 sm:gap-1.5 overflow-hidden min-w-0">
-              <span className={`font-black uppercase tracking-[0.1em] text-blue-500 italic group-hover:text-orange-500 transition-all duration-500 truncate ${scrolled ? 'text-[9px] sm:text-[10px] md:text-[12px]' : 'text-[10px] sm:text-[11px] md:text-[14px]'}`}>AI TOOLS</span>
-              <span className={`font-black uppercase tracking-[0.1em] text-orange-500 italic group-hover:text-blue-500 transition-all duration-500 truncate ${scrolled ? 'text-[9px] sm:text-[10px] md:text-[12px]' : 'text-[10px] sm:text-[11px] md:text-[14px]'}`}>PRO SMART</span>
+            <div className="flex flex-col justify-center overflow-hidden min-w-0">
+              <span className={`font-black uppercase tracking-[0.1em] text-blue-500 italic group-hover:text-orange-500 transition-all duration-500 truncate w-full leading-none ${scrolled ? 'text-[10px] md:text-[12px]' : 'text-[11px] md:text-[14px]'} mb-0.5`}>AI TOOLS</span>
+              <span className={`font-black uppercase tracking-[0.1em] text-orange-500 italic group-hover:text-blue-500 transition-all duration-500 truncate w-full leading-none ${scrolled ? 'text-[10px] md:text-[12px]' : 'text-[11px] md:text-[14px]'}`}>PRO SMART</span>
             </div>
           </Link>
 
-          {/* DESKTOP NAVIGACIJA */}
-          <div className="flex-1 flex items-center justify-end gap-2 xl:gap-3 font-black uppercase tracking-widest min-w-0">
+          {/* DESNA STRANA NAVIGACIJE */}
+          <div className="flex items-center justify-end gap-2 xl:gap-3 font-black uppercase tracking-widest shrink-0">
             
             <MagneticButton>
-               <Link to="/" onClick={handleHomeClick} className="hidden xl:flex items-center gap-2 px-3 xl:px-5 py-2 md:py-2.5 rounded-full bg-emerald-900/30 border border-emerald-500/40 text-emerald-400 text-[9px] xl:text-[11px] hover:text-white hover:bg-emerald-800/50 hover:border-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] cursor-pointer whitespace-nowrap">
+               <Link to="/" onClick={handleHomeClick} className="hidden xl:flex items-center gap-2 px-3 xl:px-5 py-2 md:py-2.5 rounded-full bg-emerald-900/30 border border-emerald-500/40 text-emerald-400 text-[9px] xl:text-[11px] hover:text-white hover:bg-emerald-800/50 hover:border-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] cursor-pointer whitespace-nowrap shrink-0">
                  <Globe className="w-4 h-4 shrink-0" /> Home
                </Link>
             </MagneticButton>
@@ -409,118 +411,123 @@ const V8Navbar = ({ handleHomeClick }) => {
               </div>
             </div>
 
-            {/* MASTER USER DROPDOWN (SA SLIKOM AVATARA) */}
-            {user ? (
-               <div className="flex items-center gap-1.5 md:gap-2 ml-1 sm:ml-2 lg:border-l lg:border-white/10 lg:pl-3 xl:pl-4 relative group shrink-0">
-                 <MagneticButton>
-                   <button className="flex items-center gap-1.5 md:gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-700/50 text-white transition-all shadow-md cursor-pointer whitespace-nowrap">
-                     {userCredits?.trialClaimed === false && !isAdmin ? (
-                       <>
-                          <Gift className="w-4 h-4 text-fuchsia-400 animate-pulse shrink-0" /> 
-                          <span className="hidden sm:inline font-black text-[9px] xl:text-[10px] tracking-widest uppercase">CLAIM TRIAL</span>
-                       </>
-                     ) : (
-                       <>
-                          {user.photoURL ? (
-                             <>
-                                <img src={user.photoURL} alt="User Avatar" className="w-4 h-4 xl:w-5 xl:h-5 rounded-full object-cover border border-white/20 hidden sm:block shrink-0" referrerPolicy="no-referrer" />
-                                <Zap className="w-3.5 h-3.5 text-emerald-400 animate-pulse shrink-0 sm:hidden" />
-                             </>
-                          ) : (
-                             <Zap className="w-3.5 h-3.5 text-emerald-400 animate-pulse shrink-0" />
-                          )}
-                          <span className="hidden sm:inline font-black text-[9px] xl:text-[10px] tracking-widest uppercase">{isAdmin ? 'ADMIN' : 'ACCOUNT'}</span>
-                       </>
-                     )}
-                     <ChevronDown className="hidden lg:block w-3 h-3 text-zinc-400 group-hover:rotate-180 transition-transform duration-300 shrink-0" />
-                   </button>
-                 </MagneticButton>
+            {/* MASTER USER DROPDOWN / MOBILNI LOGIN */}
+            <div className="flex items-center gap-2 lg:border-l lg:border-white/10 lg:pl-3 xl:pl-4 relative shrink-0">
+              {user ? (
+                 <div className="flex items-center gap-1.5 md:gap-2 group">
+                   <MagneticButton>
+                     <button className="flex items-center gap-1.5 md:gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-700/50 text-white transition-all shadow-md cursor-pointer whitespace-nowrap">
+                       {userCredits?.trialClaimed === false && !isAdmin ? (
+                         <>
+                            <Gift className="w-4 h-4 text-fuchsia-400 animate-pulse shrink-0" /> 
+                            <span className="hidden sm:inline font-black text-[9px] xl:text-[10px] tracking-widest uppercase">CLAIM TRIAL</span>
+                         </>
+                       ) : (
+                         <>
+                            {user.photoURL ? (
+                               <>
+                                  <img src={user.photoURL} alt="User Avatar" className="w-4 h-4 xl:w-5 xl:h-5 rounded-full object-cover border border-white/20 hidden sm:block shrink-0" referrerPolicy="no-referrer" />
+                                  <Zap className="w-3.5 h-3.5 text-emerald-400 animate-pulse shrink-0 sm:hidden" />
+                               </>
+                            ) : (
+                               <Zap className="w-3.5 h-3.5 text-emerald-400 animate-pulse shrink-0" />
+                            )}
+                            <span className="hidden sm:inline font-black text-[9px] xl:text-[10px] tracking-widest uppercase">{isAdmin ? 'ADMIN' : 'ACCOUNT'}</span>
+                         </>
+                       )}
+                       <ChevronDown className="hidden lg:block w-3 h-3 text-zinc-400 group-hover:rotate-180 transition-transform duration-300 shrink-0" />
+                     </button>
+                   </MagneticButton>
 
-                 <div className="hidden lg:block absolute top-full right-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-400 z-[9999]">
-                   <div className="bg-black/95 backdrop-blur-2xl border border-white/10 border-t-emerald-500 rounded-2xl p-4 w-64 shadow-2xl flex flex-col gap-2 relative overflow-hidden">
-                     
-                     {userCredits?.trialClaimed === false && !isAdmin && (
-                        <div className="mb-2 border-b border-white/10 pb-3">
-                           <p className="text-zinc-400 text-[10px] font-bold mb-2">Unlock the Master Engines for free.</p>
-                           <button onClick={handleClaimTrial} className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-black uppercase text-[11px] py-3 rounded-xl hover:scale-[1.02] transition-all shadow-[0_0_15px_rgba(168,85,247,0.5)]">
-                              CLAIM 11 CREDITS NOW
-                           </button>
-                        </div>
-                     )}
+                   {/* Desktop User Menu */}
+                   <div className="hidden lg:block absolute top-full right-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-400 z-[9999]">
+                     <div className="bg-black/95 backdrop-blur-2xl border border-white/10 border-t-emerald-500 rounded-2xl p-4 w-64 shadow-2xl flex flex-col gap-2 relative overflow-hidden">
+                       
+                       {userCredits?.trialClaimed === false && !isAdmin && (
+                          <div className="mb-2 border-b border-white/10 pb-3">
+                             <p className="text-zinc-400 text-[10px] font-bold mb-2">Unlock the Master Engines for free.</p>
+                             <button onClick={handleClaimTrial} className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-black uppercase text-[11px] py-3 rounded-xl hover:scale-[1.02] transition-all shadow-[0_0_15px_rgba(168,85,247,0.5)]">
+                                CLAIM 11 CREDITS NOW
+                             </button>
+                          </div>
+                       )}
 
-                     <div className="text-left border-b border-white/10 pb-2 mb-1">
-                        <h4 className="text-zinc-400 font-bold uppercase tracking-widest text-[10px]">Processing Power</h4>
+                       <div className="text-left border-b border-white/10 pb-2 mb-1">
+                          <h4 className="text-zinc-400 font-bold uppercase tracking-widest text-[10px]">Processing Power</h4>
+                       </div>
+                       
+                       <Link to="/v8-standard-16mp" className="flex items-center justify-between bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 px-3 py-2 rounded-xl transition-all">
+                          <span className="text-blue-400 font-black text-[10px] uppercase flex items-center gap-2"><ImageIcon className="w-3.5 h-3.5 shrink-0"/> 16MP Standard</span>
+                          <span className="text-white font-black text-[11px] drop-shadow-md">{isAdmin ? '∞' : userCredits.credits_16mp}</span>
+                       </Link>
+                       
+                       <Link to="/master-33mp" className="flex items-center justify-between bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/30 px-3 py-2 rounded-xl transition-all mt-1">
+                          <span className="text-yellow-400 font-black text-[10px] uppercase flex items-center gap-2"><Cpu className="w-3.5 h-3.5 shrink-0"/> 33.2MP Master</span>
+                          <span className="text-white font-black text-[11px] drop-shadow-md">{isAdmin ? '∞' : userCredits.credits_33mp}</span>
+                       </Link>
+
+                       <Link to="/master-45mp" className="flex items-center justify-between bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 px-3 py-2 rounded-xl transition-all mt-1">
+                          <span className="text-amber-400 font-black text-[10px] uppercase flex items-center gap-2"><Zap className="w-3.5 h-3.5 shrink-0"/> 45.1MP Extreme</span>
+                          <span className="text-white font-black text-[11px] drop-shadow-md">{isAdmin ? '∞' : userCredits.credits_45mp}</span>
+                       </Link>
+                       
+                       <Link to="/master-60mp" className="flex items-center justify-between bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-3 py-2 rounded-xl transition-all mt-1">
+                          <span className="text-rose-400 font-black text-[10px] uppercase flex items-center gap-2"><Cpu className="w-3.5 h-3.5 shrink-0"/> 60MP Extreme</span>
+                          <span className="text-white font-black text-[11px] drop-shadow-md">{isAdmin ? '∞' : '0'}</span>
+                       </Link>
+
+                       {(isAdmin || isVIP) && (
+                          <>
+                             <div className="text-left border-b border-white/10 pb-2 mt-2 mb-1">
+                                <h4 className="text-zinc-400 font-bold uppercase tracking-widest text-[10px]">Portal Access</h4>
+                             </div>
+                             {isAdmin && (
+                                <>
+                                   <Link to="/admin" className="flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-xl text-red-400 transition-all">
+                                      <Settings className="w-3.5 h-3.5 shrink-0" /> <span className="font-black text-[10px] uppercase tracking-widest">CMS DB</span>
+                                   </Link>
+                                   <Link to="/dashboard" className="flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-xl text-yellow-400 transition-all mt-1">
+                                      <ShieldAlert className="w-3.5 h-3.5 shrink-0" /> <span className="font-black text-[10px] uppercase tracking-widest">DASHBOARD</span>
+                                   </Link>
+                                </>
+                             )}
+                             {isVIP && (
+                                <Link to="/trezor" className="flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-xl text-orange-400 transition-all mt-1">
+                                   <Lock className="w-3.5 h-3.5 shrink-0" /> <span className="font-black text-[10px] uppercase tracking-widest">VAULT</span>
+                                </Link>
+                             )}
+                          </>
+                       )}
+
+                       <div className="mt-2 pt-2 border-t border-white/10">
+                          <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl transition-all cursor-pointer">
+                             <LogOut className="w-3.5 h-3.5 shrink-0" />
+                             <span className="font-black text-[10px] uppercase tracking-widest">Sign Out</span>
+                          </button>
+                       </div>
+
                      </div>
-                     
-                     <Link to="/v8-standard-16mp" className="flex items-center justify-between bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 px-3 py-2 rounded-xl transition-all">
-                        <span className="text-blue-400 font-black text-[10px] uppercase flex items-center gap-2"><ImageIcon className="w-3.5 h-3.5 shrink-0"/> 16MP Standard</span>
-                        <span className="text-white font-black text-[11px] drop-shadow-md">{isAdmin ? '∞' : userCredits.credits_16mp}</span>
-                     </Link>
-                     
-                     <Link to="/master-33mp" className="flex items-center justify-between bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/30 px-3 py-2 rounded-xl transition-all mt-1">
-                        <span className="text-yellow-400 font-black text-[10px] uppercase flex items-center gap-2"><Cpu className="w-3.5 h-3.5 shrink-0"/> 33.2MP Master</span>
-                        <span className="text-white font-black text-[11px] drop-shadow-md">{isAdmin ? '∞' : userCredits.credits_33mp}</span>
-                     </Link>
-
-                     <Link to="/master-45mp" className="flex items-center justify-between bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 px-3 py-2 rounded-xl transition-all mt-1">
-                        <span className="text-amber-400 font-black text-[10px] uppercase flex items-center gap-2"><Zap className="w-3.5 h-3.5 shrink-0"/> 45.1MP Extreme</span>
-                        <span className="text-white font-black text-[11px] drop-shadow-md">{isAdmin ? '∞' : userCredits.credits_45mp}</span>
-                     </Link>
-                     
-                     <Link to="/master-60mp" className="flex items-center justify-between bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-3 py-2 rounded-xl transition-all mt-1">
-                        <span className="text-rose-400 font-black text-[10px] uppercase flex items-center gap-2"><Cpu className="w-3.5 h-3.5 shrink-0"/> 60MP Extreme</span>
-                        <span className="text-white font-black text-[11px] drop-shadow-md">{isAdmin ? '∞' : '0'}</span>
-                     </Link>
-
-                     {(isAdmin || isVIP) && (
-                        <>
-                           <div className="text-left border-b border-white/10 pb-2 mt-2 mb-1">
-                              <h4 className="text-zinc-400 font-bold uppercase tracking-widest text-[10px]">Portal Access</h4>
-                           </div>
-                           {isAdmin && (
-                              <>
-                                 <Link to="/admin" className="flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-xl text-red-400 transition-all">
-                                    <Settings className="w-3.5 h-3.5 shrink-0" /> <span className="font-black text-[10px] uppercase tracking-widest">CMS DB</span>
-                                 </Link>
-                                 <Link to="/dashboard" className="flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-xl text-yellow-400 transition-all mt-1">
-                                    <ShieldAlert className="w-3.5 h-3.5 shrink-0" /> <span className="font-black text-[10px] uppercase tracking-widest">DASHBOARD</span>
-                                 </Link>
-                              </>
-                           )}
-                           {isVIP && (
-                              <Link to="/trezor" className="flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-xl text-orange-400 transition-all mt-1">
-                                 <Lock className="w-3.5 h-3.5 shrink-0" /> <span className="font-black text-[10px] uppercase tracking-widest">VAULT</span>
-                              </Link>
-                           )}
-                        </>
-                     )}
-
-                     <div className="mt-2 pt-2 border-t border-white/10">
-                        <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl transition-all cursor-pointer">
-                           <LogOut className="w-3.5 h-3.5 shrink-0" />
-                           <span className="font-black text-[10px] uppercase tracking-widest">Sign Out</span>
-                        </button>
-                     </div>
-
                    </div>
                  </div>
-               </div>
-            ) : (
-               <div className="hidden lg:block ml-2 border-l border-white/10 pl-3 xl:pl-4 shrink-0">
-                 <MagneticButton>
-                   <button onClick={handleLogin} className="bg-zinc-800 px-3 xl:px-5 py-2 md:py-2.5 rounded-full text-zinc-400 shadow-xl hover:bg-zinc-700 hover:text-white transition-all border border-white/5 cursor-pointer whitespace-nowrap text-[9px] xl:text-[11px]">
-                     <User className="w-4 h-4 inline mr-1 xl:mr-2 shrink-0" /> LOGIN
-                   </button>
-                 </MagneticButton>
-               </div>
-            )}
+              ) : (
+                <MagneticButton>
+                  <button onClick={handleLogin} className="flex items-center gap-1.5 bg-zinc-800 px-3 xl:px-5 py-2 md:py-2.5 rounded-full text-zinc-400 shadow-xl hover:bg-zinc-700 hover:text-white transition-all border border-white/5 cursor-pointer whitespace-nowrap text-[9px] xl:text-[11px] shrink-0">
+                    <User className="w-4 h-4 inline shrink-0" /> <span className="hidden sm:block">LOGIN</span>
+                  </button>
+                </MagneticButton>
+              )}
 
-            <button 
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="lg:hidden ml-1 sm:ml-2 bg-orange-600/20 text-orange-500 border border-orange-500/40 p-2 sm:p-2.5 rounded-xl hover:bg-orange-600 hover:text-white transition-all shadow-[0_0_15px_rgba(249,115,22,0.3)] shrink-0"
-            >
-              <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
-            </button>
+              {/* HAMBURGER MENI DUGME */}
+              <button 
+                onClick={() => {
+                  setIsMobileMenuOpen(true);
+                  trackV8Action("mobile_menu_opened");
+                }}
+                className="lg:hidden bg-orange-600/20 text-orange-500 border border-orange-500/40 p-2 sm:p-2.5 rounded-xl hover:bg-orange-600 hover:text-white transition-all shadow-[0_0_15px_rgba(249,115,22,0.3)] shrink-0"
+              >
+                <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
+              </button>
+            </div>
 
           </div>
         </div>
@@ -539,7 +546,7 @@ const V8Navbar = ({ handleHomeClick }) => {
             <div className="flex justify-between items-center p-6 border-b border-white/10 w-full shrink-0">
               <div className="flex items-center gap-3 min-w-0">
                 <img src={data.logoUrl} className="h-8 object-contain shrink-0" alt="logo" />
-                <span className="font-black uppercase tracking-[0.1em] text-orange-500 italic text-[12px] truncate">V8 NAV SYSTEM</span>
+                <span className="font-black uppercase tracking-[0.1em] text-orange-500 italic text-[12px] truncate w-full">V8 NAV SYSTEM</span>
               </div>
               <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 bg-zinc-900 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-800 border border-white/5 shrink-0 ml-2">
                 <X className="w-6 h-6" />
@@ -612,14 +619,14 @@ const V8Navbar = ({ handleHomeClick }) => {
                   </button>
                 </div>
               ) : (
-                <button onClick={handleLogin} className="w-full bg-zinc-800 text-white border border-zinc-600 rounded-3xl py-6 flex flex-col items-center justify-center gap-3 shadow-xl mx-auto overflow-hidden px-4">
+                <button onClick={handleLogin} className="w-full bg-zinc-800 text-white border border-zinc-600 rounded-3xl py-6 flex flex-col items-center justify-center gap-3 shadow-xl mx-auto px-4">
                   <User className="w-8 h-8 text-zinc-400 shrink-0" />
-                  <span className="font-black text-[16px] uppercase tracking-widest truncate w-full text-center">LOGIN TO V8</span>
-                  <span className="text-[10px] text-zinc-500 font-bold uppercase truncate w-full text-center">Pristupi Premium Alatima</span>
+                  <span className="font-black text-[16px] uppercase tracking-widest text-center whitespace-normal break-words">LOGIN TO V8</span>
+                  <span className="text-[10px] text-zinc-500 font-bold uppercase text-center whitespace-normal break-words">Pristupi Premium Alatima</span>
                 </button>
               )}
 
-              <div className="flex flex-col gap-6 w-full max-w-full overflow-hidden">
+              <div className="flex flex-col gap-6 w-full min-w-0">
                 
                 {/* Glavni Meni */}
                 <div className="flex flex-col gap-3 w-full">
@@ -749,7 +756,7 @@ const V8Navbar = ({ handleHomeClick }) => {
                   </h4>
                   
                   <div className="bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl flex items-center gap-3 w-full min-w-0 mb-1">
-                    <ShieldCheck className="w-6 h-6 text-emerald-400 shrink-0" />
+                    <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400 shrink-0" />
                     <span className="text-[8px] sm:text-[9px] text-emerald-400 font-black uppercase tracking-widest leading-relaxed whitespace-normal break-words w-full">
                       INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP
                     </span>
