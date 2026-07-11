@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Maximize, X, ZoomIn, ZoomOut, ChevronLeft, ChevronRight } from 'lucide-react';
+// 🔥 DODATA ANALITIKA 🔥
+import { trackV8Action } from '../utils/analytics';
 
 // TAČAN SPISAK TVOJIH PDF DOKUMENATA
 const pdfDocuments = [
@@ -17,9 +19,30 @@ const pdfDocuments = [
 // -------------------------------------------------------------
 // 1. KOMPONENTA ZA MALE KARTICE (NA GRIDU)
 // -------------------------------------------------------------
+// POČETAK FUNKCIJE: V8PdfViewerCard
 const V8PdfViewerCard = ({ doc, onOpenFullScreen }) => {
   const [zoom, setZoom] = useState(1); 
   const safePath = encodeURI(doc.path);
+
+  // POČETAK FUNKCIJE: handleZoomOut
+  const handleZoomOut = () => {
+    setZoom(z => Math.max(z - 0.25, 0.5));
+    trackV8Action('deck_zoom', { event_category: 'Engagement', deck_title: doc.title, zoom_action: 'out', view_mode: 'card' });
+  };
+  // KRAJ FUNKCIJE: handleZoomOut
+
+  // POČETAK FUNKCIJE: handleZoomIn
+  const handleZoomIn = () => {
+    setZoom(z => Math.min(z + 0.25, 3));
+    trackV8Action('deck_zoom', { event_category: 'Engagement', deck_title: doc.title, zoom_action: 'in', view_mode: 'card' });
+  };
+  // KRAJ FUNKCIJE: handleZoomIn
+
+  // POČETAK FUNKCIJE: handleDirectLinkClick
+  const handleDirectLinkClick = () => {
+    trackV8Action('deck_direct_link_clicked', { event_category: 'Engagement', deck_title: doc.title });
+  };
+  // KRAJ FUNKCIJE: handleDirectLinkClick
 
   return (
     <div className="bg-[#0a0a0a] p-4 md:p-5 rounded-[2rem] border border-orange-500/30 shadow-[0_0_30px_rgba(234,88,12,0.15)] flex flex-col w-full hover:border-orange-500/60 transition-all duration-500 group">
@@ -33,13 +56,13 @@ const V8PdfViewerCard = ({ doc, onOpenFullScreen }) => {
         <div className="flex items-center gap-2 md:gap-3 shrink-0">
           {/* LUPA (ZOOM) ZA KARTICU */}
           <div className="flex items-center bg-black/50 border border-blue-500/30 rounded-lg p-0.5 shadow-inner">
-            <button onClick={() => setZoom(z => Math.max(z - 0.25, 0.5))} className="p-1.5 md:p-2 text-zinc-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-md transition-all cursor-pointer">
+            <button onClick={handleZoomOut} className="p-1.5 md:p-2 text-zinc-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-md transition-all cursor-pointer">
               <ZoomOut size={16} strokeWidth={2.5} />
             </button>
             <span className="text-[9px] md:text-[11px] font-black text-white w-9 md:w-11 text-center tracking-widest select-none">
               {Math.round(zoom * 100)}%
             </span>
-            <button onClick={() => setZoom(z => Math.min(z + 0.25, 3))} className="p-1.5 md:p-2 text-zinc-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-md transition-all cursor-pointer">
+            <button onClick={handleZoomIn} className="p-1.5 md:p-2 text-zinc-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-md transition-all cursor-pointer">
               <ZoomIn size={16} strokeWidth={2.5} />
             </button>
           </div>
@@ -50,7 +73,7 @@ const V8PdfViewerCard = ({ doc, onOpenFullScreen }) => {
 
           {/* DUGME ZA OTVARANJE U FULL SCREEN-U */}
           <button 
-            onClick={onOpenFullScreen}
+            onClick={() => onOpenFullScreen(doc.title)}
             className="flex items-center justify-center p-2 md:p-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)] cursor-pointer"
             title="Otvori u punom ekranu"
           >
@@ -82,21 +105,28 @@ const V8PdfViewerCard = ({ doc, onOpenFullScreen }) => {
           />
           <div className="text-zinc-600 text-xs font-black uppercase tracking-widest text-center px-4 z-0 absolute">
             Učitavanje...<br/><br/>
-            <a href={safePath} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline mt-2 block">Kliknite ovde za direktan link</a>
+            <a href={safePath} onClick={handleDirectLinkClick} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline mt-2 block">Kliknite ovde za direktan link</a>
           </div>
         </div>
       </div>
     </div>
   );
 };
+// KRAJ FUNKCIJE: V8PdfViewerCard
 
 
 // -------------------------------------------------------------
 // 2. GLAVNA KOMPONENTA SA GLOBALNIM FULL-SCREEN SISTEMOM
 // -------------------------------------------------------------
+// POČETAK FUNKCIJE: V8Decks
 const V8Decks = () => {
   const [activeIndex, setActiveIndex] = useState(null);
   const [fsZoom, setFsZoom] = useState(1);
+
+  // Beleženje posete stranici
+  useEffect(() => {
+    trackV8Action('page_view', { event_category: 'Navigation', page_name: 'V8_Decks_Architecture' });
+  }, []);
 
   // ZAKLJUČAVANJE SKROLA NA CELOM SAJTU KADA JE OTVOREN FULL SCREEN
   useEffect(() => {
@@ -113,9 +143,53 @@ const V8Decks = () => {
     setFsZoom(1);
   }, [activeIndex]);
 
-  // FUNKCIJE ZA LISTANJE PDF-OVA U FULL SCREENU
-  const handlePrev = () => setActiveIndex(prev => (prev > 0 ? prev - 1 : pdfDocuments.length - 1));
-  const handleNext = () => setActiveIndex(prev => (prev < pdfDocuments.length - 1 ? prev + 1 : 0));
+  // POČETAK FUNKCIJE: handleOpenFullScreen
+  const handleOpenFullScreen = (index, title) => {
+    setActiveIndex(index);
+    trackV8Action('deck_fullscreen_opened', { event_category: 'Engagement', deck_title: title });
+  };
+  // KRAJ FUNKCIJE: handleOpenFullScreen
+
+  // POČETAK FUNKCIJE: handleCloseFullScreen
+  const handleCloseFullScreen = () => {
+    trackV8Action('deck_fullscreen_closed', { event_category: 'Engagement', deck_title: pdfDocuments[activeIndex].title });
+    setActiveIndex(null);
+  };
+  // KRAJ FUNKCIJE: handleCloseFullScreen
+
+  // POČETAK FUNKCIJE: handlePrev
+  const handlePrev = () => {
+    setActiveIndex(prev => {
+      const newIndex = prev > 0 ? prev - 1 : pdfDocuments.length - 1;
+      trackV8Action('deck_fullscreen_nav', { event_category: 'Engagement', direction: 'prev', deck_title: pdfDocuments[newIndex].title });
+      return newIndex;
+    });
+  };
+  // KRAJ FUNKCIJE: handlePrev
+  
+  // POČETAK FUNKCIJE: handleNext
+  const handleNext = () => {
+    setActiveIndex(prev => {
+      const newIndex = prev < pdfDocuments.length - 1 ? prev + 1 : 0;
+      trackV8Action('deck_fullscreen_nav', { event_category: 'Engagement', direction: 'next', deck_title: pdfDocuments[newIndex].title });
+      return newIndex;
+    });
+  };
+  // KRAJ FUNKCIJE: handleNext
+
+  // POČETAK FUNKCIJE: handleFsZoomOut
+  const handleFsZoomOut = () => {
+    setFsZoom(z => Math.max(z - 0.25, 0.5));
+    trackV8Action('deck_zoom', { event_category: 'Engagement', deck_title: pdfDocuments[activeIndex].title, zoom_action: 'out', view_mode: 'fullscreen' });
+  };
+  // KRAJ FUNKCIJE: handleFsZoomOut
+
+  // POČETAK FUNKCIJE: handleFsZoomIn
+  const handleFsZoomIn = () => {
+    setFsZoom(z => Math.min(z + 0.25, 4));
+    trackV8Action('deck_zoom', { event_category: 'Engagement', deck_title: pdfDocuments[activeIndex].title, zoom_action: 'in', view_mode: 'fullscreen' });
+  };
+  // KRAJ FUNKCIJE: handleFsZoomIn
 
   return (
     <section className="w-full py-12 md:py-16 relative z-10">
@@ -136,7 +210,7 @@ const V8Decks = () => {
           <V8PdfViewerCard 
             key={index}
             doc={doc} 
-            onOpenFullScreen={() => setActiveIndex(index)} 
+            onOpenFullScreen={(title) => handleOpenFullScreen(index, title)} 
           />
         ))}
       </div>
@@ -151,7 +225,7 @@ const V8Decks = () => {
             transition={{ duration: 0.3 }}
             className="fixed inset-0 z-[999999] bg-[#050505] p-2 sm:p-4 md:p-6 lg:p-8 flex flex-col w-full h-[100dvh]"
           >
-            {/* GORNJA KONTROLNA TRAKA (FULL SCREEN) - Dodato lg:mt-2 za veće ekrane */}
+            {/* GORNJA KONTROLNA TRAKA (FULL SCREEN) */}
             <div className="flex flex-col sm:flex-row justify-between items-center bg-[#0a0a0a] border border-white/10 rounded-2xl p-3 md:p-4 mb-4 gap-4 shadow-2xl shrink-0 lg:mt-2">
               
               {/* Leva Strana: Ime PDF-a i Navigacija */}
@@ -175,20 +249,20 @@ const V8Decks = () => {
                 
                 {/* LUPA U FULL SCREENU */}
                 <div className="flex items-center bg-black border border-blue-500/30 rounded-xl p-1 shadow-inner shrink-0">
-                  <button onClick={() => setFsZoom(z => Math.max(z - 0.25, 0.5))} className="p-2 text-zinc-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all cursor-pointer">
+                  <button onClick={handleFsZoomOut} className="p-2 text-zinc-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all cursor-pointer">
                     <ZoomOut size={18} strokeWidth={2.5} />
                   </button>
                   <span className="text-[10px] md:text-[12px] font-black text-white w-10 md:w-12 text-center tracking-widest select-none">
                     {Math.round(fsZoom * 100)}%
                   </span>
-                  <button onClick={() => setFsZoom(z => Math.min(z + 0.25, 4))} className="p-2 text-zinc-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all cursor-pointer">
+                  <button onClick={handleFsZoomIn} className="p-2 text-zinc-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all cursor-pointer">
                     <ZoomIn size={18} strokeWidth={2.5} />
                   </button>
                 </div>
 
-                {/* 🔥 EKSTREMNO VIDLJIVO CRVENO X DUGME (Spušteno malo niže na velikim ekranima sa lg:translate-y-1.5) 🔥 */}
+                {/* 🔥 EKSTREMNO VIDLJIVO CRVENO X DUGME 🔥 */}
                 <button 
-                  onClick={() => setActiveIndex(null)}
+                  onClick={handleCloseFullScreen}
                   className="flex items-center justify-center gap-2 px-5 py-2.5 md:py-3 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-500 hover:to-red-600 text-white rounded-xl font-black uppercase tracking-widest text-[11px] md:text-[13px] transition-all shadow-[0_0_30px_rgba(220,38,38,0.8)] border-2 border-red-500 shrink-0 cursor-pointer lg:translate-y-1.5"
                   title="Zatvori Full Screen"
                 >
@@ -219,6 +293,5 @@ const V8Decks = () => {
     </section>
   );
 };
-
 export default V8Decks;
 // KRAJ FAJLA: V8Decks.jsx
