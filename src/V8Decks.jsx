@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Maximize, X, ZoomIn, ZoomOut, ChevronLeft, ChevronRight } from 'lucide-react';
 // 🔥 DODATA ANALITIKA 🔥
-import { trackV8Action } from '../utils/analytics';
+import { trackV8Action } from './utils/analytics';
 
 // TAČAN SPISAK TVOJIH PDF DOKUMENATA
 const pdfDocuments = [
