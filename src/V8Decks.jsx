@@ -5,7 +5,7 @@ import { Maximize, X, ZoomIn, ZoomOut, ChevronLeft, ChevronRight } from 'lucide-
 // 🔥 DODATA ANALITIKA 🔥
 import { trackV8Action } from './utils/analytics';
 
-// TAČAN SPISAK TVOJIH PDF DOKUMENATA
+// TAČAN SPISAK TVOJIH PDF DOKUMENATA (Uključujući i novi V10 Liquid Engineering)
 const pdfDocuments = [
   { path: "/V10_Master_Engine_Pitch_Deck.pdf", title: "V10 Master Engine Overview" },
   { path: "/V10_Master_Engine_Architecture_Pitch_Deck.pdf", title: "Architecture Pitch Deck" },
@@ -13,6 +13,7 @@ const pdfDocuments = [
   { path: "/V10_Infinite_Configurator_Enterprise.pdf", title: "Infinite Configurator Enterprise" },
   { path: "/V10 Master Engine - Fine Jewelry.pdf", title: "Fine Jewelry Visuals" },
   { path: "/V10_Master_Engine_Gastronomy_Pitch_Deck.pdf.pdf", title: "Gastronomy Pitch Deck" },
+  { path: "/V10_Liquid_Engineering_Pitch_Deck.pdf", title: "Liquid Engineering" },
   { path: "/V10_ZeroStage_IP_Safe_Protocol.pdf", title: "Zero-Stage IP Protocol" }
 ];
 
@@ -293,5 +294,6 @@ const V8Decks = () => {
     </section>
   );
 };
+
 export default V8Decks;
 // KRAJ FAJLA: V8Decks.jsx

@@ -72,14 +72,55 @@ const V8Navbar = ({ handleHomeClick }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Zaključavanje pozadine kada je mobilni meni otvoren
+  // Globalna zaštita od horizontalnog skrola dok je navbar montiran.
   useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const previousHtmlOverflowX = html.style.overflowX;
+    const previousBodyOverflowX = body.style.overflowX;
+
+    html.style.overflowX = 'hidden';
+    body.style.overflowX = 'hidden';
+
+    return () => {
+      html.style.overflowX = previousHtmlOverflowX;
+      body.style.overflowX = previousBodyOverflowX;
+    };
+  }, []);
+
+  // Zaključavanje pozadine kada je mobilni meni otvoren.
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const previousHtmlOverflow = html.style.overflow;
+    const previousBodyOverflow = body.style.overflow;
+
     if (isMobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+      html.style.overflow = 'hidden';
+      body.style.overflow = 'hidden';
     }
-    return () => { document.body.style.overflow = ''; };
+
+    return () => {
+      html.style.overflow = previousHtmlOverflow;
+      body.style.overflow = previousBodyOverflow;
+    };
+  }, [isMobileMenuOpen]);
+
+  // Automatski zatvori mobilni meni kada se promeni ruta.
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname, location.hash]);
+
+  // ESC zatvara mobilni meni.
+  useEffect(() => {
+    if (!isMobileMenuOpen) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setIsMobileMenuOpen(false);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isMobileMenuOpen]);
 
   const handleLogout = async () => {
@@ -147,9 +188,9 @@ const V8Navbar = ({ handleHomeClick }) => {
   };
 
   return (
-    <div className="fixed top-0 left-0 w-full z-[1000]">
+    <div className="fixed inset-x-0 top-0 z-[1000] w-full max-w-[100vw]">
       <nav 
-        className={`w-full transition-all duration-500 border-b-2 ${
+        className={`w-full max-w-[100vw] transition-all duration-500 border-b-2 ${
           scrolled 
           ? 'py-3 md:py-4 bg-black/60 backdrop-blur-xl border-orange-500/60 shadow-[0_10px_40px_rgba(234,88,12,0.3)]' 
           : 'py-4 md:py-7 bg-transparent border-transparent shadow-none'
@@ -163,10 +204,10 @@ const V8Navbar = ({ handleHomeClick }) => {
           backgroundRepeat: 'no-repeat'
         }}
       >
-        <div className="max-w-7xl mx-auto flex justify-between items-center px-4 md:px-8 w-full">
+        <div className="mx-auto flex w-full max-w-7xl min-w-0 items-center justify-between gap-2 px-3 sm:gap-4 sm:px-4 md:px-8">
           
           {/* LOGO */}
-          <Link to="/" onClick={() => { handleHomeClick(); setIsMobileMenuOpen(false); }} className="flex items-center gap-2 sm:gap-3 group shrink min-w-0 pr-4">
+          <Link to="/" onClick={() => { handleHomeClick(); setIsMobileMenuOpen(false); }} className="group flex min-w-0 max-w-[calc(100%_-_3.25rem)] flex-1 items-center gap-2 overflow-hidden pr-1 sm:max-w-[calc(100%_-_3.75rem)] sm:gap-3 sm:pr-4 xl:max-w-none xl:flex-none">
             <img src={data.logoUrl} className={`object-contain transition-all duration-500 shrink-0 ${scrolled ? 'h-8 md:h-10' : 'h-9 md:h-12'} animate-pulse group-hover:scale-105`} alt="logo" />
             <div className="flex flex-col justify-center overflow-hidden min-w-0">
               <span className={`font-black uppercase tracking-[0.1em] text-blue-500 italic group-hover:text-orange-500 transition-all duration-500 truncate w-full leading-none ${scrolled ? 'text-[11px] md:text-[12px]' : 'text-[12px] md:text-[14px]'} mb-0.5`}>AI TOOLS</span>
@@ -174,8 +215,8 @@ const V8Navbar = ({ handleHomeClick }) => {
             </div>
           </Link>
 
-          {/* 🔥 SVE OSIM HAMBURGERA JE SADA STROGO ZAKLJUČANO U `hidden lg:flex` 🔥 */}
-          <div className="hidden lg:flex items-center justify-end gap-2 xl:gap-3 font-black uppercase tracking-widest shrink-0">
+          {/* Desktop navigacija se prikazuje tek od XL širine; ispod toga ostaje hamburger. */}
+          <div className="hidden xl:flex items-center justify-end gap-2 xl:gap-3 font-black uppercase tracking-widest shrink-0">
             
             <MagneticButton>
                <Link to="/" onClick={handleHomeClick} className="flex items-center gap-2 px-3 xl:px-5 py-2.5 rounded-full bg-emerald-900/30 border border-emerald-500/40 text-emerald-400 text-[9px] xl:text-[11px] hover:text-white hover:bg-emerald-800/50 hover:border-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] cursor-pointer whitespace-nowrap">
@@ -429,7 +470,7 @@ const V8Navbar = ({ handleHomeClick }) => {
                      {userCredits?.trialClaimed === false && !isAdmin && (
                         <div className="mb-2 border-b border-white/10 pb-3">
                            <p className="text-zinc-400 text-[10px] font-bold mb-2">Unlock the Master Engines for free.</p>
-                           <button onClick={handleClaimTrial} className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-black uppercase text-[11px] py-3 rounded-xl hover:scale-[1.02] transition-all shadow-[0_0_15px_rgba(168,85,247,0.5)]">
+                           <button type="button" onClick={handleClaimTrial} className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-black uppercase text-[11px] py-3 rounded-xl hover:scale-[1.02] transition-all shadow-[0_0_15px_rgba(168,85,247,0.5)]">
                               CLAIM 11 CREDITS NOW
                            </button>
                         </div>
@@ -483,7 +524,7 @@ const V8Navbar = ({ handleHomeClick }) => {
                      )}
 
                      <div className="mt-2 pt-2 border-t border-white/10">
-                        <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl transition-all cursor-pointer">
+                        <button type="button" onClick={handleLogout} className="w-full flex items-center justify-center gap-2 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl transition-all cursor-pointer">
                            <LogOut className="w-3.5 h-3.5 shrink-0" />
                            <span className="font-black text-[10px] uppercase tracking-widest">Sign Out</span>
                         </button>
@@ -495,7 +536,7 @@ const V8Navbar = ({ handleHomeClick }) => {
             ) : (
                <div className="ml-2 border-l border-white/10 pl-3 xl:pl-4 shrink-0">
                  <MagneticButton>
-                   <button onClick={handleLogin} className="bg-zinc-800 px-3 xl:px-5 py-2.5 rounded-full text-zinc-400 shadow-xl hover:bg-zinc-700 hover:text-white transition-all border border-white/5 cursor-pointer whitespace-nowrap text-[9px] xl:text-[11px] shrink-0">
+                   <button type="button" onClick={handleLogin} className="bg-zinc-800 px-3 xl:px-5 py-2.5 rounded-full text-zinc-400 shadow-xl hover:bg-zinc-700 hover:text-white transition-all border border-white/5 cursor-pointer whitespace-nowrap text-[9px] xl:text-[11px] shrink-0">
                      <User className="w-4 h-4 inline mr-1 xl:mr-2 shrink-0" /> LOGIN
                    </button>
                  </MagneticButton>
@@ -504,14 +545,18 @@ const V8Navbar = ({ handleHomeClick }) => {
           </div>
 
           {/* HAMBURGER DUGME (Prikazano isključivo na mobilnom) */}
-          <button 
+          <button
+            type="button"
+            aria-label={isMobileMenuOpen ? "Zatvori mobilni meni" : "Otvori mobilni meni"}
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="v8-mobile-navigation"
             onClick={() => {
-              setIsMobileMenuOpen(true);
-              trackV8Action("mobile_menu_opened");
+              setIsMobileMenuOpen((previous) => !previous);
+              if (!isMobileMenuOpen) trackV8Action("mobile_menu_opened");
             }}
-            className="lg:hidden bg-orange-600/20 text-orange-500 border border-orange-500/40 p-2 sm:p-2.5 rounded-xl hover:bg-orange-600 hover:text-white transition-all shadow-[0_0_15px_rgba(249,115,22,0.3)] shrink-0 ml-auto"
+            className="relative z-[1002] ml-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-orange-300/70 bg-orange-600 text-white shadow-[0_0_22px_rgba(249,115,22,0.55)] ring-1 ring-orange-500/30 transition-all hover:bg-orange-500 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300 sm:h-12 sm:w-12 xl:hidden"
           >
-            <Menu className="w-6 h-6" />
+            {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
 
         </div>
@@ -520,25 +565,29 @@ const V8Navbar = ({ handleHomeClick }) => {
       {/* 🔥 MOBILNI MENI 🔥 */}
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <motion.div 
-            initial={{ opacity: 0, x: "100%" }}
+          <motion.div
+            id="v8-mobile-navigation"
+            role="dialog"
+            aria-modal="true"
+            aria-label="V8 mobilna navigacija"
+            initial={{ opacity: 0, x: 24 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed inset-0 w-full h-[100dvh] bg-[#050505]/95 backdrop-blur-3xl z-[99999] flex flex-col overflow-y-auto overflow-x-hidden"
+            exit={{ opacity: 0, x: 24 }}
+            transition={{ type: "spring", damping: 28, stiffness: 260 }}
+            className="fixed inset-0 z-[99999] flex h-[100dvh] w-[100dvw] max-w-[100dvw] touch-pan-y flex-col overflow-y-auto overflow-x-hidden overscroll-contain bg-[#050505]/95 backdrop-blur-3xl"
           >
             {/* MOBILNI MENI HEADER */}
-            <div className="flex justify-between items-center p-5 border-b border-white/10 w-full shrink-0">
+            <div className="sticky top-0 z-20 flex w-full max-w-full shrink-0 items-center justify-between gap-2 border-b border-white/10 bg-[#050505]/95 px-3 py-4 backdrop-blur-3xl sm:p-5">
               <div className="flex items-center gap-3 min-w-0">
                 <img src={data.logoUrl} className="h-8 object-contain shrink-0" alt="logo" />
                 <span className="font-black uppercase tracking-[0.1em] text-orange-500 italic text-[12px] truncate w-full">V8 NAV SYSTEM</span>
               </div>
-              <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 bg-zinc-900 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-800 border border-white/5 shrink-0 ml-2 cursor-pointer">
+              <button type="button" aria-label="Zatvori mobilni meni" onClick={() => setIsMobileMenuOpen(false)} className="ml-2 flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-zinc-900 text-zinc-300 transition-all hover:bg-zinc-800 hover:text-white active:scale-95">
                 <X className="w-6 h-6" />
               </button>
             </div>
 
-            <div className="flex flex-col p-4 sm:p-6 gap-6 w-full pb-20 max-w-full overflow-x-hidden">
+            <div className="flex w-full max-w-full min-w-0 flex-col gap-6 overflow-x-hidden px-3 py-4 pb-[calc(5rem+env(safe-area-inset-bottom))] sm:p-6 sm:pb-24">
               
               {/* KORISNIČKI BLOK U MOBILNOM MENIJU */}
               {user ? (
@@ -556,12 +605,12 @@ const V8Navbar = ({ handleHomeClick }) => {
                   </div>
 
                   {userCredits?.trialClaimed === false && !isAdmin && (
-                    <button onClick={handleClaimTrial} className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-black uppercase text-[12px] py-4 rounded-2xl shadow-[0_0_20px_rgba(168,85,247,0.4)] whitespace-normal break-words px-2 text-center">
+                    <button type="button" onClick={handleClaimTrial} className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-black uppercase text-[12px] py-4 rounded-2xl shadow-[0_0_20px_rgba(168,85,247,0.4)] whitespace-normal break-words px-2 text-center">
                       <Gift className="w-5 h-5 shrink-0" /> CLAIM 11 FREE CREDITS
                     </button>
                   )}
 
-                  <div className="grid grid-cols-2 gap-3 mt-2 w-full">
+                  <div className="grid w-full min-w-0 grid-cols-2 gap-3">
                     <div className="bg-black/50 border border-white/5 rounded-xl p-3 flex flex-col items-center justify-center min-w-0">
                       <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1 truncate w-full text-center">16MP</span>
                       <span className="text-xl font-black text-blue-400 truncate w-full text-center">{isAdmin ? '∞' : userCredits.credits_16mp}</span>
@@ -600,12 +649,12 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   )}
 
-                  <button onClick={handleLogout} className="mt-4 w-full bg-red-600 hover:bg-red-500 text-white font-black text-[12px] uppercase py-4 rounded-xl flex items-center justify-center gap-2 truncate px-2 cursor-pointer">
+                  <button type="button" onClick={handleLogout} className="mt-4 w-full bg-red-600 hover:bg-red-500 text-white font-black text-[12px] uppercase py-4 rounded-xl flex items-center justify-center gap-2 truncate px-2 cursor-pointer">
                     <LogOut className="w-5 h-5 shrink-0" /> Sign Out
                   </button>
                 </div>
               ) : (
-                <button onClick={handleLogin} className="w-full bg-zinc-800 text-white border border-zinc-600 rounded-3xl py-6 flex flex-col items-center justify-center gap-3 shadow-xl mx-auto px-4 cursor-pointer">
+                <button type="button" onClick={handleLogin} className="w-full bg-zinc-800 text-white border border-zinc-600 rounded-3xl py-6 flex flex-col items-center justify-center gap-3 shadow-xl mx-auto px-4 cursor-pointer">
                   <User className="w-8 h-8 text-zinc-400 shrink-0" />
                   <span className="font-black text-[16px] uppercase tracking-widest text-center whitespace-normal break-words">LOGIN TO V8</span>
                   <span className="text-[10px] text-zinc-500 font-bold uppercase text-center whitespace-normal break-words">Pristupi Premium Alatima</span>
@@ -626,7 +675,7 @@ const V8Navbar = ({ handleHomeClick }) => {
                 {/* Master Upscalers */}
                 <div className="flex flex-col gap-3 w-full">
                   <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2 truncate w-full">Master Upscalers</h4>
-                  <div className="grid grid-cols-2 gap-2 sm:gap-3 w-full">
+                  <div className="grid w-full min-w-0 grid-cols-2 gap-2 sm:gap-3">
                     <Link to="/v8-standard-16mp" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-blue-500/20 p-3 sm:p-4 rounded-2xl flex flex-col items-center gap-2 sm:gap-3 w-full overflow-hidden">
                       <ImageIcon className="w-6 h-6 sm:w-8 sm:h-8 text-blue-500 shrink-0" />
                       <span className="text-[10px] sm:text-[11px] font-black text-white tracking-widest truncate w-full text-center">16MP</span>
@@ -722,7 +771,7 @@ const V8Navbar = ({ handleHomeClick }) => {
                     <span className="text-[7px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 ml-2">NEW</span>
                   </Link>
 
-                  <div className="grid grid-cols-2 gap-2 sm:gap-3 mt-1 w-full">
+                  <div className="mt-1 grid w-full min-w-0 grid-cols-2 gap-2 sm:gap-3">
                     <Link to="/seedance" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-green-500/20 p-3 sm:p-4 rounded-2xl flex flex-col items-center text-center gap-2 w-full overflow-hidden">
                       <MonitorPlay className="w-6 h-6 sm:w-8 sm:h-8 text-green-500 shrink-0" />
                       <span className="text-[10px] sm:text-[11px] font-black text-white uppercase tracking-widest leading-tight truncate w-full">Seedance<br/>2.0</span>
