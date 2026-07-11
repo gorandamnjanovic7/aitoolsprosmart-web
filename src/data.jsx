@@ -3,13 +3,13 @@ export const CLOUDINARY_CLOUD_NAME = "drllxycnh";
 export const CLOUDINARY_UPLOAD_PRESET = "uploads";
 
 // --- TVOJI ORIGINALNI IMAGE IMPORTS ---
-// --- TVOJI ORIGINALNI IMAGE IMPORTS ---
 import v10UltraImg from './banner-v10-spartan.webp'; // 🔥 1. TVOJ NOVI IMPORT JE NA VRHU
 import sl1Img from './sl1.webp';
 import sl2Img from './sl2.webp';
 import sl3Img from './sl3.webp';
 import sl4Img from './sl4.webp';
-import sl5Img from './sl5.webp';
+// sl5Img je obrisan
+import superCarImg from './super_car.webp'; // 🔥 Uvezao sam tvoju novu sliku iz src foldera
 import sl6Img from './sl6.webp';
 import mojLogo from './logo.png';
 import macroHelmet from './praetorian-macro.jpg';
@@ -60,12 +60,12 @@ export const BANNER_DATA = [
     duration: 168000 
   },
   { 
-    // 5. MESTO
-    image: sl5Img, 
+    // 5. MESTO - ZAMENJENO SA super_car.webp
+    image: superCarImg, 
     badge: "VELOCITY & POWER", 
     title: "ENGINEERED FOR DOMINANCE", 
     subtitle: "The ultimate fusion of aerodynamic carbon and V8 energy. Supreme automotive rendering capabilities.",
-     duration: 168000, 
+    duration: 168000, 
   },
   { 
     // 6. MESTO
@@ -96,7 +96,7 @@ export const BANNER_DATA = [
     subtitle: "Experience 33.2 Megapixel resolution and hyper-realistic cinematic motion. Designed exclusively for top-tier agencies."
   }
 ];
-// ============================================================================
+// --- OSTATAK data.jsx FAJLA OSTAJE ISTI ---/ ============================================================================
 // KRAJ: BANNER_DATA NIZA
 // ============================================================================
 export const formatExternalLink = (url) => { if (!url) return '#'; if (!url.startsWith('http://') && !url.startsWith('https://')) return `https://${url}`; return url; };
