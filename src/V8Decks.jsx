@@ -5,15 +5,15 @@ import { Maximize, X, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, ExternalLink, 
 // 🔥 DODATA ANALITIKA 🔥
 import { trackV8Action } from './utils/analytics';
 
-// TAČAN SPISAK TVOJIH PDF DOKUMENATA (SA PRAVIM IMENIMA SA DISKA)
+// 🔥 KONAČAN SPISAK OD 12 PDF DOKUMENATA (Sada su sva imena savršeno čista) 🔥
 const pdfDocuments = [
   { path: "/V10_Master_Engine_Pitch_Deck.pdf", title: "Master Engine Overview" },
   { path: "/V10_Master_Engine_Architecture_Pitch_Deck.pdf", title: "Architecture Deck" },
   { path: "/10_Cinematic_Motion_Dynamics.pdf", title: "Cinematic Motion" },
   { path: "/V10_Infinite_Configurator_Enterprise.pdf", title: "Infinite Configurator" },
   { path: "/V10 Master Engine - Fine Jewelry.pdf", title: "Fine Jewelry Visuals" },
-  { path: "/V10_Master_Engine_Gastronomy_Pitch_Deck.pdf.pdf", title: "Gastronomy Pitch Deck" },
-  { path: "/V10_Liquid_Engineering_Pitch_Deck_2.pdf", title: "Liquid Engineering" },
+  { path: "/V10_Master_Engine_Gastronomy_Pitch_Deck.pdf", title: "Gastronomy Pitch Deck" },
+  { path: "/V10_Liquid_Engineering_Pitch_Deck.pdf", title: "Liquid Engineering" },
   { path: "/V10_Zero-Day.pdf", title: "The Zero-Day Protocol" },
   { path: "/V10 MASTER ENGINE Micro-Texture Plating System.pdf", title: "Micro-Texture Plating" },
   { path: "/V10 Global Consistency Matrix.pdf", title: "Global Consistency Matrix" },
@@ -115,9 +115,9 @@ const V8PdfViewerCard = ({ doc, onOpenFullScreen }) => {
             title={doc.title}
             className="w-full h-full border-none block absolute inset-0 z-10 bg-white shadow-2xl"
           />
-          <div className="text-zinc-600 text-xs font-black uppercase tracking-widest text-center px-4 z-0 absolute">
+          <div className="text-zinc-600 text-xs font-black uppercase tracking-widest text-center px-4 z-0 absolute pointer-events-none">
             Učitavanje...<br/><br/>
-            <a href={safePath} onClick={handleDirectLinkClick} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline mt-2 block">Ako ne vidite dokument, otvorite ga ovde</a>
+            Ako ne vidite dokument, koristite plavu ikonicu u uglu
           </div>
         </div>
       </div>
@@ -132,7 +132,7 @@ const V8PdfViewerCard = ({ doc, onOpenFullScreen }) => {
 const V8Decks = () => {
   const [activeIndex, setActiveIndex] = useState(null);
   const [fsZoom, setFsZoom] = useState(1);
-  const [visibleCount, setVisibleCount] = useState(2); // Početno se vide 2 PDF-a
+  const [visibleCount, setVisibleCount] = useState(2); // Učitava po 2
 
   useEffect(() => {
     trackV8Action('page_view', { event_category: 'Navigation', page_name: 'V8_Decks_Architecture' });
@@ -187,7 +187,7 @@ const V8Decks = () => {
     trackV8Action('deck_zoom', { event_category: 'Engagement', deck_title: pdfDocuments[activeIndex].title, zoom_action: 'in', view_mode: 'fullscreen' });
   };
 
-  // 🔥 LOGIKA ZA DUGME "SEE MORE / CLOSE" (Učitava po 2) 🔥
+  // 🔥 LOGIKA ZA DUGME "SEE MORE / CLOSE" 🔥
   const handleToggleView = () => {
     if (visibleCount < pdfDocuments.length) {
       setVisibleCount(prev => Math.min(prev + 2, pdfDocuments.length));

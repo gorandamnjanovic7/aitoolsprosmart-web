@@ -1,8 +1,8 @@
+// POCETAK FUNKCIJE: V8Footer
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Youtube, Clock } from 'lucide-react';
+import { Youtube, Clock, Linkedin } from 'lucide-react'; // 🔥 Dodat Linkedin import
 
-// POCETAK FUNKCIJE: V8Footer
 const V8Footer = () => {
   const [trenutnoVreme, setTrenutnoVreme] = useState(new Date());
 
@@ -32,6 +32,11 @@ const V8Footer = () => {
       {/* Sadržaj Footera (Z-10 ga drži iznad videa) */}
       <div className="relative z-10 flex flex-col items-center gap-6 w-full text-center text-zinc-100 font-black italic uppercase text-[9px] tracking-[0.5em]">
         <div className="flex items-center gap-6">
+          {/* 🔥 LinkedIn Ikonica sa Pulsirajućim Efektom 🔥 */}
+          <a href="https://www.linkedin.com/in/goran-damnjanovic/" target="_blank" rel="noopener noreferrer" className="opacity-90 hover:opacity-100 transition-opacity">
+            <Linkedin size={20} className="text-[#0A66C2] animate-pulse drop-shadow-[0_0_10px_rgba(10,102,194,0.8)]" />
+          </a>
+          
           <a href="https://x.com/AiToolsProSmart" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100 transition-opacity"><svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.045 4.126H5.078z"/></svg></a>
           <a href="https://www.youtube.com/@SmartAiToolsPro-Smart-AI" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100 transition-opacity"><Youtube size={20} className="text-[#FF0000]" /></a>
           <a href="https://www.instagram.com/aitoolsprosmart/" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100 transition-opacity"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram" className="h-4 w-4 object-contain" /></a>
@@ -64,6 +69,6 @@ const V8Footer = () => {
     </footer>
   );
 };
-// KRAJ FUNKCIJE: V8Footer
 
 export default V8Footer;
+// KRAJ FUNKCIJE: V8Footer
