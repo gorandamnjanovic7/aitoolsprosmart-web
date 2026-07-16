@@ -117,11 +117,14 @@ export default function B2BProtocols() {
           <div className="flex flex-col items-center text-center p-8 bg-black/40 rounded-3xl border border-white/5 hover:border-[#FF4800]/40 transition-all duration-500 group shadow-inner">
             <div className="flex items-center justify-center mb-6 h-16 group-hover:scale-105 transition-transform duration-500">
               
-              {/* CSS Payoneer Logo Badge */}
-              <div className="px-5 h-11 bg-[#111] rounded-md shadow-[0_4px_15px_rgba(255,72,0,0.15)] flex items-center justify-center border border-white/5 flex-shrink-0">
-                <span className="text-[17px] tracking-tight font-medium">
-                  <span className="text-white">pay</span><span className="text-[#FF4800]">oneer</span>
-                </span>
+              {/* PRAVI PAYONEER KRUŽNI LOGO */}
+              <div className="w-16 h-16 bg-[#111] rounded-full flex items-center justify-center border border-white/10 shadow-[0_0_20px_rgba(255,72,0,0.15)] relative overflow-hidden">
+                <div 
+                  className="w-8 h-8 rounded-full p-[3px] flex items-center justify-center shadow-lg"
+                  style={{ background: 'conic-gradient(from 90deg, #FF3366, #FF9933, #33CC33, #00CCFF, #9933FF, #FF3366)' }}
+                >
+                  <div className="w-full h-full bg-[#111] rounded-full"></div>
+                </div>
               </div>
 
             </div>

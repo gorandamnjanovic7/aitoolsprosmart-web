@@ -6,9 +6,9 @@ import { Helmet } from 'react-helmet-async';
 // V8 KOCKICE
 import HeroBanner from './HeroBanner';
 import B2BProtocols from './B2BProtocols';
-// 🔥 UVOZ NOVE V8 DECKS KOMPONENTE SA PDF-OVIMA 🔥
 import V8Decks from './V8Decks'; 
 import IntelProtocols from './IntelProtocols';
+import SaasPromo from './SaasPromo'; // 🔥 KOMPONENTA JE TU 🔥
 import UnlockTheBeast from './UnlockTheBeast'; 
 import EnhancerPromo from './EnhancerPromo';
 import StockBundles from './StockBundles';
@@ -31,17 +31,14 @@ export default function HomePage({ apps = [] }) {
       <HeroBanner />
       
       <div className="max-w-7xl mx-auto px-6 text-left">
-        {/* 🔥 UBACENA B2B SEKCIJA TAČNO IZNAD YOUTUBE VIDEA 🔥 */}
         <B2BProtocols />
-        
-        {/* 🔥 V8 PDF GALERIJA - ODMAH ISPOD B2B PROTOKOLA 🔥 */}
         <V8Decks />
-        
         <IntelProtocols />
         
-        {/* 🔥 NOVI MAGNET POSTAVLJEN TAČNO IZMEĐU PROTOKOLA I ENHANCER-A 🔥 */}
-        <UnlockTheBeast />
+        {/* 🔥 NOVA ČISTA KOMPONENTA 🔥 */}
+        <SaasPromo />
         
+        <UnlockTheBeast />
         <EnhancerPromo />
         <StockBundles />
         <Marketplace apps={apps} />

@@ -425,7 +425,7 @@ const V8StockBerza = () => {
     ];
 
     return (
-      <div className={`w-full max-w-5xl mx-auto mb-8 bg-black/40 border rounded-[2rem] p-8 md:p-10 ${rezolucija === '150MP' ? 'border-purple-500/20' : 'border-white/5'}`}>
+      <div className={`w-full max-w-[1200px] mx-auto mb-12 bg-black/40 border rounded-[2rem] p-8 md:p-10 ${rezolucija === '150MP' ? 'border-purple-500/20' : 'border-white/5'}`}>
         <div className="text-center mb-10">
           <h2 className="text-3xl md:text-4xl font-black uppercase tracking-[0.2em] text-white">{rezolucija === '150MP' ? 'V10 ULTRA ENGINE' : 'V8 MASTER ENGINE'}</h2>
           <p className={`text-[12px] md:text-[14px] font-bold uppercase tracking-[0.3em] mt-3 italic ${rezolucija === '150MP' ? 'text-purple-400' : 'text-blue-400'}`}>Technical Specifications</p>
@@ -479,6 +479,86 @@ const V8StockBerza = () => {
   return (
     <div className="min-h-screen bg-[#050505] font-sans text-white relative transition-all duration-1000 ease-in-out">
       
+      {/* 🔥 CSS ZA FORSIRANO PROŠIRENJE SVIH KARTICA (DA STANU 2 U RED I DA BUDU DUGAČKE) 🔥 */}
+      <style>{`
+        @keyframes spin-gradient { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* OGRANIČAVAMO KARTICE NA TAČNO 2 U REDU */
+        .v8-premium-card, .v8-bundle-card, .v8-signature-card, .v10-ultra-card { 
+            position: relative; 
+            border-radius: 2rem; 
+            padding: 2px; 
+            overflow: hidden; 
+            background: #0a0a0a; 
+            width: 100% !important;
+            max-width: 800px !important; /* Optimalna širina za 2 u redu */
+            height: auto !important; /* Prirodno širenje */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Desktop: Forsiramo 50% širine (minus gap razmak) da uvek stanu 2 u redu */
+        @media (min-width: 1024px) {
+            .v8-premium-card, .v8-bundle-card, .v8-signature-card, .v10-ultra-card {
+                flex: 0 0 calc(50% - 1.5rem) !important;
+            }
+        }
+
+        .v8-card-content { 
+            position: relative; 
+            background: #0a0a0a; 
+            border-radius: 1.9rem; 
+            z-index: 1; 
+            height: 100%; 
+            display: flex; 
+            flex-direction: column; 
+            flex-grow: 1;
+        }
+
+        /* 🔥 1. GLAVNA SLIKA (Zlatna sredina: 480px) 🔥 */
+        .v8-card-content > div:first-child {
+            height: 480px !important; 
+            background: #050505; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-radius: 1.9rem 1.9rem 0 0;
+        }
+        .v8-card-content > div:first-child img {
+            height: 100% !important; 
+            max-height: 480px !important;
+            width: 100% !important;
+            object-fit: cover !important; /* Mokap staje od ivice do ivice */
+        }
+
+        /* 🔥 2. MALE SLIČICE - BEZ CRNILA 🔥 */
+        /* Podešavamo ih da se razvuku do granica svog kontejnera */
+        .v8-card-content div.grid {
+            align-items: stretch; /* Razvlači redove da popune prostor */
+        }
+        .v8-card-content div.grid > div {
+            height: 100%;
+        }
+        .v8-card-content div.grid img {
+            height: 100% !important; /* Slika sada ide do samog kraja kontejnera odozgo do dole */
+            min-height: 160px !important; /* Ne dozvoljava im da se skupe */
+            width: 100% !important;
+            object-fit: cover !important; /* Popunjava ceo okvir, nema crnih traka */
+            background-color: transparent !important; 
+            border-radius: 0.75rem !important;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 0 !important; 
+            display: block; /* Uklanja misteriozni razmak ispod inline elemenata */
+        }
+
+        /* Gradijent obrubi */
+        .v8-premium-card::before { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent 0%, transparent 50%, #ea580c 70%, #3b82f6 85%, #ea580c 100%); animation: spin-gradient 3.5s linear infinite; z-index: 0; }
+        .v8-bundle-card::before { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent 0%, transparent 50%, #3b82f6 70%, #8b5cf6 85%, #3b82f6 100%); animation: spin-gradient 3.5s linear infinite; z-index: 0; }
+        .v8-signature-card::before { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent 0%, transparent 50%, #f59e0b 70%, #fbbf24 85%, #f59e0b 100%); animation: spin-gradient 3.5s linear infinite; z-index: 0; }
+        .v10-ultra-card::before { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent 0%, transparent 50%, #a855f7 70%, #ec4899 85%, #a855f7 100%); animation: spin-gradient 3.5s linear infinite; z-index: 0; }
+      `}</style>
+
       {/* 🔥 SEO TAGOVI SAMO ZA OVU STRANICU 🔥 */}
       <Helmet>
         <title>Premium AI Stock Marketplace | Commercial Visual Bundles</title>
@@ -512,15 +592,6 @@ const V8StockBerza = () => {
 
       {/* 🌟 GLAVNI SADRŽAJ (PLIVA IZNAD POZADINE) 🌟 */}
       <div className="relative z-10 pt-32 pb-24 px-6">
-        <style>{`
-          @keyframes spin-gradient { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-          .v8-premium-card { position: relative; border-radius: 2rem; padding: 2px; overflow: hidden; background: #0a0a0a; }
-          .v8-premium-card::before { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent 0%, transparent 50%, #ea580c 70%, #3b82f6 85%, #ea580c 100%); animation: spin-gradient 3.5s linear infinite; z-index: 0; }
-          .v8-card-content { position: relative; background: #0a0a0a; border-radius: 1.9rem; z-index: 1; height: 100%; display: flex; flex-direction: column; }
-          .v8-bundle-card::before { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent 0%, transparent 50%, #3b82f6 70%, #8b5cf6 85%, #3b82f6 100%); animation: spin-gradient 3.5s linear infinite; z-index: 0; }
-          .v8-signature-card::before { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent 0%, transparent 50%, #f59e0b 70%, #fbbf24 85%, #f59e0b 100%); animation: spin-gradient 3.5s linear infinite; z-index: 0; }
-          .v10-ultra-card::before { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent 0%, transparent 50%, #a855f7 70%, #ec4899 85%, #a855f7 100%); animation: spin-gradient 3.5s linear infinite; z-index: 0; }
-        `}</style>
 
         <FullScreenLightbox imageUrl={fullScreenImageUrl} onClose={() => setFullScreenImageUrl(null)} />
         
@@ -548,8 +619,9 @@ const V8StockBerza = () => {
            )}
         </AnimatePresence>
 
-        <div className="max-w-7xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.2 }} className={`relative w-full max-w-7xl mx-auto mb-16 rounded-[3rem] overflow-hidden border border-white/10 ${activeTab === 'ultra150' ? 'shadow-[0_0_60px_rgba(168,85,247,0.15)]' : 'shadow-[0_0_60px_rgba(255,140,0,0.15)]'}`}>
+        {/* PROŠIREN KONTEJNER ZAGLAVLJA (max-w-[1800px]) */}
+        <div className="max-w-[1800px] mx-auto w-full">
+          <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.2 }} className={`relative w-full mb-16 rounded-[3rem] overflow-hidden border border-white/10 ${activeTab === 'ultra150' ? 'shadow-[0_0_60px_rgba(168,85,247,0.15)]' : 'shadow-[0_0_60px_rgba(255,140,0,0.15)]'}`}>
               
               {/* 🌟 STATIČNA SLIKA ZA V8 TABOVE 🌟 */}
               {activeTab !== 'ultra150' && (
@@ -743,7 +815,8 @@ const V8StockBerza = () => {
             </form>
           )}
 
-          <div className="flex flex-wrap justify-center gap-12 max-w-5xl mx-auto">
+          {/* 🔥 MASIVNO PROŠIREN KONTEJNER ZA KARTICE 🔥 max-w-[1800px] garantuje prostor za 2 ogromne u redu */}
+          <div className="flex flex-wrap justify-center gap-6 lg:gap-12 w-full mx-auto px-4 lg:px-8">
             
             {activeTab === 'premium' && (
               <>

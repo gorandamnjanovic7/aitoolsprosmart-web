@@ -8,16 +8,13 @@ import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, S
 import { motion, AnimatePresence } from 'framer-motion';
 import ScanOverlay from './ScanOverlay'; 
 
-// FIREBASE
 import { db, auth, provider } from './firebase';
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, collection, addDoc, query, orderBy, getDocs, limit, onSnapshot } from 'firebase/firestore';
 
-// DATA & COMPONENTS
 import * as data from './data';
 import './App.css'; 
 
-// SVE TVOJE STRANICE
 import HomePage from './HomePage';
 import V8Enhancer10x from './V8Enhancer10x';
 import V8Promo10xPage from './V8Promo10xPage'; 
@@ -53,23 +50,19 @@ import LoginRequiredModal from './LoginRequiredModal';
 import V8UnlockModal from './V8UnlockModal'; 
 import V8AdminLiveNotifier from './V8AdminLiveNotifier';
 import V8PromptFactory from './V8PromptFactory';
-// 🔥 NOVI IMPORT 🔥
 import V8RawRealityEngine from './V8RawRealityEngine';
+import SaaSProtocolPage from './SaaSProtocolPage';
 
-// POČETAK FUNKCIJE: Initial Setup
 if (typeof window !== 'undefined') {
   if ('scrollRestoration' in window.history) { window.history.scrollRestoration = 'manual'; }
   if (window.location.hash) { window.history.replaceState(null, '', window.location.pathname); }
   window.scrollTo(0, 0);
 }
-// KRAJ FUNKCIJE: Initial Setup
 
-// 🔥 V8 ZVUČNA UPOZORENJA (AUDIO SISTEM) 🔥
-let currentAudio = null; // Globalna promenljiva da pamtimo zvuk koji svira
+let currentAudio = null; 
 
 export const playV8Sound = (type) => {
   try {
-    // Ako neki zvuk već svira, prekini ga prvo!
     if (currentAudio) {
       currentAudio.pause();
       currentAudio.currentTime = 0;
@@ -82,7 +75,7 @@ export const playV8Sound = (type) => {
 
     if (audioUrl) {
       currentAudio = new Audio(audioUrl);
-      currentAudio.volume = 0.5; // Podešena jačina zvuka (50%)
+      currentAudio.volume = 0.5;
       currentAudio.play().catch(e => console.warn("Browser blokirao autoplay zvuka", e));
     }
   } catch (err) {}
@@ -98,7 +91,6 @@ export const stopV8Sound = () => {
   } catch (err) {}
 };
 
-// 🔥 V8 GLOBALNI ALERT MODAL SISTEM (ZA PRODAJU) 🔥
 export const v8AlertModal = {
   listeners: [],
   show: (data) => {
@@ -113,12 +105,10 @@ export const v8AlertModal = {
   }
 };
 
-// 🔥 V8 ANALITIKA - TVOJA IP ADRESA KOJU IGNORIŠEMO 🔥
 const MOJA_IP = "213.196.99.2"; 
 let globalUserIp = "";
 const currentSessionId = Math.random().toString(36).substring(2, 15);
 
-// POČETAK FUNKCIJE: fetchUserIp
 const fetchUserIp = async () => {
   try {
     const res = await fetch('https://api.ipify.org?format=json');
@@ -126,9 +116,7 @@ const fetchUserIp = async () => {
   } catch (err) {}
 };
 fetchUserIp();
-// KRAJ FUNKCIJE: fetchUserIp
 
-// POČETAK FUNKCIJE: logAnalyticsEvent
 export const logAnalyticsEvent = async (type, details) => {
   const currentUser = auth.currentUser;
   if (!currentUser) return; 
@@ -146,9 +134,7 @@ export const logAnalyticsEvent = async (type, details) => {
     }); 
   } catch (err) {}
 };
-// KRAJ FUNKCIJE: logAnalyticsEvent
 
-// POČETAK FUNKCIJE: v8Toast
 export const v8Toast = {
   listeners: [],
   success: (msg) => {
@@ -161,9 +147,7 @@ export const v8Toast = {
   },
   subscribe: (l) => { v8Toast.listeners.push(l); return () => v8Toast.listeners = v8Toast.listeners.filter(cb => cb !== l); }
 };
-// KRAJ FUNKCIJE: v8Toast
 
-// POČETAK FUNKCIJE: V8ToastContainer
 const V8ToastContainer = () => {
   const [toasts, setToasts] = useState([]);
   useEffect(() => {
@@ -185,9 +169,7 @@ const V8ToastContainer = () => {
     </div>
   );
 };
-// KRAJ FUNKCIJE: V8ToastContainer
 
-// POČETAK FUNKCIJE: V8AlertModalContainer (Novi prodajni modali)
 const V8AlertModalContainer = () => {
   const [modalData, setModalData] = useState(null);
 
@@ -198,11 +180,10 @@ const V8AlertModalContainer = () => {
   if (!modalData) return null;
 
   const handleClose = () => {
-    stopV8Sound(); // GAŠENJE ZVUKA PRILIKOM KLIKA NA X
+    stopV8Sound();
     setModalData(null);
   };
 
-  // Određivanje stila na osnovu tipa transakcije
   let themeBg = 'bg-zinc-800';
   
   if (modalData.icon === 'b2b') {
@@ -226,21 +207,16 @@ const V8AlertModalContainer = () => {
           exit={{ opacity: 0, x: 100, scale: 0.9 }} 
           className={`fixed top-6 right-6 z-[10000] w-80 md:w-96 rounded-2xl p-5 text-white shadow-2xl border border-white/20 backdrop-blur-xl ${themeBg}`}
         >
-          {/* Close Button X */}
           <button onClick={handleClose} className="absolute top-3 right-3 text-white/70 hover:text-white transition-colors cursor-pointer z-50">
             <X size={24} strokeWidth={3} />
           </button>
 
-          {/* Top: Ime, Prezime i Email */}
           <div className="mb-4 pr-6">
             <h3 className="font-black text-lg leading-tight uppercase">{modalData.customerName}</h3>
             <p className="text-white/80 text-[12px] font-medium tracking-wider">{modalData.email}</p>
           </div>
 
-          {/* Middle: Ikona/Slika Pripadajućeg Sistema */}
           <div className="flex justify-center items-center py-6 bg-black/20 rounded-xl mb-4 border border-white/10 shadow-inner">
-            
-            {/* 🔥 NOVI ORIGINALNI PAYONEER LOGO 🔥 */}
             {modalData.icon === 'b2b' && (
               <svg viewBox="0 0 250 60" className="w-48 h-auto drop-shadow-xl" xmlns="http://www.w3.org/2000/svg">
                 <defs>
@@ -251,13 +227,10 @@ const V8AlertModalContainer = () => {
                     <stop offset="100%" stopColor="#00b4ff"/>
                   </linearGradient>
                 </defs>
-                {/* Payoneer Šareni Krug */}
                 <circle cx="30" cy="30" r="16" fill="none" stroke="url(#payoneerGradient)" strokeWidth="8" />
-                {/* Payoneer Tekst */}
                 <text x="58" y="40" fontFamily="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" fontWeight="700" fontSize="32" fill="white" letterSpacing="-0.5">Payoneer</text>
               </svg>
             )}
-
             {modalData.icon === 'crypto' && <Bitcoin className="w-16 h-16 text-white drop-shadow-md" />}
             {modalData.icon === 'paypal' && (
               <svg viewBox="0 0 24 24" fill="white" className="w-16 h-16 drop-shadow-md">
@@ -272,7 +245,6 @@ const V8AlertModalContainer = () => {
             )}
           </div>
 
-          {/* Bottom: Datum, Vreme i Iznos */}
           <div className="flex justify-between items-end mt-2">
             <div>
               <p className="text-[10px] text-white/60 uppercase font-black tracking-widest mb-1">Datum i Vreme</p>
@@ -288,10 +260,7 @@ const V8AlertModalContainer = () => {
     </AnimatePresence>
   );
 };
-// KRAJ FUNKCIJE: V8AlertModalContainer
 
-// 🔥 LIVE PRAĆENJE PRODAJE ZA ADMINA 🔥
-// POČETAK FUNKCIJE: AdminLiveSalesTracker
 const AdminLiveSalesTracker = () => {
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -313,7 +282,6 @@ const AdminLiveSalesTracker = () => {
     let isFirstCrypto = true;
     let isFirstPaypal = true;
 
-    // Prati B2B Blagajnu
     const unsubKupci = onSnapshot(query(collection(db, "v8_kupci"), orderBy("vreme", "desc"), limit(1)), (snap) => {
       if (isFirstKupci) { isFirstKupci = false; return; }
       snap.docChanges().forEach(change => {
@@ -333,7 +301,6 @@ const AdminLiveSalesTracker = () => {
       });
     });
 
-    // Prati Kripto Blagajnu
     const unsubCrypto = onSnapshot(query(collection(db, "v8_crypto_requests"), orderBy("requestDate", "desc"), limit(1)), (snap) => {
       if (isFirstCrypto) { isFirstCrypto = false; return; }
       snap.docChanges().forEach(change => {
@@ -351,7 +318,6 @@ const AdminLiveSalesTracker = () => {
       });
     });
 
-    // Prati PayPal / Card Pay Blagajnu
     const unsubPaypal = onSnapshot(query(collection(db, "v8_paypal_requests"), orderBy("requestDate", "desc"), limit(1)), (snap) => {
       if (isFirstPaypal) { isFirstPaypal = false; return; }
       snap.docChanges().forEach(change => {
@@ -375,9 +341,7 @@ const AdminLiveSalesTracker = () => {
 
   return null;
 };
-// KRAJ FUNKCIJE: AdminLiveSalesTracker
 
-// POČETAK FUNKCIJE: V8PageWrapper
 const V8PageWrapper = ({ children }) => {
   return (
     <>
@@ -388,9 +352,7 @@ const V8PageWrapper = ({ children }) => {
     </>
   );
 };
-// KRAJ FUNKCIJE: V8PageWrapper
 
-// POČETAK FUNKCIJE: FullScreenBoot
 const FullScreenBoot = ({ onComplete }) => {
   const [progress, setProgress] = useState(0);
   const [isIgniting, setIsIgniting] = useState(false);
@@ -434,9 +396,7 @@ const FullScreenBoot = ({ onComplete }) => {
     </motion.div>
   );
 };
-// KRAJ FUNKCIJE: FullScreenBoot
 
-// POČETAK FUNKCIJE: SmartScrollButton
 const SmartScrollButton = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   
@@ -459,9 +419,7 @@ const SmartScrollButton = () => {
     </button>
   );
 };
-// KRAJ FUNKCIJE: SmartScrollButton
 
-// POČETAK FUNKCIJE: AppContent
 function AppContent({ appsData, refreshData }) {
   const [isBooting, setIsBooting] = useState(true);
   const location = useLocation();
@@ -482,7 +440,7 @@ function AppContent({ appsData, refreshData }) {
   }, []);
 
   const openSecureCheckout = useCallback((productName, price) => {
-    playV8Sound('checkout'); // Zvuk kase
+    playV8Sound('checkout'); 
     setCheckoutData({ isOpen: true, name: productName, price });
   }, []);
 
@@ -601,6 +559,7 @@ function AppContent({ appsData, refreshData }) {
         <V8AdminLiveNotifier />
         <V8UnlockModal />
         
+        {}
         <div className="flex-1 text-left pt-20">
           <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
            <Routes location={location} key={location.pathname}>
@@ -617,8 +576,9 @@ function AppContent({ appsData, refreshData }) {
               
               <Route path="/prompt-factory" element={<V8PageWrapper><V8PromptFactory /></V8PageWrapper>} />
               
-              {/* 🔥 NOVA RUTA ZA RAW REALITY ENGINE 🔥 */}
               <Route path="/raw-reality" element={<V8PageWrapper><V8RawRealityEngine /></V8PageWrapper>} />
+
+              <Route path="/saas-protocol" element={<V8PageWrapper><SaaSProtocolPage openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
 
               <Route path="/seedance" element={<V8PageWrapper><CinematikPromptEngine initialEngine="SEEDANCE 2.0" openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               <Route path="/kling" element={<V8PageWrapper><CinematikPromptEngine initialEngine="KLING 3.0" openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
@@ -679,9 +639,7 @@ function AppContent({ appsData, refreshData }) {
     </div>
   );
 }
-// KRAJ FUNKCIJE: AppContent
 
-// POČETAK FUNKCIJE: App
 export default function App() {
   const [appsData, setAppsData] = useState([]);
 

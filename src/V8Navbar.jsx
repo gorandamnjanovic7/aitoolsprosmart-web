@@ -72,7 +72,6 @@ const V8Navbar = ({ handleHomeClick }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Globalna zaštita od horizontalnog skrola dok je navbar montiran.
   useEffect(() => {
     const html = document.documentElement;
     const body = document.body;
@@ -88,7 +87,6 @@ const V8Navbar = ({ handleHomeClick }) => {
     };
   }, []);
 
-  // Zaključavanje pozadine kada je mobilni meni otvoren.
   useEffect(() => {
     const html = document.documentElement;
     const body = document.body;
@@ -106,12 +104,10 @@ const V8Navbar = ({ handleHomeClick }) => {
     };
   }, [isMobileMenuOpen]);
 
-  // Automatski zatvori mobilni meni kada se promeni ruta.
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location.pathname, location.hash]);
 
-  // ESC zatvara mobilni meni.
   useEffect(() => {
     if (!isMobileMenuOpen) return undefined;
 
@@ -215,7 +211,7 @@ const V8Navbar = ({ handleHomeClick }) => {
             </div>
           </Link>
 
-          {/* Desktop navigacija se prikazuje tek od XL širine; ispod toga ostaje hamburger. */}
+          {/* Desktop navigacija */}
           <div className="hidden xl:flex items-center justify-end gap-2 xl:gap-3 font-black uppercase tracking-widest shrink-0">
             
             <MagneticButton>
@@ -372,25 +368,16 @@ const V8Navbar = ({ handleHomeClick }) => {
                     <span className="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded font-black tracking-widest shadow-[0_0_8px_rgba(16,185,129,0.5)] shrink-0">NEW</span>
                   </Link>
 
-                  <Link to="/seedance" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-green-500/30 mt-1">
-                    <div className="bg-green-500/20 p-2 rounded-lg group-hover/item:bg-green-500/40 transition-colors shadow-[0_0_10px_rgba(34,197,94,0.3)] shrink-0">
-                      <MonitorPlay className="w-5 h-5 text-green-400 transition-transform group-hover/item:scale-110" />
-                    </div>
-                    <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-green-400 transition-all drop-shadow-md truncate">SEEDANCE 2.0</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Cinematic Video Prompting</span>
-                    </div>
-                  </Link>
-
-                  <Link to="/kling" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-red-500/30 mt-1">
-                    <div className="bg-red-500/20 p-2 rounded-lg group-hover/item:bg-red-500/40 transition-colors shadow-[0_0_10px_rgba(239,68,68,0.3)] shrink-0">
-                      <Video className="w-5 h-5 text-red-400 transition-transform group-hover/item:scale-110" />
-                    </div>
-                    <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-red-400 transition-all drop-shadow-md truncate">KLING 3.0</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Hyper-Real Motion Engine</span>
-                    </div>
-                  </Link>
+                  <div className="mt-1 grid w-full min-w-0 grid-cols-2 gap-2 sm:gap-3">
+                    <Link to="/seedance" onClick={() => window.scrollTo(0,0)} className="bg-[#0a0a0a] border border-green-500/20 p-3 sm:p-4 rounded-2xl flex flex-col items-center text-center gap-2 w-full overflow-hidden">
+                      <MonitorPlay className="w-6 h-6 sm:w-8 sm:h-8 text-green-500 shrink-0" />
+                      <span className="text-[10px] sm:text-[11px] font-black text-white uppercase tracking-widest leading-tight truncate w-full">Seedance<br/>2.0</span>
+                    </Link>
+                    <Link to="/kling" onClick={() => window.scrollTo(0,0)} className="bg-[#0a0a0a] border border-red-500/20 p-3 sm:p-4 rounded-2xl flex flex-col items-center text-center gap-2 w-full overflow-hidden">
+                      <Video className="w-6 h-6 sm:w-8 sm:h-8 text-red-500 shrink-0" />
+                      <span className="text-[10px] sm:text-[11px] font-black text-white uppercase tracking-widest leading-tight truncate w-full">Kling<br/>3.0</span>
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
@@ -430,19 +417,27 @@ const V8Navbar = ({ handleHomeClick }) => {
                   </Link>
 
                   <div className="mt-1 px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-start gap-2 relative z-10 overflow-hidden w-full">
-                    <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                    <span className="text-[7px] font-black uppercase tracking-widest text-emerald-400 leading-relaxed whitespace-normal break-words w-full">
-                      INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP
-                    </span>
-                  </div>
-
+                  <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <span className="text-[7px] font-black uppercase tracking-widest text-emerald-400 leading-relaxed whitespace-normal break-words w-full">
+                    INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP
+                  </span>
                 </div>
+
               </div>
             </div>
+          </div>
 
-            {/* MASTER USER DROPDOWN (DESKTOP) */}
-            {user ? (
-               <div className="flex items-center gap-2 ml-1 sm:ml-2 lg:border-l lg:border-white/10 lg:pl-3 xl:pl-4 relative group shrink-0">
+          <div className="hidden xl:flex items-center ml-2 border-l border-white/10 pl-3 xl:pl-4 shrink-0">
+            <MagneticButton>
+              <Link to="/saas-protocol" onClick={() => window.scrollTo(0,0)} className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-500 hover:bg-amber-500/20 hover:text-amber-400 hover:border-amber-500 transition-all shadow-[0_0_15px_rgba(245,158,11,0.15)] whitespace-nowrap cursor-pointer">
+                <MonitorPlay className="w-3 h-3 xl:w-4 xl:h-4 shrink-0" />
+                <span className="text-[9px] xl:text-[11px] font-black uppercase tracking-widest">SaaS MOCKUPS</span>
+              </Link>
+            </MagneticButton>
+          </div>
+
+          {user ? (
+             <div className="flex items-center gap-2 ml-1 sm:ml-2 lg:border-l lg:border-white/10 lg:pl-3 xl:pl-4 relative group shrink-0">
                  <MagneticButton>
                    <button className="flex items-center gap-2 px-3 py-2.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-700/50 text-white transition-all shadow-md cursor-pointer whitespace-nowrap">
                      {userCredits?.trialClaimed === false && !isAdmin ? (
@@ -670,9 +665,19 @@ const V8Navbar = ({ handleHomeClick }) => {
                     <div className="bg-emerald-500/10 p-3 rounded-xl shrink-0"><Globe className="w-6 h-6 text-emerald-500" /></div>
                     <span className="text-[13px] sm:text-[14px] font-black uppercase tracking-widest text-white truncate w-full">Početna Strana</span>
                   </Link>
+
+                  <Link to="/saas-protocol" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border border-amber-500/30 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0 shadow-[0_0_15px_rgba(245,158,11,0.1)]">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 w-full">
+                      <div className="bg-amber-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><MonitorPlay className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500" /></div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-amber-500 truncate w-full">SaaS Mockups</span>
+                        <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">B2B Visual Protocol</span>
+                      </div>
+                    </div>
+                    <span className="text-[7px] bg-amber-600 text-black px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 ml-2">HOT</span>
+                  </Link>
                 </div>
 
-                {/* Master Upscalers */}
                 <div className="flex flex-col gap-3 w-full">
                   <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2 truncate w-full">Master Upscalers</h4>
                   <div className="grid w-full min-w-0 grid-cols-2 gap-2 sm:gap-3">
