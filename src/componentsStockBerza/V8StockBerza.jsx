@@ -424,9 +424,150 @@ const V8StockBerza = () => {
           </motion.div>
 
           {isAdmin && (
-            /* Forma za dodavanje paketa (ne diram) */
             <form onSubmit={dodajPaket} className="bg-[#0a0a0a] border-2 border-[#FF8C00]/50 rounded-[2.5rem] p-8 mb-16 shadow-[0_0_30px_rgba(255,140,0,0.1)] max-w-4xl mx-auto">
-              {/* (Sadržaj forme ostaje isti) */}
+              <h2 className="text-xl font-black text-[#FF8C00] uppercase tracking-widest mb-8 flex items-center gap-2 border-b border-[#FF8C00]/20 pb-4">
+                <Zap className="w-6 h-6" /> {editingPaketId ? 'EDIT PACKAGE' : 'ADD NEW ZIP PACKAGE'}
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                  <div className="flex flex-col gap-2 md:col-span-1">
+                      <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
+                          <Type size={14} /> PACKAGE TITLE
+                      </label>
+                      <input type="text" value={noviNazivEn} onChange={(e)=>setNoviNazivEn(e.target.value)} placeholder="E.g. Roman History" className="bg-black border border-[#FF8C00]/50 p-4 rounded-xl text-[14px] font-black text-white w-full outline-none focus:border-[#FF8C00] transition-all" required />
+                  </div>
+                  
+                  <div className="flex flex-col gap-2 md:col-span-1">
+                      <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
+                          <Layers size={14} /> CATEGORY
+                      </label>
+                      <input type="text" value={novaKategorijaEn} onChange={(e)=>setNovaKategorijaEn(e.target.value)} placeholder="E.g. Abstract" className="bg-black border border-[#FF8C00]/50 p-4 rounded-xl text-[14px] font-black text-white w-full outline-none focus:border-[#FF8C00] transition-all" required />
+                  </div>
+
+                  <div className="flex flex-col gap-2 md:col-span-1">
+                      <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
+                          <FolderArchive size={14} /> COLLECTION (VOLUME)
+                      </label>
+                      <input type="text" placeholder="E.g. VOL 1" value={noviVolume} onChange={(e) => setNoviVolume(e.target.value)} className="bg-black text-white border border-white/10 p-4 rounded-xl text-[13px] font-black outline-none focus:border-[#FF8C00] transition-all" />
+                  </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div className="flex flex-col gap-2 md:col-span-1">
+                    <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
+                        <FileText size={14} /> DESCRIPTION
+                    </label>
+                    <textarea value={noviOpisEn} onChange={(e)=>setNoviOpisEn(e.target.value)} placeholder="Package contents..." rows={4} className="bg-black border border-white/10 p-4 rounded-xl text-[12px] font-bold text-white w-full outline-none resize-none focus:border-[#FF8C00] transition-all h-full" required />
+                </div>
+
+                <div className="flex flex-col gap-6 md:col-span-2">
+                    <div className="flex flex-col gap-2">
+                        <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
+                            <Wallet size={14} /> PRICE (USD)
+                        </label>
+                        <input type="text" value={novaCena} onChange={(e)=>setNovaCena(e.target.value)} disabled={isFree} placeholder="E.g. 49.99" className={`bg-black border border-white/10 p-4 rounded-xl text-[13px] font-bold outline-none focus:border-[#FF8C00] transition-all ${isFree ? 'text-zinc-500 border-zinc-800' : 'text-white'}`} />
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
+                            <MonitorPlay size={14} /> FORMAT
+                        </label>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                            {['16:9 ONLY (SINGLE)', 'ALL FORMATS (16:9, 9:16, 21:9, 1:1)', '33.2MP MASTERWORK SINGLE', '45MP MASTERWORK BUNDLE', '60MP SIGNATURE BUNDLE', '150MP ULTRA PRINT BUNDLE'].map((fmt) => (
+                                <label key={fmt} className={`cursor-pointer p-3 rounded-xl border-2 transition-all text-center font-black text-[9px] uppercase flex items-center justify-center ${noviFormat === fmt ? (fmt.includes('150MP') ? 'bg-gradient-to-r from-purple-600 to-pink-500 border-[#FF8C00] text-white shadow-[0_0_15px_rgba(168,85,247,0.5)]' : fmt.includes('MASTERWORK') ? 'bg-gradient-to-r from-orange-600 to-amber-500 border-[#FF8C00] text-white shadow-[0_0_15px_rgba(234,88,12,0.4)]' : fmt.includes('SIGNATURE') ? 'bg-gradient-to-r from-yellow-600 to-amber-500 border-[#FF8C00] text-white shadow-[0_0_15px_rgba(245,158,11,0.5)]' : 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]') : 'bg-black border-white/10 text-zinc-500 hover:border-[#FF8C00]/50'}`}>
+                                    <input type="radio" name="format" value={fmt} checked={noviFormat === fmt} onChange={(e) => setNoviFormat(e.target.value)} className="hidden" />
+                                    {fmt.replace(' (16:9, 9:16, 21:9, 1:1)', '')}
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+              </div>
+
+              <div className="border-t border-white/10 pt-6 mt-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      <div className="flex flex-col gap-2">
+                          <label className="flex items-center gap-2 text-blue-400 font-black text-[11px] tracking-widest uppercase">
+                              <LinkIcon size={14} /> GOOGLE DRIVE (DELIVERY)
+                          </label>
+                          <input type="url" value={zipLink} onChange={(e)=>setZipLink(e.target.value)} placeholder="https://drive.google.com/..." className="bg-black border border-blue-500/50 p-4 rounded-xl text-[13px] text-white w-full outline-none font-bold focus:border-blue-400 transition-all" required />
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                          <label className="flex items-center gap-2 text-emerald-400 font-black text-[11px] tracking-widest uppercase">
+                              <Zap size={14} /> SECURITY PROTOCOL TYPE
+                          </label>
+                          <button 
+                            type="button" 
+                            onClick={() => {
+                              const nextFreeStatus = !isFree;
+                              setIsFree(nextFreeStatus);
+                              if (nextFreeStatus) setNovaCena("0.00");
+                              else setNovaCena("49.99");
+                            }} 
+                            className={`w-full p-4 rounded-xl font-black text-[13px] tracking-widest uppercase border-2 transition-all text-center flex items-center justify-center gap-2 cursor-pointer ${
+                              isFree 
+                                ? 'bg-gradient-to-r from-emerald-600 to-green-500 border-emerald-400 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)]' 
+                                : 'bg-black border-white/10 text-zinc-500 hover:border-emerald-500/50'
+                            }`}
+                          >
+                            {isFree ? "⚡ FREE PROTOCOL: ACTIVE DOWNLOAD" : "SET AS FREE PACKAGE"}
+                          </button>
+                      </div>
+                  </div>
+
+                  <div className="flex flex-col gap-4">
+                    {(previewUrl || primeriUrls.length > 0) && (
+                      <div className="flex flex-wrap gap-4 p-4 bg-white/5 rounded-xl border border-white/10">
+                        {previewUrl && (
+                          <div className="relative w-20 h-20 rounded-lg overflow-hidden border-2 border-[#FF8C00] shadow-[0_0_15px_rgba(255,140,0,0.4)] group">
+                            <span className="absolute top-0 left-0 bg-[#FF8C00] text-black text-[9px] font-black px-2 py-0.5 z-10">MAIN</span>
+                            <button type="button" onClick={removeMainImage} className="absolute top-1 right-1 bg-red-600/90 hover:bg-red-500 text-white rounded-full p-1 z-20 transition-all opacity-0 group-hover:opacity-100 shadow-md">
+                              <X size={12} strokeWidth={3} />
+                            </button>
+                            <img src={previewUrl} alt="Main" className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                        {primeriUrls.map((url, idx) => (
+                          <div key={idx} className="w-20 h-20 rounded-lg overflow-hidden border border-white/20 relative group">
+                            <span className="absolute bottom-0 right-0 bg-black/80 text-white text-[8px] font-black px-1.5 py-0.5 z-10">PREVIEW</span>
+                            <button type="button" onClick={() => removeThumbnail(idx)} className="absolute top-1 right-1 bg-red-600/90 hover:bg-red-500 text-white rounded-full p-1 z-20 transition-all opacity-0 group-hover:opacity-100 shadow-md">
+                              <X size={12} strokeWidth={3} />
+                            </button>
+                            <img src={url} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="flex flex-wrap gap-4 items-end">
+                      
+                      <div className="flex flex-col gap-2">
+                          <label className="flex items-center gap-2 text-zinc-400 font-black text-[10px] tracking-widest uppercase">
+                              <ImageIcon size={12} /> MAIN IMAGE
+                          </label>
+                          <button type="button" onClick={() => mainImageRef.current.click()} className="bg-zinc-900 hover:bg-[#FF8C00] text-white hover:text-black border border-white/10 hover:border-[#FF8C00] px-6 py-4 rounded-xl font-black text-[11px] uppercase transition-all flex items-center gap-2"> 
+                            <ImageIcon size={16} /> {isUploading ? 'UPLOADING...' : 'ADD PREVIEW'} 
+                          </button>
+                          <input type="file" ref={mainImageRef} onChange={handleUploadPreview} className="hidden" /> 
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                          <label className="flex items-center gap-2 text-zinc-400 font-black text-[10px] tracking-widest uppercase">
+                              <Images size={12} /> GALLERY IMAGES
+                          </label>
+                          <button type="button" onClick={() => galleryImagesRef.current.click()} className="bg-zinc-900 hover:bg-[#FF8C00] text-white hover:text-black border border-white/10 hover:border-[#FF8C00] px-6 py-4 rounded-xl font-black text-[11px] uppercase transition-all flex items-center gap-2"> 
+                            <Images size={16} /> {isUploadingPrimer ? 'UPLOADING...' : `ADD THUMBNAILS (${primeriUrls.length}/${activeTab === 'bundles' ? 10 : activeTab === 'signature' || activeTab === 'ultra150' ? 8 : 4})`} 
+                          </button>
+                          <input type="file" multiple ref={galleryImagesRef} onChange={handleUploadPrimeri} className="hidden" /> 
+                      </div>
+
+                      <button type="submit" className="ml-auto px-8 py-4 rounded-xl font-black text-[13px] tracking-widest uppercase bg-[#FF8C00] hover:bg-orange-500 text-black transition-all shadow-[0_0_20px_rgba(255,140,0,0.5)] flex items-center gap-2 hover:scale-105"> 
+                        <Zap size={18} /> {editingPaketId ? 'SAVE CHANGES' : 'SAVE PACKAGE'} 
+                      </button>
+                    </div>
+                  </div>
+              </div>
             </form>
           )}
 
