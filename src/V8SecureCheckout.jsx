@@ -143,7 +143,7 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
           method: "crypto", status: "initiating_gateway", requestDate: serverTimestamp()
         });
         
-        const backendUrl = getBackendUrl(); // 🔥 Povlači Railway link
+        const backendUrl = getBackendUrl(); 
 
         const response = await fetch(`${backendUrl}/api/crypto-checkout`, {
           method: 'POST',
@@ -519,7 +519,8 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
                               
                               if(resData.success) {
                                   setShowPayPalModal(false); 
-                                  setDownloadUrl(resData.downloadUrl);
+                                  // 🔥 IZMENJENA LINIJA: OSIGURAČ ZA DUGME 🔥
+                                  setDownloadUrl(resData.downloadUrl || zipLink);
                                   setSuccess(true);
                                   // 🔥 OKIDANJE GA4 KONVERZIJE ZA PAYPAL I KARTICE 🔥
                                   triggerGoogleAnalyticsPurchase(details.id, price);

@@ -61,6 +61,7 @@ if (typeof window !== 'undefined') {
 
 let currentAudio = null; 
 
+// Početak funkcije: playV8Sound
 export const playV8Sound = (type) => {
   try {
     if (currentAudio) {
@@ -80,7 +81,9 @@ export const playV8Sound = (type) => {
     }
   } catch (err) {}
 };
+// Kraj funkcije: playV8Sound
 
+// Početak funkcije: stopV8Sound
 export const stopV8Sound = () => {
   try {
     if (currentAudio) {
@@ -90,6 +93,7 @@ export const stopV8Sound = () => {
     }
   } catch (err) {}
 };
+// Kraj funkcije: stopV8Sound
 
 export const v8AlertModal = {
   listeners: [],
@@ -109,14 +113,17 @@ const MOJA_IP = "213.196.99.2";
 let globalUserIp = "";
 const currentSessionId = Math.random().toString(36).substring(2, 15);
 
+// Početak funkcije: fetchUserIp
 const fetchUserIp = async () => {
   try {
     const res = await fetch('https://api.ipify.org?format=json');
     const d = await res.json(); globalUserIp = d.ip;
   } catch (err) {}
 };
+// Kraj funkcije: fetchUserIp
 fetchUserIp();
 
+// Početak funkcije: logAnalyticsEvent
 export const logAnalyticsEvent = async (type, details) => {
   const currentUser = auth.currentUser;
   if (!currentUser) return; 
@@ -134,6 +141,7 @@ export const logAnalyticsEvent = async (type, details) => {
     }); 
   } catch (err) {}
 };
+// Kraj funkcije: logAnalyticsEvent
 
 export const v8Toast = {
   listeners: [],
@@ -148,6 +156,7 @@ export const v8Toast = {
   subscribe: (l) => { v8Toast.listeners.push(l); return () => v8Toast.listeners = v8Toast.listeners.filter(cb => cb !== l); }
 };
 
+// Početak funkcije: V8ToastContainer
 const V8ToastContainer = () => {
   const [toasts, setToasts] = useState([]);
   useEffect(() => {
@@ -157,7 +166,7 @@ const V8ToastContainer = () => {
     });
   }, []);
   return (
-    <div className="fixed top-24 right-6 z-[9999] flex flex-col gap-3 pointer-events-none">
+    <div className="fixed top-24 right-6 z-[99999999] flex flex-col gap-3 pointer-events-none">
       <AnimatePresence>
         {toasts.map(t => (
           <motion.div key={t.id} initial={{ opacity: 0, x: 50, scale: 0.9 }} animate={{ opacity: 1, x: 0, scale: 1 }} exit={{ opacity: 0, x: 20, scale: 0.9 }} className={`p-4 rounded-xl shadow-2xl border flex items-center gap-3 backdrop-blur-xl ${t.type === 'success' ? 'bg-green-900/40 border-green-500/50 text-green-100' : 'bg-red-900/40 border-red-500/50 text-red-100'}`}>
@@ -169,7 +178,9 @@ const V8ToastContainer = () => {
     </div>
   );
 };
+// Kraj funkcije: V8ToastContainer
 
+// Početak funkcije: V8AlertModalContainer
 const V8AlertModalContainer = () => {
   const [modalData, setModalData] = useState(null);
 
@@ -205,7 +216,7 @@ const V8AlertModalContainer = () => {
           initial={{ opacity: 0, x: 100, scale: 0.9 }} 
           animate={{ opacity: 1, x: 0, scale: 1 }} 
           exit={{ opacity: 0, x: 100, scale: 0.9 }} 
-          className={`fixed top-6 right-6 z-[10000] w-80 md:w-96 rounded-2xl p-5 text-white shadow-2xl border border-white/20 backdrop-blur-xl ${themeBg}`}
+          className={`fixed top-6 right-6 z-[99999999] w-80 md:w-96 rounded-2xl p-5 text-white shadow-2xl border border-white/20 backdrop-blur-xl ${themeBg}`}
         >
           <button onClick={handleClose} className="absolute top-3 right-3 text-white/70 hover:text-white transition-colors cursor-pointer z-50">
             <X size={24} strokeWidth={3} />
@@ -260,7 +271,9 @@ const V8AlertModalContainer = () => {
     </AnimatePresence>
   );
 };
+// Kraj funkcije: V8AlertModalContainer
 
+// Početak funkcije: AdminLiveSalesTracker
 const AdminLiveSalesTracker = () => {
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -341,7 +354,9 @@ const AdminLiveSalesTracker = () => {
 
   return null;
 };
+// Kraj funkcije: AdminLiveSalesTracker
 
+// Početak funkcije: V8PageWrapper
 const V8PageWrapper = ({ children }) => {
   return (
     <>
@@ -352,7 +367,9 @@ const V8PageWrapper = ({ children }) => {
     </>
   );
 };
+// Kraj funkcije: V8PageWrapper
 
+// Početak funkcije: FullScreenBoot
 const FullScreenBoot = ({ onComplete }) => {
   const [progress, setProgress] = useState(0);
   const [isIgniting, setIsIgniting] = useState(false);
@@ -396,7 +413,9 @@ const FullScreenBoot = ({ onComplete }) => {
     </motion.div>
   );
 };
+// Kraj funkcije: FullScreenBoot
 
+// Početak funkcije: SmartScrollButton
 const SmartScrollButton = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   
@@ -419,7 +438,9 @@ const SmartScrollButton = () => {
     </button>
   );
 };
+// Kraj funkcije: SmartScrollButton
 
+// Početak funkcije: AppContent
 function AppContent({ appsData, refreshData }) {
   const [isBooting, setIsBooting] = useState(true);
   const location = useLocation();
@@ -427,8 +448,9 @@ function AppContent({ appsData, refreshData }) {
   const entryTime = useRef(Date.now());
   const [authVersion, setAuthVersion] = useState(0); 
 
-  const [checkoutData, setCheckoutData] = useState({ isOpen: false, name: '', price: '' });
-  const [loginRequiredData, setLoginRequiredData] = useState({ isOpen: false, name: '', price: '' });
+  // 🔥 FIX: DODAT zipLink U STATE DA BI SE PROSLEDIO MODALU 🔥
+  const [checkoutData, setCheckoutData] = useState({ isOpen: false, name: '', price: '', zipLink: '' });
+  const [loginRequiredData, setLoginRequiredData] = useState({ isOpen: false, name: '', price: '', zipLink: '' });
 
   const [isDesktop, setIsDesktop] = useState(true);
 
@@ -439,26 +461,28 @@ function AppContent({ appsData, refreshData }) {
     return () => window.removeEventListener('resize', checkScreen);
   }, []);
 
-  const openSecureCheckout = useCallback((productName, price) => {
+  // 🔥 FIX: DODAT zipLink U PARAMETRE FUNKCIJE 🔥
+  const openSecureCheckout = useCallback((productName, price, zipLink = '') => {
     playV8Sound('checkout'); 
-    setCheckoutData({ isOpen: true, name: productName, price });
+    setCheckoutData({ isOpen: true, name: productName, price, zipLink });
   }, []);
 
-  const handleOpenCheckout = useCallback((productName, price) => {
+  // 🔥 FIX: DODAT zipLink U PARAMETRE FUNKCIJE 🔥
+  const handleOpenCheckout = useCallback((productName, price, zipLink = '') => {
     const userNow = auth.currentUser;
     if (!userNow) {
-      setLoginRequiredData({ isOpen: true, name: productName, price });
+      setLoginRequiredData({ isOpen: true, name: productName, price, zipLink });
       return;
     }
-    openSecureCheckout(productName, price);
+    openSecureCheckout(productName, price, zipLink);
   }, [openSecureCheckout]);
 
   const handleCloseCheckout = useCallback(() => {
-    setCheckoutData({ isOpen: false, name: '', price: '' });
+    setCheckoutData({ isOpen: false, name: '', price: '', zipLink: '' });
   }, []);
 
   const handleCloseLoginRequired = useCallback(() => {
-    setLoginRequiredData({ isOpen: false, name: '', price: '' });
+    setLoginRequiredData({ isOpen: false, name: '', price: '', zipLink: '' });
   }, []);
 
   useEffect(() => {
@@ -620,7 +644,8 @@ function AppContent({ appsData, refreshData }) {
           packageName={loginRequiredData.name}
           price={loginRequiredData.price}
           onLoginSuccess={() => {
-            openSecureCheckout(loginRequiredData.name, loginRequiredData.price);
+            // 🔥 FIX: Dodat treći parametar i ovde 🔥
+            openSecureCheckout(loginRequiredData.name, loginRequiredData.price, loginRequiredData.zipLink);
           }}
         />
 
@@ -630,6 +655,7 @@ function AppContent({ appsData, refreshData }) {
               isOpen={checkoutData.isOpen}
               productName={checkoutData.name} 
               price={checkoutData.price} 
+              zipLink={checkoutData.zipLink} // 🔥 OVO JE KLJUČ: MODAL SADA DOBIJA LINK 🔥
               onClose={handleCloseCheckout} 
             />
           )}
@@ -639,7 +665,9 @@ function AppContent({ appsData, refreshData }) {
     </div>
   );
 }
+// Kraj funkcije: AppContent
 
+// Početak funkcije: App
 export default function App() {
   const [appsData, setAppsData] = useState([]);
 
@@ -664,4 +692,5 @@ export default function App() {
     </HelmetProvider>
   );
 }
+// Kraj funkcije: App
 // KRAJ FAJLA: App.jsx
