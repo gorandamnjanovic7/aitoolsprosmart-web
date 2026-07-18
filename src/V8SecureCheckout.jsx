@@ -12,7 +12,7 @@ const countryList = [
   "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia", "Cameroon", "Canada", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo", "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "North Macedonia", "Norway", "Oman", "Pakistan", "Palau", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"
 ];
 
-// 🔥 DODATO: zipLink u props, da znamo sta se skida! 🔥
+// Početak funkcije: V8SecureCheckout
 const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
   const [user, setUser] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('card'); 
@@ -24,7 +24,6 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
   const [success, setSuccess] = useState(false);
   const [showPayPalModal, setShowPayPalModal] = useState(false);
   
-  // 🔥 NOVI STATE ZA DOWNLOAD DUGME I RADAR 🔥
   const [downloadUrl, setDownloadUrl] = useState(null);
   const [cryptoOrderId, setCryptoOrderId] = useState(null);
 
@@ -33,6 +32,27 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
     currency: "USD",
     intent: "capture",
   };
+
+  // Početak funkcije: triggerGoogleAnalyticsPurchase
+  const triggerGoogleAnalyticsPurchase = (transactionId, finalPrice) => {
+    if (typeof window !== "undefined" && window.gtag) {
+        window.gtag("event", "purchase", {
+            transaction_id: transactionId,
+            value: Number(finalPrice),
+            currency: "USD",
+            items: [
+                {
+                    item_id: productName ? productName.replace(/\s+/g, '_').toUpperCase() : "V8_MASTER_LICENSE",
+                    item_name: productName || "V8 MASTER LICENSE",
+                    price: Number(finalPrice),
+                    quantity: 1
+                }
+            ]
+        });
+        console.log("GA4 Purchase Event poslat! Kampanja se otključava.");
+    }
+  };
+  // Kraj funkcije: triggerGoogleAnalyticsPurchase
 
   useEffect(() => {
     if (isOpen) document.body.style.overflow = 'hidden';
@@ -58,7 +78,7 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
     }
   }, [isOpen]);
 
-  // 🔥 FIREBASE RADAR: Osluškujemo Kripto uplatu 🔥
+  // Početak funkcije: cryptoRadarEffect
   useEffect(() => {
     if (cryptoOrderId && paymentMethod === 'crypto') {
       const unsub = onSnapshot(doc(db, "v8_crypto_requests", cryptoOrderId), (docSnap) => {
@@ -66,13 +86,17 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
           const data = docSnap.data();
           if (data.status === 'PLAĆENO') {
             setDownloadUrl(data.zipLink);
+            // 🔥 OKIDANJE GA4 KONVERZIJE ZA KRIPTO UPLATE 🔥
+            triggerGoogleAnalyticsPurchase(cryptoOrderId, price);
           }
         }
       });
       return () => unsub();
     }
   }, [cryptoOrderId, paymentMethod]);
+  // Kraj funkcije: cryptoRadarEffect
 
+  // Početak funkcije: handleGoogleLogin
   const handleGoogleLogin = async () => {
     try {
       const provider = new GoogleAuthProvider();
@@ -85,7 +109,9 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
       alert("Google login failed or was cancelled. Please try again.");
     }
   };
+  // Kraj funkcije: handleGoogleLogin
 
+  // Početak funkcije: handleSubmit
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
     if (!user || !firstName || !lastName || !country || !email) {
@@ -120,7 +146,6 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
 
         const data = await response.json();
         if (response.ok && data.paymentUrl) {
-          // Otvaramo NOWPayments u novom tabu!
           window.open(data.paymentUrl, '_blank');
           setCryptoOrderId(docRef.id);
           setSuccess(true);
@@ -136,9 +161,11 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
       setLoading(false);
     }
   };
+  // Kraj funkcije: handleSubmit
 
   if (!isOpen) return null;
 
+  // Početak funkcije: render
   return createPortal(
     <PayPalScriptProvider options={initialOptions}>
       <div className="fixed inset-0 z-[9999999] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-[#02040a]/90 backdrop-blur-md">
@@ -449,6 +476,7 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
                 </div>
 
                 <div className="relative z-10 w-full min-h-[300px]">
+                  {/* Početak funkcije: PayPalButtons */}
                   <PayPalButtons 
                       style={{ layout: "vertical", color: "blue", shape: "rect", label: "pay" }}
                       createOrder={(data, actions) => {
@@ -477,7 +505,7 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
                                       country, 
                                       productName, 
                                       price,
-                                      zipLink // 🔥 Šaljemo link serveru
+                                      zipLink 
                                   })
                               });
                               
@@ -485,8 +513,10 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
                               
                               if(resData.success) {
                                   setShowPayPalModal(false); 
-                                  setDownloadUrl(resData.downloadUrl); // Hvatamo link za dugme
-                                  setSuccess(true);          
+                                  setDownloadUrl(resData.downloadUrl);
+                                  setSuccess(true);
+                                  // 🔥 OKIDANJE GA4 KONVERZIJE ZA PAYPAL I KARTICE 🔥
+                                  triggerGoogleAnalyticsPurchase(details.id, price);
                               } else {
                                   alert("Payment verification failed on the server. Please contact support.");
                               }
@@ -500,6 +530,7 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
                           alert("There was an issue processing your payment. Please try again.");
                       }}
                   />
+                  {/* Kraj funkcije: PayPalButtons */}
                 </div>
                 
                 <div className="mt-6 flex items-center justify-center gap-2 opacity-50 pb-4">
@@ -517,7 +548,9 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
     </PayPalScriptProvider>,
     document.body
   );
+  // Kraj funkcije: render
 };
+// Kraj funkcije: V8SecureCheckout
 
 export default V8SecureCheckout;
 // KRAJ FAJLA: V8SecureCheckout.jsx
