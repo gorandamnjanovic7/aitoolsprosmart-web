@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { BellRing, X, Bitcoin, Link as LinkIcon, CreditCard } from 'lucide-react';
 import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
-import { db } from '../firebase'; 
+import { db } from './firebase'; 
 
 // Početak funkcije: NotificationListener
 export const NotificationListener = ({ setNotification }) => {
