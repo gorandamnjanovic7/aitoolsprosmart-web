@@ -53,6 +53,10 @@ import V8PromptFactory from './V8PromptFactory';
 import V8RawRealityEngine from './V8RawRealityEngine';
 import SaaSProtocolPage from './SaaSProtocolPage';
 
+// 🔥 NOVO: IMPORT NOTIFIKACIONOG SISTEMA 🔥
+// (Prilagodi putanju ako si fajl stavio u neki podfolder tipa ./components/NotificationSystem)
+import { NotificationListener, NotificationModal } from './NotificationSystem';
+
 if (typeof window !== 'undefined') {
   if ('scrollRestoration' in window.history) { window.history.scrollRestoration = 'manual'; }
   if (window.location.hash) { window.history.replaceState(null, '', window.location.pathname); }
@@ -448,7 +452,9 @@ function AppContent({ appsData, refreshData }) {
   const entryTime = useRef(Date.now());
   const [authVersion, setAuthVersion] = useState(0); 
 
-  // 🔥 FIX: DODAT zipLink U STATE DA BI SE PROSLEDIO MODALU 🔥
+  // 🔥 NOVO: Globalno stanje za naš novi Notification Modal 🔥
+  const [notification, setNotification] = useState(null);
+
   const [checkoutData, setCheckoutData] = useState({ isOpen: false, name: '', price: '', zipLink: '' });
   const [loginRequiredData, setLoginRequiredData] = useState({ isOpen: false, name: '', price: '', zipLink: '' });
 
@@ -461,13 +467,11 @@ function AppContent({ appsData, refreshData }) {
     return () => window.removeEventListener('resize', checkScreen);
   }, []);
 
-  // 🔥 FIX: DODAT zipLink U PARAMETRE FUNKCIJE 🔥
   const openSecureCheckout = useCallback((productName, price, zipLink = '') => {
     playV8Sound('checkout'); 
     setCheckoutData({ isOpen: true, name: productName, price, zipLink });
   }, []);
 
-  // 🔥 FIX: DODAT zipLink U PARAMETRE FUNKCIJE 🔥
   const handleOpenCheckout = useCallback((productName, price, zipLink = '') => {
     const userNow = auth.currentUser;
     if (!userNow) {
@@ -575,6 +579,9 @@ function AppContent({ appsData, refreshData }) {
         <V8AlertModalContainer />
         <AdminLiveSalesTracker />
         
+        {/* 🔥 NOVO: MOTOR KOJI SLUŠA BAzu U POZADINI 🔥 */}
+        <NotificationListener setNotification={setNotification} />
+
         <AnimatePresence>
           {isBooting && <FullScreenBoot key="boot" onComplete={() => { setIsBooting(false); window.scrollTo(0,0); }} />}
         </AnimatePresence>
@@ -644,7 +651,6 @@ function AppContent({ appsData, refreshData }) {
           packageName={loginRequiredData.name}
           price={loginRequiredData.price}
           onLoginSuccess={() => {
-            // 🔥 FIX: Dodat treći parametar i ovde 🔥
             openSecureCheckout(loginRequiredData.name, loginRequiredData.price, loginRequiredData.zipLink);
           }}
         />
@@ -655,9 +661,16 @@ function AppContent({ appsData, refreshData }) {
               isOpen={checkoutData.isOpen}
               productName={checkoutData.name} 
               price={checkoutData.price} 
-              zipLink={checkoutData.zipLink} // 🔥 OVO JE KLJUČ: MODAL SADA DOBIJA LINK 🔥
+              zipLink={checkoutData.zipLink}
               onClose={handleCloseCheckout} 
             />
+          )}
+        </AnimatePresence>
+
+        {/* 🔥 NOVO: GLOBALNI VIZUELNI MODAL KOJI ISKAČE NA EKRAN 🔥 */}
+        <AnimatePresence>
+          {notification && (
+            <NotificationModal data={notification} onClose={() => setNotification(null)} />
           )}
         </AnimatePresence>
 
