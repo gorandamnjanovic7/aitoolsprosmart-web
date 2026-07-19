@@ -146,12 +146,17 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
 
     try {
       if (paymentMethod === 'payoneer') {
-        await addDoc(collection(db, "v8_payoneer_requests"), {
+        const docRef = await addDoc(collection(db, "v8_payoneer_requests"), {
           clientEmail: email, firstName, lastName, country, productName, price, zipLink: zipLink || "",
           method: "payoneer", handledBy: "info@aitoolsprosmart.com", status: "pending", requestDate: serverTimestamp()
         });
         setSuccess(true);
         setLoading(false);
+
+        // 🔥 DODATO: OKIDANJE KONVERZIJA ZA PAYONEER (B2B) 🔥
+        triggerGoogleAnalyticsPurchase(docRef.id, price);
+        triggerGoogleAdsConversion(docRef.id, price);
+
       } else if (paymentMethod === 'crypto') {
         const docRef = await addDoc(collection(db, "v8_crypto_requests"), {
           clientEmail: email, firstName, lastName, country, productName, price, zipLink: zipLink || "",
