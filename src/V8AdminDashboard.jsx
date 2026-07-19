@@ -300,6 +300,46 @@ const V8AdminDashboard = () => {
     }
   };
 
+  // 🔥 NUKE ZA KRIPTO 🔥
+  const handleNukeCrypto = async () => {
+    if (!window.confirm("🚨 UPOZORENJE: Da li si siguran da želiš da izbrišeš apsolutno sve KRIPTO zahteve iz baze, osim jednog?")) return;
+    try {
+      const q = query(collection(db, "v8_crypto_requests"));
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.docs.length <= 1) {
+        alert("Imaš samo 1 ili 0 zahteva u bazi. Nema šta da se briše.");
+        return;
+      }
+      const docsToDelete = querySnapshot.docs.slice(1);
+      for (let documentSnapshot of docsToDelete) {
+        await deleteDoc(doc(db, "v8_crypto_requests", documentSnapshot.id));
+      }
+      alert(`🔥 NUKE USPEŠAN: Obrisano tačno ${docsToDelete.length} kripto zahteva! Osveži stranicu (F5).`);
+    } catch (error) {
+      alert("Greška pri brisanju: " + error.message);
+    }
+  };
+
+  // 🔥 NUKE ZA PAYPAL I KARTICE (Oni dele istu kolekciju v8_paypal_requests) 🔥
+  const handleNukePayPalAndCard = async () => {
+    if (!window.confirm("🚨 UPOZORENJE: Da li si siguran da želiš da izbrišeš apsolutno sve PAYPAL I KARTICNE zahteve iz baze, osim jednog?")) return;
+    try {
+      const q = query(collection(db, "v8_paypal_requests"));
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.docs.length <= 1) {
+        alert("Imaš samo 1 ili 0 zahteva u bazi. Nema šta da se briše.");
+        return;
+      }
+      const docsToDelete = querySnapshot.docs.slice(1);
+      for (let documentSnapshot of docsToDelete) {
+        await deleteDoc(doc(db, "v8_paypal_requests", documentSnapshot.id));
+      }
+      alert(`🔥 NUKE USPEŠAN: Obrisano tačno ${docsToDelete.length} PayPal/Card zahteva! Osveži stranicu (F5).`);
+    } catch (error) {
+      alert("Greška pri brisanju: " + error.message);
+    }
+  };
+
   // 🔥 RESETOVANJE ANALITIKE NA NULU 🔥
   const handleNukeAnalytics = async () => {
     if (!window.confirm("🚨 UPOZORENJE: Da li si siguran da želiš da izbrišeš CELOKUPNU ANALITIKU? Svi brojači se vraćaju na nulu! Ovo se ne može poništiti.")) return;
@@ -637,6 +677,10 @@ const V8AdminDashboard = () => {
                 </h1>
                 <p className="text-zinc-500 text-[12px] font-bold tracking-widest uppercase">Live NOWPayments Gateway Feed</p>
               </div>
+              {/* 🔥 DUGME ZA KRIPTO BAZU 🔥 */}
+              <button onClick={handleNukeCrypto} className="bg-red-600/20 text-red-500 border border-red-500/50 hover:bg-red-600 hover:text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(220,38,38,0.2)]">
+                <Flame className="w-4 h-4" /> Očisti bazu (Ostavi 1 primer)
+              </button>
             </div>
 
             <div className="grid grid-cols-1 gap-4">
@@ -693,6 +737,10 @@ const V8AdminDashboard = () => {
                 </h1>
                 <p className="text-zinc-500 text-[12px] font-bold tracking-widest uppercase">Live PayPal Express Feed</p>
               </div>
+              {/* 🔥 DUGME ZA PAYPAL I CARD BAZU 🔥 */}
+              <button onClick={handleNukePayPalAndCard} className="bg-red-600/20 text-red-500 border border-red-500/50 hover:bg-red-600 hover:text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(220,38,38,0.2)]">
+                <Flame className="w-4 h-4" /> Očisti bazu (Ostavi 1 primer)
+              </button>
             </div>
 
             <div className="grid grid-cols-1 gap-4">
@@ -749,6 +797,10 @@ const V8AdminDashboard = () => {
                 </h1>
                 <p className="text-zinc-500 text-[12px] font-bold tracking-widest uppercase">Live Credit Card Processing Feed</p>
               </div>
+              {/* 🔥 DUGME ZA PAYPAL I CARD BAZU 🔥 */}
+              <button onClick={handleNukePayPalAndCard} className="bg-red-600/20 text-red-500 border border-red-500/50 hover:bg-red-600 hover:text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(220,38,38,0.2)]">
+                <Flame className="w-4 h-4" /> Očisti bazu (Ostavi 1 primer)
+              </button>
             </div>
 
             <div className="grid grid-cols-1 gap-4">

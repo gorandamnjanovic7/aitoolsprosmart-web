@@ -49,7 +49,14 @@ const SaasPromo = () => {
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
             >
               <div className="w-full aspect-video rounded-xl bg-black mb-4 overflow-hidden relative border border-white/5">
-                <img src="/mocup_1.webp" alt="Startup" className="w-full h-full object-cover" />
+                {/* 🔥 ZOOM ANIMACIJA SLIKE 🔥 */}
+                <motion.img 
+                  src="/mocup_1.webp" 
+                  alt="Startup" 
+                  className="w-full h-full object-cover" 
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+                />
                 <div className="absolute top-3 right-3 bg-amber-600 text-black text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg z-10">3-5 RENDERS</div>
               </div>
               <h3 className="text-[16px] font-black uppercase text-white tracking-widest mb-2">Startup Launch</h3>
@@ -74,7 +81,14 @@ const SaasPromo = () => {
               <div className="absolute inset-0 bg-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
               <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-600 to-amber-500 text-white text-[8px] font-black uppercase tracking-widest px-4 py-1.5 rounded-b-xl z-20 shadow-[0_5px_15px_rgba(234,88,12,0.5)]">GOLD STANDARD</div>
               <div className="w-full aspect-video rounded-xl bg-black mb-4 overflow-hidden relative border border-white/5 mt-2">
-                <img src="/mocup_2.webp" alt="Enterprise" className="w-full h-full object-cover" />
+                {/* 🔥 ZOOM ANIMACIJA SLIKE (Obrnut redosled da ne idu isto) 🔥 */}
+                <motion.img 
+                  src="/mocup_2.webp" 
+                  alt="Enterprise" 
+                  className="w-full h-full object-cover" 
+                  animate={{ scale: [1.05, 1, 1.05] }}
+                  transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+                />
                 <div className="absolute top-3 right-3 bg-orange-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg z-10">10-15 RENDERS</div>
               </div>
               <h3 className="text-[16px] font-black uppercase text-white tracking-widest mb-2 relative z-10">Enterprise Suite</h3>
@@ -97,7 +111,14 @@ const SaasPromo = () => {
               transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
             >
               <div className="w-full aspect-video rounded-xl bg-black mb-4 overflow-hidden relative border border-white/5">
-                <img src="/mocup_3.webp" alt="Agency" className="w-full h-full object-cover" />
+                {/* 🔥 ZOOM ANIMACIJA SLIKE 🔥 */}
+                <motion.img 
+                  src="/mocup_3.webp" 
+                  alt="Agency" 
+                  className="w-full h-full object-cover" 
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+                />
                 <div className="absolute top-3 right-3 bg-amber-600 text-black text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg z-10">10 / MONTH</div>
               </div>
               <h3 className="text-[16px] font-black uppercase text-white tracking-widest mb-2">Agency Retainer</h3>
@@ -122,3 +143,4 @@ const SaasPromo = () => {
   );
 };
 export default SaasPromo;
+// KRAJ FAJLA: SaasPromo.jsx

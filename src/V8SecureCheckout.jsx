@@ -62,6 +62,20 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
   };
   // Kraj funkcije: triggerGoogleAnalyticsPurchase
 
+  // Početak funkcije: triggerGoogleAdsConversion
+  const triggerGoogleAdsConversion = (transactionId, finalPrice) => {
+    if (typeof window !== "undefined" && window.gtag) {
+        window.gtag('event', 'conversion', {
+            'send_to': 'AW-377804713/4q_-CN-qmtMcEKmvk7QB',
+            'value': Number(finalPrice),
+            'currency': 'USD',
+            'transaction_id': transactionId
+        });
+        console.log("Google Ads Konverzija okidana! Vrednost:", finalPrice);
+    }
+  };
+  // Kraj funkcije: triggerGoogleAdsConversion
+
   useEffect(() => {
     if (isOpen) document.body.style.overflow = 'hidden';
     else document.body.style.overflow = '';
@@ -94,8 +108,9 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
           const data = docSnap.data();
           if (data.status === 'PLAĆENO') {
             setDownloadUrl(data.zipLink);
-            // 🔥 OKIDANJE GA4 KONVERZIJE ZA KRIPTO UPLATE 🔥
+            // 🔥 OKIDANJE KONVERZIJA ZA KRIPTO UPLATE 🔥
             triggerGoogleAnalyticsPurchase(cryptoOrderId, price);
+            triggerGoogleAdsConversion(cryptoOrderId, price);
           }
         }
       });
@@ -522,8 +537,9 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
                                   // 🔥 IZMENJENA LINIJA: OSIGURAČ ZA DUGME 🔥
                                   setDownloadUrl(resData.downloadUrl || zipLink);
                                   setSuccess(true);
-                                  // 🔥 OKIDANJE GA4 KONVERZIJE ZA PAYPAL I KARTICE 🔥
+                                  // 🔥 OKIDANJE SVIH KONVERZIJA ZA PAYPAL I KARTICE 🔥
                                   triggerGoogleAnalyticsPurchase(details.id, price);
+                                  triggerGoogleAdsConversion(details.id, price);
                               } else {
                                   alert("Payment verification failed on the server. Please contact support.");
                               }
