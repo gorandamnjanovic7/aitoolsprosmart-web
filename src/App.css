@@ -1,45 +1,23 @@
+/* POČETAK FAJLA: App.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* V8 PREMIUM CURSOR HIDE */
+@layer base {
+  body {
+    @apply bg-[#050505] text-zinc-100 font-sans antialiased;
+    overflow-x: hidden;
+  }
+}
+
+/* =========================================
+   V8 PREMIUM CURSOR HIDE
+   ========================================= */
 body, a, button, img, video {
   cursor: none !important;
 }
 input, textarea {
   cursor: text !important;
-}
-
-/* =========================================
-   🏎️ V8 GLOBALNI PREMIUM SCROLLBAR
-   ========================================= */
-::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
-}
-
-::-webkit-scrollbar-track {
-  background: #050505; /* Crna pozadina asfalta */
-  border-left: 1px solid rgba(255,255,255,0.05);
-}
-
-::-webkit-scrollbar-thumb {
-  background: #ea580c; /* V8 Narandžasta */
-  border-radius: 10px;
-  border: 3px solid #050505; /* Crni okvir da izgleda kao da pluta */
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #f97316; /* Svetlija narandžasta kad se pređe mišem */
-}
-
-/* Sakrivanje skrolbara za specifične elemente (npr. galerija slika koja se horizontalno skroluje) */
-.custom-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.custom-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
 }
 
 /* =========================================
@@ -54,7 +32,6 @@ img, video {
 /* =========================================
    🔥 V8 ANIMACIJE
    ========================================= */
-
 /* Aura za AI Sredstva (Marketplace) */
 .v8-ai-aura {
   background-image: conic-gradient(from 0deg, transparent 70%, #3b82f6 85%, #ea580c 100%);
@@ -66,15 +43,13 @@ img, video {
 }
 
 @keyframes v8-scroll-infinite {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    /* Mora -50% jer imamo dva ista seta slika. Kad pređe prvi, neprimetno se vraća na početak */
-    transform: translateX(-50%); 
-  }
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); } /* Mora -50% jer imamo dva ista seta slika */
 }
-/* POČETAK: V8 Premium Scrollbar & Selection */
+
+/* =========================================
+   🏎️ V8 PREMIUM SCROLLBAR & SELECTION
+   ========================================= */
 ::selection {
   background-color: #ea580c;
   color: #050505;
@@ -100,4 +75,26 @@ img, video {
 ::-webkit-scrollbar-thumb:hover {
   background: #ea580c;
 }
-/* KRAJ: V8 Premium Scrollbar & Selection */
+
+/* Sakrivanje skrolbara za specifične elemente */
+.custom-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.custom-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* =========================================
+   💪 V8 DUGMIĆI - MAKSIMALNA VIDLJIVOST
+   ========================================= */
+button, 
+[role="button"],
+a.bg-orange-500,
+a.bg-orange-600,
+.v8-btn {
+    font-weight: 900 !important; 
+    text-transform: uppercase !important; 
+    letter-spacing: 0.05em !important; 
+}
+/* KRAJ FAJLA: App.css */
