@@ -1,6 +1,4 @@
 // POČETAK FAJLA: V8StockBerza.jsx
-// Ne zaboravi da ažuriraš svoj React source code link u glavnom repozitorijumu!
-
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Helmet } from 'react-helmet-async'; // 🔥 DODATO ZA SEO 🔥
@@ -40,7 +38,7 @@ const FullScreenLightbox = ({ imageUrl, onClose }) => {
   if (!imageUrl) return null;
   return createPortal(
       <div className="fixed inset-0 z-[999999] bg-[#0f172a]/95 flex items-center justify-center p-4" onClick={onClose}>
-          <button type="button" onClick={(e) => { e.stopPropagation(); onClose(); }} className="absolute top-6 right-6 md:top-10 md:right-10 bg-[#FF8C00] text-white p-4 rounded-full font-black z-[1000000] shadow-[0_0_20px_rgba(255,140,0,0.5)]"><X size={32} strokeWidth={3} /></button>
+          <button type="button" onClick={(e) => { e.stopPropagation(); onClose(); }} className="absolute top-6 right-6 md:top-10 md:right-10 bg-[#FF8C00] hover:bg-orange-500 text-black drop-shadow-[0_2px_4px_rgba(255,255,255,0.4)] p-4 rounded-full font-black z-[1000000] shadow-[0_0_30px_rgba(255,140,0,0.8)] transition-all hover:scale-110"><X size={32} strokeWidth={4} /></button>
           <img src={imageUrl} alt="Full Screen Preview" className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-[0_0_80px_rgba(255,140,0,0.4)] border border-[#FF8C00]/30 relative z-[999999]" onClick={(e) => e.stopPropagation()} />
       </div>, document.body
   );
@@ -413,11 +411,11 @@ const V8StockBerza = () => {
                   {activeTab === 'ultra150' && (<>THE ABSOLUTE PINNACLE OF RESOLUTION. <span className="text-purple-400">150 MEGAPIXELS</span> ENGINEERED SPECIFICALLY FOR BILLBOARDS, FINE-ART PRINTING, AND EXTREME CROPPING.</>)}
                  </p>
                   <div className="flex justify-center relative z-10 mt-10">
-                      <div className="bg-[#050505]/80 backdrop-blur-md border border-white/10 p-1.5 rounded-full inline-flex flex-wrap items-center justify-center shadow-xl gap-1">
-                          <button onClick={() => setActiveTab('premium')} className={`px-6 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${activeTab === 'premium' ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-white shadow-[0_0_15px_rgba(234,88,12,0.4)]' : 'text-zinc-400 hover:text-orange-500'}`}><Zap className="w-4 h-4" /> 33MP Premium</button>
-                          <button onClick={() => setActiveTab('bundles')} className={`px-6 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${activeTab === 'bundles' ? 'bg-gradient-to-r from-blue-600 to-indigo-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'text-zinc-400 hover:text-blue-400'}`}><Crown className="w-4 h-4" /> 45MP Bundles</button>
-                          <button onClick={() => setActiveTab('signature')} className={`px-6 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${activeTab === 'signature' ? 'bg-zinc-900 border border-yellow-500/50 text-yellow-400 shadow-[0_0_15px_rgba(245,158,11,0.3)]' : 'text-zinc-400 hover:text-yellow-400'}`}><Diamond className="w-4 h-4" /> 60MP Signature</button>
-                          <button onClick={() => setActiveTab('ultra150')} className={`px-6 py-3 rounded-full font-black text-[11px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${activeTab === 'ultra150' ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.5)]' : 'text-zinc-400 hover:text-purple-400'}`}><Aperture className="w-4 h-4" /> 150MP Ultra</button>
+                      <div className="bg-[#050505]/80 backdrop-blur-md border border-white/10 p-2 rounded-full inline-flex flex-wrap items-center justify-center shadow-xl gap-2">
+                          <button onClick={() => setActiveTab('premium')} className={`px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[13px] md:text-[15px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'premium' ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-white shadow-[0_0_25px_rgba(234,88,12,0.8)] border-2 border-orange-400 scale-105' : 'text-zinc-100 bg-black/60 hover:bg-orange-900/40 hover:text-white border border-white/20'}`}><Zap className="w-5 h-5" /> 33MP Premium</button>
+                          <button onClick={() => setActiveTab('bundles')} className={`px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[13px] md:text-[15px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'bundles' ? 'bg-gradient-to-r from-blue-600 to-indigo-500 text-white shadow-[0_0_25px_rgba(59,130,246,0.8)] border-2 border-blue-400 scale-105' : 'text-zinc-100 bg-black/60 hover:bg-blue-900/40 hover:text-white border border-white/20'}`}><Crown className="w-5 h-5" /> 45MP Bundles</button>
+                          <button onClick={() => setActiveTab('signature')} className={`px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[13px] md:text-[15px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'signature' ? 'bg-gradient-to-r from-yellow-600 to-amber-500 text-white shadow-[0_0_25px_rgba(245,158,11,0.8)] border-2 border-yellow-400 scale-105' : 'text-zinc-100 bg-black/60 hover:bg-yellow-900/40 hover:text-white border border-white/20'}`}><Diamond className="w-5 h-5" /> 60MP Signature</button>
+                          <button onClick={() => setActiveTab('ultra150')} className={`px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[13px] md:text-[15px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'ultra150' ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-[0_0_25px_rgba(168,85,247,0.8)] border-2 border-purple-400 scale-105' : 'text-zinc-100 bg-black/60 hover:bg-purple-900/40 hover:text-white border border-white/20'}`}><Aperture className="w-5 h-5" /> 150MP Ultra</button>
                       </div>
                   </div>
               </div>
@@ -505,10 +503,10 @@ const V8StockBerza = () => {
                               if (nextFreeStatus) setNovaCena("0.00");
                               else setNovaCena("49.99");
                             }} 
-                            className={`w-full p-4 rounded-xl font-black text-[13px] tracking-widest uppercase border-2 transition-all text-center flex items-center justify-center gap-2 cursor-pointer ${
+                            className={`w-full p-4 md:p-5 rounded-xl font-black text-[13px] md:text-[15px] tracking-widest uppercase border-2 transition-all text-center flex items-center justify-center gap-2 cursor-pointer drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] ${
                               isFree 
                                 ? 'bg-gradient-to-r from-emerald-600 to-green-500 border-emerald-400 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)]' 
-                                : 'bg-black border-white/10 text-zinc-500 hover:border-emerald-500/50'
+                                : 'bg-black border-white/10 text-zinc-400 hover:text-white hover:border-emerald-500/50'
                             }`}
                           >
                             {isFree ? "⚡ FREE PROTOCOL: ACTIVE DOWNLOAD" : "SET AS FREE PACKAGE"}
@@ -522,8 +520,8 @@ const V8StockBerza = () => {
                         {previewUrl && (
                           <div className="relative w-20 h-20 rounded-lg overflow-hidden border-2 border-[#FF8C00] shadow-[0_0_15px_rgba(255,140,0,0.4)] group">
                             <span className="absolute top-0 left-0 bg-[#FF8C00] text-black text-[9px] font-black px-2 py-0.5 z-10">MAIN</span>
-                            <button type="button" onClick={removeMainImage} className="absolute top-1 right-1 bg-red-600/90 hover:bg-red-500 text-white rounded-full p-1 z-20 transition-all opacity-0 group-hover:opacity-100 shadow-md">
-                              <X size={12} strokeWidth={3} />
+                            <button type="button" onClick={removeMainImage} className="absolute top-1 right-1 bg-red-600/90 hover:bg-red-500 text-white rounded-full p-1 z-20 transition-all opacity-0 group-hover:opacity-100 shadow-md drop-shadow-md">
+                              <X size={12} strokeWidth={4} />
                             </button>
                             <img src={previewUrl} alt="Main" className="w-full h-full object-cover" />
                           </div>
@@ -531,8 +529,8 @@ const V8StockBerza = () => {
                         {primeriUrls.map((url, idx) => (
                           <div key={idx} className="w-20 h-20 rounded-lg overflow-hidden border border-white/20 relative group">
                             <span className="absolute bottom-0 right-0 bg-black/80 text-white text-[8px] font-black px-1.5 py-0.5 z-10">PREVIEW</span>
-                            <button type="button" onClick={() => removeThumbnail(idx)} className="absolute top-1 right-1 bg-red-600/90 hover:bg-red-500 text-white rounded-full p-1 z-20 transition-all opacity-0 group-hover:opacity-100 shadow-md">
-                              <X size={12} strokeWidth={3} />
+                            <button type="button" onClick={() => removeThumbnail(idx)} className="absolute top-1 right-1 bg-red-600/90 hover:bg-red-500 text-white rounded-full p-1 z-20 transition-all opacity-0 group-hover:opacity-100 shadow-md drop-shadow-md">
+                              <X size={12} strokeWidth={4} />
                             </button>
                             <img src={url} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
                           </div>
@@ -546,7 +544,7 @@ const V8StockBerza = () => {
                           <label className="flex items-center gap-2 text-zinc-400 font-black text-[10px] tracking-widest uppercase">
                               <ImageIcon size={12} /> MAIN IMAGE
                           </label>
-                          <button type="button" onClick={() => mainImageRef.current.click()} className="bg-zinc-900 hover:bg-[#FF8C00] text-white hover:text-black border border-white/10 hover:border-[#FF8C00] px-6 py-4 rounded-xl font-black text-[11px] uppercase transition-all flex items-center gap-2"> 
+                          <button type="button" onClick={() => mainImageRef.current.click()} className="bg-zinc-900 hover:bg-[#FF8C00] text-white hover:text-black border-2 border-white/20 hover:border-[#FF8C00] px-6 py-4 rounded-xl font-black text-[13px] uppercase transition-all flex items-center justify-center gap-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"> 
                             <ImageIcon size={16} /> {isUploading ? 'UPLOADING...' : 'ADD PREVIEW'} 
                           </button>
                           <input type="file" ref={mainImageRef} onChange={handleUploadPreview} className="hidden" /> 
@@ -556,14 +554,14 @@ const V8StockBerza = () => {
                           <label className="flex items-center gap-2 text-zinc-400 font-black text-[10px] tracking-widest uppercase">
                               <Images size={12} /> GALLERY IMAGES
                           </label>
-                          <button type="button" onClick={() => galleryImagesRef.current.click()} className="bg-zinc-900 hover:bg-[#FF8C00] text-white hover:text-black border border-white/10 hover:border-[#FF8C00] px-6 py-4 rounded-xl font-black text-[11px] uppercase transition-all flex items-center gap-2"> 
+                          <button type="button" onClick={() => galleryImagesRef.current.click()} className="bg-zinc-900 hover:bg-[#FF8C00] text-white hover:text-black border-2 border-white/20 hover:border-[#FF8C00] px-6 py-4 rounded-xl font-black text-[13px] uppercase transition-all flex items-center justify-center gap-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"> 
                             <Images size={16} /> {isUploadingPrimer ? 'UPLOADING...' : `ADD THUMBNAILS (${primeriUrls.length}/${activeTab === 'bundles' ? 10 : activeTab === 'signature' || activeTab === 'ultra150' ? 8 : 4})`} 
                           </button>
                           <input type="file" multiple ref={galleryImagesRef} onChange={handleUploadPrimeri} className="hidden" /> 
                       </div>
 
-                      <button type="submit" className="ml-auto px-8 py-4 rounded-xl font-black text-[13px] tracking-widest uppercase bg-[#FF8C00] hover:bg-orange-500 text-black transition-all shadow-[0_0_20px_rgba(255,140,0,0.5)] flex items-center gap-2 hover:scale-105"> 
-                        <Zap size={18} /> {editingPaketId ? 'SAVE CHANGES' : 'SAVE PACKAGE'} 
+                      <button type="submit" className="ml-auto px-10 py-5 rounded-xl font-black text-[15px] md:text-[17px] tracking-widest uppercase bg-[#FF8C00] hover:bg-orange-500 text-black transition-all shadow-[0_0_30px_rgba(255,140,0,0.8)] flex items-center gap-2 hover:scale-105 drop-shadow-[0_2px_4px_rgba(255,255,255,0.4)]"> 
+                        <Zap size={20} strokeWidth={3} /> {editingPaketId ? 'SAVE CHANGES' : 'SAVE PACKAGE'} 
                       </button>
                     </div>
                   </div>

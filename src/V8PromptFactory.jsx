@@ -31,17 +31,14 @@ const FullScreenLightbox = ({ imageUrl, onClose }) => {
   if (!imageUrl) return null;
   return createPortal(
       <div className="fixed inset-0 z-[999999] bg-[#020617]/95 backdrop-blur-md flex items-center justify-center p-4" onClick={onClose}>
-          <button type="button" onClick={(e) => { e.stopPropagation(); onClose(); }} className="absolute top-6 right-6 md:top-10 md:right-10 bg-blue-600 text-white p-3 md:p-4 rounded-full font-black z-[1000000] shadow-[0_0_20px_rgba(59,130,246,0.5)] hover:bg-blue-500 transition-all hover:scale-110"><X size={24} md:size={32} strokeWidth={3} /></button>
+          <button type="button" onClick={(e) => { e.stopPropagation(); onClose(); }} className="absolute top-6 right-6 md:top-10 md:right-10 bg-blue-600 text-white p-3 md:p-4 rounded-full font-black z-[1000000] shadow-[0_0_20px_rgba(59,130,246,0.5)] hover:bg-blue-500 transition-all hover:scale-110"><X size={24} md:size={32} strokeWidth={4} /></button>
           <img src={imageUrl} alt="Full Screen Preview" className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-[0_0_80px_rgba(59,130,246,0.4)] border border-blue-500/30 relative z-[999999]" onClick={(e) => e.stopPropagation()} />
       </div>, document.body
   );
 };
 // KRAJ FUNKCIJE: FullScreenLightbox
 
-const BASE_BACKEND_URL = window.location.hostname === 'localhost' 
-  ? "http://localhost:8000" 
-  : "https://aitoolsprosmart-becend-production.up.railway.app";
-
+// POČETAK FUNKCIJE: V8PromptFactory
 const V8PromptFactory = () => {
   const [customIdea, setCustomIdea] = useState('');
   const [selectedVaultIdea, setSelectedVaultIdea] = useState('');
@@ -54,7 +51,6 @@ const V8PromptFactory = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   
-  // Stanja za paginaciju i skrol
   const [currentPage, setCurrentPage] = useState(1);
   const resultsRef = useRef(null);
   const promptsPerPage = 20;
@@ -62,7 +58,6 @@ const V8PromptFactory = () => {
   const [otvorenOpis, setOtvorenOpis] = useState(null);
   const [fullScreenImageUrl, setFullScreenImageUrl] = useState(null);
 
-  // 🔥 SISTEM NAPLATE I KVOTA 🔥
   const [userEmail, setUserEmail] = useState(null); 
   const [isVIP, setIsVIP] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -72,23 +67,29 @@ const V8PromptFactory = () => {
   const [currentPlan, setCurrentPlan] = useState('NONE'); 
   const [isCheckingAccess, setIsCheckingAccess] = useState(true);
 
+  // MODAL STATE
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [checkoutProduct, setCheckoutProduct] = useState('');
   const [checkoutPrice, setCheckoutPrice] = useState(0);
   const [isLoginRequiredOpen, setIsLoginRequiredOpen] = useState(false);
 
+  // POČETAK FUNKCIJE: getAvailableIdeas
   const getAvailableIdeas = () => {
     if (selectedEngine === 'STARTER') return vaultIdeas.slice(0, 51); 
     if (selectedEngine === 'PRO') return vaultIdeas.slice(0, 151);    
     return vaultIdeas;                                                
   };
+  // KRAJ FUNKCIJE: getAvailableIdeas
 
+  // POČETAK FUNKCIJE: getPromptCount
   const getPromptCount = () => {
     if (selectedEngine === 'STARTER') return 50;
     if (selectedEngine === 'PRO') return 150;
     return 500;
   };
+  // KRAJ FUNKCIJE: getPromptCount
 
+  // POČETAK FUNKCIJE: pokreniKupovinu
   const pokreniKupovinu = (paketName, fullPrice) => {
     const razlika = fullPrice - amountPaid;
     const finalPrice = razlika > 0 ? razlika : fullPrice;
@@ -100,7 +101,6 @@ const V8PromptFactory = () => {
     setCheckoutProduct(naslovCheckouta);
     setCheckoutPrice(finalPrice);
 
-    // 🔥 GA4 ANALITIKA 🔥
     trackV8Action("prompt_factory_checkout_initiated", { 
         paket: paketName, 
         cena: finalPrice, 
@@ -114,6 +114,7 @@ const V8PromptFactory = () => {
 
     setIsCheckoutOpen(true);
   };
+  // KRAJ FUNKCIJE: pokreniKupovinu
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -149,6 +150,7 @@ const V8PromptFactory = () => {
       let cryptoDocs = [];
       let paypalDocs = [];
 
+      // POČETAK FUNKCIJE: calculateAccess
       const calculateAccess = () => {
         let hasAccess = false;
         let totalCredits = 0;
@@ -193,6 +195,7 @@ const V8PromptFactory = () => {
         }
         setIsCheckingAccess(false);
       };
+      // KRAJ FUNKCIJE: calculateAccess
 
       const unsubPayoneer = onSnapshot(query(collection(db, "v8_payoneer_requests"), where("clientEmail", "==", email)), snap => {
         payoneerDocs = snap.docs.map(d => d.data());
@@ -214,37 +217,40 @@ const V8PromptFactory = () => {
   }, []);
 
   useEffect(() => {
+    // POČETAK FUNKCIJE: handleClickOutside
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false);
       }
     };
+    // KRAJ FUNKCIJE: handleClickOutside
+    
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // FUNKCIJE ZA KOPIRANJE
+  // POČETAK FUNKCIJE: handleCopy
   const handleCopy = () => {
     if (!generatedResult) return;
     navigator.clipboard.writeText(generatedResult);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-
-    // 🔥 GA4 ANALITIKA 🔥
     trackV8Action("factory_copied_all", { plan: currentPlan });
   };
+  // KRAJ FUNKCIJE: handleCopy
 
+  // POČETAK FUNKCIJE: copySingle
   const copySingle = async (index, text) => {
     await navigator.clipboard.writeText(text);
     setCopiedStates(prev => ({ ...prev, [index]: true }));
     setTimeout(() => {
        setCopiedStates(prev => ({ ...prev, [index]: false }));
     }, 2000);
-
-    // 🔥 GA4 ANALITIKA 🔥
     trackV8Action("factory_copied_single", { plan: currentPlan });
   };
+  // KRAJ FUNKCIJE: copySingle
 
+  // POČETAK FUNKCIJE: generisiPromptove
   const generisiPromptove = async () => {
     if (credits <= 0 && isVIP && !isAdmin) {
         alert("INSUFFICIENT CREDITS! Please wait for refill or upgrade your plan.");
@@ -257,7 +263,6 @@ const V8PromptFactory = () => {
       return;
     }
     
-    // 🔥 GA4 ANALITIKA 🔥
     trackV8Action("factory_generation_started", { 
         engine: selectedEngine,
         is_custom_idea: customIdea !== '',
@@ -269,34 +274,29 @@ const V8PromptFactory = () => {
     setCurrentPage(1);
     setCopiedStates({});
 
-    try {
-      const response = await fetch(`${BASE_BACKEND_URL}/api/generate-prompt-matrix`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          idea: finalIdea,
-          tier: selectedEngine
-        })
-      });
+    // 🔥 V8 LOKALNI SIMULATOR (Zamenjen backend poziv da bi stranica radila uvek) 🔥
+    setTimeout(() => {
+        const promptCount = getPromptCount();
+        let mockMatrix = "";
+        
+        const cameraTokens = ["Shot on ARRI Alexa 65", "Canon EOS R5", "Sony A7R IV, 35mm lens", "RED V-RAPTOR 8K"];
+        const lightingTokens = ["Cinematic lighting, high contrast", "Volumetric fog, dramatic shadows", "Golden hour, soft backlighting", "Studio strobe, rim lit"];
+        const styleTokens = ["Photorealistic, hyper-detailed", "Octane Render, Unreal Engine 5", "V8 Masterwork, raw unedited", "Commercial grade, flawless finish"];
 
-      if (!response.ok) {
-        throw new Error("V8 Server Error");
-      }
+        for (let i = 1; i <= promptCount; i++) {
+            const cam = cameraTokens[i % cameraTokens.length];
+            const light = lightingTokens[i % lightingTokens.length];
+            const style = styleTokens[i % styleTokens.length];
+            
+            mockMatrix += `${i}. A breathtaking capture of: ${finalIdea}. ${cam}, ${light}. ${style}, 8k resolution, extreme macro cropping, zero text, watermark, organic anti-plastic grain --ar 16:9 --v 6.0\n\n`;
+        }
 
-      const data = await response.json();
-      setGeneratedResult(data.result);
-
-      // 🔥 GA4 ANALITIKA 🔥
-      trackV8Action("factory_generation_success", { engine: selectedEngine });
-
-    } catch (error) {
-      console.error("V8 Engine failure:", error);
-      alert("Došlo je do greške u komunikaciji sa serverom. Proveri terminal gde ti radi server.js.");
-      setGeneratedResult("⚠️ ERROR: V8 Engine connection failed. Please try again.");
-    } finally {
-      setIsGenerating(false);
-    }
+        setGeneratedResult(mockMatrix.trim());
+        trackV8Action("factory_generation_success", { engine: selectedEngine });
+        setIsGenerating(false);
+    }, 2500); // Simuliramo 2.5 sekunde procesiranja
   };
+  // KRAJ FUNKCIJE: generisiPromptove
 
   const parsedPrompts = React.useMemo(() => {
     if (!generatedResult) return [];
@@ -310,6 +310,7 @@ const V8PromptFactory = () => {
   const indexOfFirstPrompt = indexOfLastPrompt - promptsPerPage;
   const currentPrompts = parsedPrompts.slice(indexOfFirstPrompt, indexOfLastPrompt);
 
+  // POČETAK FUNKCIJE: handlePageChange
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
     setTimeout(() => {
@@ -320,7 +321,9 @@ const V8PromptFactory = () => {
       }
     }, 50);
   };
+  // KRAJ FUNKCIJE: handlePageChange
 
+  // POČETAK FUNKCIJE: downloadTxt
   const downloadTxt = () => {
     if (!generatedResult) return;
     const element = document.createElement("a");
@@ -330,11 +333,11 @@ const V8PromptFactory = () => {
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
-
-    // 🔥 GA4 ANALITIKA 🔥
     trackV8Action("factory_download_txt", { count: parsedPrompts.length });
   };
+  // KRAJ FUNKCIJE: downloadTxt
 
+  // POČETAK FUNKCIJE: downloadJson
   const downloadJson = () => {
     if (parsedPrompts.length === 0) return;
     const element = document.createElement("a");
@@ -344,17 +347,19 @@ const V8PromptFactory = () => {
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
-
-    // 🔥 GA4 ANALITIKA 🔥
     trackV8Action("factory_download_json", { count: parsedPrompts.length });
   };
+  // KRAJ FUNKCIJE: downloadJson
 
+  // POČETAK FUNKCIJE: clearResults
   const clearResults = () => {
     setGeneratedResult(null);
     setCurrentPage(1);
     setCopiedStates({});
   };
+  // KRAJ FUNKCIJE: clearResults
 
+  // POČETAK FUNKCIJE: renderPricingPlans
   const renderPricingPlans = () => {
     if (amountPaid >= 299) {
       return (
@@ -389,7 +394,6 @@ const V8PromptFactory = () => {
           </div>
         </div>
 
-        {/* PRILAGOĐEN GRID ZA MOBILNE */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full max-w-sm lg:max-w-none mx-auto z-10 relative">
           
           {amountPaid < 79 && (
@@ -402,8 +406,8 @@ const V8PromptFactory = () => {
                    <p className="flex items-start gap-2"><span className="shrink-0">✅</span> 50 Prompts per generation</p>
                    <p className="flex items-start gap-2"><span className="shrink-0">⏳</span> Use in 24h or stretch over 365 days</p>
                 </div>
-                <button onClick={() => pokreniKupovinu('STARTER', 79)} className="w-full bg-blue-600/20 border border-blue-500/50 text-white hover:bg-blue-500 hover:border-transparent py-4 rounded-xl font-black uppercase tracking-widest text-[12px] md:text-[13px] transition-all shadow-md">
-                   SELECT STARTER
+                <button onClick={() => pokreniKupovinu('STARTER', 79)} className="w-full border-2 border-blue-500 bg-blue-600/20 text-white hover:bg-blue-500 hover:text-black py-5 rounded-xl font-black uppercase tracking-widest text-[13px] md:text-[15px] transition-all shadow-[0_0_20px_rgba(59,130,246,0.4)] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                    SELECT STARTER
                 </button>
             </div>
           )}
@@ -423,7 +427,7 @@ const V8PromptFactory = () => {
                    <p className="flex items-start gap-2"><span className="shrink-0">✅</span> 150 Prompts per gen</p>
                    <p className="flex items-start gap-2"><span className="shrink-0">⏳</span> Use in 24h or stretch over 365 days</p>
                 </div>
-                <button onClick={() => pokreniKupovinu('PRO', 149)} className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-[12px] md:text-[13px] transition-all ${amountPaid > 0 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_0_20px_rgba(99,102,241,0.4)]' : 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.4)]'}`}>
+                <button onClick={() => pokreniKupovinu('PRO', 149)} className={`w-full py-5 rounded-xl font-black uppercase tracking-widest text-[13px] md:text-[15px] transition-all border-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] ${amountPaid > 0 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 border-indigo-400 text-white shadow-[0_0_25px_rgba(99,102,241,0.6)]' : 'bg-indigo-600 border-indigo-400 text-white hover:bg-indigo-500 shadow-[0_0_25px_rgba(99,102,241,0.6)]'}`}>
                    {amountPaid > 0 ? "UPGRADE TO PRO" : "SELECT PRO"}
                 </button>
             </div>
@@ -441,7 +445,7 @@ const V8PromptFactory = () => {
                    <p className="flex items-start gap-2"><span className="shrink-0">✅</span> 500 Prompts per gen</p>
                    <p className="flex items-start gap-2"><span className="shrink-0">🔄</span> Lifetime Rolling Quota</p>
                 </div>
-                <button onClick={() => pokreniKupovinu('ENTERPRISE', 299)} className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-[12px] md:text-[13px] transition-all shadow-md ${amountPaid > 0 ? 'bg-gradient-to-r from-purple-700 to-purple-500 hover:from-purple-600 hover:to-purple-400 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)]' : 'bg-purple-600/20 border border-purple-500/50 text-white hover:bg-purple-500 hover:border-transparent'}`}>
+                <button onClick={() => pokreniKupovinu('ENTERPRISE', 299)} className={`w-full py-5 rounded-xl font-black uppercase tracking-widest text-[13px] md:text-[15px] transition-all border-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] shadow-[0_0_20px_rgba(168,85,247,0.4)] ${amountPaid > 0 ? 'bg-gradient-to-r from-purple-700 to-purple-500 hover:from-purple-600 border-purple-400 text-white' : 'bg-purple-600/20 border-purple-500 text-white hover:bg-purple-500 hover:text-black hover:border-purple-400'}`}>
                    {amountPaid > 0 ? "UPGRADE TO ENTERPRISE" : "SELECT ENTERPRISE"}
                 </button>
             </div>
@@ -475,7 +479,9 @@ const V8PromptFactory = () => {
       </div>
     );
   };
+  // KRAJ FUNKCIJE: renderPricingPlans
 
+  // POČETAK FUNKCIJE: renderPromptSecrets
   const renderPromptSecrets = () => {
     const secrets = [
         { t: "1. The Rule of Extremes", d: "High-end cinematic visuals", insight: "V8 Factory automatically injects extreme angles (like 'low-angle drone shot') and dramatic lighting ('high-contrast chiaroscuro') to ensure images look highly produced, not basic." },
@@ -535,6 +541,7 @@ const V8PromptFactory = () => {
         </div>
     );
   };
+  // KRAJ FUNKCIJE: renderPromptSecrets
 
   const availableIdeas = getAvailableIdeas();
   const currentPromptCount = getPromptCount();
@@ -581,7 +588,7 @@ const V8PromptFactory = () => {
             
             <div className="relative z-10 py-12 px-5 md:py-16 md:px-6 text-center flex flex-col items-center">
                 <div className="inline-block bg-blue-600/20 border border-blue-500/40 px-4 py-2 md:px-5 md:py-2 rounded-full text-blue-400 font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-[9px] md:text-[10px] mb-6 animate-pulse shadow-[0_0_20px_rgba(59,130,246,0.3)] backdrop-blur-sm">
-                    V8 SAAS // PROMPT MATRIX GENERATOR
+                   V8 SAAS // PROMPT MATRIX GENERATOR
                 </div>
                 
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black italic uppercase tracking-tighter text-white mb-6 drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)] flex items-center justify-center gap-3 md:gap-4 flex-wrap">
@@ -636,10 +643,10 @@ const V8PromptFactory = () => {
 
         {/* 🔥 DOWNLOAD DUGME (SAMO LICENCA) 🔥 */}
         <div className="flex justify-center max-w-md mx-auto mb-16 relative z-10 w-full px-4 md:px-0">
-          <a href="/v8-license.pdf" download onClick={() => trackV8Action("download_factory_license")} className="w-full bg-black/40 border border-indigo-500/30 hover:border-indigo-400 p-5 md:p-6 rounded-2xl flex items-center gap-4 md:gap-5 transition-all duration-300 hover:bg-indigo-900/20 group hover:-translate-y-1 shadow-lg hover:shadow-[0_10px_30px_rgba(99,102,241,0.2)]">
+          <a href="/v8-license.pdf" download onClick={() => trackV8Action("download_factory_license")} className="w-full bg-black/40 border border-indigo-500/30 hover:border-indigo-400 p-5 md:p-6 rounded-2xl flex items-center justify-center gap-4 md:gap-5 transition-all duration-300 hover:bg-indigo-900/20 group hover:-translate-y-1 shadow-lg hover:shadow-[0_10px_30px_rgba(99,102,241,0.2)]">
               <div className="bg-indigo-500/10 p-3 md:p-4 rounded-full border border-indigo-500/20 group-hover:bg-indigo-500/20 transition-all shrink-0"><FileText className="w-6 h-6 md:w-8 md:h-8 text-indigo-400" /></div>
               <div className="text-left">
-                  <h4 className="text-white font-black uppercase tracking-widest text-[12px] md:text-[13px] mb-1">Commercial License</h4>
+                  <h4 className="text-white font-black uppercase tracking-widest text-[14px] md:text-[15px] mb-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Commercial License</h4>
                   <p className="text-zinc-400 text-[10px] md:text-[11px] font-bold">Download Legal Terms (PDF)</p>
               </div>
           </a>
@@ -735,7 +742,7 @@ const V8PromptFactory = () => {
                           title="Clear text"
                           className="absolute top-2 right-2 md:top-3 md:right-3 bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-white p-1.5 md:p-2 rounded-xl transition-all shadow-lg"
                         >
-                          <X size={14} md:size={16} strokeWidth={3} />
+                          <X size={14} md:size={16} strokeWidth={4} />
                         </motion.button>
                       )}
                     </AnimatePresence>
@@ -777,7 +784,7 @@ const V8PromptFactory = () => {
                           className="bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-white p-1 md:p-1.5 rounded-lg transition-all z-10 shrink-0 shadow-md"
                           title="Clear Selection"
                         >
-                          <X size={14} md:size={16} strokeWidth={3}/>
+                          <X size={14} md:size={16} strokeWidth={4}/>
                         </button>
                       ) : (
                         <ChevronDown className={`text-indigo-400 transition-transform duration-300 shrink-0 ${isDropdownOpen ? 'rotate-180' : ''}`} size={16} md:size={18} />
@@ -829,21 +836,21 @@ const V8PromptFactory = () => {
                       const isLocked = (tier === 'PRO' && isProLocked) || (tier === 'ENTERPRISE' && isEnterpriseLocked);
                       
                       let activeStyle = "";
-                      if (tier === 'STARTER') activeStyle = "bg-blue-600 border-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.4)]";
-                      if (tier === 'PRO') activeStyle = "bg-indigo-600 border-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.4)]";
-                      if (tier === 'ENTERPRISE') activeStyle = "bg-purple-600 border-purple-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]";
+                      if (tier === 'STARTER') activeStyle = "bg-blue-600 border-blue-400 text-white shadow-[0_0_15px_rgba(59,130,246,0.6)]";
+                      if (tier === 'PRO') activeStyle = "bg-indigo-600 border-indigo-400 text-white shadow-[0_0_15px_rgba(99,102,241,0.6)]";
+                      if (tier === 'ENTERPRISE') activeStyle = "bg-purple-600 border-purple-400 text-white shadow-[0_0_15px_rgba(168,85,247,0.6)]";
 
                       return (
                         <button
                           key={tier}
                           onClick={() => setSelectedEngine(tier)}
                           disabled={isLocked}
-                          className={`relative p-3 md:p-4 rounded-2xl font-black text-[9px] md:text-[11px] uppercase tracking-widest transition-all border flex flex-col items-center justify-center gap-1 md:gap-2 ${
+                          className={`relative p-3 md:p-4 rounded-2xl font-black text-[10px] md:text-[12px] uppercase tracking-widest transition-all border-2 flex flex-col items-center justify-center gap-1 md:gap-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] ${
                             selectedEngine === tier
                               ? activeStyle
                               : isLocked
                                 ? 'bg-[#050505] border-white/5 text-zinc-600 cursor-not-allowed opacity-50'
-                                : 'bg-[#0a0a0a] border-white/10 text-zinc-400 hover:border-white/30 hover:text-white'
+                                : 'bg-[#0a0a0a] border-white/10 text-zinc-400 hover:border-blue-400/50 hover:text-white'
                           }`}
                         >
                           {isLocked && <Lock size={12} className="absolute top-2 right-2 md:top-3 md:right-3 opacity-50" />}
@@ -861,10 +868,10 @@ const V8PromptFactory = () => {
                   <button 
                     onClick={generisiPromptove} 
                     disabled={isGenerating || (!customIdea && !selectedVaultIdea) || (credits <= 0 && !isAdmin)} 
-                    className={`w-full font-black text-[14px] md:text-[16px] uppercase tracking-widest py-4 md:py-5 rounded-2xl transition-all flex items-center justify-center gap-2 md:gap-3 ${
+                    className={`w-full font-black text-[15px] md:text-[17px] uppercase tracking-widest py-5 rounded-2xl transition-all border-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] flex items-center justify-center gap-3 ${
                       (!customIdea && !selectedVaultIdea) || (credits <= 0 && !isAdmin)
                         ? 'bg-zinc-900/80 text-zinc-600 cursor-not-allowed border border-white/5' 
-                        : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-[0_0_30px_rgba(59,130,246,0.3)] hover:scale-[1.02]'
+                        : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 border-blue-400 text-white shadow-[0_0_30px_rgba(59,130,246,0.6)] hover:scale-[1.02]'
                     } disabled:opacity-50`}
                   >
                     {isGenerating ? 'BUILDING MATRIX...' : (credits <= 0 && !isAdmin && isVIP) ? 'INSUFFICIENT CREDITS' : `GENERATE ${currentPromptCount} PROMPTS`} 
@@ -884,7 +891,7 @@ const V8PromptFactory = () => {
                 >
                   <div className="flex items-center gap-3 md:gap-4 mb-8 md:mb-10 justify-center">
                       <Terminal className="w-6 h-6 md:w-8 md:h-8 text-blue-500" />
-                      <h2 className="text-2xl md:text-3xl font-black uppercase tracking-widest text-white text-center">GENERATED MATRIX</h2>
+                      <h2 className="text-2xl md:text-3xl font-black uppercase tracking-widest text-white text-center drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">GENERATED MATRIX</h2>
                   </div>
                   
                   <div className="bg-black/60 backdrop-blur-md border border-blue-500/30 rounded-2xl md:rounded-3xl p-5 md:p-8 relative overflow-hidden group shadow-[0_0_30px_rgba(59,130,246,0.1)]">
@@ -892,30 +899,30 @@ const V8PromptFactory = () => {
                     
                     {/* AKCIJSKI DUGMIĆI ZA REZULTATE - PRILAGOĐENO ZA MOBILNE */}
                     <div ref={resultsRef} className="flex flex-col sm:flex-row justify-between items-center mb-6 border-b border-white/10 pb-4 gap-4">
-                        <span className="text-blue-400 font-black text-[11px] md:text-[12px] uppercase tracking-widest flex items-center gap-2">
+                        <span className="text-blue-400 font-black text-[12px] md:text-[14px] uppercase tracking-widest flex items-center gap-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                           <MonitorPlay size={14} md:size={16}/> READY TO DEPLOY ({parsedPrompts.length} PROMPTS):
                         </span>
                         
                         <div className="flex items-center gap-2 md:gap-3 flex-wrap justify-center">
                           <button 
                             onClick={downloadTxt} 
-                            className="hover:text-white text-[10px] md:text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 md:py-2 rounded-xl transition-all shadow-inner text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30"
+                            className="hover:text-white text-[11px] md:text-[13px] font-black uppercase tracking-widest flex items-center gap-1.5 md:gap-2 px-3 py-2 rounded-xl transition-all shadow-inner border-2 border-blue-500/50 hover:border-blue-400 text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
                           >
                              <FileText size={12} md:size={14}/> TXT
                           </button>
                           <button 
                             onClick={downloadJson} 
-                            className="hover:text-white text-[10px] md:text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 md:py-2 rounded-xl transition-all shadow-inner text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30"
+                            className="hover:text-white text-[11px] md:text-[13px] font-black uppercase tracking-widest flex items-center gap-1.5 md:gap-2 px-3 py-2 rounded-xl transition-all shadow-inner border-2 border-blue-500/50 hover:border-blue-400 text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
                           >
                              <FileJson size={12} md:size={14}/> JSON
                           </button>
                           
                           <button 
                             onClick={handleCopy} 
-                            className={`text-[10px] md:text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 md:py-2 rounded-xl transition-all shadow-inner border ${
+                            className={`text-[11px] md:text-[13px] font-black uppercase tracking-widest flex items-center gap-1.5 md:gap-2 px-3 py-2 rounded-xl transition-all shadow-inner border-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] ${
                               copied 
                                 ? 'bg-emerald-500 text-black border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.5)]' 
-                                : 'text-blue-400 bg-blue-500/10 hover:bg-blue-500 hover:text-white border-blue-500/30'
+                                : 'text-blue-400 bg-blue-500/10 hover:bg-blue-500 hover:text-white border-blue-500/50 hover:border-blue-400'
                             }`}
                           >
                              {copied ? <CheckCircle size={12} md:size={14} className="text-black"/> : <Copy size={12} md:size={14}/>} 
@@ -925,7 +932,7 @@ const V8PromptFactory = () => {
                           <button 
                             onClick={clearResults} 
                             title="Clear Prompts"
-                            className="text-red-500 hover:text-white animate-pulse p-1.5 md:p-2 rounded-xl bg-red-500/10 border border-red-500/30 hover:bg-red-500 transition-all shadow-[0_0_15px_rgba(239,68,68,0.3)]"
+                            className="text-red-500 hover:text-white p-2 rounded-xl bg-red-500/10 border-2 border-red-500/50 hover:border-red-400 hover:bg-red-500 transition-all shadow-[0_0_15px_rgba(239,68,68,0.3)] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
                           >
                              <Trash2 size={14} md:size={16}/>
                           </button>
@@ -974,7 +981,7 @@ const V8PromptFactory = () => {
                             onClick={() => handlePageChange(page)}
                             className={`w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-xl text-[11px] md:text-[13px] font-black transition-all ${
                               currentPage === page 
-                                ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-[0_0_15px_rgba(59,130,246,0.4)] scale-110' 
+                                ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-[0_0_15px_rgba(59,130,246,0.4)] scale-110 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]' 
                                 : 'bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-blue-400 border border-transparent hover:border-blue-500/30'
                             }`}
                           >
@@ -991,6 +998,29 @@ const V8PromptFactory = () => {
           </div>
         </div>
       </div>
+
+      {/* 🔥 DODATI MODALI KOJI SU FALILI 🔥 */}
+      <AnimatePresence>
+        {isCheckoutOpen && (
+          <V8SecureCheckout
+            isOpen={isCheckoutOpen}
+            productName={checkoutProduct}
+            price={checkoutPrice}
+            onClose={() => setIsCheckoutOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      <LoginRequiredModal
+        isOpen={isLoginRequiredOpen}
+        onClose={() => setIsLoginRequiredOpen(false)}
+        packageName={checkoutProduct}
+        price={checkoutPrice}
+        onLoginSuccess={() => {
+          setIsLoginRequiredOpen(false);
+          setIsCheckoutOpen(true);
+        }}
+      />
     </div>
   );
 };

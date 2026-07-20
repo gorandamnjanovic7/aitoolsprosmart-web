@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { db, auth } from './firebase'; 
 import { collection, addDoc, serverTimestamp, doc, onSnapshot } from 'firebase/firestore';
 import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from 'firebase/auth'; 
+import { useNavigate } from 'react-router-dom'; // 🔥 DODATO: Import za navigaciju 🔥
 import { motion } from 'framer-motion'; 
 import { ShieldCheck, Mail, BellRing, Key, X, Lock, Earth, CheckCircle, Bitcoin, Wallet, Zap, CreditCard, Link, Download, Radar, Loader2 } from 'lucide-react';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js"; 
@@ -22,6 +23,7 @@ const getBackendUrl = () => {
 
 // Početak funkcije: V8SecureCheckout
 const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
+  const navigate = useNavigate(); // 🔥 DODATO: Inicijalizacija navigacije 🔥
   const [user, setUser] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('card'); 
   const [firstName, setFirstName] = useState('');
@@ -111,6 +113,12 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
             // 🔥 OKIDANJE KONVERZIJA ZA KRIPTO UPLATE 🔥
             triggerGoogleAnalyticsPurchase(cryptoOrderId, price);
             triggerGoogleAdsConversion(cryptoOrderId, price);
+
+            // 🔥 DODATO: REDIREKCIJA/AUTO-ZATVARANJE NAKON USPEHA 🔥
+            setTimeout(() => {
+              onClose();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 5000); // 5 sekundi pauze da stigne da klikne preuzmi
           }
         }
       });
@@ -156,6 +164,12 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
         // 🔥 DODATO: OKIDANJE KONVERZIJA ZA PAYONEER (B2B) 🔥
         triggerGoogleAnalyticsPurchase(docRef.id, price);
         triggerGoogleAdsConversion(docRef.id, price);
+
+        // 🔥 DODATO: REDIREKCIJA/AUTO-ZATVARANJE NAKON USPEHA 🔥
+        setTimeout(() => {
+          onClose();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 3500); // 3.5 sekunde da pročita poruku o poslatom linku na email
 
       } else if (paymentMethod === 'crypto') {
         const docRef = await addDoc(collection(db, "v8_crypto_requests"), {
@@ -545,6 +559,12 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
                                   // 🔥 OKIDANJE SVIH KONVERZIJA ZA PAYPAL I KARTICE 🔥
                                   triggerGoogleAnalyticsPurchase(details.id, price);
                                   triggerGoogleAdsConversion(details.id, price);
+
+                                  // 🔥 DODATO: REDIREKCIJA/AUTO-ZATVARANJE NAKON USPEHA 🔥
+                                  setTimeout(() => {
+                                    onClose();
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                  }, 5000); // 5 sekundi vremena da klikne preuzmi
                               } else {
                                   alert("Payment verification failed on the server. Please contact support.");
                               }
