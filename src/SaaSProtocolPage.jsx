@@ -1,58 +1,106 @@
 // POČETAK FAJLA: SaaSProtocolPage.jsx
-// Ne zaboravi da ažuriraš svoj React source code link u glavnom repozitorijumu!
+// Podsetnik: Ne zaboravi da ažuriraš svoj React source code link u glavnom repozitorijumu!
 
-import React from 'react';
-import { Info, ChevronRight } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { ChevronRight, X, Upload } from 'lucide-react';
 
 // POČETAK FUNKCIJE: SaaSProtocolPage
 export default function SaaSProtocolPage({ openCheckout }) {
-  // Slike koje si generisao u Magnific-u
+  // State za Full-Screen slike
+  const [selectedImage, setSelectedImage] = useState(null);
+  
+  // State-ovi za Figma UI Preview na Hero slici (Odvojeni za svaki uređaj)
+  const [laptopPreview, setLaptopPreview] = useState(null);
+  const [ipadPreview, setIpadPreview] = useState(null);
+  const [phonePreview, setPhonePreview] = useState(null);
+  
+  // Odvojeni tajmeri
+  const laptopTimerRef = useRef(null);
+  const ipadTimerRef = useRef(null);
+  const phoneTimerRef = useRef(null);
+
+  const handleUiUpload = (e, device) => {
+    const file = e.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+
+      if (device === 'laptop') {
+        if (laptopTimerRef.current) clearTimeout(laptopTimerRef.current);
+        setLaptopPreview(imageUrl);
+        laptopTimerRef.current = setTimeout(() => setLaptopPreview(null), 600000); // 10 min
+      } 
+      else if (device === 'ipad') {
+        if (ipadTimerRef.current) clearTimeout(ipadTimerRef.current);
+        setIpadPreview(imageUrl);
+        ipadTimerRef.current = setTimeout(() => setIpadPreview(null), 600000); // 10 min
+      } 
+      else if (device === 'phone') {
+        if (phoneTimerRef.current) clearTimeout(phoneTimerRef.current);
+        setPhonePreview(imageUrl);
+        phoneTimerRef.current = setTimeout(() => setPhonePreview(null), 600000); // 10 min
+      }
+    }
+  };
+
+  // Očisti sve tajmere ako korisnik napusti stranicu
+  useEffect(() => {
+    return () => {
+      if (laptopTimerRef.current) clearTimeout(laptopTimerRef.current);
+      if (ipadTimerRef.current) clearTimeout(ipadTimerRef.current);
+      if (phoneTimerRef.current) clearTimeout(phoneTimerRef.current);
+    };
+  }, []);
+
+  // Slike
   const heroImage = "magnific_a-moody-lowkey-tech-scene_2994482255.png";
   
   const galleryImages = [
-    "magnific_premium-tech-setup-on-a-p_2994483605.png",
-    "magnific_a-highly-detailed-photore_2994474179.png",
-    "magnific_an-isometric-topdown-view_2994477610.png",
-    "magnific_a-rugged-yet-premium-tech_2994476068.png",
-    "magnific_a-sharp-geometric-arrange_2994487710.png",
-    "magnific_gritty-highcontrast-mocku_2994484971.png",
-    "magnific_slightly-warmer-premium-t_2994486395.png"
+    "magnific_premium-tech-setup-on-a-p_2994483605.png", // VIP 1
+    "magnific_a-highly-detailed-photore_2994474179.png", // VIP 2
+    "/red_2_mocup_1.jpeg",                               // VIP 3
+    "magnific_a-rugged-yet-premium-tech_2994476068.png", // VIP 4
+    "/red_3_mocup_1.jpeg",                               // VIP 5
+    "/red_3_mocup_2.jpeg",                               // VIP 6
+    "magnific_slightly-warmer-premium-t_2994486395.png", // VIP 7
+    "/red_4_mocup_2.jpeg"                                // VIP 8
   ];
 
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-300 font-sans selection:bg-amber-500 selection:text-black pt-10">
       
-      {/* HERO SEKCIJA */}
-      <section className="relative pt-20 pb-20 px-6 lg:pt-32 lg:pb-32 overflow-hidden flex flex-col items-center justify-center min-h-[85vh]">
-        {/* Pozadinski sjaj */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
-        
-        {/* 🔥 WORLD-CLASS PLAVI OBAVEŠTAJNI MODAL / BANNER 🔥 */}
-        <div className="max-w-4xl mx-auto w-full mb-16 relative z-50">
-          <div className="bg-[#020817]/80 backdrop-blur-xl border border-blue-500/40 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 shadow-[0_0_50px_rgba(59,130,246,0.15)] relative overflow-hidden group">
-            {/* Animirani plavi gornji highlight */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-80"></div>
-            {/* Unutrašnji sjaj */}
-            <div className="absolute -inset-4 bg-gradient-to-r from-blue-600/10 to-transparent blur-2xl opacity-50 pointer-events-none"></div>
-            
-            {/* Ikonica */}
-            <div className="shrink-0 w-16 h-16 bg-blue-500/10 border border-blue-500/30 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(59,130,246,0.2)]">
-              <Info className="w-8 h-8 text-blue-400 drop-shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
-            </div>
-            
-            {/* Tekstualni sadržaj */}
-            <div className="flex-1 text-center md:text-left relative z-10">
-              <h3 className="text-blue-400 font-black uppercase tracking-[0.2em] text-[13px] md:text-[15px] mb-2 drop-shadow-md">
-                Official Announcement
-              </h3>
-              <p className="text-zinc-300 text-sm md:text-base leading-relaxed font-medium">
-                We are currently engineering the next-generation architecture for our proprietary SaaS visualization software. Our systems are undergoing core upgrades to deliver unprecedented 150MP UI environments. <strong className="text-white font-black tracking-wide block mt-2 text-blue-100">THIS DEDICATED PAGE WILL BE AVAILABLE SOON.</strong>
-              </p>
-            </div>
+      {/* FULL SCREEN IMAGE MODAL */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 z-[999] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4 transition-all duration-300 cursor-zoom-out"
+          onClick={() => setSelectedImage(null)}
+        >
+          {/* 🔥 SPUŠTENO I POVEĆANO X DUGME 🔥 */}
+          <button 
+            className="fixed top-10 right-6 md:top-20 md:right-20 text-amber-500 hover:text-black bg-black/60 backdrop-blur-md hover:bg-amber-500 border-2 border-amber-500/50 p-4 rounded-full transition-all z-[1000] cursor-pointer shadow-[0_0_30px_rgba(245,158,11,0.5)]"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedImage(null);
+            }}
+          >
+            <X className="w-8 h-8 md:w-10 md:h-10" />
+          </button>
+
+          <div className="relative max-w-[1920px] w-full max-h-[95vh] flex items-center justify-center">
+            <img 
+              src={selectedImage} 
+              alt="Fullscreen Preview" 
+              className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-[0_0_80px_rgba(245,158,11,0.15)] cursor-default"
+              onClick={(e) => e.stopPropagation()}
+            />
           </div>
         </div>
+      )}
 
-        <div className="relative z-10 max-w-4xl mx-auto text-center opacity-40 hover:opacity-100 transition-opacity duration-1000">
+      {/* HERO SEKCIJA */}
+      <section className="relative pt-20 pb-20 px-6 lg:pt-32 lg:pb-32 overflow-hidden flex flex-col items-center justify-center min-h-[85vh]">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
+        
+        <div className="relative z-10 max-w-4xl mx-auto text-center">
           <div className="inline-block border border-white/10 bg-white/5 px-4 py-1.5 rounded-full text-xs font-semibold tracking-[0.2em] text-amber-500 mb-8 uppercase">
             Zero-Stage Assets for B2B Software
           </div>
@@ -69,32 +117,113 @@ export default function SaaSProtocolPage({ openCheckout }) {
           <button onClick={() => {
             const pricingSection = document.getElementById('pricing-tiers');
             if(pricingSection) pricingSection.scrollIntoView({ behavior: 'smooth' });
-          }} className="bg-amber-500 text-black font-black text-sm uppercase tracking-widest px-8 py-4 rounded-xl hover:bg-amber-400 transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:shadow-[0_0_30px_rgba(245,158,11,0.5)] cursor-not-allowed opacity-50">
+          }} className="bg-amber-500 text-black font-black text-sm uppercase tracking-widest px-8 py-4 rounded-xl hover:bg-amber-400 transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:shadow-[0_0_30px_rgba(245,158,11,0.5)]">
             View Protocols
           </button>
         </div>
 
-        {/* Hero Slika (Centralna Magnific Baza) - Smanjen Opacity zbog izrade */}
-        <div className="relative z-10 w-full max-w-6xl mx-auto mt-16 group opacity-40 grayscale-[50%] transition-all duration-1000">
-          <div className="absolute -inset-1 bg-gradient-to-b from-amber-500/20 to-transparent blur-2xl opacity-50 transition duration-1000 group-hover:opacity-100"></div>
+        {/* GLAVNI MOCKUP SA LIVE PREVIEW FUNKCIJOM */}
+        <div className="relative z-10 w-full max-w-6xl mx-auto mt-20 group transition-all duration-1000">
+          
+          {/* OBAVEŠTENJE ZA KLIJENTE (LIVE LAB) */}
+          <div className="w-full flex justify-center mb-6 z-30">
+            <div className="bg-[#111] border border-amber-500/50 px-6 py-3 rounded-full flex items-center gap-3 shadow-[0_0_30px_rgba(245,158,11,0.2)]">
+              <span className="w-3 h-3 bg-amber-500 rounded-full animate-pulse"></span>
+              <span className="text-amber-500 text-xs md:text-sm font-black uppercase tracking-widest drop-shadow-md">
+                Live Lab: Click on device screens to test your Figma UI
+              </span>
+            </div>
+          </div>
+
           <div className="relative border border-white/10 rounded-xl overflow-hidden bg-[#111] shadow-2xl">
+            <div className="absolute -inset-1 bg-gradient-to-b from-amber-500/20 to-transparent blur-2xl opacity-50 transition duration-1000 group-hover:opacity-100 pointer-events-none"></div>
+            
             <img 
               src={heroImage} 
               alt="Cinematic Tech Mockup Setup" 
-              className="w-full h-auto object-cover opacity-90 transition-opacity duration-700"
+              className="w-full h-auto object-cover relative z-10"
             />
-            {/* UI Placeholder overlay za klijenta da vizualizuje svoj kod */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-100 transition-opacity duration-700 pointer-events-none bg-black/60 backdrop-blur-[4px]">
-              <span className="text-blue-400 border border-blue-500/50 px-8 py-4 font-mono text-sm tracking-widest bg-black/80 rounded-xl shadow-[0_0_30px_rgba(59,130,246,0.3)] font-black uppercase">
-                [ SYSTEM UNDER CONSTRUCTION ]
-              </span>
+            
+            {/* INTERAKTIVNI EKRAN 1: LAPTOP */}
+            <div 
+              className="absolute z-20 overflow-hidden rounded-sm transition-all duration-300 flex items-center justify-center"
+              style={{ 
+                top: '40.5%', 
+                left: '30%', 
+                width: '18%', 
+                height: '21.5%',
+                transform: 'perspective(500px) rotateY(2deg)'
+              }}
+            >
+              {laptopPreview ? (
+                <img src={laptopPreview} alt="Laptop UI Preview" className="w-full h-full object-cover opacity-95 mix-blend-screen" />
+              ) : (
+                <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer bg-black/40 hover:bg-black/70 border border-transparent hover:border-amber-500/50 transition-all text-transparent hover:text-amber-500 group/upload backdrop-blur-[2px]">
+                  <Upload className="w-6 h-6 mb-2 opacity-0 group-hover/upload:opacity-100 transition-opacity transform group-hover/upload:-translate-y-1" />
+                  <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover/upload:opacity-100 transition-opacity">Upload Figma</span>
+                  <input type="file" className="hidden" onChange={(e) => handleUiUpload(e, 'laptop')} accept="image/*" />
+                </label>
+              )}
             </div>
+
+            {/* INTERAKTIVNI EKRAN 2: IPAD */}
+            <div 
+              className="absolute z-20 overflow-hidden rounded-sm transition-all duration-300 flex items-center justify-center"
+              style={{ 
+                top: '40.5%', 
+                left: '50.2%', 
+                width: '15.5%', 
+                height: '21.5%',
+                transform: 'perspective(500px) rotateY(-8deg) rotateX(4deg)'
+              }}
+            >
+              {ipadPreview ? (
+                <img src={ipadPreview} alt="iPad UI Preview" className="w-full h-full object-cover opacity-95 mix-blend-screen" />
+              ) : (
+                <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer bg-black/40 hover:bg-black/70 border border-transparent hover:border-amber-500/50 transition-all text-transparent hover:text-amber-500 group/upload backdrop-blur-[2px]">
+                  <Upload className="w-5 h-5 mb-1 opacity-0 group-hover/upload:opacity-100 transition-opacity transform group-hover/upload:-translate-y-1" />
+                  <span className="text-[8px] font-black uppercase tracking-widest opacity-0 group-hover/upload:opacity-100 transition-opacity text-center px-1">Upload Figma</span>
+                  <input type="file" className="hidden" onChange={(e) => handleUiUpload(e, 'ipad')} accept="image/*" />
+                </label>
+              )}
+            </div>
+
+            {/* INTERAKTIVNI EKRAN 3: TELEFON */}
+            <div 
+              className="absolute z-20 overflow-hidden rounded-[4px] transition-all duration-300 flex items-center justify-center"
+              style={{ 
+                top: '48%',      
+                left: '74%',     
+                width: '6.5%',   
+                height: '24%',   
+                transform: 'perspective(500px) rotateY(-15deg)'
+              }}
+            >
+              {phonePreview ? (
+                <img src={phonePreview} alt="Phone UI Preview" className="w-full h-full object-cover opacity-95 mix-blend-screen" />
+              ) : (
+                <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer bg-black/40 hover:bg-black/70 border border-transparent hover:border-amber-500/50 transition-all text-transparent hover:text-amber-500 group/upload backdrop-blur-[2px]">
+                  <Upload className="w-5 h-5 mb-1 opacity-0 group-hover/upload:opacity-100 transition-opacity transform group-hover/upload:-translate-y-1" />
+                  <span className="text-[8px] font-black uppercase tracking-widest opacity-0 group-hover/upload:opacity-100 transition-opacity">UI</span>
+                  <input type="file" className="hidden" onChange={(e) => handleUiUpload(e, 'phone')} accept="image/*" />
+                </label>
+              )}
+            </div>
+            
+            {/* Indikator tajmera */}
+            {(laptopPreview || ipadPreview || phonePreview) && (
+              <div className="absolute top-4 left-4 bg-black/90 backdrop-blur-md border border-amber-500/30 px-4 py-2 rounded-full flex items-center gap-2 shadow-[0_0_20px_rgba(245,158,11,0.2)] z-30 pointer-events-none">
+                <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                <span className="text-amber-500 text-xs font-black uppercase tracking-widest">
+                  Preview Active (10 Min)
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </section>
 
-      {/* Ostatak stranice zatamljen zbog izrade */}
-      <div className="opacity-20 pointer-events-none select-none grayscale-[80%]">
+      <div>
         {/* THE FRICTION / PROBLEM */}
         <section className="py-24 px-6 bg-[#0a0a0a] border-y border-white/5">
           <div className="max-w-7xl mx-auto">
@@ -144,7 +273,7 @@ export default function SaaSProtocolPage({ openCheckout }) {
 
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
             
-            {/* PAKET 1: Startup Launch */}
+            {/* PAKET 1 */}
             <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 flex flex-col relative transition-all hover:border-amber-500/30 group">
               <h4 className="text-xl font-black text-white uppercase tracking-widest mb-2">Startup Launch</h4>
               <div className="flex items-end gap-2 mb-6">
@@ -160,13 +289,14 @@ export default function SaaSProtocolPage({ openCheckout }) {
                 <li className="flex items-start gap-3"><span className="text-amber-500 mt-0.5">■</span> <span className="text-zinc-300 text-sm">Devices: 2 Laptops, 1 Phone, 1 Tablet</span></li>
               </ul>
               <button 
-                className="w-full bg-white/5 text-white font-bold uppercase text-xs tracking-widest py-4 rounded-xl border border-white/10 transition-all"
+                onClick={openCheckout}
+                className="w-full bg-white/5 text-white font-black uppercase text-xs tracking-widest py-4 rounded-xl border border-white/10 transition-all hover:bg-white/10"
               >
-                Select Package
+                Security Checkout
               </button>
             </div>
 
-            {/* PAKET 2: Enterprise Suite (Istaknuti) */}
+            {/* PAKET 2 (Istaknuti) */}
             <div className="bg-gradient-to-b from-[#111] to-[#0a0a0a] border border-amber-500/50 rounded-2xl p-8 flex flex-col relative transform md:-translate-y-4 shadow-[0_0_40px_rgba(245,158,11,0.15)] z-10">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-amber-500 text-black text-[10px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full shadow-lg">
                 The Gold Standard
@@ -185,13 +315,14 @@ export default function SaaSProtocolPage({ openCheckout }) {
                 <li className="flex items-start gap-3"><span className="text-amber-500 mt-0.5">■</span> <span className="text-zinc-300 text-sm">Full marketing toolkit (Web, Social, Investor Decks)</span></li>
               </ul>
               <button 
-                className="w-full bg-amber-500 text-black font-black uppercase text-sm tracking-widest py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)]"
+                onClick={openCheckout}
+                className="w-full bg-amber-500 text-black font-black uppercase text-sm tracking-widest py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:bg-amber-400"
               >
-                Deploy Protocol
+                Secure Protocol Checkout
               </button>
             </div>
 
-            {/* PAKET 3: Agency Retainer */}
+            {/* PAKET 3 */}
             <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 flex flex-col relative transition-all hover:border-amber-500/30 group">
               <h4 className="text-xl font-black text-white uppercase tracking-widest mb-2">Agency Retainer</h4>
               <div className="flex items-end gap-2 mb-6">
@@ -207,16 +338,17 @@ export default function SaaSProtocolPage({ openCheckout }) {
                 <li className="flex items-start gap-3"><span className="text-amber-500 mt-0.5">■</span> <span className="text-zinc-300 text-sm">Dedicated V10 System Architect</span></li>
               </ul>
               <button 
-                className="w-full bg-white/5 text-white font-bold uppercase text-xs tracking-widest py-4 rounded-xl border border-white/10 transition-all"
+                onClick={openCheckout}
+                className="w-full bg-white/5 text-white font-black uppercase text-xs tracking-widest py-4 rounded-xl border border-white/10 transition-all hover:bg-white/10"
               >
-                Partner Up
+                Partner Up (Secure)
               </button>
             </div>
 
           </div>
         </section>
 
-        {/* PORTFOLIO / THE ARSENAL (Magnific Slike) */}
+        {/* PORTFOLIO / THE ARSENAL */}
         <section className="py-24 px-6 bg-[#0a0a0a] border-t border-white/5">
           <div className="max-w-7xl mx-auto text-center mb-16">
             <h2 className="text-sm font-bold tracking-[0.2em] text-amber-500 mb-4 uppercase">The Arsenal</h2>
@@ -228,24 +360,158 @@ export default function SaaSProtocolPage({ openCheckout }) {
             </p>
           </div>
 
-          {/* Mreža slika */}
-          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-            {galleryImages.map((imgSrc, index) => (
-              <div key={index} className="relative group overflow-hidden rounded-xl border border-white/5 bg-[#111]">
-                <img 
-                  src={imgSrc} 
-                  alt={`Cinematic SaaS Environment ${index + 1}`} 
-                  className="w-full h-[400px] object-cover filter brightness-[0.8] contrast-125 transition-all duration-700"
-                />
-                {/* Dekompozicioni markeri */}
-                <div className="absolute inset-0 border-[1px] border-white/0 transition-all duration-700 m-4"></div>
-                <div className="absolute bottom-6 left-6 opacity-100 transition-opacity duration-500">
-                  <span className="bg-black/80 text-amber-500 text-xs font-mono px-3 py-1 border border-amber-500/20 tracking-wider">
-                    ENVIRONMENT_0{index + 1}
-                  </span>
-                </div>
+          {/* 🔥 VIP KARTICE (PRVI RED MOCKUPA) 🔥 */}
+          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">
+            {/* VIP Kartica 1: Protocol Alpha */}
+            <div className="bg-[#111] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 group shadow-[0_0_30px_rgba(245,158,11,0.05)] cursor-zoom-in" onClick={() => setSelectedImage(galleryImages[0])}>
+              <div className="relative h-[400px] bg-black overflow-hidden">
+                <img src={galleryImages[0]} alt="Protocol Alpha" className="w-full h-full object-cover animate-pulse opacity-90 group-hover:scale-105 transition-transform duration-700" />
+                <div className="absolute top-4 right-4 bg-amber-500 text-black text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg z-10">Protocol Alpha</div>
               </div>
-            ))}
+              <div className="p-8 border-t border-white/5 relative">
+                <h4 className="text-2xl text-white font-black uppercase tracking-widest mb-4">Warm Obsidian Setup</h4>
+                <p className="text-zinc-400 text-base leading-relaxed">High-fidelity warm ambient lighting reflecting off dark walnut surfaces. Engineered perfectly for showcasing complex dashboard analytics and premium dark-mode SaaS interfaces.</p>
+              </div>
+            </div>
+
+            {/* VIP Kartica 2: Protocol Beta */}
+            <div className="bg-[#111] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 group shadow-[0_0_30px_rgba(245,158,11,0.05)] cursor-zoom-in" onClick={() => setSelectedImage(galleryImages[1])}>
+              <div className="relative h-[400px] bg-black overflow-hidden">
+                <img src={galleryImages[1]} alt="Protocol Beta" className="w-full h-full object-cover animate-pulse opacity-90 group-hover:scale-105 transition-transform duration-700" style={{ animationDelay: '1s' }} />
+                <div className="absolute top-4 right-4 bg-amber-500 text-black text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg z-10">Protocol Beta</div>
+              </div>
+              <div className="p-8 border-t border-white/5 relative">
+                <h4 className="text-2xl text-white font-black uppercase tracking-widest mb-4">Raw Industrial Concrete</h4>
+                <p className="text-zinc-400 text-base leading-relaxed">Gritty industrial aesthetics with stark cinematic shadows and concrete textures. Built specifically for enterprise security platforms and high-tech infrastructure developer tools.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 🔥 VIP KARTICE (DRUGI RED MOCKUPA) 🔥 */}
+          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">
+            {/* VIP Kartica 3: Protocol Gamma */}
+            <div className="bg-[#111] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 group shadow-[0_0_30px_rgba(245,158,11,0.05)] cursor-zoom-in" onClick={() => setSelectedImage(galleryImages[2])}>
+              <div className="relative h-[400px] bg-black overflow-hidden">
+                <img src={galleryImages[2]} alt="Protocol Gamma" className="w-full h-full object-cover animate-pulse opacity-90 group-hover:scale-105 transition-transform duration-700" style={{ animationDelay: '0.5s' }} />
+                <div className="absolute top-4 right-4 bg-amber-500 text-black text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg z-10">Protocol Gamma</div>
+              </div>
+              <div className="p-8 border-t border-white/5 relative">
+                <h4 className="text-2xl text-white font-black uppercase tracking-widest mb-4">Stealth Hacker Environment</h4>
+                <p className="text-zinc-400 text-base leading-relaxed">Pure dark background with subtle cinematic lighting and sleek reflective surfaces. Ideal for cybersecurity tools, developer platforms, and deep-tech SaaS architectures.</p>
+              </div>
+            </div>
+
+            {/* VIP Kartica 4: Protocol Delta */}
+            <div className="bg-[#111] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 group shadow-[0_0_30px_rgba(245,158,11,0.05)] cursor-zoom-in" onClick={() => setSelectedImage(galleryImages[3])}>
+              <div className="relative h-[400px] bg-black overflow-hidden">
+                <img src={galleryImages[3]} alt="Protocol Delta" className="w-full h-full object-cover animate-pulse opacity-90 group-hover:scale-105 transition-transform duration-700" style={{ animationDelay: '1.5s' }} />
+                <div className="absolute top-4 right-4 bg-amber-500 text-black text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg z-10">Protocol Delta</div>
+              </div>
+              <div className="p-8 border-t border-white/5 relative">
+                <h4 className="text-2xl text-white font-black uppercase tracking-widest mb-4">Rugged Premium Tech</h4>
+                <p className="text-zinc-400 text-base leading-relaxed">High-contrast rugged aesthetics featuring robust hardware in dramatic natural lighting. Designed specifically for field-operations software and heavy-industry management tools.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 🔥 VIP KARTICE (TREĆI RED MOCKUPA) 🔥 */}
+          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">
+            {/* VIP Kartica 5: Protocol Epsilon */}
+            <div className="bg-[#111] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 group shadow-[0_0_30px_rgba(245,158,11,0.05)] cursor-zoom-in" onClick={() => setSelectedImage(galleryImages[4])}>
+              <div className="relative h-[400px] bg-black overflow-hidden">
+                <img src={galleryImages[4]} alt="Protocol Epsilon" className="w-full h-full object-cover animate-pulse opacity-90 group-hover:scale-105 transition-transform duration-700" style={{ animationDelay: '0.2s' }} />
+                <div className="absolute top-4 right-4 bg-amber-500 text-black text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg z-10">Protocol Epsilon</div>
+              </div>
+              <div className="p-8 border-t border-white/5 relative">
+                <h4 className="text-2xl text-white font-black uppercase tracking-widest mb-4">Executive Wood Workspace</h4>
+                <p className="text-zinc-400 text-base leading-relaxed">Premium dark oak aesthetics with warm ambient lighting. Engineered to perfectly frame high-level executive dashboards and luxury B2B financial tools.</p>
+              </div>
+            </div>
+
+            {/* VIP Kartica 6: Protocol Zeta */}
+            <div className="bg-[#111] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 group shadow-[0_0_30px_rgba(245,158,11,0.05)] cursor-zoom-in" onClick={() => setSelectedImage(galleryImages[5])}>
+              <div className="relative h-[400px] bg-black overflow-hidden">
+                <img src={galleryImages[5]} alt="Protocol Zeta" className="w-full h-full object-cover animate-pulse opacity-90 group-hover:scale-105 transition-transform duration-700" style={{ animationDelay: '1.2s' }} />
+                <div className="absolute top-4 right-4 bg-amber-500 text-black text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg z-10">Protocol Zeta</div>
+              </div>
+              <div className="p-8 border-t border-white/5 relative">
+                <h4 className="text-2xl text-white font-black uppercase tracking-widest mb-4">Cinematic Dark Station</h4>
+                <p className="text-zinc-400 text-base leading-relaxed">Atmospheric, low-key lighting with subtle smoke and premium hardware. Engineered for extreme tech sectors, AI architectures, and cutting-edge visual systems.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 🔥 VIP KARTICE (ČETVRTI RED MOCKUPA) 🔥 */}
+          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 mb-16">
+            {/* VIP Kartica 7: Protocol Eta */}
+            <div className="bg-[#111] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 group shadow-[0_0_30px_rgba(245,158,11,0.05)] cursor-zoom-in" onClick={() => setSelectedImage(galleryImages[6])}>
+              <div className="relative h-[400px] bg-black overflow-hidden">
+                <img src={galleryImages[6]} alt="Protocol Eta" className="w-full h-full object-cover animate-pulse opacity-90 group-hover:scale-105 transition-transform duration-700" style={{ animationDelay: '0.8s' }} />
+                <div className="absolute top-4 right-4 bg-amber-500 text-black text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg z-10">Protocol Eta</div>
+              </div>
+              <div className="p-8 border-t border-white/5 relative">
+                <h4 className="text-2xl text-white font-black uppercase tracking-widest mb-4">Warm Ambient Base</h4>
+                <p className="text-zinc-400 text-base leading-relaxed">Rich, warm tones and soft lighting designed to highlight human-centric applications, CRM dashboards, and premium lifestyle SaaS platforms.</p>
+              </div>
+            </div>
+
+            {/* VIP Kartica 8: Protocol Theta */}
+            <div className="bg-[#111] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 group shadow-[0_0_30px_rgba(245,158,11,0.05)] cursor-zoom-in" onClick={() => setSelectedImage(galleryImages[7])}>
+              <div className="relative h-[400px] bg-black overflow-hidden">
+                <img src={galleryImages[7]} alt="Protocol Theta" className="w-full h-full object-cover animate-pulse opacity-90 group-hover:scale-105 transition-transform duration-700" style={{ animationDelay: '0.4s' }} />
+                <div className="absolute top-4 right-4 bg-amber-500 text-black text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg z-10">Protocol Theta</div>
+              </div>
+              <div className="p-8 border-t border-white/5 relative">
+                <h4 className="text-2xl text-white font-black uppercase tracking-widest mb-4">Monolithic Concrete</h4>
+                <p className="text-zinc-400 text-base leading-relaxed">Heavy industrial concrete platform with dramatic shadows. Engineered specifically for robust architectural tools, enterprise logistics, and industrial tech software.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 🔥 NOVI BILBORD: NEW OFFER WITH EXAMPLES 🔥 */}
+        <section className="py-24 px-6 relative flex justify-center bg-[#050505]">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-amber-500/10 rounded-full blur-[150px] pointer-events-none"></div>
+
+          <div className="relative z-10 w-[95%] max-w-[1920px] bg-gradient-to-b from-[#111] to-[#050505] border-2 border-amber-500/50 rounded-3xl p-8 md:p-24 text-center shadow-[0_0_80px_rgba(245,158,11,0.15)] group hover:border-amber-500 transition-all duration-700">
+            <div className="inline-block bg-amber-500 text-black text-sm font-black uppercase tracking-widest px-8 py-3 rounded-full mb-10 shadow-[0_0_20px_rgba(245,158,11,0.5)]">
+              Exclusive V10 Offer
+            </div>
+            
+            <h3 className="text-5xl md:text-8xl font-black text-white uppercase tracking-tight mb-10">
+              Custom <span className="text-amber-500">Architecture</span>
+            </h3>
+            
+            <p className="text-xl md:text-3xl text-zinc-400 max-w-5xl mx-auto mb-24 font-light leading-relaxed">
+              Don't just use our base environments. Provide your exact Figma UI bilbords with your design and we will mathematically render them into 3 custom, examples in 150MP physical realities tailored strictly to your brand's unique identity.
+            </p>
+
+            {/* Examples Grid sa tvojim novim WEBP slikama */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-24">
+              {/* Bilbord 1 */}
+              <div className="relative rounded-2xl overflow-hidden border border-white/10 group-hover:border-amber-500/30 transition-all cursor-zoom-in shadow-2xl" onClick={() => setSelectedImage("/mocup_1_bilbord.webp")}>
+                <img src="/mocup_1_bilbord.webp" alt="Custom Example 1" className="w-full h-[450px] object-cover transition-transform duration-500 group-hover:scale-105" />
+              </div>
+              {/* Bilbord 2 */}
+              <div className="relative rounded-2xl overflow-hidden border border-white/10 group-hover:border-amber-500/30 transition-all cursor-zoom-in shadow-2xl" onClick={() => setSelectedImage("/mocup_2_bilbord.webp")}>
+                <img src="/mocup_2_bilbord.webp" alt="Custom Example 2" className="w-full h-[450px] object-cover transition-transform duration-500 group-hover:scale-105" />
+              </div>
+              {/* Bilbord 3 */}
+              <div className="relative rounded-2xl overflow-hidden border border-white/10 group-hover:border-amber-500/30 transition-all cursor-zoom-in shadow-2xl" onClick={() => setSelectedImage("/mocup_3_bilbord.webp")}>
+                <img src="/mocup_3_bilbord.webp" alt="Custom Example 3" className="w-full h-[450px] object-cover transition-transform duration-500 group-hover:scale-105" />
+              </div>
+            </div>
+
+            {/* Price & CTA */}
+            <div className="flex flex-col items-center gap-10">
+              <div className="text-7xl font-black text-white">$1,500 <span className="text-xl text-zinc-500 font-bold uppercase tracking-widest">/ 5 Bilbord</span></div>
+              <button 
+                onClick={openCheckout} 
+                className="bg-amber-500 text-black font-black uppercase text-2xl tracking-widest px-20 py-8 rounded-2xl transition-all shadow-[0_0_40px_rgba(245,158,11,0.4)] hover:bg-amber-400 hover:scale-[1.02]"
+              >
+                Secure Custom Integration
+              </button>
+            </div>
           </div>
         </section>
 
@@ -262,7 +528,7 @@ export default function SaaSProtocolPage({ openCheckout }) {
               Stop losing enterprise deals because your software looks generic. Let's mathematically engineer your visual authority.
             </p>
             
-            <button className="bg-amber-500 text-black font-bold text-lg uppercase tracking-widest px-10 py-5 rounded-xl transition-colors shadow-[0_0_30px_rgba(245,158,11,0.3)]">
+            <button onClick={openCheckout} className="bg-amber-500 text-black font-black text-lg uppercase tracking-widest px-10 py-5 rounded-xl transition-colors shadow-[0_0_30px_rgba(245,158,11,0.3)] hover:bg-amber-400">
               Upgrade Your UI
             </button>
             
