@@ -382,13 +382,13 @@ const V8Navbar = ({ handleHomeClick }) => {
               </div>
             </div>
 
-            {/* PREMIUM STOCK DROPDOWN */}
+            {/* 🔥 PREMIUM STOCK DROPDOWN (SADA JE JAKA PLAVA I MAKSIMALNO ISTAKNUTO) 🔥 */}
             <div className="relative group">
               <MagneticButton>
-                <button className="flex items-center gap-1 xl:gap-2 px-3 xl:px-5 py-2.5 rounded-full bg-gradient-to-r from-blue-900/30 to-indigo-900/30 border border-blue-500/50 text-blue-300 text-[9px] xl:text-[11px] hover:text-white hover:border-blue-400 transition-all shadow-[0_0_15px_rgba(59,130,246,0.15)] cursor-pointer whitespace-nowrap">
-                  <ImageIcon className="w-3 h-3 xl:w-4 xl:h-4 text-blue-400 drop-shadow-[0_0_8px_rgba(59,130,246,0.8)] shrink-0" /> 
+                <button className="flex items-center gap-1 xl:gap-2 px-4 xl:px-6 py-2.5 rounded-full bg-blue-600 border-2 border-blue-400 text-white font-black text-[10px] xl:text-[12px] hover:bg-blue-500 hover:scale-105 transition-all shadow-[0_0_20px_rgba(37,99,235,0.6)] cursor-pointer whitespace-nowrap">
+                  <ImageIcon className="w-3 h-3 xl:w-4 xl:h-4 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] shrink-0" /> 
                   <span>PREMIUM STOCK</span>
-                  <ChevronDown className="w-3 h-3 text-blue-400 group-hover:rotate-180 transition-transform duration-300 shrink-0" />
+                  <ChevronDown className="w-3 h-3 text-white group-hover:rotate-180 transition-transform duration-300 shrink-0" />
                 </button>
               </MagneticButton>
               
@@ -427,11 +427,12 @@ const V8Navbar = ({ handleHomeClick }) => {
             </div>
           </div>
 
+          {/* 🔥 SAAS MOCKUPS DUGME (SADA JE JAKA NARANDŽASTA I MAKSIMALNO ISTAKNUTO) 🔥 */}
           <div className="hidden xl:flex items-center ml-2 border-l border-white/10 pl-3 xl:pl-4 shrink-0">
             <MagneticButton>
-              <Link to="/saas-protocol" onClick={() => window.scrollTo(0,0)} className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-500 hover:bg-amber-500/20 hover:text-amber-400 hover:border-amber-500 transition-all shadow-[0_0_15px_rgba(245,158,11,0.15)] whitespace-nowrap cursor-pointer">
-                <MonitorPlay className="w-3 h-3 xl:w-4 xl:h-4 shrink-0" />
-                <span className="text-[9px] xl:text-[11px] font-black uppercase tracking-widest">SaaS MOCKUPS</span>
+              <Link to="/saas-protocol" onClick={() => window.scrollTo(0,0)} className="flex items-center gap-2 px-5 py-3 rounded-full bg-orange-500 border-2 border-orange-400 text-white font-black hover:bg-orange-400 hover:scale-105 transition-all shadow-[0_0_20px_rgba(249,115,22,0.6)] whitespace-nowrap cursor-pointer">
+                <MonitorPlay className="w-4 h-4 xl:w-5 xl:h-5 shrink-0 drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
+                <span className="text-[10px] xl:text-[12px] uppercase tracking-widest">SaaS MOCKUPS</span>
               </Link>
             </MagneticButton>
           </div>
@@ -666,15 +667,16 @@ const V8Navbar = ({ handleHomeClick }) => {
                     <span className="text-[13px] sm:text-[14px] font-black uppercase tracking-widest text-white truncate w-full">Početna Strana</span>
                   </Link>
 
-                  <Link to="/saas-protocol" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border border-amber-500/30 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0 shadow-[0_0_15px_rgba(245,158,11,0.1)]">
+                  {/* 🔥 SAAS MOCKUPS (ISTAKNUT U MOBILNOM) 🔥 */}
+                  <Link to="/saas-protocol" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-orange-600 border-2 border-orange-500 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0 shadow-[0_0_20px_rgba(249,115,22,0.4)]">
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0 w-full">
-                      <div className="bg-amber-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><MonitorPlay className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500" /></div>
+                      <div className="bg-white/20 p-2.5 sm:p-3 rounded-xl shrink-0"><MonitorPlay className="w-5 h-5 sm:w-6 sm:h-6 text-white" /></div>
                       <div className="flex flex-col min-w-0">
-                        <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-amber-500 truncate w-full">SaaS Mockups</span>
-                        <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">B2B Visual Protocol</span>
+                        <span className="text-[12px] sm:text-[14px] font-black uppercase tracking-widest text-white truncate w-full drop-shadow-md">SaaS Mockups</span>
+                        <span className="text-[9px] sm:text-[10px] text-orange-200 font-bold uppercase truncate w-full">B2B Visual Protocol</span>
                       </div>
                     </div>
-                    <span className="text-[7px] bg-amber-600 text-black px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 ml-2">HOT</span>
+                    <span className="text-[7px] bg-white text-orange-600 px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 ml-2 shadow-md">HOT</span>
                   </Link>
                 </div>
 
@@ -791,20 +793,17 @@ const V8Navbar = ({ handleHomeClick }) => {
                 {/* Premium Stock */}
                 <div className="flex flex-col gap-3 w-full">
                   <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2 truncate w-full">
-                    Premium Stock
+                    Premium Visuals
                   </h4>
                   
-                  <div className="bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl flex items-center gap-3 w-full min-w-0 mb-1">
-                    <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400 shrink-0" />
-                    <span className="text-[8px] sm:text-[9px] text-emerald-400 font-black uppercase tracking-widest leading-relaxed whitespace-normal break-words w-full">
-                      INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP
-                    </span>
-                  </div>
-
-                  <Link to="/stock" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border border-white/5 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
+                  {/* 🔥 PREMIUM STOCK (ISTAKNUT U MOBILNOM) 🔥 */}
+                  <Link to="/stock" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-blue-600 border-2 border-blue-500 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0 shadow-[0_0_20px_rgba(37,99,235,0.4)]">
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0 w-full">
-                      <div className="bg-blue-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><Layers className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" /></div>
-                      <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full">Stock Bundles</span>
+                      <div className="bg-white/20 p-2.5 sm:p-3 rounded-xl shrink-0"><Layers className="w-5 h-5 sm:w-6 sm:h-6 text-white" /></div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[12px] sm:text-[14px] font-black uppercase tracking-widest text-white truncate w-full drop-shadow-md">Premium Stock</span>
+                        <span className="text-[9px] sm:text-[10px] text-blue-200 font-bold uppercase truncate w-full">Master Bundles</span>
+                      </div>
                     </div>
                   </Link>
                   

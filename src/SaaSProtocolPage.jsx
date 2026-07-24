@@ -4,6 +4,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronRight, X, Upload, Trash2 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom'; 
+import { Helmet } from 'react-helmet-async'; // 🔥 DODATO ZA SEO 🔥
 
 // POČETAK FUNKCIJE: SaaSProtocolPage
 export default function SaaSProtocolPage({ openCheckout }) {
@@ -76,6 +77,12 @@ export default function SaaSProtocolPage({ openCheckout }) {
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-300 font-sans selection:bg-amber-500 selection:text-black pt-10">
       
+      {/* 🔥 HELMET SEO 🔥 */}
+      <Helmet>
+        <title>SaaS Visual Protocol | 150MP Enterprise Mockups</title>
+        <meta name="description" content="Wrap your software in 150MP physical reality. Mathematical cinematic environments engineered for your UI and B2B SaaS platform." />
+      </Helmet>
+
       {/* FULL SCREEN IMAGE MODAL */}
       {selectedImage && (
         <div 
@@ -121,11 +128,12 @@ export default function SaaSProtocolPage({ openCheckout }) {
             Wrap your software in 150MP physical reality. Mathematical cinematic environments engineered for your UI.
           </p>
 
+          {/* 🔥 DUGME KOJE VODI DIREKTNO NA PREMIUM DEVICE TAB 🔥 */}
           <button onClick={() => {
-            const pricingSection = document.getElementById('pricing-tiers');
-            if(pricingSection) pricingSection.scrollIntoView({ behavior: 'smooth' });
+            localStorage.setItem('v8_active_mocup_tab', 'ultra2');
+            navigate('/standard-mocup');
           }} className="bg-amber-500 text-black font-black text-sm uppercase tracking-widest px-8 py-4 rounded-xl hover:bg-amber-400 transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:shadow-[0_0_30px_rgba(245,158,11,0.5)]">
-            View Protocols
+            View Premium Mockups
           </button>
         </div>
 
@@ -251,7 +259,10 @@ export default function SaaSProtocolPage({ openCheckout }) {
             Stop losing enterprise deals because your software looks generic. Let's mathematically engineer your visual authority.
           </p>
           
-          <button onClick={() => navigate('/standard-mocup')} className="bg-amber-500 text-black font-black text-xs md:text-sm uppercase tracking-widest px-8 py-4 rounded-xl transition-colors shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:bg-amber-400">
+          <button onClick={() => {
+            localStorage.setItem('v8_active_mocup_tab', 'ultra2');
+            navigate('/standard-mocup');
+          }} className="bg-amber-500 text-black font-black text-xs md:text-sm uppercase tracking-widest px-8 py-4 rounded-xl transition-colors shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:bg-amber-400">
             Upgrade Your UI
           </button>
           
@@ -294,95 +305,6 @@ export default function SaaSProtocolPage({ openCheckout }) {
                 </p>
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* 🚀 THE INVESTMENT / PRICING TIERS 🚀 */}
-        <section id="pricing-tiers" className="py-24 px-6 bg-[#050505]">
-          <div className="max-w-7xl mx-auto text-center mb-16">
-            <h2 className="text-sm font-bold tracking-[0.2em] text-amber-500 mb-4 uppercase">The Protocols</h2>
-            <h3 className="text-4xl md:text-5xl font-bold text-white uppercase tracking-tight">
-              Initiate The Integration
-            </h3>
-            <p className="text-zinc-500 mt-4 max-w-2xl mx-auto">
-              Choose the visual architecture package that aligns with your brand's growth stage. We engineer environments, not just images.
-            </p>
-          </div>
-
-          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-            
-            {/* PAKET 1 */}
-            <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 flex flex-col relative transition-all hover:border-amber-500/30 group">
-              <h4 className="text-xl font-black text-white uppercase tracking-widest mb-2">Startup Launch</h4>
-              <div className="flex items-end gap-2 mb-6">
-                <span className="text-4xl font-black text-amber-500">$400</span>
-                <span className="text-sm text-zinc-500 font-bold mb-1 uppercase tracking-widest">Starting At</span>
-              </div>
-              <p className="text-zinc-400 text-sm leading-relaxed mb-8 flex-1">
-                Perfect for early-stage startups needing premium visuals for their landing page to look expensive in front of investors.
-              </p>
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-start gap-3"><span className="text-amber-500 mt-0.5">■</span> <span className="text-zinc-300 text-sm">3 to 5 hyper-realistic 150MP renders</span></li>
-                <li className="flex items-start gap-3"><span className="text-amber-500 mt-0.5">■</span> <span className="text-zinc-300 text-sm">Standard Environments (Concrete, Dark Wood)</span></li>
-                <li className="flex items-start gap-3"><span className="text-amber-500 mt-0.5">■</span> <span className="text-zinc-300 text-sm">Devices: 2 Laptops, 1 Phone, 1 Tablet</span></li>
-              </ul>
-              <button 
-                onClick={openCheckout}
-                className="w-full bg-white/5 text-white font-black uppercase text-xs tracking-widest py-4 rounded-xl border border-white/10 transition-all hover:bg-white/10"
-              >
-                Security Checkout
-              </button>
-            </div>
-
-            {/* PAKET 2 (Istaknuti) */}
-            <div className="bg-gradient-to-b from-[#111] to-[#0a0a0a] border border-amber-500/50 rounded-2xl p-8 flex flex-col relative transform md:-translate-y-4 shadow-[0_0_40px_rgba(245,158,11,0.15)] z-10">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-amber-500 text-black text-[10px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full shadow-lg">
-                The Gold Standard
-              </div>
-              <h4 className="text-2xl font-black text-white uppercase tracking-widest mb-2 mt-2">Enterprise Suite</h4>
-              <div className="flex items-end gap-2 mb-6">
-                <span className="text-5xl font-black text-amber-500">$1,500</span>
-                <span className="text-sm text-zinc-500 font-bold mb-1.5 uppercase tracking-widest">Starting At</span>
-              </div>
-              <p className="text-zinc-400 text-sm leading-relaxed mb-8 flex-1">
-                Complete visual identity overhaul. For SaaS companies executing a major rebranding, new site launch, or Series A pitch.
-              </p>
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-start gap-3"><span className="text-amber-500 mt-0.5">■</span> <span className="text-white font-medium text-sm">10 to 15 hyper-realistic 150MP renders</span></li>
-                <li className="flex items-start gap-3"><span className="text-amber-500 mt-0.5">■</span> <span className="text-zinc-300 text-sm">Custom Cinematic Environments engineered for your brand</span></li>
-                <li className="flex items-start gap-3"><span className="text-amber-500 mt-0.5">■</span> <span className="text-zinc-300 text-sm">Full marketing toolkit (Web, Social, Investor Decks)</span></li>
-              </ul>
-              <button 
-                onClick={openCheckout}
-                className="w-full bg-amber-500 text-black font-black uppercase text-sm tracking-widest py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:bg-amber-400"
-              >
-                Secure Protocol Checkout
-              </button>
-            </div>
-
-            {/* PAKET 3 */}
-            <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 flex flex-col relative transition-all hover:border-amber-500/30 group">
-              <h4 className="text-xl font-black text-white uppercase tracking-widest mb-2">Agency Retainer</h4>
-              <div className="flex items-end gap-2 mb-6">
-                <span className="text-4xl font-black text-amber-500">$1,000</span>
-                <span className="text-sm text-zinc-500 font-bold mb-1 uppercase tracking-widest">/ Month</span>
-              </div>
-              <p className="text-zinc-400 text-sm leading-relaxed mb-8 flex-1">
-                Exclusive visual architecture for UI/UX agencies. Upgrade your entire Dribbble/Behance portfolio to close high-ticket clients.
-              </p>
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-start gap-3"><span className="text-amber-500 mt-0.5">■</span> <span className="text-zinc-300 text-sm">Up to 10 new 150MP mockups delivered monthly</span></li>
-                <li className="flex items-start gap-3"><span className="text-amber-500 mt-0.5">■</span> <span className="text-zinc-300 text-sm">Priority rendering queue</span></li>
-                <li className="flex items-start gap-3"><span className="text-amber-500 mt-0.5">■</span> <span className="text-zinc-300 text-sm">Dedicated V10 System Architect</span></li>
-              </ul>
-              <button 
-                onClick={openCheckout}
-                className="w-full bg-white/5 text-white font-black uppercase text-xs tracking-widest py-4 rounded-xl border border-white/10 transition-all hover:bg-white/10"
-              >
-                Partner Up (Secure)
-              </button>
-            </div>
-
           </div>
         </section>
 
@@ -547,7 +469,11 @@ export default function SaaSProtocolPage({ openCheckout }) {
               Stop losing enterprise deals because your software looks generic. Let's mathematically engineer your visual authority.
             </p>
             
-            <button onClick={() => navigate('/standard-mocup')} className="bg-amber-500 text-black font-black text-xs md:text-sm uppercase tracking-widest px-8 py-4 rounded-xl transition-colors shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:bg-amber-400">
+            {/* I OVO DUGME VODI NA PREMIUM DEVICE */}
+            <button onClick={() => {
+              localStorage.setItem('v8_active_mocup_tab', 'ultra2');
+              navigate('/standard-mocup');
+            }} className="bg-amber-500 text-black font-black text-xs md:text-sm uppercase tracking-widest px-8 py-4 rounded-xl transition-colors shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:bg-amber-400">
               Upgrade Your UI
             </button>
             
