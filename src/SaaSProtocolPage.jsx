@@ -2,10 +2,13 @@
 // Podsetnik: Ne zaboravi da ažuriraš svoj React source code link u glavnom repozitorijumu!
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronRight, X, Upload } from 'lucide-react';
+import { ChevronRight, X, Upload, Trash2 } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom'; 
 
 // POČETAK FUNKCIJE: SaaSProtocolPage
 export default function SaaSProtocolPage({ openCheckout }) {
+  const navigate = useNavigate(); 
+
   // State za Full-Screen slike
   const [selectedImage, setSelectedImage] = useState(null);
   
@@ -14,6 +17,9 @@ export default function SaaSProtocolPage({ openCheckout }) {
   const [ipadPreview, setIpadPreview] = useState(null);
   const [phonePreview, setPhonePreview] = useState(null);
   
+  // STATE ZA TABOVE UNUTAR "CUSTOM ARCHITECTURE" BOXA
+  const [customTab, setCustomTab] = useState('bilbord');
+
   // Odvojeni tajmeri
   const laptopTimerRef = useRef(null);
   const ipadTimerRef = useRef(null);
@@ -62,7 +68,9 @@ export default function SaaSProtocolPage({ openCheckout }) {
     "/red_3_mocup_1.jpeg",                               // VIP 5
     "/red_3_mocup_2.jpeg",                               // VIP 6
     "magnific_slightly-warmer-premium-t_2994486395.png", // VIP 7
-    "/red_4_mocup_2.jpeg"                                // VIP 8
+    "/red_4_mocup_2.jpeg",                               // VIP 8
+    "/red5_mocup_1.webp",                                // VIP 9 (Novi Red 5)
+    "/red5_mocup_2.webp"                                 // VIP 10 (Novi Red 5)
   ];
 
   return (
@@ -74,7 +82,6 @@ export default function SaaSProtocolPage({ openCheckout }) {
           className="fixed inset-0 z-[999] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4 transition-all duration-300 cursor-zoom-out"
           onClick={() => setSelectedImage(null)}
         >
-          {/* 🔥 SPUŠTENO I POVEĆANO X DUGME 🔥 */}
           <button 
             className="fixed top-10 right-6 md:top-20 md:right-20 text-amber-500 hover:text-black bg-black/60 backdrop-blur-md hover:bg-amber-500 border-2 border-amber-500/50 p-4 rounded-full transition-all z-[1000] cursor-pointer shadow-[0_0_30px_rgba(245,158,11,0.5)]"
             onClick={(e) => {
@@ -96,8 +103,8 @@ export default function SaaSProtocolPage({ openCheckout }) {
         </div>
       )}
 
-      {/* HERO SEKCIJA */}
-      <section className="relative pt-20 pb-20 px-6 lg:pt-32 lg:pb-32 overflow-hidden flex flex-col items-center justify-center min-h-[85vh]">
+      {/* HERO SEKCIJA (SA LAPTOPOM) */}
+      <section className="relative pt-20 pb-10 px-6 lg:pt-32 lg:pb-16 overflow-hidden flex flex-col items-center justify-center">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
         
         <div className="relative z-10 max-w-4xl mx-auto text-center">
@@ -130,7 +137,7 @@ export default function SaaSProtocolPage({ openCheckout }) {
             <div className="bg-[#111] border border-amber-500/50 px-6 py-3 rounded-full flex items-center gap-3 shadow-[0_0_30px_rgba(245,158,11,0.2)]">
               <span className="w-3 h-3 bg-amber-500 rounded-full animate-pulse"></span>
               <span className="text-amber-500 text-xs md:text-sm font-black uppercase tracking-widest drop-shadow-md">
-                Live Lab: Click on device screens to test your Figma UI
+                Live Lab: Click on device screens to test your UI (PNG/JPG)
               </span>
             </div>
           </div>
@@ -144,67 +151,76 @@ export default function SaaSProtocolPage({ openCheckout }) {
               className="w-full h-auto object-cover relative z-10"
             />
             
-            {/* INTERAKTIVNI EKRAN 1: LAPTOP */}
+            {/* 🔥 INTERAKTIVNI EKRAN 1: LAPTOP 🔥 */}
             <div 
-              className="absolute z-20 overflow-hidden rounded-sm transition-all duration-300 flex items-center justify-center"
+              className="absolute z-20 overflow-hidden rounded-[2px] transition-all duration-300 flex items-center justify-center group/screen shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] bg-black/20"
               style={{ 
-                top: '40.5%', 
-                left: '30%', 
-                width: '18%', 
-                height: '21.5%',
-                transform: 'perspective(500px) rotateY(2deg)'
+                top: '30.5%', 
+                left: '28.8%', 
+                width: '18.5%', 
+                height: '23.5%',
+                transform: 'perspective(1000px) rotateY(3deg) rotateX(1deg)'
               }}
             >
               {laptopPreview ? (
-                <img src={laptopPreview} alt="Laptop UI Preview" className="w-full h-full object-cover opacity-95 mix-blend-screen" />
+                <>
+                  <img src={laptopPreview} alt="Laptop UI Preview" className="absolute inset-0 w-full h-full object-fill opacity-90 mix-blend-screen" />
+                  <button onClick={(e) => { e.stopPropagation(); setLaptopPreview(null); }} className="absolute z-30 bg-red-600/90 hover:bg-red-500 text-white p-2 rounded-full opacity-0 group-hover/screen:opacity-100 transition-opacity shadow-[0_0_15px_rgba(220,38,38,0.8)]"><Trash2 size={16}/></button>
+                </>
               ) : (
-                <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer bg-black/40 hover:bg-black/70 border border-transparent hover:border-amber-500/50 transition-all text-transparent hover:text-amber-500 group/upload backdrop-blur-[2px]">
+                <label className="absolute inset-0 w-full h-full flex flex-col items-center justify-center cursor-pointer hover:bg-black/50 border border-transparent hover:border-amber-500/50 transition-all text-transparent hover:text-amber-500 group/upload backdrop-blur-[1px]">
                   <Upload className="w-6 h-6 mb-2 opacity-0 group-hover/upload:opacity-100 transition-opacity transform group-hover/upload:-translate-y-1" />
-                  <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover/upload:opacity-100 transition-opacity">Upload Figma</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover/upload:opacity-100 transition-opacity">Upload UI</span>
                   <input type="file" className="hidden" onChange={(e) => handleUiUpload(e, 'laptop')} accept="image/*" />
                 </label>
               )}
             </div>
 
-            {/* INTERAKTIVNI EKRAN 2: IPAD */}
+            {/* 🔥 INTERAKTIVNI EKRAN 2: IPAD 🔥 */}
             <div 
-              className="absolute z-20 overflow-hidden rounded-sm transition-all duration-300 flex items-center justify-center"
+              className="absolute z-20 overflow-hidden rounded-[4px] transition-all duration-300 flex items-center justify-center group/screen shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] bg-black/20"
               style={{ 
-                top: '40.5%', 
-                left: '50.2%', 
+                top: '39%', 
+                left: '49.8%', 
                 width: '15.5%', 
-                height: '21.5%',
-                transform: 'perspective(500px) rotateY(-8deg) rotateX(4deg)'
+                height: '20%',
+                transform: 'perspective(1000px) rotateY(-12deg) rotateX(2deg) skewY(-2deg)'
               }}
             >
               {ipadPreview ? (
-                <img src={ipadPreview} alt="iPad UI Preview" className="w-full h-full object-cover opacity-95 mix-blend-screen" />
+                <>
+                  <img src={ipadPreview} alt="iPad UI Preview" className="absolute inset-0 w-full h-full object-fill opacity-90 mix-blend-screen" />
+                  <button onClick={(e) => { e.stopPropagation(); setIpadPreview(null); }} className="absolute z-30 bg-red-600/90 hover:bg-red-500 text-white p-2 rounded-full opacity-0 group-hover/screen:opacity-100 transition-opacity shadow-[0_0_15px_rgba(220,38,38,0.8)]"><Trash2 size={16}/></button>
+                </>
               ) : (
-                <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer bg-black/40 hover:bg-black/70 border border-transparent hover:border-amber-500/50 transition-all text-transparent hover:text-amber-500 group/upload backdrop-blur-[2px]">
+                <label className="absolute inset-0 w-full h-full flex flex-col items-center justify-center cursor-pointer hover:bg-black/50 border border-transparent hover:border-amber-500/50 transition-all text-transparent hover:text-amber-500 group/upload backdrop-blur-[1px]">
                   <Upload className="w-5 h-5 mb-1 opacity-0 group-hover/upload:opacity-100 transition-opacity transform group-hover/upload:-translate-y-1" />
-                  <span className="text-[8px] font-black uppercase tracking-widest opacity-0 group-hover/upload:opacity-100 transition-opacity text-center px-1">Upload Figma</span>
+                  <span className="text-[8px] font-black uppercase tracking-widest opacity-0 group-hover/upload:opacity-100 transition-opacity text-center px-1">Upload UI</span>
                   <input type="file" className="hidden" onChange={(e) => handleUiUpload(e, 'ipad')} accept="image/*" />
                 </label>
               )}
             </div>
 
-            {/* INTERAKTIVNI EKRAN 3: TELEFON */}
+            {/* 🔥 INTERAKTIVNI EKRAN 3: TELEFON 🔥 */}
             <div 
-              className="absolute z-20 overflow-hidden rounded-[4px] transition-all duration-300 flex items-center justify-center"
+              className="absolute z-20 overflow-hidden rounded-[8px] transition-all duration-300 flex items-center justify-center group/screen shadow-[inset_0_0_10px_rgba(0,0,0,0.8)] bg-black/20"
               style={{ 
-                top: '48%',      
-                left: '74%',     
-                width: '6.5%',   
-                height: '24%',   
-                transform: 'perspective(500px) rotateY(-15deg)'
+                top: '47%',      
+                left: '68.5%',     
+                width: '4.8%',   
+                height: '16.5%',   
+                transform: 'perspective(1000px) rotateY(-18deg) rotateX(3deg) skewY(-3deg)'
               }}
             >
               {phonePreview ? (
-                <img src={phonePreview} alt="Phone UI Preview" className="w-full h-full object-cover opacity-95 mix-blend-screen" />
+                <>
+                  <img src={phonePreview} alt="Phone UI Preview" className="absolute inset-0 w-full h-full object-fill opacity-90 mix-blend-screen" />
+                  <button onClick={(e) => { e.stopPropagation(); setPhonePreview(null); }} className="absolute z-30 bg-red-600/90 hover:bg-red-500 text-white p-1 rounded-full opacity-0 group-hover/screen:opacity-100 transition-opacity shadow-[0_0_15px_rgba(220,38,38,0.8)]"><Trash2 size={12}/></button>
+                </>
               ) : (
-                <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer bg-black/40 hover:bg-black/70 border border-transparent hover:border-amber-500/50 transition-all text-transparent hover:text-amber-500 group/upload backdrop-blur-[2px]">
-                  <Upload className="w-5 h-5 mb-1 opacity-0 group-hover/upload:opacity-100 transition-opacity transform group-hover/upload:-translate-y-1" />
-                  <span className="text-[8px] font-black uppercase tracking-widest opacity-0 group-hover/upload:opacity-100 transition-opacity">UI</span>
+                <label className="absolute inset-0 w-full h-full flex flex-col items-center justify-center cursor-pointer hover:bg-black/50 border border-transparent hover:border-amber-500/50 transition-all text-transparent hover:text-amber-500 group/upload backdrop-blur-[1px]">
+                  <Upload className="w-4 h-4 mb-1 opacity-0 group-hover/upload:opacity-100 transition-opacity transform group-hover/upload:-translate-y-1" />
+                  <span className="text-[6px] font-black uppercase tracking-widest opacity-0 group-hover/upload:opacity-100 transition-opacity">UI</span>
                   <input type="file" className="hidden" onChange={(e) => handleUiUpload(e, 'phone')} accept="image/*" />
                 </label>
               )}
@@ -215,10 +231,32 @@ export default function SaaSProtocolPage({ openCheckout }) {
               <div className="absolute top-4 left-4 bg-black/90 backdrop-blur-md border border-amber-500/30 px-4 py-2 rounded-full flex items-center gap-2 shadow-[0_0_20px_rgba(245,158,11,0.2)] z-30 pointer-events-none">
                 <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
                 <span className="text-amber-500 text-xs font-black uppercase tracking-widest">
-                  Preview Active (10 Min)
+                  Active (Auto-Deletes in 10m)
                 </span>
               </div>
             )}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA SEKCIJA PREMEŠTENA ODMAH ISPOD LAPTOPA (HERO MOCKUPA) */}
+      <section className="py-16 px-6 bg-[#050505] relative overflow-hidden text-center z-10 border-b border-white/5">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[250px] bg-amber-500/10 rounded-[100%] blur-[80px] pointer-events-none"></div>
+        
+        <div className="relative z-10 max-w-2xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tight mb-4">
+            Initiate The <span className="text-amber-500">Integration</span>
+          </h2>
+          <p className="text-sm md:text-base text-zinc-400 mb-8 font-light leading-relaxed">
+            Stop losing enterprise deals because your software looks generic. Let's mathematically engineer your visual authority.
+          </p>
+          
+          <button onClick={() => navigate('/standard-mocup')} className="bg-amber-500 text-black font-black text-xs md:text-sm uppercase tracking-widest px-8 py-4 rounded-xl transition-colors shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:bg-amber-400">
+            Upgrade Your UI
+          </button>
+          
+          <div className="mt-8 text-[10px] md:text-xs font-mono text-zinc-600 uppercase tracking-widest">
+            System Architect: Goran Damnjanovic
           </div>
         </div>
       </section>
@@ -467,73 +505,136 @@ export default function SaaSProtocolPage({ openCheckout }) {
               </div>
             </div>
           </div>
+
+          {/* 🔥 VIP KARTICE (PETI RED MOCKUPA) 🔥 */}
+          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 mb-16">
+            {/* VIP Kartica 9: Protocol Iota */}
+            <div className="bg-[#111] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 group shadow-[0_0_30px_rgba(245,158,11,0.05)] cursor-zoom-in" onClick={() => setSelectedImage(galleryImages[8])}>
+              <div className="relative h-[400px] bg-black overflow-hidden">
+                <img src={galleryImages[8]} alt="Protocol Iota" className="w-full h-full object-cover animate-pulse opacity-90 group-hover:scale-105 transition-transform duration-700" style={{ animationDelay: '0.6s' }} />
+                <div className="absolute top-4 right-4 bg-amber-500 text-black text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg z-10">Protocol Iota</div>
+              </div>
+              <div className="p-8 border-t border-white/5 relative">
+                <h4 className="text-2xl text-white font-black uppercase tracking-widest mb-4">Corporate Oak & Steel</h4>
+                <p className="text-zinc-400 text-base leading-relaxed">Rich oak wood textures merged with dark steel elements. Engineered for high-ticket corporate management systems and elite financial analytics dashboards.</p>
+              </div>
+            </div>
+
+            {/* VIP Kartica 10: Protocol Kappa */}
+            <div className="bg-[#111] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 group shadow-[0_0_30px_rgba(245,158,11,0.05)] cursor-zoom-in" onClick={() => setSelectedImage(galleryImages[9])}>
+              <div className="relative h-[400px] bg-black overflow-hidden">
+                <img src={galleryImages[9]} alt="Protocol Kappa" className="w-full h-full object-cover animate-pulse opacity-90 group-hover:scale-105 transition-transform duration-700" style={{ animationDelay: '1.4s' }} />
+                <div className="absolute top-4 right-4 bg-amber-500 text-black text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg z-10">Protocol Kappa</div>
+              </div>
+              <div className="p-8 border-t border-white/5 relative">
+                <h4 className="text-2xl text-white font-black uppercase tracking-widest mb-4">Ultra-Wide Command Center</h4>
+                <p className="text-zinc-400 text-base leading-relaxed">Curved ultra-wide display setup in a low-key luxury environment. Perfectly frames advanced trading platforms, complex timeline editors, and control center UI.</p>
+              </div>
+            </div>
+          </div>
+
         </section>
 
-        {/* 🔥 NOVI BILBORD: NEW OFFER WITH EXAMPLES 🔥 */}
-        <section className="py-24 px-6 relative flex justify-center bg-[#050505]">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-amber-500/10 rounded-full blur-[150px] pointer-events-none"></div>
-
-          <div className="relative z-10 w-[95%] max-w-[1920px] bg-gradient-to-b from-[#111] to-[#050505] border-2 border-amber-500/50 rounded-3xl p-8 md:p-24 text-center shadow-[0_0_80px_rgba(245,158,11,0.15)] group hover:border-amber-500 transition-all duration-700">
-            <div className="inline-block bg-amber-500 text-black text-sm font-black uppercase tracking-widest px-8 py-3 rounded-full mb-10 shadow-[0_0_20px_rgba(245,158,11,0.5)]">
-              Exclusive V10 Offer
-            </div>
-            
-            <h3 className="text-5xl md:text-8xl font-black text-white uppercase tracking-tight mb-10">
-              Custom <span className="text-amber-500">Architecture</span>
-            </h3>
-            
-            <p className="text-xl md:text-3xl text-zinc-400 max-w-5xl mx-auto mb-24 font-light leading-relaxed">
-              Don't just use our base environments. Provide your exact Figma UI bilbords with your design and we will mathematically render them into 3 custom, examples in 150MP physical realities tailored strictly to your brand's unique identity.
+        {/* 🔥 SMANJENA CTA SEKCIJA PREMEŠTENA ODMAH ISPOD "THE ARSENAL" MOCKUPA 🔥 */}
+        <section className="py-20 px-6 bg-[#050505] relative overflow-hidden text-center z-10 border-b border-white/5">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[250px] bg-amber-500/10 rounded-[100%] blur-[80px] pointer-events-none"></div>
+          
+          <div className="relative z-10 max-w-2xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tight mb-4">
+              Initiate The <span className="text-amber-500">Integration</span>
+            </h2>
+            <p className="text-sm md:text-base text-zinc-400 mb-8 font-light leading-relaxed">
+              Stop losing enterprise deals because your software looks generic. Let's mathematically engineer your visual authority.
             </p>
-
-            {/* Examples Grid sa tvojim novim WEBP slikama */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-24">
-              {/* Bilbord 1 */}
-              <div className="relative rounded-2xl overflow-hidden border border-white/10 group-hover:border-amber-500/30 transition-all cursor-zoom-in shadow-2xl" onClick={() => setSelectedImage("/mocup_1_bilbord.webp")}>
-                <img src="/mocup_1_bilbord.webp" alt="Custom Example 1" className="w-full h-[450px] object-cover transition-transform duration-500 group-hover:scale-105" />
-              </div>
-              {/* Bilbord 2 */}
-              <div className="relative rounded-2xl overflow-hidden border border-white/10 group-hover:border-amber-500/30 transition-all cursor-zoom-in shadow-2xl" onClick={() => setSelectedImage("/mocup_2_bilbord.webp")}>
-                <img src="/mocup_2_bilbord.webp" alt="Custom Example 2" className="w-full h-[450px] object-cover transition-transform duration-500 group-hover:scale-105" />
-              </div>
-              {/* Bilbord 3 */}
-              <div className="relative rounded-2xl overflow-hidden border border-white/10 group-hover:border-amber-500/30 transition-all cursor-zoom-in shadow-2xl" onClick={() => setSelectedImage("/mocup_3_bilbord.webp")}>
-                <img src="/mocup_3_bilbord.webp" alt="Custom Example 3" className="w-full h-[450px] object-cover transition-transform duration-500 group-hover:scale-105" />
-              </div>
-            </div>
-
-            {/* Price & CTA */}
-            <div className="flex flex-col items-center gap-10">
-              <div className="text-7xl font-black text-white">$1,500 <span className="text-xl text-zinc-500 font-bold uppercase tracking-widest">/ 5 Bilbord</span></div>
-              <button 
-                onClick={openCheckout} 
-                className="bg-amber-500 text-black font-black uppercase text-2xl tracking-widest px-20 py-8 rounded-2xl transition-all shadow-[0_0_40px_rgba(245,158,11,0.4)] hover:bg-amber-400 hover:scale-[1.02]"
-              >
-                Secure Custom Integration
-              </button>
+            
+            <button onClick={() => navigate('/standard-mocup')} className="bg-amber-500 text-black font-black text-xs md:text-sm uppercase tracking-widest px-8 py-4 rounded-xl transition-colors shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:bg-amber-400">
+              Upgrade Your UI
+            </button>
+            
+            <div className="mt-8 text-[10px] md:text-xs font-mono text-zinc-600 uppercase tracking-widest">
+              System Architect: Goran Damnjanovic
             </div>
           </div>
         </section>
 
-        {/* CTA SEKCIJA */}
-        <section className="py-32 px-6 bg-[#050505] relative overflow-hidden border-t border-white/5 text-center">
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-[1000px] h-[500px] bg-amber-500/10 rounded-[100%] blur-[100px] pointer-events-none"></div>
-          
-          <div className="relative z-10 max-w-3xl mx-auto">
-            <h2 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tight mb-8">
-              Initiate The <br className="hidden md:block" />
-              <span className="text-amber-500">Integration</span>
-            </h2>
-            <p className="text-xl text-zinc-400 mb-10 font-light">
-              Stop losing enterprise deals because your software looks generic. Let's mathematically engineer your visual authority.
+        {/* 🔥 JOS MANJI BILBORD: NEW OFFER WITH EXAMPLES 🔥 */}
+        <section className="py-20 px-6 relative flex justify-center bg-[#050505]">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-amber-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+          <div className="relative z-10 w-full max-w-5xl bg-gradient-to-b from-[#111] to-[#050505] border-2 border-amber-500/50 rounded-[2rem] p-6 md:p-12 text-center shadow-[0_0_60px_rgba(245,158,11,0.15)] group hover:border-amber-500 transition-all duration-700">
+            <div className="inline-block bg-amber-500 text-black text-[10px] md:text-xs font-black uppercase tracking-widest px-5 py-2 rounded-full mb-6 shadow-[0_0_20px_rgba(245,158,11,0.5)]">
+              Exclusive V10 Offer
+            </div>
+            
+            <h3 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tight mb-6">
+              Custom <span className="text-amber-500">Architecture</span>
+            </h3>
+            
+            <p className="text-base md:text-lg text-zinc-400 max-w-3xl mx-auto mb-10 font-light leading-relaxed">
+              Don't just use our base environments. Provide your exact Figma UI bilbords with your design and we will mathematically render them into 3 custom, examples in 150MP physical realities tailored strictly to your brand's unique identity.
             </p>
-            
-            <button onClick={openCheckout} className="bg-amber-500 text-black font-black text-lg uppercase tracking-widest px-10 py-5 rounded-xl transition-colors shadow-[0_0_30px_rgba(245,158,11,0.3)] hover:bg-amber-400">
-              Upgrade Your UI
-            </button>
-            
-            <div className="mt-12 text-sm font-mono text-zinc-600 uppercase tracking-widest">
-              System Architect: Goran Damnjanovic
+
+            {/* 🔥 PREBAČENO U VIP KARTICE (SA TEKSTOVIMA ISPOD SLIKA) 🔥 */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 text-left">
+              {/* Kartica 1 */}
+              <div className="bg-[#0a0a0a] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 cursor-zoom-in group shadow-[0_0_30px_rgba(245,158,11,0.05)]" onClick={() => setSelectedImage("/mocup_1_bilbord.webp")}>
+                <div className="relative h-[250px] bg-black overflow-hidden">
+                  <img src="/mocup_1_bilbord.webp" alt="Custom Example 1" className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700" />
+                  <div className="absolute top-4 right-4 bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg z-10">Urban</div>
+                </div>
+                <div className="p-6 border-t border-white/5 relative">
+                  <h4 className="text-lg text-white font-black uppercase tracking-widest mb-2">Street-Level Billboard</h4>
+                  <p className="text-zinc-400 text-xs leading-relaxed">High-contrast urban environment engineered for outdoor SAAS campaigns and maximum brand visibility.</p>
+                </div>
+              </div>
+              
+              {/* Kartica 2 */}
+              <div className="bg-[#0a0a0a] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 cursor-zoom-in group shadow-[0_0_30px_rgba(245,158,11,0.05)]" onClick={() => setSelectedImage("/mocup_2_bilbord.webp")}>
+                <div className="relative h-[250px] bg-black overflow-hidden">
+                  <img src="/mocup_2_bilbord.webp" alt="Custom Example 2" className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700" />
+                  <div className="absolute top-4 right-4 bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg z-10">Premium</div>
+                </div>
+                <div className="p-6 border-t border-white/5 relative">
+                  <h4 className="text-lg text-white font-black uppercase tracking-widest mb-2">Luxury Mall Display</h4>
+                  <p className="text-zinc-400 text-xs leading-relaxed">Luxurious indoor advertising space with cinematic lighting. Perfect for elite enterprise presentations.</p>
+                </div>
+              </div>
+              
+              {/* Kartica 3 */}
+              <div className="bg-[#0a0a0a] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 cursor-zoom-in group shadow-[0_0_30px_rgba(245,158,11,0.05)]" onClick={() => setSelectedImage("/mocup_3_bilbord.webp")}>
+                <div className="relative h-[250px] bg-black overflow-hidden">
+                  <img src="/mocup_3_bilbord.webp" alt="Custom Example 3" className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700" />
+                  <div className="absolute top-4 right-4 bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg z-10">Gallery</div>
+                </div>
+                <div className="p-6 border-t border-white/5 relative">
+                  <h4 className="text-lg text-white font-black uppercase tracking-widest mb-2">Gallery Architecture</h4>
+                  <p className="text-zinc-400 text-xs leading-relaxed">Minimalist museum-grade presentation area. Transforms generic UI into high-end physical art exhibitions.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Price & PREMEŠTENI PRAVI LINKOVI (Kao CTA) */}
+            <div className="flex flex-col items-center gap-8 border-t border-white/5 pt-10">
+              {/* Sada piše / 5 BILBORD fiksno kako si tražio na slici */}
+              <div className="text-4xl md:text-5xl font-black text-white">$1,500 <span className="text-base text-zinc-500 font-bold uppercase tracking-widest">/ 5 BILBORD</span></div>
+              
+              {/* 🔥 PRAVI LINKOVI PREMA TVOJEM ZAHTEVU (Vode na rutu i otvaraju tačan tab) 🔥 */}
+              <div className="flex flex-wrap justify-center gap-4">
+                  <Link 
+                      to="/standard-mocup"
+                      onClick={() => localStorage.setItem('v8_active_mocup_tab', 'ultra3')}
+                      className="px-8 py-4 rounded-xl font-black uppercase tracking-widest text-sm transition-all border-2 border-amber-500 bg-amber-500 text-black shadow-[0_0_20px_rgba(245,158,11,0.4)] hover:scale-105 flex items-center justify-center"
+                  >
+                      BILBORD MOCUP
+                  </Link>
+                  <Link 
+                      to="/standard-mocup"
+                      onClick={() => localStorage.setItem('v8_active_mocup_tab', 'ultra4')}
+                      className="px-8 py-4 rounded-xl font-black uppercase tracking-widest text-sm transition-all border-2 border-white/10 bg-black/50 text-zinc-400 hover:border-amber-500/50 hover:text-white hover:scale-105 flex items-center justify-center"
+                  >
+                      WALL MOCUP
+                  </Link>
+              </div>
             </div>
           </div>
         </section>

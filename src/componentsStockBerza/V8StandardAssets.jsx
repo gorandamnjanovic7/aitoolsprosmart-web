@@ -1,139 +1,160 @@
 // POČETAK FAJLA: V8StandardAssets.jsx
-import React, { useState, useEffect } from 'react';
-import { ImageIcon, Video, Download, Zap, Pencil } from 'lucide-react';
-import { db, auth } from '../firebase';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
-import { onAuthStateChanged } from 'firebase/auth';
+import React from 'react';
+import { Zap, DownloadCloud, Edit, Trash2, ShieldCheck, Diamond, ImageIcon } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-// 🔥 GA4 ANALITIKA 🔥
-import { trackV8Action } from '../utils/analytics';
-
-const V8StandardAssets = ({ paketi = [], isAdmin, getGlobalCena, getAspectClass, prijavaIKupovina, startEditPaket, obrisiPaket, setFullScreenImageUrl }) => {
-  const [userEmail, setUserEmail] = useState(null);
-  const [kupljeniPaketi, setKupljeniPaketi] = useState([]);
-
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (user) => {
-      setUserEmail(user ? user.email.toLowerCase() : null);
-    });
-    return () => unsub();
-  }, []);
-
-  useEffect(() => {
-    if (!userEmail) {
-      setKupljeniPaketi([]);
-      return;
-    }
-
-    let cryptoItems = [];
-    let paypalItems = [];
-
-    const azurirajSve = () => {
-      const sviKupljeni = [...cryptoItems, ...paypalItems].filter(Boolean);
-      setKupljeniPaketi([...new Set(sviKupljeni)]);
-    };
-
-    const qCrypto = query(collection(db, "v8_crypto_requests"), where("clientEmail", "==", userEmail));
-    const unsubCrypto = onSnapshot(qCrypto, (snap) => {
-      cryptoItems = snap.docs.filter(doc => doc.data().status === "PLAĆENO").map(doc => doc.data().productName?.toLowerCase().trim());
-      azurirajSve();
-    });
-
-    const qPayPal = query(collection(db, "v8_paypal_requests"), where("clientEmail", "==", userEmail));
-    const unsubPayPal = onSnapshot(qPayPal, (snap) => {
-      paypalItems = snap.docs.filter(doc => doc.data().status === "completed_verified").map(doc => doc.data().productName?.toLowerCase().trim());
-      azurirajSve();
-    });
-
-    return () => { unsubCrypto(); unsubPayPal(); };
-  }, [userEmail]);
-
-  if (!paketi || paketi.length === 0) return <div className="text-zinc-500 font-bold uppercase w-full text-center py-10">No standard assets found.</div>;
+const V8StandardAssets = ({ paketi, isAdmin, getGlobalCena, getAspectClass, prijavaIKupovina, startEditPaket, obrisiPaket, setFullScreenImageUrl, kupljeniPaketiIds }) => {
+  if (!paketi || paketi.length === 0) {
+    return (
+      <div className="w-full text-center py-20 text-zinc-500 font-black uppercase tracking-widest">
+        Awaiting Standard Assets. Radar is clear.
+      </div>
+    );
+  }
 
   return (
     <>
-      {paketi.map(paket => {
-        const naziv = paket.nazivEn ? paket.nazivEn.trim() : "";
-        const volume = paket.volume ? paket.volume.trim() : "";
-        const tacanNaziv = volume ? `${naziv} - ${volume}` : naziv;
-        const duplaGreska = volume ? `${naziv} - ${volume} - ${volume}` : naziv;
-        
-        const jeKupljen = kupljeniPaketi.some(k => {
-          const kLow = k.toLowerCase();
-          return kLow === tacanNaziv.toLowerCase() || kLow === naziv.toLowerCase() || kLow === duplaGreska.toLowerCase() || kLow === "full access";
-        });
+      {paketi.map((paket) => {
+        const isOwned = kupljeniPaketiIds?.includes(paket.id) || paket.isFree || parseFloat(paket.cena) === 0;
 
         return (
-        <div key={paket.id} className="w-full md:w-[calc(50%-1.5rem)] group transition-all duration-500 hover:scale-[1.02] shadow-[0_0_30px_rgba(255,140,0,0.15)] flex flex-col v8-premium-card border border-orange-500/20 max-w-full">
-          <div className="v8-card-content p-4 md:p-6 flex flex-col h-full bg-[#030008] max-w-full overflow-hidden">
-            <div className={`${getAspectClass(paket.format)} relative rounded-2xl overflow-hidden mb-4 bg-black border border-white/5 shadow-inner shrink-0 cursor-pointer max-w-full`} onClick={() => setFullScreenImageUrl(paket.previewUrl)}>
-              {paket.volume && (<div className="absolute top-0 left-0 px-3 py-1.5 rounded-br-xl rounded-tl-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest z-20 shadow-lg border-b border-r bg-[#FF8C00] text-black border-[#FF8C00]/50">{paket.volume}</div>)}
-              <div className="absolute top-2 right-2 flex flex-col gap-1.5 items-end z-20 max-w-[80%]">
-                  {paket.format && (<div className="bg-black/80 backdrop-blur-md px-2 md:px-3 py-1 rounded-lg font-black text-[8px] md:text-[9px] uppercase tracking-wider shadow-lg border border-[#FF8C00]/50 text-[#FF8C00] break-words text-right">{paket.format.split('(')[0].trim()}</div>)}
-                  {(paket.kategorijaEn || paket.kategorija) && (<div className="bg-black/80 backdrop-blur-md px-2 md:px-3 py-1 rounded-lg font-black text-[8px] md:text-[9px] uppercase tracking-wider shadow-lg border border-blue-400/50 text-blue-400 break-words text-right">{paket.kategorijaEn || paket.kategorija}</div>)}
-              </div>
-              <img loading="lazy" src={paket.previewUrl} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-500" alt={paket.nazivEn} />
-            </div>
+          <div key={paket.id} className="bg-[#0a0a0a] rounded-[2.5rem] border border-orange-500/20 overflow-hidden shadow-[0_0_30px_rgba(255,140,0,0.05)] hover:shadow-[0_0_40px_rgba(255,140,0,0.15)] transition-all flex flex-col relative w-full lg:w-[calc(50%-1.5rem)]">
             
-            {paket.primeri && paket.primeri.length > 0 && (
-                <div className={`grid gap-2 md:gap-3 mb-4 shrink-0 max-w-full ${paket.primeri.length > 4 ? 'grid-cols-3' : 'grid-cols-4'}`}>
-                    {paket.primeri.map((imgUrl, idx) => (
-                        <div key={idx} className="aspect-square rounded-xl overflow-hidden border border-orange-500/20 bg-zinc-900 shadow-xl relative cursor-pointer" onClick={() => setFullScreenImageUrl(imgUrl)}>
-                            <img loading="lazy" src={imgUrl} className="w-full h-full object-cover opacity-70 hover:opacity-100 transition-all duration-300" alt="Preview" />
-                        </div>
-                    ))}
-                </div>
-            )}
-            
-            <div className="flex-1 flex flex-col max-w-full">
-              <div className="flex items-center gap-2 md:gap-3 mb-2 shrink-0">
-                {paket.tip === 'Video' ? <Video className="w-4 h-4 md:w-5 md:h-5 text-[#FF8C00] shrink-0" /> : <ImageIcon className="w-4 h-4 md:w-5 md:h-5 text-[#FF8C00] shrink-0" />}
-                <h3 className="text-[16px] md:text-[20px] font-black uppercase text-white tracking-widest leading-tight break-words">{paket.nazivEn || "PREMIUM ASSETS"}</h3>
-              </div>
-              <p className="text-zinc-400 text-[10px] md:text-[11px] uppercase font-black mb-4 flex-1 leading-relaxed tracking-wider whitespace-pre-wrap break-words">{paket.opisEn}</p>
-            </div>
-            
-            <div className="mt-auto shrink-0 bg-[#050505] p-4 md:p-5 rounded-xl border border-white/5 relative overflow-hidden w-full">
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-900/10 to-amber-900/10 z-0 pointer-events-none"></div>
-              
-              <div className="flex flex-col sm:flex-row items-center justify-between relative z-10 gap-3 sm:gap-2">
-                <div className="flex flex-col w-full sm:w-auto text-center sm:text-left mb-2 sm:mb-0">
-                  <span className="text-zinc-500 text-[8px] md:text-[9px] font-black uppercase tracking-[0.1em] md:tracking-[0.2em] mb-0.5 md:mb-1">One-Time License</span>
-                  <span className="text-xl md:text-3xl font-black text-white drop-shadow-[0_0_15px_rgba(255,140,0,0.4)]">${getGlobalCena(paket.cena)}</span>
-                </div>
-                
-                <div className="w-full sm:w-auto flex justify-center sm:justify-end">
-                  {isAdmin || jeKupljen ? (
-                    <a 
-                      href={paket.zipLink} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      onClick={() => trackV8Action("download_standard_asset", { asset_name: tacanNaziv })}
-                      className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-3 md:px-6 md:py-4 rounded-xl font-black text-[9px] md:text-[12px] uppercase tracking-wider md:tracking-widest flex items-center justify-center gap-1.5 md:gap-2 shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all"
-                    >
-                      DOWNLOAD <Download className="w-3 h-3 md:w-5 md:h-5 hidden sm:block" />
-                    </a>
-                  ) : (
-                      <button onClick={() => prijavaIKupovina({ ...paket, nazivEn: tacanNaziv })} className="w-full sm:w-auto hover:scale-105 text-white px-4 py-3 md:px-6 md:py-4 rounded-xl font-black text-[9px] md:text-[12px] uppercase tracking-wider md:tracking-widest flex items-center justify-center gap-1.5 md:gap-2 transition-all shadow-lg bg-gradient-to-r from-orange-600 to-amber-500 shadow-[0_0_30px_rgba(255,140,0,0.6)] border border-orange-400/30">
-                        GET LICENSE <Zap className="w-3 h-3 md:w-5 md:h-5" />
-                      </button>
+            {/* SLIKA I ZNAČKE (BADGES) */}
+            <div className="p-4 md:p-5 relative">
+               {paket.volume && (
+                 <div className="absolute top-8 left-8 z-10 bg-gradient-to-r from-orange-600 to-amber-500 text-black text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg">
+                   {paket.volume}
+                 </div>
+               )}
+               <div className="absolute top-8 right-8 z-10 flex flex-col items-end gap-2">
+                  <div className="bg-gradient-to-r from-orange-600 to-amber-500 text-black text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg">
+                    33.2MP STANDARD
+                  </div>
+                  {paket.kategorijaEn && (
+                    <div className="bg-black/80 backdrop-blur-md border border-orange-500/50 text-orange-300 text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full">
+                      {paket.kategorijaEn}
+                    </div>
                   )}
-                </div>
-              </div>
+               </div>
+
+               {/* GLAVNA SLIKA SA PULSIRANJEM I TAJMING MUNJOM */}
+               <div className="w-full aspect-[16/9] rounded-2xl overflow-hidden cursor-pointer relative group border border-white/5" onClick={() => setFullScreenImageUrl(paket.previewUrl)}>
+                  
+                  <motion.img 
+                    src={paket.previewUrl} 
+                    alt={paket.nazivEn} 
+                    className="w-full h-full object-cover transform-gpu" 
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+                  />
+
+                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-20">
+                     <Zap className="text-white w-12 h-12 drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]" />
+                  </div>
+
+                  <motion.div 
+                    className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
+                    animate={{ 
+                        opacity: [0, 0, 0.9, 0, 1, 0, 0],
+                        scale: [0.8, 0.8, 1.2, 0.9, 1.5, 1, 1]
+                    }}
+                    transition={{ 
+                        duration: 7, 
+                        repeat: Infinity, 
+                        times: [0, 0.85, 0.87, 0.9, 0.92, 0.98, 1],
+                        ease: "easeInOut"
+                    }}
+                  >
+                     <Zap className="text-orange-400 w-16 h-16 drop-shadow-[0_0_40px_rgba(255,140,0,1)]" fill="rgba(255,140,0,0.3)" strokeWidth={1.5} />
+                  </motion.div>
+
+               </div>
+
+               {/* MALE SLIKE (THUMBNAILS) SA ASINHRONIM PULSIRANJEM */}
+               {paket.primeri && paket.primeri.length > 0 && (
+                  <div className="grid grid-cols-4 gap-3 mt-3">
+                     {paket.primeri.slice(0, 4).map((thumb, idx) => (
+                        <div key={idx} className="aspect-square rounded-xl overflow-hidden cursor-pointer relative group border border-white/5" onClick={() => setFullScreenImageUrl(thumb)}>
+                           <motion.img 
+                             src={thumb} 
+                             alt={`Preview ${idx}`} 
+                             className="w-full h-full object-cover transform-gpu" 
+                             animate={{ scale: [1, 1.15, 1] }}
+                             transition={{ duration: 5 + idx, repeat: Infinity, ease: "easeInOut" }}
+                           />
+                           <div className="absolute inset-0 bg-orange-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                        </div>
+                     ))}
+                  </div>
+               )}
             </div>
-            
-            {isAdmin && (
-              <div className="mt-4 md:mt-5 pt-4 border-t border-red-900/30 flex items-center gap-2 md:gap-3 shrink-0 relative z-10 w-full">
-                <button onClick={() => startEditPaket(paket)} className="w-full py-2.5 md:py-3 bg-zinc-800 text-zinc-300 rounded-xl text-[9px] md:text-[10px] font-black uppercase hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center gap-2">Edit <Pencil size={12} className="md:w-3.5 md:h-3.5" /></button>
-                <button onClick={() => obrisiPaket(paket.id)} className="w-full py-2.5 md:py-3 bg-red-900/30 text-red-500 rounded-xl text-[9px] md:text-[10px] font-black uppercase hover:bg-red-600 transition-all">Remove</button>
-              </div>
-            )}
+
+            {/* TEKST I KONTROLE */}
+            <div className="p-6 md:p-8 pt-2 flex flex-col flex-grow">
+               
+               <h3 className="text-xl md:text-[22px] leading-tight font-black uppercase text-white mb-5 tracking-widest flex items-start gap-3">
+                  <ImageIcon className="text-orange-500 shrink-0 mt-0.5" size={24} />
+                  <span>{paket.nazivEn}</span>
+               </h3>
+
+               <div className="bg-orange-900/10 border border-orange-500/20 rounded-xl p-3 mb-3 flex items-center gap-2">
+                  <Zap size={14} className="text-orange-400 shrink-0" />
+                  <span className="text-[9px] md:text-[10px] text-orange-300 font-black uppercase tracking-widest">33.2MP PRECISION UPSCALE</span>
+               </div>
+
+               <div className="bg-emerald-900/10 border border-emerald-500/20 rounded-xl p-3 mb-5 flex items-center gap-2">
+                  <ShieldCheck size={14} className="text-emerald-400 shrink-0" />
+                  <span className="text-[9px] md:text-[10px] text-emerald-400 font-black uppercase tracking-widest">INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP</span>
+               </div>
+
+               <p className="text-[10px] md:text-[11px] text-zinc-400 font-bold uppercase tracking-widest mb-8 leading-relaxed">
+                 {paket.opisEn}
+               </p>
+
+               <div className="flex items-end justify-between mt-auto pt-6 border-t border-white/5">
+                  <div>
+                     <p className="text-[9px] text-zinc-500 font-black uppercase tracking-widest mb-1 flex items-center gap-1">
+                       <ShieldCheck size={10} className="text-emerald-500"/> FULL COMMERCIAL RIGHTS
+                     </p>
+                     <p className="text-3xl md:text-4xl font-black text-orange-400 drop-shadow-md">${getGlobalCena(paket.cena)}</p>
+                  </div>
+
+                  <button 
+                    onClick={() => {
+                      if (isAdmin || isOwned) {
+                        window.open(paket.zipLink, '_blank');
+                      } else {
+                        prijavaIKupovina(paket);
+                      }
+                    }} 
+                    className={`px-6 py-4 rounded-xl font-black text-[11px] md:text-[13px] uppercase tracking-widest transition-all flex items-center gap-2 hover:scale-105 ${
+                      (!isAdmin && isOwned) 
+                        ? 'bg-gradient-to-r from-emerald-500 to-teal-400 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)]' 
+                        : 'bg-gradient-to-r from-orange-600 to-amber-500 text-black shadow-[0_0_20px_rgba(255,140,0,0.3)]'
+                    }`}
+                  >
+                     {(isAdmin || isOwned) ? <><DownloadCloud size={16} /> DOWNLOAD</> : <><Diamond size={16} /> GET ACCESS</>}
+                  </button>
+               </div>
+
+               {isAdmin && (
+                  <div className="mt-6 pt-4 border-t border-red-500/20 flex justify-between gap-3">
+                     <button onClick={() => startEditPaket(paket)} className="flex-1 bg-zinc-900 hover:bg-white text-zinc-400 hover:text-black py-3 rounded-xl transition-all border border-white/10 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2">
+                        EDIT <Edit size={14} />
+                     </button>
+                     <button onClick={() => obrisiPaket(paket.id)} className="flex-1 bg-red-900/30 hover:bg-red-500 text-red-500 hover:text-white py-3 rounded-xl transition-all border border-red-500/30 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2">
+                        REMOVE <Trash2 size={14} />
+                     </button>
+                  </div>
+               )}
+            </div>
           </div>
-        </div>
         );
       })}
     </>
   );
 };
+
 export default V8StandardAssets;
 // KRAJ FAJLA: V8StandardAssets.jsx

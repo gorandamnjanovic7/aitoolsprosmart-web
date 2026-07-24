@@ -52,6 +52,7 @@ import V8AdminLiveNotifier from './V8AdminLiveNotifier';
 import V8PromptFactory from './V8PromptFactory';
 import V8RawRealityEngine from './V8RawRealityEngine';
 import SaaSProtocolPage from './SaaSProtocolPage';
+import StandardMocup from './StandardMocup';
 
 // 🔥 NOVO: IMPORT NOTIFIKACIONOG SISTEMA 🔥
 // (Prilagodi putanju ako si fajl stavio u neki podfolder tipa ./components/NotificationSystem)
@@ -610,7 +611,7 @@ function AppContent({ appsData, refreshData }) {
               <Route path="/raw-reality" element={<V8PageWrapper><V8RawRealityEngine /></V8PageWrapper>} />
 
               <Route path="/saas-protocol" element={<V8PageWrapper><SaaSProtocolPage openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
-
+              <Route path="/standard-mocup" element={<V8PageWrapper><StandardMocup /></V8PageWrapper>} />
               <Route path="/seedance" element={<V8PageWrapper><CinematikPromptEngine initialEngine="SEEDANCE 2.0" openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               <Route path="/kling" element={<V8PageWrapper><CinematikPromptEngine initialEngine="KLING 3.0" openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               <Route path="/enxance" element={<V8PageWrapper><V8Enhancer10x openCheckout={handleOpenCheckout} /></V8PageWrapper>} />

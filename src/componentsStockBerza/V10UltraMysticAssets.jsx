@@ -1,6 +1,7 @@
 // POČETAK FAJLA: V10UltraMysticAssets.jsx
 import React from 'react';
 import { Zap, DownloadCloud, Edit, Trash2, ShieldCheck, Diamond, Aperture } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const V10UltraMysticAssets = ({ paketi, isAdmin, getGlobalCena, getAspectClass, prijavaIKupovina, startEditPaket, obrisiPaket, setFullScreenImageUrl, kupljeniPaketiIds }) => {
   if (!paketi || paketi.length === 0) {
@@ -37,18 +38,59 @@ const V10UltraMysticAssets = ({ paketi, isAdmin, getGlobalCena, getAspectClass, 
                   )}
                </div>
 
+               {/* GLAVNA SLIKA SA PULSIRANJEM I TAJMING MUNJOM */}
                <div className="w-full aspect-[16/9] rounded-2xl overflow-hidden cursor-pointer relative group border border-white/5" onClick={() => setFullScreenImageUrl(paket.previewUrl)}>
-                  <img src={paket.previewUrl} alt={paket.nazivEn} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                  
+                  {/* PULSIRAJUĆA SLIKA */}
+                  <motion.img 
+                    src={paket.previewUrl} 
+                    alt={paket.nazivEn} 
+                    className="w-full h-full object-cover transform-gpu" 
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+                  />
+
+                  {/* STANDARDNI HOVER EFEKAT (BELA MUNJA) */}
+                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-20">
                      <Zap className="text-white w-12 h-12 drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]" />
                   </div>
+
+                  {/* 🔥 TAJMING MUNJA (SEVNE SAMA OD SEBE NA SVAKIH 7 SEKUNDI) 🔥 */}
+                  <motion.div 
+                    className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
+                    animate={{ 
+                        opacity: [0, 0, 0.9, 0, 1, 0, 0],
+                        scale: [0.8, 0.8, 1.2, 0.9, 1.5, 1, 1]
+                    }}
+                    transition={{ 
+                        duration: 7, 
+                        repeat: Infinity, 
+                        times: [0, 0.85, 0.87, 0.9, 0.92, 0.98, 1], // Brzi "double flash" pred kraj sedme sekunde
+                        ease: "easeInOut"
+                    }}
+                  >
+                     <Zap className="text-purple-400 w-16 h-16 drop-shadow-[0_0_40px_rgba(168,85,247,1)]" fill="rgba(168,85,247,0.3)" strokeWidth={1.5} />
+                  </motion.div>
+
                </div>
 
+               {/* MALE SLIKE (THUMBNAILS) SA ASINHRONIM PULSIRANJEM */}
                {paket.primeri && paket.primeri.length > 0 && (
                   <div className="grid grid-cols-4 gap-3 mt-3">
                      {paket.primeri.slice(0, 4).map((thumb, idx) => (
                         <div key={idx} className="aspect-square rounded-xl overflow-hidden cursor-pointer relative group border border-white/5" onClick={() => setFullScreenImageUrl(thumb)}>
-                           <img src={thumb} alt={`Preview ${idx}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                           
+                           <motion.img 
+                             src={thumb} 
+                             alt={`Preview ${idx}`} 
+                             className="w-full h-full object-cover transform-gpu" 
+                             animate={{ scale: [1, 1.15, 1] }}
+                             // Trajanje svake male slike je drugačije (5s, 6s, 7s, 8s) da ne dišu sve u istom trenutku!
+                             transition={{ duration: 5 + idx, repeat: Infinity, ease: "easeInOut" }}
+                           />
+                           
+                           {/* Blagi ljubičasti overlay na hover */}
+                           <div className="absolute inset-0 bg-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                         </div>
                      ))}
                   </div>
@@ -75,7 +117,7 @@ const V10UltraMysticAssets = ({ paketi, isAdmin, getGlobalCena, getAspectClass, 
                   <span className="text-[9px] md:text-[10px] text-emerald-400 font-black uppercase tracking-widest">INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP</span>
                </div>
 
-               <p className="text-[10px] md:text-[11px] text-zinc-400 font-bold uppercase tracking-widest mb-8 leading-relaxed line-clamp-6">
+               <p className="text-[10px] md:text-[11px] text-zinc-400 font-bold uppercase tracking-widest mb-8 leading-relaxed">
                  {paket.opisEn}
                </p>
 
