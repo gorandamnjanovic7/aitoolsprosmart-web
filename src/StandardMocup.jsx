@@ -456,24 +456,24 @@ export default function StandardMocup() {
                     </motion.div>
                 </div>
 
-                {/* 🔥 GALERIJA MALIH SLIKA (10 KOMADA - SVETLIJE, RAZMAK I PULSIRANJE) 🔥 */}
+                {/* 🔥 GALERIJA MALIH SLIKA (10 KOMADA - SVETLIJE, RAZMAK I PULSIRANJE NA SLICI) 🔥 */}
                 {paket.primeri && paket.primeri.length > 0 && (
                   <div className="grid grid-cols-5 gap-4 md:gap-6 mt-6">
                     {paket.primeri.slice(0, 10).map((imgUrl, idx) => (
-                      <motion.div 
+                      <div 
                         key={idx} 
                         onClick={(e) => { e.stopPropagation(); setFullScreenImageUrl(imgUrl); }}
                         className={`relative cursor-zoom-in group rounded-xl overflow-hidden border border-white/10 ${hoverBorder} transition-all duration-300 aspect-video bg-[#050505] shadow-lg`}
-                        animate={{ scale: [1, 1.04, 1] }}
-                        transition={{ duration: 3 + (idx % 4), repeat: Infinity, ease: "easeInOut" }}
                       >
                         <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500 z-10 pointer-events-none"></div>
-                        <img 
+                        <motion.img 
                           src={imgUrl} 
                           alt={`Preview ${idx + 1}`} 
-                          className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" 
+                          className="w-full h-full object-cover transform-gpu" 
+                          animate={{ scale: [1, 1.15, 1] }}
+                          transition={{ duration: 4 + (idx * 0.5), repeat: Infinity, ease: "easeInOut" }}
                         />
-                      </motion.div>
+                      </div>
                     ))}
                   </div>
                 )}

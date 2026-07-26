@@ -96,22 +96,26 @@ const V8PremiumAssets = ({ paketi = [], isAdmin, getGlobalCena, getAspectClass, 
         );
 
         return (
-        <div key={paket.id} className="w-full md:w-[calc(50%-1.5rem)] group transition-all duration-500 hover:scale-[1.02] shadow-[0_0_30px_rgba(255,140,0,0.15)] flex flex-col v8-premium-card">
-          <div className="v8-card-content p-5 md:p-6 flex flex-col h-full">
+        <div key={paket.id} className="relative w-full md:w-[calc(50%-1.5rem)] p-[2px] rounded-[2.5rem] overflow-hidden group/wrap transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(255,140,0,0.3)] flex flex-col v8-premium-card">
+          
+          {/* 🔥 GEMINI AI ROTIRAJUĆI EFEKAT 🔥 */}
+          <div className="absolute top-1/2 left-1/2 w-[200%] h-[200%] -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,transparent_0%,transparent_50%,#4285F4_70%,#EA4335_80%,#FBBC05_90%,#34A853_100%)] animate-ai-spin z-0 pointer-events-none"></div>
+
+          <div className="relative z-10 bg-[#0a0a0a] rounded-[calc(2.5rem-2px)] border border-orange-500/20 shadow-[0_0_30px_rgba(255,140,0,0.05)] v8-card-content p-5 md:p-6 flex flex-col h-full">
             <div className={`${getAspectClass(paket.format)} relative rounded-2xl overflow-hidden mb-4 bg-black border border-white/5 shadow-inner shrink-0 cursor-pointer`} onClick={() => setFullScreenImageUrl(paket.previewUrl)}>
               {paket.volume && (<div className="absolute top-0 left-0 px-3 py-1.5 rounded-br-xl rounded-tl-2xl font-black text-[10px] uppercase tracking-widest z-20 shadow-lg border-b border-r bg-[#FF8C00] text-black border-[#FF8C00]/50">{paket.volume}</div>)}
               <div className="absolute top-2 right-2 flex flex-col gap-1.5 items-end z-20">
                   {paket.format && (<div className="bg-black/80 backdrop-blur-md px-3 py-1 rounded-lg font-black text-[9px] uppercase tracking-wider shadow-lg border border-[#FF8C00]/50 text-[#FF8C00]">{paket.format.split('(')[0].trim()}</div>)}
                   {(paket.kategorijaEn || paket.kategorija) && (<div className="bg-black/80 backdrop-blur-md px-3 py-1 rounded-lg font-black text-[9px] uppercase tracking-wider shadow-lg border border-blue-400/50 text-blue-400">{paket.kategorijaEn || paket.kategorija}</div>)}
               </div>
-              <img loading="lazy" src={paket.previewUrl} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-500" alt={paket.nazivEn} />
+              <img loading="lazy" src={paket.previewUrl} className="w-full h-full object-cover opacity-90 group-hover/wrap:opacity-100 transition-all duration-500" alt={paket.nazivEn} />
             </div>
             
             {paket.primeri && paket.primeri.length > 0 && (
                 <div className={`grid gap-3 mb-4 shrink-0 ${paket.primeri.length > 4 ? 'grid-cols-3' : 'grid-cols-4'}`}>
                     {paket.primeri.map((imgUrl, idx) => (
-                        <div key={idx} className="aspect-square rounded-xl overflow-hidden border border-white/10 bg-zinc-900 shadow-xl relative cursor-pointer" onClick={() => setFullScreenImageUrl(imgUrl)}>
-                            <img loading="lazy" src={imgUrl} className="w-full h-full object-cover opacity-70 hover:opacity-100 transition-all duration-300" alt="Preview" />
+                        <div key={idx} className="aspect-square rounded-xl overflow-hidden border border-white/10 bg-zinc-900 shadow-xl relative cursor-pointer group" onClick={() => setFullScreenImageUrl(imgUrl)}>
+                            <img loading="lazy" src={imgUrl} className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-all duration-300 transform-gpu group-hover:scale-110" alt="Preview" />
                         </div>
                     ))}
                 </div>
