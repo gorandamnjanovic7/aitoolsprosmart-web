@@ -6,9 +6,10 @@ import { Helmet } from 'react-helmet-async';
 // V8 KOCKICE
 import HeroBanner from './HeroBanner';
 import B2BProtocols from './B2BProtocols';
+import PromptFactoryPromo from './PromptFactoryPromo'; // 🔥 POMERENO VISOKO GORE 🔥
 import V8Decks from './V8Decks'; 
 import IntelProtocols from './IntelProtocols';
-import SaasPromo from './SaasPromo'; // 🔥 KOMPONENTA JE TU 🔥
+import SaasPromo from './SaasPromo'; 
 import UnlockTheBeast from './UnlockTheBeast'; 
 import EnhancerPromo from './EnhancerPromo';
 import StockBundles from './StockBundles';
@@ -32,12 +33,13 @@ export default function HomePage({ apps = [] }) {
       
       <div className="max-w-7xl mx-auto px-6 text-left">
         <B2BProtocols />
+        
+        {/* 🔥 REKLAMA ZA PROMPT FACTORY (ODMAH ISPOD B2B AGENCIJSKOG DELA) 🔥 */}
+        <PromptFactoryPromo />
+        
         <V8Decks />
         <IntelProtocols />
-        
-        {/* 🔥 NOVA ČISTA KOMPONENTA 🔥 */}
         <SaasPromo />
-        
         <UnlockTheBeast />
         <EnhancerPromo />
         <StockBundles />

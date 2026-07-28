@@ -9,14 +9,13 @@ import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, serverTimestamp
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { v8Toast } from '../v8Utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 import V8StandardAssets from './V8StandardAssets';
 import V8PremiumAssets from './V8PremiumAssets';
 import V8MasterBundles from './V8MasterBundles';
 import V8SignatureBundles from './V8SignatureBundles';
 import V10UltraPrintAssets from './V10UltraPrintAssets';
-import V10UltraMysticAssets from './V10UltraMysticAssets';
-import V10UltraAncientAssets from './V10UltraAncientAssets';
 
 import V8SecureCheckout from '../V8SecureCheckout';
 import LoginRequiredModal from '../LoginRequiredModal';
@@ -45,6 +44,7 @@ const FullScreenLightbox = ({ imageUrl, onClose }) => {
 };
 
 const V8StockBerza = () => {
+  const navigate = useNavigate();
   const [paketi, setPaketi] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentUser, setCurrentUser] = useState(null); 
@@ -63,6 +63,9 @@ const V8StockBerza = () => {
   }); 
 
   useEffect(() => {
+    if (activeTab === 'ultra150_2' || activeTab === 'ultra150_3') {
+      setActiveTab('ultra150');
+    }
     localStorage.setItem('v8_active_stock_tab', activeTab);
   }, [activeTab]);
 
@@ -153,13 +156,11 @@ const V8StockBerza = () => {
   }, [paketi]);
 
   useEffect(() => {
-    if (activeTab === 'bundles' || activeTab === 'signature' || activeTab === 'ultra150' || activeTab === 'ultra150_2' || activeTab === 'ultra150_3') { setIsFree(false); }
+    if (activeTab === 'bundles' || activeTab === 'signature' || activeTab === 'ultra150') { setIsFree(false); }
     
     if (activeTab === 'bundles') setNoviFormat('45MP MASTERWORK BUNDLE');
     else if (activeTab === 'signature') setNoviFormat('60MP SIGNATURE BUNDLE');
     else if (activeTab === 'ultra150') setNoviFormat('150MP ULTRA PRINT BUNDLE');
-    else if (activeTab === 'ultra150_2') setNoviFormat('150MP ULTRA MYSTIC BUNDLE');
-    else if (activeTab === 'ultra150_3') setNoviFormat('150MP ANCIENT CIVILIZATIONS BUNDLE');
     else setNoviFormat('16:9 ONLY (SINGLE)');
   }, [activeTab]);
 
@@ -170,8 +171,6 @@ const V8StockBerza = () => {
     else if (noviFormat === '45MP MASTERWORK BUNDLE') { setNoviOpisEn("V8 MASTERWORK BUNDLE: COMPLETE COLLECTION OF 60 PREMIUM VISUALS FOR 8K IN 45 MEGAPIXELS RESOLUTION. INCLUDES 16:9 ( 30 Images ) AND 9:16 ( 30 Images ) ASPECT RATIOS. Utilizing precision LANCZOS interpolation. An advanced MedianFilter systematically wipes out digital noise and compression artifacts. Custom NumPy matrix processing applies a smooth rolloff to prevent blown-out whites and retain intricate highlight textures. Strict conversion to the sRGB ICC profile ensures color accuracy across all digital devices and professional reference monitors. Signature Gaussian Noise distribution breaks artificial AI smoothness, creating an authentic, tangible photographic look. Zero text, watermarks, or logos. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Fully production-ready."); }
     else if (noviFormat === '60MP SIGNATURE BUNDLE') { setNoviOpisEn("V8 SIGNATURE BUNDLE: COMPLETE COLLECTION OF 45 PREMIUM VISUALS FOR 8K IN 60 MEGAPIXELS RESOLUTION. INCLUDES 16:9 ( 15 Images ), 9:16 ( 15 Images ) AND 21:9 ( 15 Images ) ASPECT RATIOS. Utilizing precision LANCZOS interpolation. An advanced MedianFilter systematically wipes out digital noise and compression artifacts. Custom NumPy matrix processing applies a smooth rolloff to prevent blown-out whites and retain intricate highlight textures. Strict conversion to the sRGB ICC profile ensures color accuracy across all digital devices and professional reference monitors. Signature Gaussian Noise distribution breaks artificial AI smoothness, creating an authentic, tangible photographic look. Zero text, watermarks, or logos. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Fully production-ready."); }
     else if (noviFormat === '150MP ULTRA PRINT BUNDLE') { setNoviOpisEn("V10 ULTRA PRINT BUNDLE: MASSIVE 150MP RESOLUTION FOR ELITE PRINT & COMMERCIAL WORK. INCLUDES A CURATED 15-FILE COLLECTION: 16:9 ( 5 Images ), 9:16 ( 5 Images ), AND 21:9 ( 5 Images ) ASPECT RATIOS. Processed through the V10 Master Engine utilizing precision LANCZOS interpolation. Includes advanced UnsharpMask micro-contrast, custom NumPy matrix processing for highlight rolloff and shadow depth, and organic anti-plastic grain. Strict sRGB ICC profile embedding. Perfect for high-visibility billboards, museum-grade fine-art printing, and extreme macro cropping. Zero text, watermarks, or logos. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Fully production-ready."); }
-    else if (noviFormat === '150MP ULTRA MYSTIC BUNDLE') { setNoviOpisEn("V10 ULTRA MYSTIC BUNDLE: MASSIVE 150MP RESOLUTION FOR ELITE CINEMATIC & FANTASY WORLD-BUILDING. INCLUDES A CURATED 15-FILE COLLECTION: 16:9 ( 5 Images ), 9:16 ( 5 Images ), AND 21:9 ( 5 Images ) ASPECT RATIOS. Processed through the V10 Master Engine utilizing precision LANCZOS interpolation. Includes advanced UnsharpMask micro-contrast, custom NumPy matrix processing for highlight rolloff and shadow depth, and organic anti-plastic grain. Strict sRGB ICC profile embedding. Perfect for AAA game environments, high-end matte painting, and extreme macro cropping. Zero text, watermarks, or logos. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Fully production-ready."); }
-    else if (noviFormat === '150MP ANCIENT CIVILIZATIONS BUNDLE') { setNoviOpisEn("V10 ULTRA ANCIENT CIVILIZATIONS BUNDLE: MASSIVE 150MP RESOLUTION FOR ELITE HISTORICAL & ARCHITECTURAL VISUALS. INCLUDES A CURATED 15-FILE COLLECTION: 16:9 ( 5 Images ), 9:16 ( 5 Images ), AND 21:9 ( 5 Images ) ASPECT RATIOS. Processed through the V10 Master Engine utilizing precision LANCZOS interpolation. Includes advanced UnsharpMask micro-contrast, custom NumPy matrix processing for highlight rolloff and shadow depth, and organic anti-plastic grain. Strict sRGB ICC profile embedding. Perfect for museum-grade exhibitions, historical documentaries, epic cinematic world-building, and extreme macro cropping. Zero text, watermarks, or logos. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Fully production-ready."); }
   }, [noviFormat, editingPaketId]); 
 
   const fetchPaketi = async () => {
@@ -242,7 +241,7 @@ const V8StockBerza = () => {
     if (files.length === 0) return;
     let maxThumbnails = 4;
     if (activeTab === 'bundles') maxThumbnails = 10;
-    else if (activeTab === 'signature' || activeTab === 'ultra150' || activeTab === 'ultra150_2' || activeTab === 'ultra150_3') maxThumbnails = 8;
+    else if (activeTab === 'signature' || activeTab === 'ultra150') maxThumbnails = 8;
     const slobodnaMesta = maxThumbnails - primeriUrls.length;
     if (slobodnaMesta <= 0) return;
     setIsUploadingPrimer(true);
@@ -266,9 +265,7 @@ const V8StockBerza = () => {
     if (!previewUrl || !zipLink) { v8Toast.error("Image & ZIP needed!"); return; }
     
     let formatToSave = noviFormat;
-    if (activeTab === 'ultra150_3') formatToSave = '150MP ANCIENT CIVILIZATIONS BUNDLE';
-    else if (activeTab === 'ultra150_2') formatToSave = '150MP ULTRA MYSTIC BUNDLE';
-    else if (activeTab === 'ultra150') formatToSave = '150MP ULTRA PRINT BUNDLE';
+    if (activeTab === 'ultra150') formatToSave = '150MP ULTRA PRINT BUNDLE';
     else if (activeTab === 'signature') formatToSave = '60MP SIGNATURE BUNDLE';
     else if (activeTab === 'bundles') formatToSave = '45MP MASTERWORK BUNDLE';
 
@@ -300,21 +297,10 @@ const V8StockBerza = () => {
   const getGlobalCena = (cena) => { const numCena = parseFloat(cena); return isNaN(numCena) ? "0.00" : numCena.toFixed(2); };
   const getAspectClass = (format) => { return (!format || format.includes('16:9 ONLY')) ? 'aspect-video' : 'aspect-square'; };
 
-  const standardPaketi = paketi.filter(p => !(p.format || "").toUpperCase().includes('MASTERWORK') && !(p.format || "").toUpperCase().includes('SIGNATURE') && !(p.format || "").toUpperCase().includes('150MP') && !(p.nazivEn || "").toUpperCase().includes('WATCHES'));
   const premiumPaketi = paketi.filter(p => { const fmt = (p.format || "").toUpperCase(); return fmt.includes('MASTERWORK') && !fmt.includes('MASTERWORK BUNDLE'); });
   const bundlePaketi = paketi.filter(p => (p.format || "").toUpperCase().includes('MASTERWORK BUNDLE'));
   const signaturePaketi = paketi.filter(p => (p.format || "").toUpperCase().includes('60MP SIGNATURE BUNDLE'));
   const ultra150Paketi = paketi.filter(p => (p.format || "").toUpperCase().includes('150MP ULTRA PRINT BUNDLE'));
-  
-  const ultra150_2Paketi = paketi.filter(p => {
-    const fmt = (p.format || "").toUpperCase();
-    return fmt.includes('150MP ULTRA MYSTIC BUNDLE') || fmt.includes('150MP ULTRA 2 BUNDLE');
-  });
-
-  const ultra150_3Paketi = paketi.filter(p => {
-    const fmt = (p.format || "").toUpperCase();
-    return fmt.includes('150MP ANCIENT CIVILIZATIONS') || fmt.includes('150MP ANCIENT CIVILIZATION');
-  });
 
   const renderV8Manifest = (rezolucija) => {
     const specifikacije = [
@@ -334,10 +320,10 @@ const V8StockBerza = () => {
       { t: `14. Quality Gate`, d: "Final validation & reporting.", insight: `Final validation of ${rezolucija} dimensions, JPEG integrity, TXT report, CSV report, and ZIP validation report.` }
     ];
     return (
-      <div className={`w-full max-w-[1200px] mx-auto mb-12 bg-black/40 border rounded-[2rem] p-8 md:p-10 ${rezolucija.includes('ANCIENT') ? 'border-[#452A15]/40' : (rezolucija.includes('150MP') ? 'border-purple-500/20' : 'border-white/5')}`}>
+      <div className={`w-full max-w-[1200px] mx-auto mb-12 bg-black/40 border rounded-[2rem] p-8 md:p-10 ${(rezolucija.includes('150MP')) ? 'border-purple-500/20' : 'border-white/5'}`}>
         <div className="text-center mb-10">
           <h2 className="text-3xl md:text-4xl font-black uppercase tracking-[0.2em] text-white">{(rezolucija.includes('150MP')) ? 'V10 ULTRA ENGINE' : 'V8 MASTER ENGINE'}</h2>
-          <p className={`text-[12px] md:text-[14px] font-bold uppercase tracking-[0.3em] mt-3 italic ${rezolucija.includes('ANCIENT') ? 'text-[#8a5a33]' : (rezolucija.includes('150MP') ? 'text-purple-400' : 'text-blue-400')}`}>Technical Specifications</p>
+          <p className={`text-[12px] md:text-[14px] font-bold uppercase tracking-[0.3em] mt-3 italic ${(rezolucija.includes('150MP')) ? 'text-purple-400' : 'text-blue-400'}`}>Technical Specifications</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
           {specifikacije.map((item, i) => {
@@ -350,23 +336,23 @@ const V8StockBerza = () => {
                       return isNowOpen ? [...prev, i] : prev.filter(x => x !== i);
                   });
                 }}
-                className={`bg-white/5 border p-6 rounded-2xl transition-all duration-500 cursor-pointer relative overflow-hidden group ${isOpen ? (rezolucija.includes('ANCIENT') ? 'border-[#6B4224]/50 shadow-[0_0_15px_rgba(69,42,21,0.2)]' : (rezolucija.includes('150MP') ? 'border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.1)]' : 'border-orange-500/50 shadow-[0_0_15px_rgba(249,115,22,0.1)]')) : 'border-white/5 hover:border-white/20'}`}
+                className={`bg-white/5 border p-6 rounded-2xl transition-all duration-500 cursor-pointer relative overflow-hidden group ${isOpen ? ((rezolucija.includes('150MP')) ? 'border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.15)]' : 'border-orange-500/50 shadow-[0_0_15px_rgba(249,115,22,0.1)]') : 'border-white/5 hover:border-white/20'}`}
               >
                 <div className="relative z-10 flex justify-between items-center">
                   <div>
-                    <h4 className={`text-[13px] md:text-[15px] font-black uppercase transition-colors duration-300 flex items-center gap-3 mb-2 ${isOpen ? (rezolucija.includes('ANCIENT') ? 'text-[#8a5a33]' : (rezolucija.includes('150MP') ? 'text-pink-400' : 'text-orange-400')) : (rezolucija.includes('ANCIENT') ? 'text-[#6B4224]' : (rezolucija.includes('150MP') ? 'text-purple-400' : 'text-blue-400'))}`}>
-                      <span className={`text-lg transition-colors duration-300 ${isOpen ? (rezolucija.includes('ANCIENT') ? 'text-[#8a5a33]' : (rezolucija.includes('150MP') ? 'text-pink-500' : 'text-orange-500')) : (rezolucija.includes('ANCIENT') ? 'text-[#6B4224]/60' : (rezolucija.includes('150MP') ? 'text-purple-600/60' : 'text-blue-600/60'))}`}>💎</span> 
+                    <h4 className={`text-[13px] md:text-[15px] font-black uppercase transition-colors duration-300 flex items-center gap-3 mb-2 ${isOpen ? ((rezolucija.includes('150MP')) ? 'text-pink-400' : 'text-orange-400') : ((rezolucija.includes('150MP')) ? 'text-purple-400' : 'text-blue-400')}`}>
+                      <span className={`text-lg transition-colors duration-300 ${isOpen ? ((rezolucija.includes('150MP')) ? 'text-pink-500' : 'text-orange-500') : ((rezolucija.includes('150MP')) ? 'text-purple-600/60' : 'text-blue-600/60')}`}>💎</span> 
                       {item.t}
                     </h4>
                     <p className={`text-[11px] md:text-[13px] font-medium leading-relaxed transition-colors duration-300 ${isOpen ? 'text-white' : 'text-zinc-400'}`}>{item.d}</p>
                   </div>
-                  <div className={`ml-4 text-xs md:text-sm font-black transition-all duration-500 ${isOpen ? `rotate-180 ${rezolucija.includes('ANCIENT') ? 'text-[#8a5a33] drop-shadow-[0_0_8px_rgba(69,42,21,0.8)]' : (rezolucija.includes('150MP') ? 'text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.8)]' : 'text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]')}` : (rezolucija.includes('ANCIENT') ? 'text-[#6B4224] drop-shadow-[0_0_8px_rgba(69,42,21,0.5)]' : (rezolucija.includes('150MP') ? 'text-purple-500 drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]' : 'text-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]'))}`}>▼</div>
+                  <div className={`ml-4 text-xs md:text-sm font-black transition-all duration-500 ${isOpen ? `rotate-180 ${(rezolucija.includes('150MP')) ? 'text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.8)]' : 'text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]'}` : ((rezolucija.includes('150MP')) ? 'text-purple-500 drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]' : 'text-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]')}`}>▼</div>
                 </div>
                 <div className={`grid transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] relative z-10 ${isOpen ? 'grid-rows-[1fr] mt-4 opacity-100 filter-none' : 'grid-rows-[0fr] opacity-0 blur-sm'}`}>
                   <div className="overflow-hidden">
                     <div className="pt-4 border-t border-white/10">
-                      <p className={`text-[11px] md:text-[12px] text-zinc-300 font-mono leading-relaxed border-l-2 pl-3 ${rezolucija.includes('ANCIENT') ? 'border-[#6B4224]' : (rezolucija.includes('150MP') ? 'border-pink-500' : 'border-orange-500')}`}>
-                        <span className={`font-bold ${rezolucija.includes('ANCIENT') ? 'text-[#8a5a33]' : (rezolucija.includes('150MP') ? 'text-pink-400' : 'text-orange-400')}`}>Tech Insight:</span> {item.insight}
+                      <p className={`text-[11px] md:text-[12px] text-zinc-300 font-mono leading-relaxed border-l-2 pl-3 ${(rezolucija.includes('150MP')) ? 'border-pink-500' : 'border-orange-500'}`}>
+                        <span className={`font-bold ${(rezolucija.includes('150MP')) ? 'text-pink-400' : 'text-orange-400'}`}>Tech Insight:</span> {item.insight}
                       </p>
                     </div>
                   </div>
@@ -382,7 +368,6 @@ const V8StockBerza = () => {
   return (
     <div className="min-h-screen bg-[#050505] font-sans text-white relative transition-all duration-1000 ease-in-out">
       <style>{`
-        /* 🔥 GLAVNA ANIMACIJA ZA GEMINI ROTIRAJUĆU IVICU 🔥 */
         @keyframes ai-spin {
           0% { transform: translate(-50%, -50%) rotate(0deg); }
           100% { transform: translate(-50%, -50%) rotate(360deg); }
@@ -409,8 +394,6 @@ const V8StockBerza = () => {
       {/* 🌟 POZADINE I VIDEA 🌟 */}
       {activeTab === 'premium' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/33mp_premium_9_16.mp4" />)}
       {activeTab === 'ultra150' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/v10bg.mp4" />)}
-      {activeTab === 'ultra150_2' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/v10_mystic_bg_9_16.mp4" />)}
-      {activeTab === 'ultra150_3' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/v10bg.mp4" />)}
       {activeTab === 'signature' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/60mp_signarure.mp4" />)}
       {activeTab === 'bundles' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/45mp_bundles_9_16.mp4" />)}
 
@@ -424,12 +407,26 @@ const V8StockBerza = () => {
         </AnimatePresence>
 
         <div className="max-w-[1800px] mx-auto w-full">
+          
+          {/* 🔥 DUGME EXPLORE MORE PROTOCOLS KOJE VODI NA /stock-2 🔥 */}
+          {activeTab === 'ultra150' && (
+            <div className="w-full flex justify-end mb-6 relative z-20">
+              <button 
+                onClick={() => navigate('/stock-2')}
+                className="relative group p-[2px] rounded-xl overflow-hidden transition-all duration-300 hover:shadow-[0_0_35px_rgba(245,158,11,0.5)] active:scale-95"
+              >
+                <div className="absolute top-1/2 left-1/2 w-[250%] h-[250%] -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,transparent_0%,transparent_50%,#F59E0B_70%,#EF4444_85%,#F59E0B_100%)] animate-ai-spin pointer-events-none"></div>
+                <div className="relative z-10 px-8 py-3 bg-[#050505] text-amber-500 rounded-[10px] font-black text-xs md:text-sm uppercase tracking-widest border border-amber-500/30 group-hover:text-white transition-colors flex items-center gap-2">
+                  Explore More Protocols <Zap size={16} />
+                </div>
+              </button>
+            </div>
+          )}
+
           <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.2 }} className="relative w-full mb-16 rounded-[3rem] overflow-hidden border border-white/10 shadow-[0_0_60px_rgba(255,140,0,0.15)]">
               
               {activeTab === 'premium' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000" src="/33mp_premium_16_9.mp4" />)}
               {activeTab === 'ultra150' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000" src="/v10-box-bg.mp4" />)}
-              {activeTab === 'ultra150_2' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000" src="/v10_mystic_box_16_9.mp4" />)}
-              {activeTab === 'ultra150_3' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000" src="/v10-box-bg.mp4" />)}
               {activeTab === 'signature' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000" src="/60mp_signarure_16_9.mp4" />)}
               {activeTab === 'bundles' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000" src="/45mp_bundles_16_9.mp4" />)}
 
@@ -441,16 +438,12 @@ const V8StockBerza = () => {
                       {activeTab === 'bundles' && (<>V8 45MP EXTREME MASTER <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500 drop-shadow-none">STOCK BUNDLES</span></>)}
                       {activeTab === 'signature' && (<>V8 60MP <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-500 drop-shadow-none">SIGNATURE BUNDLES</span></>)}
                       {activeTab === 'ultra150' && (<>V10 150MP <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 drop-shadow-none">ULTRA PRINT</span></>)}
-                      {activeTab === 'ultra150_2' && (<>V10 150MP <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 drop-shadow-none">ULTRA FANTASY WORLD & MYSTIC</span></>)}
-                      {activeTab === 'ultra150_3' && (<>V10 150MP <span className="text-[#6B4224] drop-shadow-none">ANCIENT CIVILIZATIONS</span></>)}
                   </h1>
                  <p className="text-zinc-200 font-bold uppercase tracking-[0.2em] text-[10px] md:text-[12px] max-w-4xl mx-auto leading-relaxed mb-10 drop-shadow-lg bg-black/30 p-4 rounded-lg backdrop-blur-sm transition-all">
                   {activeTab === 'premium' && "33MP OF FLAWLESS DETAIL. HOLLYWOOD BLOCKBUSTER QUALITY MEETS 100% COMMERCIALLY SECURE VISUALS. THE ULTIMATE ARSENAL FOR HIGH-END CREATORS."}
                   {activeTab === 'bundles' && (<>THE DEFINITIVE <span className="text-blue-400">45MP</span> PRODUCTION-READY ARSENAL. BUILT FOR HIGH-END PRODUCTION. ENGINEERED FOR VISIONARY CREATORS AND SCALABLE, 100% IP-SAFE COMMERCIAL CAMPAIGNS.</>)}
                   {activeTab === 'signature' && (<>THE PINNACLE OF COMMERCIAL ASSETS. <span className="text-yellow-400">45-FILE OMNI-CHANNEL CAMPAIGNS</span> IN 60 MEGAPIXELS. BUILT FOR ELITE AGENCIES AND LUXURY BRANDS.</>)}
                   {activeTab === 'ultra150' && "THE ABSOLUTE PINNACLE OF RESOLUTION. 150 MEGAPIXELS ENGINEERED SPECIFICALLY FOR BILLBOARDS, FINE-ART PRINTING, AND EXTREME CROPPING."}
-                  {activeTab === 'ultra150_2' && "THE ABSOLUTE PINNACLE OF RESOLUTION. 150 MEGAPIXELS ENGINEERED SPECIFICALLY FOR EPIC FANTASY REALMS, MYSTICAL LANDSCAPES, AND CINEMATIC WORLD-BUILDING."}
-                  {activeTab === 'ultra150_3' && "THE ABSOLUTE PINNACLE OF RESOLUTION. 150 MEGAPIXELS ENGINEERED SPECIFICALLY FOR ANCIENT ARCHITECTURE, HISTORICAL MONUMENTS, AND CINEMATIC MYTHOLOGY."}
                  </p>
                   <div className="flex justify-center relative z-10 mt-10">
                       <div className="bg-[#050505]/80 backdrop-blur-md border border-white/10 p-2 rounded-full inline-flex flex-wrap items-center justify-center shadow-xl gap-2">
@@ -458,8 +451,6 @@ const V8StockBerza = () => {
                           <button onClick={() => setActiveTab('bundles')} className={`px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[13px] md:text-[15px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'bundles' ? 'bg-gradient-to-r from-blue-600 to-indigo-500 text-white shadow-[0_0_25px_rgba(59,130,246,0.8)] border-2 border-blue-400 scale-105' : 'text-zinc-100 bg-black/60 hover:bg-blue-900/40 hover:text-white border border-white/20'}`}><Crown className="w-5 h-5" /> 45MP Bundles</button>
                           <button onClick={() => setActiveTab('signature')} className={`px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[13px] md:text-[15px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'signature' ? 'bg-gradient-to-r from-yellow-600 to-amber-500 text-white shadow-[0_0_25px_rgba(245,158,11,0.8)] border-2 border-yellow-400 scale-105' : 'text-zinc-100 bg-black/60 hover:bg-yellow-900/40 hover:text-white border border-white/20'}`}><Diamond className="w-5 h-5" /> 60MP Signature</button>
                           <button onClick={() => setActiveTab('ultra150')} className={`px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[13px] md:text-[15px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'ultra150' ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-[0_0_25px_rgba(168,85,247,0.8)] border-2 border-purple-400 scale-105' : 'text-zinc-100 bg-black/60 hover:bg-purple-900/40 hover:text-white border border-white/20'}`}><Aperture className="w-5 h-5" /> 150MP Ultra</button>
-                          <button onClick={() => setActiveTab('ultra150_2')} className={`px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[13px] md:text-[15px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'ultra150_2' ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-[0_0_25px_rgba(168,85,247,0.8)] border-2 border-purple-400 scale-105' : 'text-zinc-100 bg-black/60 hover:bg-purple-900/40 hover:text-white border border-white/20'}`}><Aperture className="w-5 h-5" /> 150MP Fantasy & Mystic</button>
-                          <button onClick={() => setActiveTab('ultra150_3')} className={`px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[13px] md:text-[15px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'ultra150_3' ? 'bg-[#452A15] text-white shadow-[0_0_25px_rgba(69,42,21,0.8)] border-2 border-[#6B4224] scale-105' : 'text-zinc-100 bg-black/60 hover:bg-[#452A15]/40 hover:text-white border border-white/20 hover:border-[#452A15]/50'}`}><Aperture className="w-5 h-5" /> 150MP Ancient Civilizations</button>
                       </div>
                   </div>
               </div>
@@ -515,8 +506,8 @@ const V8StockBerza = () => {
                             <MonitorPlay size={14} /> FORMAT
                         </label>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                            {['16:9 ONLY (SINGLE)', 'ALL FORMATS (16:9, 9:16, 21:9, 1:1)', '33.2MP MASTERWORK SINGLE', '45MP MASTERWORK BUNDLE', '60MP SIGNATURE BUNDLE', '150MP ULTRA PRINT BUNDLE', '150MP ULTRA MYSTIC BUNDLE', '150MP ANCIENT CIVILIZATIONS BUNDLE'].map((fmt) => (
-                                <label key={fmt} className={`cursor-pointer p-3 rounded-xl border-2 transition-all text-center font-black text-[9px] uppercase flex items-center justify-center ${noviFormat === fmt ? (fmt.includes('150MP') ? 'bg-gradient-to-r from-purple-600 to-pink-500 border-[#FF8C00] text-white shadow-[0_0_15px_rgba(168,85,247,0.5)]' : fmt.includes('ANCIENT') ? 'bg-[#452A15] border-[#6B4224] text-white shadow-[0_0_15px_rgba(69,42,21,0.5)]' : fmt.includes('MASTERWORK') ? 'bg-gradient-to-r from-orange-600 to-amber-500 border-[#FF8C00] text-white shadow-[0_0_15px_rgba(234,88,12,0.4)]' : fmt.includes('SIGNATURE') ? 'bg-gradient-to-r from-yellow-600 to-amber-500 border-[#FF8C00] text-white shadow-[0_0_15px_rgba(245,158,11,0.5)]' : 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]') : 'bg-black border-white/10 text-zinc-500 hover:border-[#FF8C00]/50'}`}>
+                            {['16:9 ONLY (SINGLE)', 'ALL FORMATS (16:9, 9:16, 21:9, 1:1)', '33.2MP MASTERWORK SINGLE', '45MP MASTERWORK BUNDLE', '60MP SIGNATURE BUNDLE', '150MP ULTRA PRINT BUNDLE'].map((fmt) => (
+                                <label key={fmt} className={`cursor-pointer p-3 rounded-xl border-2 transition-all text-center font-black text-[9px] uppercase flex items-center justify-center ${noviFormat === fmt ? (fmt.includes('150MP') ? 'bg-gradient-to-r from-purple-600 to-pink-500 border-[#FF8C00] text-white shadow-[0_0_15px_rgba(168,85,247,0.5)]' : fmt.includes('MASTERWORK') ? 'bg-gradient-to-r from-orange-600 to-amber-500 border-[#FF8C00] text-white shadow-[0_0_15px_rgba(234,88,12,0.4)]' : fmt.includes('SIGNATURE') ? 'bg-gradient-to-r from-yellow-600 to-amber-500 border-[#FF8C00] text-white shadow-[0_0_15px_rgba(245,158,11,0.5)]' : 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]') : 'bg-black border-white/10 text-zinc-500 hover:border-[#FF8C00]/50'}`}>
                                     <input type="radio" name="format" value={fmt} checked={noviFormat === fmt} onChange={(e) => setNoviFormat(e.target.value)} className="hidden" />
                                     {fmt.replace(' (16:9, 9:16, 21:9, 1:1)', '')}
                                 </label>
@@ -599,7 +590,7 @@ const V8StockBerza = () => {
                               <Images size={12} /> GALLERY IMAGES
                           </label>
                           <button type="button" onClick={() => galleryImagesRef.current.click()} className="bg-zinc-900 hover:bg-[#FF8C00] text-white hover:text-black border-2 border-white/20 hover:border-[#FF8C00] px-6 py-4 rounded-xl font-black text-[13px] uppercase transition-all flex items-center justify-center gap-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"> 
-                            <Images size={16} /> {isUploadingPrimer ? 'UPLOADING...' : `ADD THUMBNAILS (${primeriUrls.length}/${activeTab === 'bundles' ? 10 : activeTab === 'signature' || activeTab === 'ultra150' || activeTab === 'ultra150_2' || activeTab === 'ultra150_3' ? 8 : 4})`} 
+                            <Images size={16} /> {isUploadingPrimer ? 'UPLOADING...' : `ADD THUMBNAILS (${primeriUrls.length}/${activeTab === 'bundles' ? 10 : activeTab === 'signature' || activeTab === 'ultra150' ? 8 : 4})`} 
                           </button>
                           <input type="file" multiple ref={galleryImagesRef} onChange={handleUploadPrimeri} className="hidden" /> 
                       </div>
@@ -618,8 +609,6 @@ const V8StockBerza = () => {
             {activeTab === 'bundles' && (<> {renderV8Manifest("45MP")} <V8MasterBundles paketi={bundlePaketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} kupljeniPaketiIds={kupljeniPaketiIds} /> </>)}
             {activeTab === 'signature' && (<> {renderV8Manifest("60MP")} <V8SignatureBundles paketi={signaturePaketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} kupljeniPaketiIds={kupljeniPaketiIds} /> </>)}
             {activeTab === 'ultra150' && (<> {renderV8Manifest("150MP")} <V10UltraPrintAssets paketi={ultra150Paketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} kupljeniPaketiIds={kupljeniPaketiIds} /> </>)}
-            {activeTab === 'ultra150_2' && (<> {renderV8Manifest("150MP (FANTASY)")} <V10UltraMysticAssets paketi={ultra150_2Paketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} kupljeniPaketiIds={kupljeniPaketiIds} /> </>)}
-            {activeTab === 'ultra150_3' && (<> {renderV8Manifest("150MP (ANCIENT)")} <V10UltraAncientAssets paketi={ultra150_3Paketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} kupljeniPaketiIds={kupljeniPaketiIds} /> </>)}
           </div>
         </div>
       </div>

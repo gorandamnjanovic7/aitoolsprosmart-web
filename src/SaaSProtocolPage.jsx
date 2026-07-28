@@ -1,19 +1,16 @@
 // POČETAK FAJLA: SaaSProtocolPage.jsx
-// Podsetnik: Ne zaboravi da ažuriraš svoj React source code link u glavnom repozitorijumu!
-
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronRight, X, Upload, Trash2 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom'; 
-import { Helmet } from 'react-helmet-async'; // 🔥 DODATO ZA SEO 🔥
+import { Helmet } from 'react-helmet-async';
 
-// POČETAK FUNKCIJE: SaaSProtocolPage
 export default function SaaSProtocolPage({ openCheckout }) {
   const navigate = useNavigate(); 
 
   // State za Full-Screen slike
   const [selectedImage, setSelectedImage] = useState(null);
   
-  // State-ovi za Figma UI Preview na Hero slici (Odvojeni za svaki uređaj)
+  // State-ovi za Figma UI Preview na Hero slici
   const [laptopPreview, setLaptopPreview] = useState(null);
   const [ipadPreview, setIpadPreview] = useState(null);
   const [phonePreview, setPhonePreview] = useState(null);
@@ -21,7 +18,14 @@ export default function SaaSProtocolPage({ openCheckout }) {
   // STATE ZA TABOVE UNUTAR "CUSTOM ARCHITECTURE" BOXA
   const [customTab, setCustomTab] = useState('bilbord');
 
-  // Odvojeni tajmeri
+  // 🔥 V8 KALIBRATOR STATE (Sada sa FULL PRO ALATIMA) 🔥
+  const [calib, setCalib] = useState({
+    bottom: 39.2, left: 49.8, width: 23.6, height: 21.2, 
+    rotX: 2.5, rotY: -13.5, skewX: 1, skewY: -2.5,
+    perspective: 1000, originX: 0
+  });
+
+  // Tajmeri za brisanje preview-a
   const laptopTimerRef = useRef(null);
   const ipadTimerRef = useRef(null);
   const phoneTimerRef = useRef(null);
@@ -34,22 +38,21 @@ export default function SaaSProtocolPage({ openCheckout }) {
       if (device === 'laptop') {
         if (laptopTimerRef.current) clearTimeout(laptopTimerRef.current);
         setLaptopPreview(imageUrl);
-        laptopTimerRef.current = setTimeout(() => setLaptopPreview(null), 600000); // 10 min
+        laptopTimerRef.current = setTimeout(() => setLaptopPreview(null), 600000); 
       } 
       else if (device === 'ipad') {
         if (ipadTimerRef.current) clearTimeout(ipadTimerRef.current);
         setIpadPreview(imageUrl);
-        ipadTimerRef.current = setTimeout(() => setIpadPreview(null), 600000); // 10 min
+        ipadTimerRef.current = setTimeout(() => setIpadPreview(null), 600000); 
       } 
       else if (device === 'phone') {
         if (phoneTimerRef.current) clearTimeout(phoneTimerRef.current);
         setPhonePreview(imageUrl);
-        phoneTimerRef.current = setTimeout(() => setPhonePreview(null), 600000); // 10 min
+        phoneTimerRef.current = setTimeout(() => setPhonePreview(null), 600000); 
       }
     }
   };
 
-  // Očisti sve tajmere ako korisnik napusti stranicu
   useEffect(() => {
     return () => {
       if (laptopTimerRef.current) clearTimeout(laptopTimerRef.current);
@@ -58,7 +61,7 @@ export default function SaaSProtocolPage({ openCheckout }) {
     };
   }, []);
 
-  // Slike
+  // Glavne slike
   const heroImage = "magnific_a-moody-lowkey-tech-scene_2994482255.png";
   
   const galleryImages = [
@@ -70,14 +73,95 @@ export default function SaaSProtocolPage({ openCheckout }) {
     "/red_3_mocup_2.jpeg",                               // VIP 6
     "magnific_slightly-warmer-premium-t_2994486395.png", // VIP 7
     "/red_4_mocup_2.jpeg",                               // VIP 8
-    "/red5_mocup_1.webp",                                // VIP 9 (Novi Red 5)
-    "/red5_mocup_2.webp"                                 // VIP 10 (Novi Red 5)
+    "/red5_mocup_1.webp",                                // VIP 9
+    "/red5_mocup_2.webp"                                 // VIP 10
   ];
 
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-300 font-sans selection:bg-amber-500 selection:text-black pt-10">
       
-      {/* 🔥 HELMET SEO 🔥 */}
+      {/* 🔥 V8 KALIBRATOR KONTROLNI PANEL (ULTIMATE VERZIJA) 🔥 */}
+      {ipadPreview && (
+        <div className="fixed top-10 right-6 bg-[#0a0a0a]/95 backdrop-blur-xl border-2 border-amber-500 p-6 rounded-2xl z-[999999] text-xs text-amber-500 shadow-[0_0_40px_rgba(245,158,11,0.4)] w-80 font-mono transition-all max-h-[90vh] overflow-y-auto custom-scrollbar">
+          <h3 className="font-black text-white text-lg mb-4 uppercase flex items-center gap-2 sticky top-0 bg-[#0a0a0a] py-2 z-10 border-b border-amber-500/20">
+            <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+            V8 PRO Alati
+          </h3>
+          
+          <div className="space-y-4 pb-4">
+            
+            {/* NOVO: SIDRO */}
+            <div>
+              <label className="block mb-1 uppercase tracking-widest font-bold text-[10px] text-green-400">
+                1. Tačka Sidrenja X: {calib.originX}% (0=Levo, 100=Desno)
+              </label>
+              <input type="range" min="0" max="100" step="1" value={calib.originX} onChange={(e) => setCalib({...calib, originX: parseFloat(e.target.value)})} className="w-full accent-green-500 cursor-ew-resize" />
+            </div>
+
+            <div>
+              <label className="block mb-1 uppercase tracking-widest font-bold text-[10px] text-white">Donja Ivica (Fiksna): {calib.bottom}%</label>
+              <input type="range" min="10" max="80" step="0.1" value={calib.bottom} onChange={(e) => setCalib({...calib, bottom: parseFloat(e.target.value)})} className="w-full accent-amber-500 cursor-ew-resize" />
+            </div>
+            
+            <div>
+              <label className="block mb-1 uppercase tracking-widest font-bold text-[10px] text-white">Levo-Desno: {calib.left}%</label>
+              <input type="range" min="10" max="80" step="0.1" value={calib.left} onChange={(e) => setCalib({...calib, left: parseFloat(e.target.value)})} className="w-full accent-amber-500 cursor-ew-resize" />
+            </div>
+            
+            <div>
+              <label className="block mb-1 uppercase tracking-widest font-bold text-[10px] text-white">Širina: {calib.width}%</label>
+              <input type="range" min="5" max="50" step="0.1" value={calib.width} onChange={(e) => setCalib({...calib, width: parseFloat(e.target.value)})} className="w-full accent-amber-500 cursor-ew-resize" />
+            </div>
+            
+            <div>
+              <label className="block mb-1 uppercase tracking-widest font-bold text-[10px] text-white">Visina (Ide gore!): {calib.height}%</label>
+              <input type="range" min="5" max="50" step="0.1" value={calib.height} onChange={(e) => setCalib({...calib, height: parseFloat(e.target.value)})} className="w-full accent-amber-500 cursor-ew-resize" />
+            </div>
+
+            <div className="h-px w-full bg-amber-500/20 my-4"></div>
+
+            {/* NOVO: PERSPEKTIVA I ROTACIJE ZA SUŽAVANJE/ŠIRENJE */}
+            <div>
+              <label className="block mb-1 uppercase tracking-widest font-bold text-[10px] text-blue-400">
+                Perspektiva (Dubina): {calib.perspective}px
+              </label>
+              <input type="range" min="100" max="3000" step="10" value={calib.perspective} onChange={(e) => setCalib({...calib, perspective: parseFloat(e.target.value)})} className="w-full accent-blue-500 cursor-ew-resize" />
+            </div>
+
+            <div>
+              <label className="block mb-1 uppercase tracking-widest font-bold text-[10px] text-amber-300">Rotate Y (Sužava Levi/Desni kraj): {calib.rotY}deg</label>
+              <input type="range" min="-45" max="45" step="0.1" value={calib.rotY} onChange={(e) => setCalib({...calib, rotY: parseFloat(e.target.value)})} className="w-full accent-amber-400 cursor-ew-resize" />
+            </div>
+
+            <div>
+              <label className="block mb-1 uppercase tracking-widest font-bold text-[10px] text-amber-300">Rotate X (Naginjanje): {calib.rotX}deg</label>
+              <input type="range" min="-45" max="45" step="0.1" value={calib.rotX} onChange={(e) => setCalib({...calib, rotX: parseFloat(e.target.value)})} className="w-full accent-amber-400 cursor-ew-resize" />
+            </div>
+
+            <div>
+              <label className="block mb-1 uppercase tracking-widest font-bold text-[10px] text-amber-300">Skew X (Košenje Bočno): {calib.skewX}deg</label>
+              <input type="range" min="-30" max="30" step="0.1" value={calib.skewX} onChange={(e) => setCalib({...calib, skewX: parseFloat(e.target.value)})} className="w-full accent-amber-400 cursor-ew-resize" />
+            </div>
+
+            <div>
+              <label className="block mb-1 uppercase tracking-widest font-bold text-[10px] text-amber-300">Skew Y (Košenje Gore/Dole): {calib.skewY}deg</label>
+              <input type="range" min="-30" max="30" step="0.1" value={calib.skewY} onChange={(e) => setCalib({...calib, skewY: parseFloat(e.target.value)})} className="w-full accent-amber-400 cursor-ew-resize" />
+            </div>
+          </div>
+          
+          <div className="mt-2 p-4 bg-black/80 rounded-xl border border-amber-500/30 text-zinc-300 select-all cursor-text text-[10px] leading-loose break-all">
+            <div className="text-amber-500 font-bold mb-2">/* KOPIRAJ OVO KAD ZAVRŠIŠ: */</div>
+            bottom: '{calib.bottom}%',<br/>
+            left: '{calib.left}%',<br/>
+            width: '{calib.width}%',<br/>
+            height: '{calib.height}%',<br/>
+            transformOrigin: '{calib.originX}% 100%',<br/>
+            transform: 'perspective({calib.perspective}px) rotateX({calib.rotX}deg) rotateY({calib.rotY}deg) skewY({calib.skewY}deg) skewX({calib.skewX}deg)'
+          </div>
+        </div>
+      )}
+
+      {/* HELMET SEO */}
       <Helmet>
         <title>SaaS Visual Protocol | 150MP Enterprise Mockups</title>
         <meta name="description" content="Wrap your software in 150MP physical reality. Mathematical cinematic environments engineered for your UI and B2B SaaS platform." />
@@ -110,7 +194,6 @@ export default function SaaSProtocolPage({ openCheckout }) {
         </div>
       )}
 
-      {/* HERO SEKCIJA (SA LAPTOPOM) */}
       <section className="relative pt-20 pb-10 px-6 lg:pt-32 lg:pb-16 overflow-hidden flex flex-col items-center justify-center">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
         
@@ -128,7 +211,6 @@ export default function SaaSProtocolPage({ openCheckout }) {
             Wrap your software in 150MP physical reality. Mathematical cinematic environments engineered for your UI.
           </p>
 
-          {/* 🔥 DUGME KOJE VODI DIREKTNO NA PREMIUM DEVICE TAB 🔥 */}
           <button onClick={() => {
             localStorage.setItem('v8_active_mocup_tab', 'ultra2');
             navigate('/standard-mocup');
@@ -140,7 +222,6 @@ export default function SaaSProtocolPage({ openCheckout }) {
         {/* GLAVNI MOCKUP SA LIVE PREVIEW FUNKCIJOM */}
         <div className="relative z-10 w-full max-w-6xl mx-auto mt-20 group transition-all duration-1000">
           
-          {/* OBAVEŠTENJE ZA KLIJENTE (LIVE LAB) */}
           <div className="w-full flex justify-center mb-6 z-30">
             <div className="bg-[#111] border border-amber-500/50 px-6 py-3 rounded-full flex items-center gap-3 shadow-[0_0_30px_rgba(245,158,11,0.2)]">
               <span className="w-3 h-3 bg-amber-500 rounded-full animate-pulse"></span>
@@ -156,23 +237,26 @@ export default function SaaSProtocolPage({ openCheckout }) {
             <img 
               src={heroImage} 
               alt="Cinematic Tech Mockup Setup" 
-              className="w-full h-auto object-cover relative z-10"
+              className="w-full h-auto object-cover relative z-10 pointer-events-none"
             />
             
-            {/* 🔥 INTERAKTIVNI EKRAN 1: LAPTOP 🔥 */}
+            {/* 🔥 ZAKUCAN LAPTOP 🔥 */}
             <div 
-              className="absolute z-20 overflow-hidden rounded-[2px] transition-all duration-300 flex items-center justify-center group/screen shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] bg-black/20"
+              className="absolute z-20 overflow-hidden rounded-[2px] transition-all duration-75 flex items-center justify-center group/screen shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] bg-black"
               style={{ 
-                top: '30.5%', 
-                left: '28.8%', 
-                width: '18.5%', 
-                height: '23.5%',
-                transform: 'perspective(1000px) rotateY(3deg) rotateX(1deg)'
+                bottom: '38.6%', 
+                left: '19.4%', 
+                width: '27.1%', 
+                height: '32.9%',
+                transformOrigin: 'bottom center', 
+                transform: 'perspective(1200px) rotateX(1.5deg) rotateY(4deg) skewY(1deg) skewX(-0.5deg)'
               }}
             >
               {laptopPreview ? (
                 <>
-                  <img src={laptopPreview} alt="Laptop UI Preview" className="absolute inset-0 w-full h-full object-fill opacity-90 mix-blend-screen" />
+                  <img src={laptopPreview} alt="Blur Background" className="absolute inset-0 w-full h-full object-cover blur-xl opacity-40 scale-110 pointer-events-none" />
+                  <img src={laptopPreview} alt="Laptop UI Preview" className="relative z-10 w-full h-full object-contain mx-auto shadow-2xl" />
+                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-transparent to-white/10 pointer-events-none z-20"></div>
                   <button onClick={(e) => { e.stopPropagation(); setLaptopPreview(null); }} className="absolute z-30 bg-red-600/90 hover:bg-red-500 text-white p-2 rounded-full opacity-0 group-hover/screen:opacity-100 transition-opacity shadow-[0_0_15px_rgba(220,38,38,0.8)]"><Trash2 size={16}/></button>
                 </>
               ) : (
@@ -184,20 +268,23 @@ export default function SaaSProtocolPage({ openCheckout }) {
               )}
             </div>
 
-            {/* 🔥 INTERAKTIVNI EKRAN 2: IPAD 🔥 */}
+            {/* 🔥 IPAD SA PRO ALATIMA 🔥 */}
             <div 
-              className="absolute z-20 overflow-hidden rounded-[4px] transition-all duration-300 flex items-center justify-center group/screen shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] bg-black/20"
+              className="absolute z-20 overflow-hidden rounded-[4px] transition-all duration-75 flex items-center justify-center group/screen shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] bg-black"
               style={{ 
-                top: '39%', 
-                left: '49.8%', 
-                width: '15.5%', 
-                height: '20%',
-                transform: 'perspective(1000px) rotateY(-12deg) rotateX(2deg) skewY(-2deg)'
+                bottom: `${calib.bottom}%`, 
+                left: `${calib.left}%`, 
+                width: `${calib.width}%`, 
+                height: `${calib.height}%`,
+                transformOrigin: `${calib.originX}% 100%`, // <-- 100% znači uvek je na dnu!
+                transform: `perspective(${calib.perspective}px) rotateX(${calib.rotX}deg) rotateY(${calib.rotY}deg) skewY(${calib.skewY}deg) skewX(${calib.skewX}deg)`
               }}
             >
               {ipadPreview ? (
                 <>
-                  <img src={ipadPreview} alt="iPad UI Preview" className="absolute inset-0 w-full h-full object-fill opacity-90 mix-blend-screen" />
+                  <img src={ipadPreview} alt="Blur Background" className="absolute inset-0 w-full h-full object-cover blur-xl opacity-40 scale-110 pointer-events-none" />
+                  <img src={ipadPreview} alt="iPad UI Preview" className="relative z-10 w-full h-full object-contain mx-auto shadow-2xl" />
+                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/20 pointer-events-none z-20"></div>
                   <button onClick={(e) => { e.stopPropagation(); setIpadPreview(null); }} className="absolute z-30 bg-red-600/90 hover:bg-red-500 text-white p-2 rounded-full opacity-0 group-hover/screen:opacity-100 transition-opacity shadow-[0_0_15px_rgba(220,38,38,0.8)]"><Trash2 size={16}/></button>
                 </>
               ) : (
@@ -209,20 +296,23 @@ export default function SaaSProtocolPage({ openCheckout }) {
               )}
             </div>
 
-            {/* 🔥 INTERAKTIVNI EKRAN 3: TELEFON 🔥 */}
+            {/* 🔥 TELEFON (Čeka svoj red) 🔥 */}
             <div 
-              className="absolute z-20 overflow-hidden rounded-[8px] transition-all duration-300 flex items-center justify-center group/screen shadow-[inset_0_0_10px_rgba(0,0,0,0.8)] bg-black/20"
+              className="absolute z-20 overflow-hidden rounded-[8px] transition-all duration-300 flex items-center justify-center group/screen shadow-[inset_0_0_10px_rgba(0,0,0,0.8)] bg-black"
               style={{ 
-                top: '47%',      
-                left: '68.5%',     
-                width: '4.8%',   
-                height: '16.5%',   
-                transform: 'perspective(1000px) rotateY(-18deg) rotateX(3deg) skewY(-3deg)'
+                top: '47.2%', 
+                left: '68.5%', 
+                width: '4.8%', 
+                height: '16.5%', 
+                transformOrigin: 'center left',
+                transform: 'perspective(800px) rotateX(3deg) rotateY(-20deg) skewY(-3.5deg) skewX(1.5deg)'
               }}
             >
               {phonePreview ? (
                 <>
-                  <img src={phonePreview} alt="Phone UI Preview" className="absolute inset-0 w-full h-full object-fill opacity-90 mix-blend-screen" />
+                  <img src={phonePreview} alt="Blur Background" className="absolute inset-0 w-full h-full object-cover blur-xl opacity-40 scale-110 pointer-events-none" />
+                  <img src={phonePreview} alt="Phone UI Preview" className="relative z-10 w-full h-full object-contain mx-auto shadow-2xl" />
+                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/20 pointer-events-none z-20"></div>
                   <button onClick={(e) => { e.stopPropagation(); setPhonePreview(null); }} className="absolute z-30 bg-red-600/90 hover:bg-red-500 text-white p-1 rounded-full opacity-0 group-hover/screen:opacity-100 transition-opacity shadow-[0_0_15px_rgba(220,38,38,0.8)]"><Trash2 size={12}/></button>
                 </>
               ) : (
@@ -247,7 +337,6 @@ export default function SaaSProtocolPage({ openCheckout }) {
         </div>
       </section>
 
-      {/* CTA SEKCIJA PREMEŠTENA ODMAH ISPOD LAPTOPA (HERO MOCKUPA) */}
       <section className="py-16 px-6 bg-[#050505] relative overflow-hidden text-center z-10 border-b border-white/5">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[250px] bg-amber-500/10 rounded-[100%] blur-[80px] pointer-events-none"></div>
         
@@ -273,7 +362,6 @@ export default function SaaSProtocolPage({ openCheckout }) {
       </section>
 
       <div>
-        {/* THE FRICTION / PROBLEM */}
         <section className="py-24 px-6 bg-[#0a0a0a] border-y border-white/5">
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
@@ -308,7 +396,6 @@ export default function SaaSProtocolPage({ openCheckout }) {
           </div>
         </section>
 
-        {/* PORTFOLIO / THE ARSENAL */}
         <section className="py-24 px-6 bg-[#0a0a0a] border-t border-white/5">
           <div className="max-w-7xl mx-auto text-center mb-16">
             <h2 className="text-sm font-bold tracking-[0.2em] text-amber-500 mb-4 uppercase">The Arsenal</h2>
@@ -320,9 +407,7 @@ export default function SaaSProtocolPage({ openCheckout }) {
             </p>
           </div>
 
-          {/* 🔥 VIP KARTICE (PRVI RED MOCKUPA) 🔥 */}
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">
-            {/* VIP Kartica 1: Protocol Alpha */}
             <div className="bg-[#111] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 group shadow-[0_0_30px_rgba(245,158,11,0.05)] cursor-zoom-in" onClick={() => setSelectedImage(galleryImages[0])}>
               <div className="relative h-[400px] bg-black overflow-hidden">
                 <img src={galleryImages[0]} alt="Protocol Alpha" className="w-full h-full object-cover animate-pulse opacity-90 group-hover:scale-105 transition-transform duration-700" />
@@ -334,7 +419,6 @@ export default function SaaSProtocolPage({ openCheckout }) {
               </div>
             </div>
 
-            {/* VIP Kartica 2: Protocol Beta */}
             <div className="bg-[#111] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 group shadow-[0_0_30px_rgba(245,158,11,0.05)] cursor-zoom-in" onClick={() => setSelectedImage(galleryImages[1])}>
               <div className="relative h-[400px] bg-black overflow-hidden">
                 <img src={galleryImages[1]} alt="Protocol Beta" className="w-full h-full object-cover animate-pulse opacity-90 group-hover:scale-105 transition-transform duration-700" style={{ animationDelay: '1s' }} />
@@ -347,9 +431,7 @@ export default function SaaSProtocolPage({ openCheckout }) {
             </div>
           </div>
 
-          {/* 🔥 VIP KARTICE (DRUGI RED MOCKUPA) 🔥 */}
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">
-            {/* VIP Kartica 3: Protocol Gamma */}
             <div className="bg-[#111] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 group shadow-[0_0_30px_rgba(245,158,11,0.05)] cursor-zoom-in" onClick={() => setSelectedImage(galleryImages[2])}>
               <div className="relative h-[400px] bg-black overflow-hidden">
                 <img src={galleryImages[2]} alt="Protocol Gamma" className="w-full h-full object-cover animate-pulse opacity-90 group-hover:scale-105 transition-transform duration-700" style={{ animationDelay: '0.5s' }} />
@@ -361,7 +443,6 @@ export default function SaaSProtocolPage({ openCheckout }) {
               </div>
             </div>
 
-            {/* VIP Kartica 4: Protocol Delta */}
             <div className="bg-[#111] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 group shadow-[0_0_30px_rgba(245,158,11,0.05)] cursor-zoom-in" onClick={() => setSelectedImage(galleryImages[3])}>
               <div className="relative h-[400px] bg-black overflow-hidden">
                 <img src={galleryImages[3]} alt="Protocol Delta" className="w-full h-full object-cover animate-pulse opacity-90 group-hover:scale-105 transition-transform duration-700" style={{ animationDelay: '1.5s' }} />
@@ -374,9 +455,7 @@ export default function SaaSProtocolPage({ openCheckout }) {
             </div>
           </div>
 
-          {/* 🔥 VIP KARTICE (TREĆI RED MOCKUPA) 🔥 */}
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">
-            {/* VIP Kartica 5: Protocol Epsilon */}
             <div className="bg-[#111] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 group shadow-[0_0_30px_rgba(245,158,11,0.05)] cursor-zoom-in" onClick={() => setSelectedImage(galleryImages[4])}>
               <div className="relative h-[400px] bg-black overflow-hidden">
                 <img src={galleryImages[4]} alt="Protocol Epsilon" className="w-full h-full object-cover animate-pulse opacity-90 group-hover:scale-105 transition-transform duration-700" style={{ animationDelay: '0.2s' }} />
@@ -388,7 +467,6 @@ export default function SaaSProtocolPage({ openCheckout }) {
               </div>
             </div>
 
-            {/* VIP Kartica 6: Protocol Zeta */}
             <div className="bg-[#111] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 group shadow-[0_0_30px_rgba(245,158,11,0.05)] cursor-zoom-in" onClick={() => setSelectedImage(galleryImages[5])}>
               <div className="relative h-[400px] bg-black overflow-hidden">
                 <img src={galleryImages[5]} alt="Protocol Zeta" className="w-full h-full object-cover animate-pulse opacity-90 group-hover:scale-105 transition-transform duration-700" style={{ animationDelay: '1.2s' }} />
@@ -401,9 +479,7 @@ export default function SaaSProtocolPage({ openCheckout }) {
             </div>
           </div>
 
-          {/* 🔥 VIP KARTICE (ČETVRTI RED MOCKUPA) 🔥 */}
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 mb-16">
-            {/* VIP Kartica 7: Protocol Eta */}
             <div className="bg-[#111] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 group shadow-[0_0_30px_rgba(245,158,11,0.05)] cursor-zoom-in" onClick={() => setSelectedImage(galleryImages[6])}>
               <div className="relative h-[400px] bg-black overflow-hidden">
                 <img src={galleryImages[6]} alt="Protocol Eta" className="w-full h-full object-cover animate-pulse opacity-90 group-hover:scale-105 transition-transform duration-700" style={{ animationDelay: '0.8s' }} />
@@ -415,7 +491,6 @@ export default function SaaSProtocolPage({ openCheckout }) {
               </div>
             </div>
 
-            {/* VIP Kartica 8: Protocol Theta */}
             <div className="bg-[#111] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 group shadow-[0_0_30px_rgba(245,158,11,0.05)] cursor-zoom-in" onClick={() => setSelectedImage(galleryImages[7])}>
               <div className="relative h-[400px] bg-black overflow-hidden">
                 <img src={galleryImages[7]} alt="Protocol Theta" className="w-full h-full object-cover animate-pulse opacity-90 group-hover:scale-105 transition-transform duration-700" style={{ animationDelay: '0.4s' }} />
@@ -428,9 +503,7 @@ export default function SaaSProtocolPage({ openCheckout }) {
             </div>
           </div>
 
-          {/* 🔥 VIP KARTICE (PETI RED MOCKUPA) 🔥 */}
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 mb-16">
-            {/* VIP Kartica 9: Protocol Iota */}
             <div className="bg-[#111] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 group shadow-[0_0_30px_rgba(245,158,11,0.05)] cursor-zoom-in" onClick={() => setSelectedImage(galleryImages[8])}>
               <div className="relative h-[400px] bg-black overflow-hidden">
                 <img src={galleryImages[8]} alt="Protocol Iota" className="w-full h-full object-cover animate-pulse opacity-90 group-hover:scale-105 transition-transform duration-700" style={{ animationDelay: '0.6s' }} />
@@ -442,7 +515,6 @@ export default function SaaSProtocolPage({ openCheckout }) {
               </div>
             </div>
 
-            {/* VIP Kartica 10: Protocol Kappa */}
             <div className="bg-[#111] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 group shadow-[0_0_30px_rgba(245,158,11,0.05)] cursor-zoom-in" onClick={() => setSelectedImage(galleryImages[9])}>
               <div className="relative h-[400px] bg-black overflow-hidden">
                 <img src={galleryImages[9]} alt="Protocol Kappa" className="w-full h-full object-cover animate-pulse opacity-90 group-hover:scale-105 transition-transform duration-700" style={{ animationDelay: '1.4s' }} />
@@ -457,33 +529,6 @@ export default function SaaSProtocolPage({ openCheckout }) {
 
         </section>
 
-        {/* 🔥 SMANJENA CTA SEKCIJA PREMEŠTENA ODMAH ISPOD "THE ARSENAL" MOCKUPA 🔥 */}
-        <section className="py-20 px-6 bg-[#050505] relative overflow-hidden text-center z-10 border-b border-white/5">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[250px] bg-amber-500/10 rounded-[100%] blur-[80px] pointer-events-none"></div>
-          
-          <div className="relative z-10 max-w-2xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tight mb-4">
-              Initiate The <span className="text-amber-500">Integration</span>
-            </h2>
-            <p className="text-sm md:text-base text-zinc-400 mb-8 font-light leading-relaxed">
-              Stop losing enterprise deals because your software looks generic. Let's mathematically engineer your visual authority.
-            </p>
-            
-            {/* I OVO DUGME VODI NA PREMIUM DEVICE */}
-            <button onClick={() => {
-              localStorage.setItem('v8_active_mocup_tab', 'ultra2');
-              navigate('/standard-mocup');
-            }} className="bg-amber-500 text-black font-black text-xs md:text-sm uppercase tracking-widest px-8 py-4 rounded-xl transition-colors shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:bg-amber-400">
-              Upgrade Your UI
-            </button>
-            
-            <div className="mt-8 text-[10px] md:text-xs font-mono text-zinc-600 uppercase tracking-widest">
-              System Architect: Goran Damnjanovic
-            </div>
-          </div>
-        </section>
-
-        {/* 🔥 JOS MANJI BILBORD: NEW OFFER WITH EXAMPLES 🔥 */}
         <section className="py-20 px-6 relative flex justify-center bg-[#050505]">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-amber-500/10 rounded-full blur-[120px] pointer-events-none"></div>
 
@@ -500,9 +545,7 @@ export default function SaaSProtocolPage({ openCheckout }) {
               Don't just use our base environments. Provide your exact Figma UI bilbords with your design and we will mathematically render them into 3 custom, examples in 150MP physical realities tailored strictly to your brand's unique identity.
             </p>
 
-            {/* 🔥 PREBAČENO U VIP KARTICE (SA TEKSTOVIMA ISPOD SLIKA) 🔥 */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 text-left">
-              {/* Kartica 1 */}
               <div className="bg-[#0a0a0a] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 cursor-zoom-in group shadow-[0_0_30px_rgba(245,158,11,0.05)]" onClick={() => setSelectedImage("/mocup_1_bilbord.webp")}>
                 <div className="relative h-[250px] bg-black overflow-hidden">
                   <img src="/mocup_1_bilbord.webp" alt="Custom Example 1" className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700" />
@@ -514,7 +557,6 @@ export default function SaaSProtocolPage({ openCheckout }) {
                 </div>
               </div>
               
-              {/* Kartica 2 */}
               <div className="bg-[#0a0a0a] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 cursor-zoom-in group shadow-[0_0_30px_rgba(245,158,11,0.05)]" onClick={() => setSelectedImage("/mocup_2_bilbord.webp")}>
                 <div className="relative h-[250px] bg-black overflow-hidden">
                   <img src="/mocup_2_bilbord.webp" alt="Custom Example 2" className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700" />
@@ -526,7 +568,6 @@ export default function SaaSProtocolPage({ openCheckout }) {
                 </div>
               </div>
               
-              {/* Kartica 3 */}
               <div className="bg-[#0a0a0a] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 cursor-zoom-in group shadow-[0_0_30px_rgba(245,158,11,0.05)]" onClick={() => setSelectedImage("/mocup_3_bilbord.webp")}>
                 <div className="relative h-[250px] bg-black overflow-hidden">
                   <img src="/mocup_3_bilbord.webp" alt="Custom Example 3" className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700" />
@@ -539,12 +580,7 @@ export default function SaaSProtocolPage({ openCheckout }) {
               </div>
             </div>
 
-            {/* Price & PREMEŠTENI PRAVI LINKOVI (Kao CTA) */}
             <div className="flex flex-col items-center gap-8 border-t border-white/5 pt-10">
-              {/* Sada piše / 5 BILBORD fiksno kako si tražio na slici */}
-              <div className="text-4xl md:text-5xl font-black text-white">$1,500 <span className="text-base text-zinc-500 font-bold uppercase tracking-widest">/ 5 BILBORD</span></div>
-              
-              {/* 🔥 PRAVI LINKOVI PREMA TVOJEM ZAHTEVU (Vode na rutu i otvaraju tačan tab) 🔥 */}
               <div className="flex flex-wrap justify-center gap-4">
                   <Link 
                       to="/standard-mocup"
@@ -569,4 +605,4 @@ export default function SaaSProtocolPage({ openCheckout }) {
     </div>
   );
 }
-// KRAJ FUNKCIJE: SaaSProtocolPage
+// KRAJ FAJLA: SaaSProtocolPage

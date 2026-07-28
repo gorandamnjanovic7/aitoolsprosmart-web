@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async';
+import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay, CheckCircle, ChevronUp, Bitcoin, CreditCard, DollarSign, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ScanOverlay from './ScanOverlay'; 
@@ -20,6 +20,7 @@ import V8Enhancer10x from './V8Enhancer10x';
 import V8Promo10xPage from './V8Promo10xPage'; 
 import V8ContactWidget from './V8ContactWidget';
 import V8StockBerza from './componentsStockBerza/V8StockBerza';
+import V8Stock2 from './componentsStockBerza/V8Stock2'; 
 import V8Showroom from './V8Showroom'; 
 import VisitorCounter from './VisitorCounter';
 import SingleProductPage from './SingleProductPage';
@@ -50,12 +51,11 @@ import LoginRequiredModal from './LoginRequiredModal';
 import V8UnlockModal from './V8UnlockModal'; 
 import V8AdminLiveNotifier from './V8AdminLiveNotifier';
 import V8PromptFactory from './V8PromptFactory';
+import V8NeuralForge from './V8NeuralForge'; 
 import V8RawRealityEngine from './V8RawRealityEngine';
 import SaaSProtocolPage from './SaaSProtocolPage';
 import StandardMocup from './StandardMocup';
 
-// 🔥 NOVO: IMPORT NOTIFIKACIONOG SISTEMA 🔥
-// (Prilagodi putanju ako si fajl stavio u neki podfolder tipa ./components/NotificationSystem)
 import { NotificationListener, NotificationModal } from './NotificationSystem';
 
 if (typeof window !== 'undefined') {
@@ -66,7 +66,6 @@ if (typeof window !== 'undefined') {
 
 let currentAudio = null; 
 
-// Početak funkcije: playV8Sound
 export const playV8Sound = (type) => {
   try {
     if (currentAudio) {
@@ -86,9 +85,7 @@ export const playV8Sound = (type) => {
     }
   } catch (err) {}
 };
-// Kraj funkcije: playV8Sound
 
-// Početak funkcije: stopV8Sound
 export const stopV8Sound = () => {
   try {
     if (currentAudio) {
@@ -98,7 +95,6 @@ export const stopV8Sound = () => {
     }
   } catch (err) {}
 };
-// Kraj funkcije: stopV8Sound
 
 export const v8AlertModal = {
   listeners: [],
@@ -118,17 +114,14 @@ const MOJA_IP = "213.196.99.2";
 let globalUserIp = "";
 const currentSessionId = Math.random().toString(36).substring(2, 15);
 
-// Početak funkcije: fetchUserIp
 const fetchUserIp = async () => {
   try {
     const res = await fetch('https://api.ipify.org?format=json');
     const d = await res.json(); globalUserIp = d.ip;
   } catch (err) {}
 };
-// Kraj funkcije: fetchUserIp
 fetchUserIp();
 
-// Početak funkcije: logAnalyticsEvent
 export const logAnalyticsEvent = async (type, details) => {
   const currentUser = auth.currentUser;
   if (!currentUser) return; 
@@ -146,7 +139,6 @@ export const logAnalyticsEvent = async (type, details) => {
     }); 
   } catch (err) {}
 };
-// Kraj funkcije: logAnalyticsEvent
 
 export const v8Toast = {
   listeners: [],
@@ -161,7 +153,6 @@ export const v8Toast = {
   subscribe: (l) => { v8Toast.listeners.push(l); return () => v8Toast.listeners = v8Toast.listeners.filter(cb => cb !== l); }
 };
 
-// Početak funkcije: V8ToastContainer
 const V8ToastContainer = () => {
   const [toasts, setToasts] = useState([]);
   useEffect(() => {
@@ -183,9 +174,7 @@ const V8ToastContainer = () => {
     </div>
   );
 };
-// Kraj funkcije: V8ToastContainer
 
-// Početak funkcije: V8AlertModalContainer
 const V8AlertModalContainer = () => {
   const [modalData, setModalData] = useState(null);
 
@@ -276,9 +265,7 @@ const V8AlertModalContainer = () => {
     </AnimatePresence>
   );
 };
-// Kraj funkcije: V8AlertModalContainer
 
-// Početak funkcije: AdminLiveSalesTracker
 const AdminLiveSalesTracker = () => {
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -359,9 +346,7 @@ const AdminLiveSalesTracker = () => {
 
   return null;
 };
-// Kraj funkcije: AdminLiveSalesTracker
 
-// Početak funkcije: V8PageWrapper
 const V8PageWrapper = ({ children }) => {
   return (
     <>
@@ -372,9 +357,7 @@ const V8PageWrapper = ({ children }) => {
     </>
   );
 };
-// Kraj funkcije: V8PageWrapper
 
-// Početak funkcije: FullScreenBoot
 const FullScreenBoot = ({ onComplete }) => {
   const [progress, setProgress] = useState(0);
   const [isIgniting, setIsIgniting] = useState(false);
@@ -418,9 +401,7 @@ const FullScreenBoot = ({ onComplete }) => {
     </motion.div>
   );
 };
-// Kraj funkcije: FullScreenBoot
 
-// Početak funkcije: SmartScrollButton
 const SmartScrollButton = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   
@@ -443,17 +424,17 @@ const SmartScrollButton = () => {
     </button>
   );
 };
-// Kraj funkcije: SmartScrollButton
 
-// Početak funkcije: AppContent
 function AppContent({ appsData, refreshData }) {
+  // 🔥 PREKIDAČ ZA ODRŽAVANJE (Stavi na false kad hoćeš da upališ sajt) 🔥
+  const IS_MAINTENANCE = true;
+
   const [isBooting, setIsBooting] = useState(true);
   const location = useLocation();
   const prevLocation = useRef(location.pathname);
   const entryTime = useRef(Date.now());
   const [authVersion, setAuthVersion] = useState(0); 
 
-  // 🔥 NOVO: Globalno stanje za naš novi Notification Modal 🔥
   const [notification, setNotification] = useState(null);
 
   const [checkoutData, setCheckoutData] = useState({ isOpen: false, name: '', price: '', zipLink: '' });
@@ -549,6 +530,43 @@ function AppContent({ appsData, refreshData }) {
 
   const handleHomeClick = (e) => { if (location.pathname === '/') { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); window.history.replaceState(null, '', '/'); } };
 
+  // 🔴 AKO JE ODRŽAVANJE UPALJENO, PRIKAZUJE SE SAMO OVAJ EKRAN 🔴
+  if (IS_MAINTENANCE) {
+    return (
+      <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center relative overflow-hidden font-sans">
+        <Helmet>
+          <title>System Maintenance | V8 Engine</title>
+        </Helmet>
+        
+        {/* Pozadinsko svetlo */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+          <div className="w-[600px] h-[600px] bg-amber-600/10 rounded-full blur-[120px]" />
+        </div>
+        
+        {/* Sadržaj na sredini */}
+        <div className="relative z-10 text-center px-6 flex flex-col items-center">
+          <ShieldAlert className="w-24 h-24 text-amber-500 mb-8 animate-pulse drop-shadow-[0_0_20px_rgba(245,158,11,0.5)]" />
+          
+          <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-600 uppercase tracking-tighter mb-4 drop-shadow-sm">
+            Server Maintenance
+          </h1>
+          
+          <p className="text-lg md:text-2xl text-zinc-400 font-medium tracking-widest uppercase mb-10">
+            We will be back today
+          </p>
+          
+          <div className="inline-block border border-amber-500/30 bg-black/50 backdrop-blur-md px-6 py-3 rounded-full shadow-[0_0_30px_rgba(245,158,11,0.15)]">
+             <span className="text-amber-500 text-xs md:text-sm font-mono font-black uppercase tracking-widest flex items-center gap-3">
+               <span className="w-2 h-2 bg-amber-500 rounded-full animate-ping"></span>
+               Upgrading V8 Core Architecture
+             </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 🟢 AKO JE ODRŽAVANJE UGAŠENO, UČITAVA SE NORMALAN SAJT 🟢
   return (
     <div key={authVersion} className="min-h-screen text-zinc-100 font-sans relative text-left bg-[url('/v8-supercomputer-bg.jpg')] bg-cover bg-center bg-fixed bg-no-repeat">
       
@@ -580,7 +598,6 @@ function AppContent({ appsData, refreshData }) {
         <V8AlertModalContainer />
         <AdminLiveSalesTracker />
         
-        {/* 🔥 NOVO: MOTOR KOJI SLUŠA BAzu U POZADINI 🔥 */}
         <NotificationListener setNotification={setNotification} />
 
         <AnimatePresence>
@@ -591,7 +608,6 @@ function AppContent({ appsData, refreshData }) {
         <V8AdminLiveNotifier />
         <V8UnlockModal />
         
-        {}
         <div className="flex-1 text-left pt-20">
           <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
            <Routes location={location} key={location.pathname}>
@@ -606,8 +622,8 @@ function AppContent({ appsData, refreshData }) {
               <Route path="/v8-debranding-extractor" element={<V8PageWrapper><V8JsonDeBrendingExtractorPage openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               <Route path="/grid-system" element={<V8PageWrapper><V8GridSystem openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               
-              <Route path="/prompt-factory" element={<V8PageWrapper><V8PromptFactory /></V8PageWrapper>} />
-              
+              <Route path="/prompt-factory" element={<V8PageWrapper><V8NeuralForge openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+              <Route path="/neural-forge" element={<V8PageWrapper><V8NeuralForge openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               <Route path="/raw-reality" element={<V8PageWrapper><V8RawRealityEngine /></V8PageWrapper>} />
 
               <Route path="/saas-protocol" element={<V8PageWrapper><SaaSProtocolPage openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
@@ -623,6 +639,7 @@ function AppContent({ appsData, refreshData }) {
               <Route path="/admin-payoneer" element={<V8PageWrapper><V8PayoneerDashboard /></V8PageWrapper>} />
               
               <Route path="/stock" element={<V8PageWrapper><V8StockBerza /></V8PageWrapper>} />
+              <Route path="/stock-2" element={<V8PageWrapper><V8Stock2 /></V8PageWrapper>} /> 
               
               <Route path="/showroom" element={<V8PageWrapper><V8Showroom /></V8PageWrapper>} />
               <Route path="/terms" element={<V8PageWrapper><V8Terms /></V8PageWrapper>} />
@@ -668,7 +685,6 @@ function AppContent({ appsData, refreshData }) {
           )}
         </AnimatePresence>
 
-        {/* 🔥 NOVO: GLOBALNI VIZUELNI MODAL KOJI ISKAČE NA EKRAN 🔥 */}
         <AnimatePresence>
           {notification && (
             <NotificationModal data={notification} onClose={() => setNotification(null)} />
@@ -679,9 +695,7 @@ function AppContent({ appsData, refreshData }) {
     </div>
   );
 }
-// Kraj funkcije: AppContent
 
-// Početak funkcije: App
 export default function App() {
   const [appsData, setAppsData] = useState([]);
 
@@ -706,5 +720,4 @@ export default function App() {
     </HelmetProvider>
   );
 }
-// Kraj funkcije: App
 // KRAJ FAJLA: App.jsx

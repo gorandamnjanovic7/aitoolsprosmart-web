@@ -200,7 +200,7 @@ const V8Navbar = ({ handleHomeClick }) => {
           backgroundRepeat: 'no-repeat'
         }}
       >
-        <div className="mx-auto flex w-full max-w-7xl min-w-0 items-center justify-between gap-2 px-3 sm:gap-4 sm:px-4 md:px-8">
+        <div className="mx-auto flex w-full max-w-[1600px] min-w-0 items-center justify-between gap-2 px-3 sm:gap-4 sm:px-4 md:px-8">
           
           {/* LOGO */}
           <Link to="/" onClick={() => { handleHomeClick(); setIsMobileMenuOpen(false); }} className="group flex min-w-0 max-w-[calc(100%_-_3.25rem)] flex-1 items-center gap-2 overflow-hidden pr-1 sm:max-w-[calc(100%_-_3.75rem)] sm:gap-3 sm:pr-4 xl:max-w-none xl:flex-none">
@@ -314,13 +314,14 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   </Link>
 
-                  <Link to="/prompt-factory" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-blue-500/30 mt-1">
-                    <div className="bg-blue-500/20 p-2 rounded-lg group-hover/item:bg-blue-500/40 transition-colors shadow-[0_0_10px_rgba(59,130,246,0.3)] shrink-0">
-                      <Terminal className="w-5 h-5 text-blue-400 transition-transform group-hover/item:scale-110" />
+                  {/* 🔥 NEURAL FORGE 🔥 */}
+                  <Link to="/neural-forge" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-cyan-500/30 mt-1">
+                    <div className="bg-cyan-500/20 p-2 rounded-lg group-hover/item:bg-cyan-500/40 transition-colors shadow-[0_0_10px_rgba(6,182,212,0.3)] shrink-0">
+                      <Terminal className="w-5 h-5 text-cyan-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-blue-400 transition-all drop-shadow-md truncate">PROMPT FACTORY</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">SaaS Idea Generator</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-cyan-400 transition-all drop-shadow-md truncate">NEURAL FORGE</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Visual Synthesizer</span>
                     </div>
                   </Link>
 
@@ -382,7 +383,7 @@ const V8Navbar = ({ handleHomeClick }) => {
               </div>
             </div>
 
-            {/* 🔥 PREMIUM STOCK DROPDOWN (SADA JE JAKA PLAVA I MAKSIMALNO ISTAKNUTO) 🔥 */}
+            {/* 🔥 PREMIUM STOCK DROPDOWN 🔥 */}
             <div className="relative group">
               <MagneticButton>
                 <button className="flex items-center gap-1 xl:gap-2 px-4 xl:px-6 py-2.5 rounded-full bg-blue-600 border-2 border-blue-400 text-white font-black text-[10px] xl:text-[12px] hover:bg-blue-500 hover:scale-105 transition-all shadow-[0_0_20px_rgba(37,99,235,0.6)] cursor-pointer whitespace-nowrap">
@@ -427,14 +428,24 @@ const V8Navbar = ({ handleHomeClick }) => {
             </div>
           </div>
 
-          {/* 🔥 SAAS MOCKUPS DUGME (SADA JE JAKA NARANDŽASTA I MAKSIMALNO ISTAKNUTO) 🔥 */}
-          <div className="hidden xl:flex items-center ml-2 border-l border-white/10 pl-3 xl:pl-4 shrink-0">
+          {/* 🔥 NEURAL FORGE & SAAS MOCKUPS (ISTAKNUTA DUGMAD JEDNO DO DRUGOG) 🔥 */}
+          <div className="hidden xl:flex items-center gap-2 2xl:gap-3 ml-2 border-l border-white/10 pl-3 xl:pl-4 shrink-0">
+            
             <MagneticButton>
-              <Link to="/saas-protocol" onClick={() => window.scrollTo(0,0)} className="flex items-center gap-2 px-5 py-3 rounded-full bg-orange-500 border-2 border-orange-400 text-white font-black hover:bg-orange-400 hover:scale-105 transition-all shadow-[0_0_20px_rgba(249,115,22,0.6)] whitespace-nowrap cursor-pointer">
-                <MonitorPlay className="w-4 h-4 xl:w-5 xl:h-5 shrink-0 drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
-                <span className="text-[10px] xl:text-[12px] uppercase tracking-widest">SaaS MOCKUPS</span>
+              {/* OVO SAD GADJA /neural-forge */}
+              <Link to="/neural-forge" onClick={() => window.scrollTo(0,0)} className="flex items-center gap-1.5 xl:gap-2 px-4 xl:px-5 py-2.5 xl:py-3 rounded-full bg-cyan-600 border-2 border-cyan-400 text-white font-black hover:bg-cyan-500 hover:scale-105 transition-all shadow-[0_0_20px_rgba(6,182,212,0.6)] whitespace-nowrap cursor-pointer">
+                <Terminal className="w-3 h-3 xl:w-4 xl:h-4 shrink-0 drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
+                <span className="text-[9px] xl:text-[11px] 2xl:text-[12px] uppercase tracking-widest">FORGE</span>
               </Link>
             </MagneticButton>
+
+            <MagneticButton>
+              <Link to="/saas-protocol" onClick={() => window.scrollTo(0,0)} className="flex items-center gap-1.5 xl:gap-2 px-4 xl:px-5 py-2.5 xl:py-3 rounded-full bg-orange-500 border-2 border-orange-400 text-white font-black hover:bg-orange-400 hover:scale-105 transition-all shadow-[0_0_20px_rgba(249,115,22,0.6)] whitespace-nowrap cursor-pointer">
+                <MonitorPlay className="w-3 h-3 xl:w-4 xl:h-4 shrink-0 drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
+                <span className="text-[9px] xl:text-[11px] 2xl:text-[12px] uppercase tracking-widest">SaaS MOCKUPS</span>
+              </Link>
+            </MagneticButton>
+
           </div>
 
           {user ? (
@@ -667,6 +678,18 @@ const V8Navbar = ({ handleHomeClick }) => {
                     <span className="text-[13px] sm:text-[14px] font-black uppercase tracking-widest text-white truncate w-full">Početna Strana</span>
                   </Link>
 
+                  {/* 🔥 NEURAL FORGE (ISTAKNUT U MOBILNOM) 🔥 */}
+                  <Link to="/neural-forge" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-cyan-600 border-2 border-cyan-500 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0 shadow-[0_0_20px_rgba(6,182,212,0.4)]">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 w-full">
+                      <div className="bg-white/20 p-2.5 sm:p-3 rounded-xl shrink-0"><Terminal className="w-5 h-5 sm:w-6 sm:h-6 text-white" /></div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[12px] sm:text-[14px] font-black uppercase tracking-widest text-white truncate w-full drop-shadow-md">Neural Forge</span>
+                        <span className="text-[9px] sm:text-[10px] text-cyan-200 font-bold uppercase truncate w-full">Google Nano Banana 2</span>
+                      </div>
+                    </div>
+                    <span className="text-[7px] bg-white text-cyan-600 px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 ml-2 shadow-md">NEW</span>
+                  </Link>
+
                   {/* 🔥 SAAS MOCKUPS (ISTAKNUT U MOBILNOM) 🔥 */}
                   <Link to="/saas-protocol" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-orange-600 border-2 border-orange-500 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0 shadow-[0_0_20px_rgba(249,115,22,0.4)]">
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0 w-full">
@@ -726,16 +749,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   </Link>
 
-                  <Link to="/prompt-factory" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border border-white/5 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
-                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 w-full">
-                      <div className="bg-blue-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><Terminal className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" /></div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full">Prompt Factory</span>
-                        <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">SaaS Generator</span>
-                      </div>
-                    </div>
-                  </Link>
-
                   <Link to="/raw-reality" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border border-orange-500/30 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                       <div className="bg-orange-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><ScanLine className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" /></div>
@@ -779,11 +792,11 @@ const V8Navbar = ({ handleHomeClick }) => {
                   </Link>
 
                   <div className="mt-1 grid w-full min-w-0 grid-cols-2 gap-2 sm:gap-3">
-                    <Link to="/seedance" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-green-500/20 p-3 sm:p-4 rounded-2xl flex flex-col items-center text-center gap-2 w-full overflow-hidden">
+                    <Link to="/seedance" onClick={() => window.scrollTo(0,0)} className="bg-[#0a0a0a] border border-green-500/20 p-3 sm:p-4 rounded-2xl flex flex-col items-center text-center gap-2 w-full overflow-hidden">
                       <MonitorPlay className="w-6 h-6 sm:w-8 sm:h-8 text-green-500 shrink-0" />
                       <span className="text-[10px] sm:text-[11px] font-black text-white uppercase tracking-widest leading-tight truncate w-full">Seedance<br/>2.0</span>
                     </Link>
-                    <Link to="/kling" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-red-500/20 p-3 sm:p-4 rounded-2xl flex flex-col items-center text-center gap-2 w-full overflow-hidden">
+                    <Link to="/kling" onClick={() => window.scrollTo(0,0)} className="bg-[#0a0a0a] border border-red-500/20 p-3 sm:p-4 rounded-2xl flex flex-col items-center text-center gap-2 w-full overflow-hidden">
                       <Video className="w-6 h-6 sm:w-8 sm:h-8 text-red-500 shrink-0" />
                       <span className="text-[10px] sm:text-[11px] font-black text-white uppercase tracking-widest leading-tight truncate w-full">Kling<br/>3.0</span>
                     </Link>
