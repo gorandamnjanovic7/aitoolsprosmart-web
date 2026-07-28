@@ -1,11 +1,11 @@
 // POČETAK FAJLA: SaaSProtocolPage.jsx
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ChevronRight, X, Upload, Trash2, Download, Eye, Sparkles, Loader2, Monitor, Tablet, Smartphone, Layers, LayoutGrid } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom'; 
 import { Helmet } from 'react-helmet-async';
 import html2canvas from 'html2canvas'; 
 
-// 🔥 BAZA PRESETA ZA SVE SCENE I SVA 3 UREĐAJA 🔥
+// 🔥 VRAĆENE TVOJE ORIGINALNE KOORDINATE (VIŠE SE NE DIRAJU!) 🔥
 const SCENE_PRESETS = {
   "magnific_a-moody-lowkey-tech-scene_2994482255.png": {
     laptop: { top: 28.5, left: 19.4, width: 27.1, height: 32.9, transX: 0, transY: 0, rotX: 1.5, rotY: 4, rotZ: 0, skewX: -0.5, skewY: 1, perspective: 1200, originX: 50, originY: 100, scaleX: 1, scaleY: 1, borderRadius: 2 },
@@ -21,14 +21,31 @@ const DEFAULT_CALIBS = {
 };
 
 // POČETAK FUNKCIJE: SaaSProtocolPage
-export default function SaaSProtocolPage({ openCheckout }) {
+export default function SaaSProtocolPage({ openCheckout, isAdmin }) {
   // POČETAK INICIJALIZACIJE STATE-A I REFOVA
   const navigate = useNavigate(); 
   const mockupRef = useRef(null); 
   
-  const [isAdminMode, setIsAdminMode] = useState(false);
+  // 🔥 PAMETNA DETEKCIJA ADMINA 🔥
+  const [isAdminMode, setIsAdminMode] = useState(() => {
+    return isAdmin === true || (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || localStorage.getItem('v8_goran_mode') === 'true'));
+  });
+
+  useEffect(() => {
+    if (isAdmin === true) {
+      setIsAdminMode(true);
+    }
+  }, [isAdmin]);
+
+  const toggleAdminMode = () => {
+    const newState = !isAdminMode;
+    setIsAdminMode(newState);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('v8_goran_mode', newState);
+    }
+  };
+
   const [activeBg, setActiveBg] = useState("magnific_a-moody-lowkey-tech-scene_2994482255.png");
-  
   const [calibs, setCalibs] = useState(SCENE_PRESETS["magnific_a-moody-lowkey-tech-scene_2994482255.png"]);
   const [activeDeviceTab, setActiveDeviceTab] = useState('phone'); 
 
@@ -123,18 +140,16 @@ export default function SaaSProtocolPage({ openCheckout }) {
   // KRAJ FUNKCIJE: updateCalib
 
   // POČETAK FUNKCIJE: handlePurchaseAndDownload
-  // 🔥 PUNA CHECKOUT LOGIKA - NEMA PREUZIMANJA AKO UPLATA PADNE 🔥
+  // 🔥 SECURITY CHECKOUT LOGIKA 🔥
   const handlePurchaseAndDownload = async () => {
     setIsProcessing(true);
     let paymentSuccess = false;
 
     try {
       if (openCheckout) {
-        // Otvara tvoj checkout. Očekuje se da vrati 'true' ako je naplata prošla.
         const result = await openCheckout(20.00, `V10 Premium Mockup: ${activeBg}`);
         paymentSuccess = result !== false; 
       } else {
-        // Fallback samo za testiranje dok ne povežeš API
         await new Promise(resolve => setTimeout(resolve, 2000)); 
         paymentSuccess = true;
       }
@@ -143,7 +158,6 @@ export default function SaaSProtocolPage({ openCheckout }) {
         throw new Error("Payment declined by processor");
       }
 
-      // AKO JE UPLATA PROŠLA, TEK TADA RENDERUJE I SKIDA
       if (mockupRef.current) {
         const canvas = await html2canvas(mockupRef.current, {
           scale: 2, 
@@ -160,7 +174,6 @@ export default function SaaSProtocolPage({ openCheckout }) {
       
     } catch (error) {
       console.error("Payment failure:", error);
-      // 🔥 ODBIJENA UPLATA - STRIKTNA ENGLESKA PORUKA 🔥
       alert("Payment authorization failed. Your transaction did not pass. Please verify your payment details and try again.");
     } finally {
       setIsProcessing(false);
@@ -168,7 +181,7 @@ export default function SaaSProtocolPage({ openCheckout }) {
   };
   // KRAJ FUNKCIJE: handlePurchaseAndDownload
 
-  const currentDev = calibs[activeDeviceTab]; 
+  const currentDev = calibs[activeDeviceTab] || DEFAULT_CALIBS[activeDeviceTab]; 
 
   const galleryImages = [
     "magnific_premium-tech-setup-on-a-p_2994483605.png",
@@ -184,7 +197,7 @@ export default function SaaSProtocolPage({ openCheckout }) {
       {/* TAJNA AKTIVACIJA ADMINA */}
       <div className="fixed bottom-4 left-4 z-[99999]">
         <button 
-          onClick={() => setIsAdminMode(!isAdminMode)} 
+          onClick={toggleAdminMode} 
           className={`px-3 py-1.5 rounded-lg text-[10px] uppercase font-mono tracking-widest transition-all border ${isAdminMode ? 'bg-amber-500 text-black border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.5)]' : 'bg-zinc-900/80 hover:bg-amber-500 hover:text-black border-white/10 text-zinc-500'}`}
         >
           {isAdminMode ? "🔒 Zatvori V8 Panel" : "🛠️ Goran Mode"}
@@ -338,7 +351,6 @@ export default function SaaSProtocolPage({ openCheckout }) {
             </div>
             
             <div className="flex items-center gap-3">
-              {/* OTVARA SE SAMO AKO SU UBAČENE SVE 3 SLIKE */}
               {(laptopPreview && ipadPreview && phonePreview) && (
                 <button 
                   onClick={handlePurchaseAndDownload}
@@ -487,7 +499,7 @@ export default function SaaSProtocolPage({ openCheckout }) {
           </div>
 
           {/* OBUHVAĆEN CELOKUPAN GRID SA ZAKLJUČANIM "IN PROGRESS" SLOJEM (OSIM AKO SI ADMIN) */}
-          <div className="relative w-full rounded-2xl overflow-hidden mb-10">
+          <div className="relative w-full rounded-2xl overflow-hidden mb-10 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
             
             <div className={`grid grid-cols-2 md:grid-cols-4 gap-6 ${!isAdminMode ? 'pointer-events-none opacity-20 grayscale blur-[4px]' : ''}`}>
               {galleryImages.map((img, idx) => (
@@ -504,7 +516,7 @@ export default function SaaSProtocolPage({ openCheckout }) {
 
             {/* APSOLUTNI OVERLAY PREKO CELOG GRIDA - PRIKAZUJE SE SAMO KORISNICIMA, GORAN GA NE VIDI */}
             {!isAdminMode && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center z-10 cursor-not-allowed">
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm z-10 cursor-not-allowed">
                 <h2 className="text-amber-500 font-black uppercase tracking-[0.3em] text-4xl md:text-6xl drop-shadow-2xl">
                   IN PROGRESS
                 </h2>
@@ -529,79 +541,55 @@ export default function SaaSProtocolPage({ openCheckout }) {
         </div>
       </section>
 
-      {/* 🔥 CUSTOM ARCHITECTURE SEKCIJA SA BOKSOVIMA 🔥 */}
-      <section className="py-20 px-6 relative flex justify-center bg-[#050505]">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-amber-500/10 rounded-full blur-[120px] pointer-events-none"></div>
-
-        <div className="relative z-10 w-full max-w-5xl bg-gradient-to-b from-[#111] to-[#050505] border-2 border-amber-500/50 rounded-[2rem] p-6 md:p-12 text-center shadow-[0_0_60px_rgba(245,158,11,0.15)] group hover:border-amber-500 transition-all duration-700">
-          <div className="inline-block bg-amber-500 text-black text-[10px] md:text-xs font-black uppercase tracking-widest px-5 py-2 rounded-full mb-6 shadow-[0_0_20px_rgba(245,158,11,0.5)]">
-            Exclusive V10 Offer
-          </div>
+      {/* 🔥 KORS-NAVIGACIJA SA WALL I BILLBOARD MOCKUP BOXOVIMA 🔥 */}
+      <section className="py-20 px-6 bg-[#0a0a0a] border-t border-white/5">
+        <div className="max-w-5xl mx-auto">
           
-          <h3 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tight mb-6">
-            Custom <span className="text-amber-500">Architecture</span>
-          </h3>
-          
-          <p className="text-base md:text-lg text-zinc-400 max-w-3xl mx-auto mb-10 font-light leading-relaxed">
-            Don't just use our base environments. Provide your exact Figma UI bilbords with your design and we will mathematically render them into 3 custom, examples in 150MP physical realities tailored strictly to your brand's unique identity.
-          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            {/* BOX: WALL MOCKUP */}
+            <div className="relative bg-[#0d0d0d] border border-white/5 hover:border-amber-500/20 p-8 rounded-3xl transition-all group overflow-hidden shadow-lg">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-bl-full group-hover:bg-amber-500/10 transition-colors"></div>
+              <div className="flex items-start gap-5">
+                <div className="p-3 bg-[#111] rounded-xl text-amber-500 border border-white/5 shadow-inner">
+                  <Layers className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="text-lg font-black text-white uppercase tracking-wider mb-2">WALL PRESENTATION LAB</h4>
+                  <p className="text-zinc-500 text-[10px] md:text-xs leading-relaxed mb-6 font-medium">
+                    Ubacite svoj dizajn na luksuzne enterijere, kancelarijske zidove i minimalističke teksture fasada.
+                  </p>
+                  <button onClick={() => navigate('/wall-mocup')} className="inline-flex items-center gap-1.5 text-[10px] md:text-xs text-amber-500 hover:text-amber-400 font-black uppercase tracking-widest transition-colors">
+                    OPEN WALL LAB <ChevronRight size={14} />
+                  </button>
+                </div>
+              </div>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 text-left">
-            <div className="bg-[#0a0a0a] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 cursor-zoom-in group shadow-[0_0_30px_rgba(245,158,11,0.05)]" onClick={() => setSelectedImage("/mocup_1_bilbord.webp")}>
-              <div className="relative h-[250px] bg-black overflow-hidden">
-                <img src="/mocup_1_bilbord.webp" alt="Custom Example 1" className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700" />
-                <div className="absolute top-4 right-4 bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg z-10">Urban</div>
-              </div>
-              <div className="p-6 border-t border-white/5 relative">
-                <h4 className="text-lg text-white font-black uppercase tracking-widest mb-2">Street-Level Billboard</h4>
-                <p className="text-zinc-400 text-xs leading-relaxed">High-contrast urban environment engineered for outdoor SAAS campaigns and maximum brand visibility.</p>
-              </div>
-            </div>
-            
-            <div className="bg-[#0a0a0a] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 cursor-zoom-in group shadow-[0_0_30px_rgba(245,158,11,0.05)]" onClick={() => setSelectedImage("/mocup_2_bilbord.webp")}>
-              <div className="relative h-[250px] bg-black overflow-hidden">
-                <img src="/mocup_2_bilbord.webp" alt="Custom Example 2" className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700" />
-                <div className="absolute top-4 right-4 bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg z-10">Premium</div>
-              </div>
-              <div className="p-6 border-t border-white/5 relative">
-                <h4 className="text-lg text-white font-black uppercase tracking-widest mb-2">Luxury Mall Display</h4>
-                <p className="text-zinc-400 text-xs leading-relaxed">Luxurious indoor advertising space with cinematic lighting. Perfect for elite enterprise presentations.</p>
+            {/* BOX: BILLBOARD MOCKUP */}
+            <div className="relative bg-[#0d0d0d] border border-white/5 hover:border-amber-500/20 p-8 rounded-3xl transition-all group overflow-hidden shadow-lg">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-bl-full group-hover:bg-amber-500/10 transition-colors"></div>
+              <div className="flex items-start gap-5">
+                <div className="p-3 bg-[#111] rounded-xl text-amber-500 border border-white/5 shadow-inner">
+                  <LayoutGrid className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="text-lg font-black text-white uppercase tracking-wider mb-2">MEGA BILLBOARD LAB</h4>
+                  <p className="text-zinc-500 text-[10px] md:text-xs leading-relaxed mb-6 font-medium">
+                    Pogledajte kako vaš brend izgleda na gigantskim uličnim bilbordima i digitalnim displejima metropola.
+                  </p>
+                  <button onClick={() => navigate('/billboard-mocup')} className="inline-flex items-center gap-1.5 text-[10px] md:text-xs text-amber-500 hover:text-amber-400 font-black uppercase tracking-widest transition-colors">
+                    OPEN BILLBOARD LAB <ChevronRight size={14} />
+                  </button>
+                </div>
               </div>
             </div>
-            
-            <div className="bg-[#0a0a0a] border-2 border-amber-500/20 rounded-2xl overflow-hidden hover:border-amber-500 transition-colors duration-500 cursor-zoom-in group shadow-[0_0_30px_rgba(245,158,11,0.05)]" onClick={() => setSelectedImage("/mocup_3_bilbord.webp")}>
-              <div className="relative h-[250px] bg-black overflow-hidden">
-                <img src="/mocup_3_bilbord.webp" alt="Custom Example 3" className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700" />
-                <div className="absolute top-4 right-4 bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg z-10">Gallery</div>
-              </div>
-              <div className="p-6 border-t border-white/5 relative">
-                <h4 className="text-lg text-white font-black uppercase tracking-widest mb-2">Gallery Architecture</h4>
-                <p className="text-zinc-400 text-xs leading-relaxed">Minimalist museum-grade presentation area. Transforms generic UI into high-end physical art exhibitions.</p>
-              </div>
-            </div>
+
           </div>
 
-          <div className="flex flex-col items-center gap-8 border-t border-white/5 pt-10">
-            <div className="flex flex-wrap justify-center gap-4">
-                <Link 
-                    to="/standard-mocup"
-                    onClick={() => localStorage.setItem('v8_active_mocup_tab', 'ultra3')}
-                    className="px-8 py-4 rounded-xl font-black uppercase tracking-widest text-sm transition-all border-2 border-amber-500 bg-amber-500 text-black shadow-[0_0_20px_rgba(245,158,11,0.4)] hover:scale-105 flex items-center justify-center"
-                >
-                    BILBORD MOCUP
-                </Link>
-                <Link 
-                    to="/standard-mocup"
-                    onClick={() => localStorage.setItem('v8_active_mocup_tab', 'ultra4')}
-                    className="px-8 py-4 rounded-xl font-black uppercase tracking-widest text-sm transition-all border-2 border-white/10 bg-black/50 text-zinc-400 hover:border-amber-500/50 hover:text-white hover:scale-105 flex items-center justify-center"
-                >
-                    WALL MOCUP
-                </Link>
-            </div>
-          </div>
         </div>
       </section>
-      
+
     </div>
   );
 }
