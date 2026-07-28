@@ -426,8 +426,8 @@ const SmartScrollButton = () => {
 };
 
 function AppContent({ appsData, refreshData }) {
-  // 🔥 PREKIDAČ ZA ODRŽAVANJE (Stavi na false kad hoćeš da upališ sajt) 🔥
-  const IS_MAINTENANCE = true;
+  // 🔥 PREKIDAČ ZA ODRŽAVANJE JE SADA UGAŠEN 🔥
+  const IS_MAINTENANCE = false;
 
   const [isBooting, setIsBooting] = useState(true);
   const location = useLocation();
