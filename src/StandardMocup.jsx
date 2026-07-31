@@ -3,7 +3,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Helmet } from 'react-helmet-async'; 
 import { CLOUDINARY_UPLOAD_PRESET, CLOUDINARY_CLOUD_NAME } from './data';
-import { Zap, X, Image as ImageIcon, Images, DownloadCloud, Crown, AlertCircle, Type, Layers, FolderArchive, FileText, Wallet, MonitorPlay, Link as LinkIcon, Diamond, RefreshCcw, Aperture, Trash2, Upload, Briefcase, Monitor, LayoutGrid, ShieldCheck, Edit } from 'lucide-react';
+// 🔥 DODATE IKONICE: CheckCircle2, Smartphone, Maximize, ArrowLeft 🔥
+import { Zap, X, Image as ImageIcon, Images, DownloadCloud, Crown, AlertCircle, Type, Layers, FolderArchive, FileText, Wallet, MonitorPlay, Link as LinkIcon, Diamond, RefreshCcw, Aperture, Trash2, Upload, Briefcase, Monitor, LayoutGrid, ShieldCheck, Edit, Award, CheckCircle2, Smartphone, Maximize, ArrowLeft } from 'lucide-react';
 import { db, auth } from './firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, serverTimestamp, query, orderBy, getDoc, setDoc, where, onSnapshot } from 'firebase/firestore';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
@@ -127,6 +128,7 @@ export default function StandardMocup() {
     else if (activeTab === 'ultra2') setNoviFormat('150MP PREMIUM DEVICE MOCKUPS');
     else if (activeTab === 'ultra3') setNoviFormat('150MP BILLBOARD MOCKUPS');
     else if (activeTab === 'ultra4') setNoviFormat('150MP WALL MOCKUPS');
+    else if (activeTab === 'ultra5') setNoviFormat('150MP EXECUTIVE PLAQUES');
   }, [activeTab]);
 
   useEffect(() => {
@@ -141,6 +143,9 @@ export default function StandardMocup() {
     }
     else if (noviFormat === '150MP WALL MOCKUPS') { 
       setNoviOpisEn("V10 WALL MOCKUPS BUNDLE: THE PINNACLE OF 150MP RESOLUTION FOR HIGH-END ARCHITECTURAL SHOWCASES. INCLUDES A CURATED 5-FILE COLLECTION OF EXTERIOR & INTERIOR WALL DISPLAYS: 16:9 ASPECT RATIO. Processed through the V10 Master Engine utilizing precision LANCZOS interpolation. Includes advanced UnsharpMask micro-contrast, custom NumPy matrix processing for flawless indoor/outdoor lighting reflection, and deep shadow profiling. Strict sRGB ICC profile embedding. Perfect for luxury retail exhibitions, boutique showcases, and premium waterfront branding. Zero text, watermarks, or logos. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Fully production-ready.\n\n■ 5 premium architectural 150MP wall renders\n■ Luxury Retail & Boutique Environments engineered for prestige\n■ Full premium design toolkit (Web, Portfolios, Investor Decks)"); 
+    }
+    else if (noviFormat === '150MP EXECUTIVE PLAQUES') { 
+      setNoviOpisEn("V10 EXECUTIVE PLAQUES BUNDLE: THE PINNACLE OF 150MP RESOLUTION FOR HIGH-END CORPORATE SHOWCASES. INCLUDES A CURATED 5-FILE COLLECTION IN 16:9, 5-FILE COLLECTION IN 9:16, 5-FILE COLLECTION IN 21:9 OF PRESTIGIOUS AWARDS & PLAQUES. Processed through the V10 Master Engine utilizing precision LANCZOS interpolation. Includes advanced UnsharpMask micro-contrast, custom NumPy matrix processing for flawless glass/metal reflections, and deep shadow profiling. Strict sRGB ICC profile embedding. Perfect for enterprise achievements, premium certifications, and executive portfolio showcases. Zero text, watermarks, or logos. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Fully production-ready.\n\n■ 5 premium 150MP executive plaque renders\n■ Corporate & Executive Environments engineered for prestige\n■ Full premium design toolkit (Web, Portfolios, Investor Decks)"); 
     }
   }, [noviFormat, editingPaketId]); 
 
@@ -252,11 +257,12 @@ export default function StandardMocup() {
   const obrisiPaket = async (id) => { if (window.confirm("Are you sure?")) { await deleteDoc(doc(db, "v8_standard_mockups", id)); fetchPaketi(); } };
   const getGlobalCena = (cena) => { const numCena = parseFloat(cena); return isNaN(numCena) ? "0.00" : numCena.toFixed(2); };
 
-  // 🔥 FILTERI ZA SVA 4 TABA 🔥
+  // 🔥 FILTERI ZA SVIH 5 TABA 🔥
   const ultra150Paketi = paketi.filter(p => (p.format || "").toUpperCase().includes('150MP STANDARD DEVICE MOCKUPS'));
   const ultra150_2Paketi = paketi.filter(p => (p.format || "").toUpperCase().includes('150MP PREMIUM DEVICE MOCKUPS'));
   const ultra150_3Paketi = paketi.filter(p => (p.format || "").toUpperCase().includes('150MP BILLBOARD MOCKUPS'));
   const ultra150_4Paketi = paketi.filter(p => (p.format || "").toUpperCase().includes('150MP WALL MOCKUPS'));
+  const ultra150_5Paketi = paketi.filter(p => (p.format || "").toUpperCase().includes('150MP EXECUTIVE PLAQUES'));
 
   const renderV8Manifest = () => {
     let title = "V10 MOCKUP ENGINE";
@@ -279,6 +285,10 @@ export default function StandardMocup() {
         title = "V10 ARCHITECTURAL ENGINE"; subtitleClass = "text-blue-500"; borderClass = "border-blue-500/20";
         glowClass = "shadow-[0_0_15px_rgba(59,130,246,0.1)] border-blue-500/50"; primaryText = "text-cyan-400";
         secondaryText = "text-blue-500"; dropShadow = "drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]";
+    } else if (activeTab === 'ultra5') {
+        title = "V10 EXECUTIVE ENGINE"; subtitleClass = "text-violet-500"; borderClass = "border-violet-500/20";
+        glowClass = "shadow-[0_0_15px_rgba(139,92,246,0.1)] border-violet-500/50"; primaryText = "text-fuchsia-400";
+        secondaryText = "text-violet-500"; dropShadow = "drop-shadow-[0_0_8px_rgba(139,92,246,0.8)]";
     }
 
     const rezolucija = "150MP";
@@ -344,13 +354,111 @@ export default function StandardMocup() {
     );
   };
 
-  // 🔥 JEDINA I PRAVA FUNKCIJA KOJA DIREKTNO CRTA KARTICE ZA SVA 4 TABA (SVIH 10 SLIKA + POSVETLJENJE + MUNJA) 🔥
+  // 🔥 NOVO: KARTICA ZA OPIS EXECUTIVE BUNDLE-A (SAMO ZA ULTRA 5) 🔥
+  const renderV10ExecutiveBundle = () => {
+    return (
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="w-full max-w-[1200px] mx-auto mb-12 bg-[#050914] border border-blue-900/40 rounded-[2rem] shadow-[0_0_60px_rgba(29,78,216,0.15)] overflow-hidden font-sans flex flex-col md:flex-row"
+      >
+        {/* LEVA KOLONA: Vizuelni prikaz i Formati */}
+        <div className="w-full md:w-[35%] bg-[#080d1a] border-b md:border-b-0 md:border-r border-blue-900/40 p-6 md:p-8 flex flex-col relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-600/10 to-transparent"></div>
+          
+          <div className="relative z-10">
+            <div className="w-14 h-14 bg-gradient-to-br from-violet-600 to-fuchsia-500 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(139,92,246,0.4)] mb-6 border border-violet-400/50">
+              <Diamond className="text-white w-7 h-7" strokeWidth={2} />
+            </div>
+            
+            <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-widest leading-tight mb-2">
+              V10 Executive Plaques Bundle
+            </h2>
+            <p className="text-fuchsia-400 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-8">
+              The Pinnacle of 150MP Resolution
+            </p>
+
+            <div className="space-y-3">
+              <p className="text-zinc-500 text-[10px] uppercase font-black tracking-widest mb-3">Multi-Format Collection</p>
+              
+              <div className="flex items-center gap-3 bg-[#050914] border border-blue-900/30 p-3 rounded-xl shadow-inner">
+                <Monitor className="text-blue-500 w-5 h-5" />
+                <div>
+                  <p className="text-white text-xs font-bold tracking-wider">5 FILES IN 16:9</p>
+                  <p className="text-zinc-500 text-[10px]">Standard Displays</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 bg-[#050914] border border-blue-900/30 p-3 rounded-xl shadow-inner">
+                <Smartphone className="text-emerald-500 w-5 h-5" />
+                <div>
+                  <p className="text-white text-xs font-bold tracking-wider">5 FILES IN 9:16</p>
+                  <p className="text-zinc-500 text-[10px]">Vertical / Mobile</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 bg-[#050914] border border-blue-900/30 p-3 rounded-xl shadow-inner">
+                <Maximize className="text-purple-500 w-5 h-5" />
+                <div>
+                  <p className="text-white text-xs font-bold tracking-wider">5 FILES IN 21:9</p>
+                  <p className="text-zinc-500 text-[10px]">Ultra-Wide Cinematic</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* DESNA KOLONA: Glavni tekst i Specifikacije */}
+        <div className="w-full md:w-[65%] p-6 md:p-8 flex flex-col justify-center relative">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-900/20 border border-blue-500/30 w-fit mb-6">
+            <ShieldCheck className="w-4 h-4 text-blue-400" />
+            <span className="text-[10px] font-black tracking-widest text-blue-300 uppercase">High-End Corporate Showcase</span>
+          </div>
+
+          <p className="text-zinc-300 text-[13px] md:text-sm leading-relaxed mb-6 font-medium text-justify">
+            <strong className="text-white">V10 EXECUTIVE PLAQUES BUNDLE: THE PINNACLE OF 150MP RESOLUTION FOR HIGH-END CORPORATE SHOWCASES.</strong> INCLUDES A CURATED COLLECTION OF PRESTIGIOUS AWARDS & PLAQUES (5 FILES IN 16:9, 5 FILES IN 9:16, AND 5 FILES IN 21:9). Processed through the V10 Master Engine utilizing precision LANCZOS interpolation. Includes advanced UnsharpMask micro-contrast, custom NumPy matrix processing for flawless glass/metal reflections, and deep shadow profiling. Strict sRGB ICC profile embedding. Perfect for enterprise achievements, premium certifications, and executive portfolio showcases. Zero text, watermarks, or logos. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Fully production-ready.
+          </p>
+
+          <div className="w-full h-px bg-gradient-to-r from-transparent via-blue-900/50 to-transparent my-6"></div>
+
+          <ul className="space-y-4">
+            <li className="flex items-start gap-3">
+              <div className="mt-0.5 w-5 h-5 rounded-full bg-blue-500/10 border border-blue-500/30 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="w-3 h-3 text-blue-400" />
+              </div>
+              <span className="text-white text-xs md:text-sm font-bold tracking-wide">
+                15 premium 150MP executive plaque renders (Multi-Format Collection)
+              </span>
+            </li>
+            <li className="flex items-start gap-3">
+              <div className="mt-0.5 w-5 h-5 rounded-full bg-blue-500/10 border border-blue-500/30 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="w-3 h-3 text-blue-400" />
+              </div>
+              <span className="text-white text-xs md:text-sm font-bold tracking-wide">
+                Corporate & Executive Environments engineered for prestige
+              </span>
+            </li>
+            <li className="flex items-start gap-3">
+              <div className="mt-0.5 w-5 h-5 rounded-full bg-blue-500/10 border border-blue-500/30 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="w-3 h-3 text-blue-400" />
+              </div>
+              <span className="text-white text-xs md:text-sm font-bold tracking-wide">
+                Full premium design toolkit (Web, Portfolios, Investor Decks)
+              </span>
+            </li>
+          </ul>
+        </div>
+      </motion.div>
+    );
+  };
+
+  // 🔥 JEDINA I PRAVA FUNKCIJA KOJA DIREKTNO CRTA KARTICE ZA SVIH 5 TABA 🔥
   const renderV10Cards = (paketiZaRender, tabId) => {
     if (!paketiZaRender || paketiZaRender.length === 0) {
       return <div className="w-full text-center py-20 text-zinc-500 font-black uppercase tracking-widest">Awaiting Assets. Radar is clear.</div>;
     }
 
-    // Odabir boja na osnovu taba
     let mainColorClass = "text-amber-500";
     let borderClass = "border-amber-500/20";
     let hoverShadow = "hover:shadow-[0_0_40px_rgba(245,158,11,0.15)]";
@@ -396,6 +504,15 @@ export default function StandardMocup() {
         btnBg = "bg-gradient-to-r from-blue-600 to-cyan-500 text-white";
         badgeText = "150MP ARCHITECTURE";
         hoverBorder = "hover:border-blue-500/50";
+    } else if (tabId === 'ultra5') {
+        mainColorClass = "text-violet-400";
+        borderClass = "border-violet-500/20";
+        hoverShadow = "hover:shadow-[0_0_40px_rgba(139,92,246,0.15)]";
+        cardShadow = "shadow-[0_0_30px_rgba(139,92,246,0.05)]";
+        gradientBg = "bg-gradient-to-r from-violet-600 to-fuchsia-500";
+        btnBg = "bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white";
+        badgeText = "150MP EXECUTIVE";
+        hoverBorder = "hover:border-violet-500/50";
     }
 
     return (
@@ -559,6 +676,9 @@ export default function StandardMocup() {
   } else if (activeTab === 'ultra4') {
     seoTitle = "Architectural Wall Mockups | V10 Engine";
     seoDesc = "150MP Architectural Wall Mockups for gallery displays and premium indoor branding.";
+  } else if (activeTab === 'ultra5') {
+    seoTitle = "Executive Plaques | V10 Engine";
+    seoDesc = "150MP Executive Plaques for corporate achievements and prestigious portfolio showcases.";
   }
 
   return (
@@ -582,11 +702,13 @@ export default function StandardMocup() {
         <meta name="description" content={seoDesc} />
       </Helmet>
 
-      {/* 🌟 POZADINE DINAMIČKE (4 TABA) 🌟 */}
+      {/* 🌟 POZADINE DINAMIČKE (5 TABA) 🌟 */}
       {activeTab === 'ultra1' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/vertical_prvo_dugme..mp4" />)}
       {activeTab === 'ultra2' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/vertical_drugo_dugme.mp4" />)}
       {activeTab === 'ultra3' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/vertical_trece_dugme.mp4" />)}
       {activeTab === 'ultra4' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/vertical_cetvrto_dugme.mp4" />)}
+      {/* 🔥 UBAČEN NOVI VERTIKALNI VIDEO ZA TAB 5 🔥 */}
+      {activeTab === 'ultra5' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/VERTIKAL_GLASS.mp4" />)}
 
       <div className="fixed inset-0 bg-[#050505]/60 z-0 pointer-events-none"></div>
 
@@ -598,34 +720,50 @@ export default function StandardMocup() {
         </AnimatePresence>
 
         <div className="max-w-[1800px] mx-auto w-full">
+          
+          {/* 🔥 STRELICA ZA POVRATAK NAZAD 🔥 */}
+          <div className="w-full flex justify-start mb-6 px-2">
+            <button 
+              onClick={() => navigate(-1)} 
+              className="flex items-center justify-center bg-[#0a0a0a]/80 hover:bg-[#FF8C00] text-zinc-400 hover:text-black border border-white/10 hover:border-[#FF8C00] p-3 rounded-full transition-all shadow-lg hover:scale-105"
+              title="Go Back"
+            >
+              <ArrowLeft size={20} strokeWidth={3} />
+            </button>
+          </div>
+
           <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.2 }} className="relative w-full mb-16 rounded-[3rem] overflow-hidden border border-white/10 shadow-[0_0_60px_rgba(255,140,0,0.15)]">
               
-              {/* 🔥 HORIZONTALNI VIDEI ZA 4 TABA 🔥 */}
+              {/* 🔥 HORIZONTALNI VIDEI ZA 5 TABA 🔥 */}
               {activeTab === 'ultra1' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000" src="/horizontal_prvi_box.mp4" />)}
               {activeTab === 'ultra2' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000" src="/horizontal_drugi_box.mp4" />)}
               {activeTab === 'ultra3' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000" src="/horizontal_treci_box.mp4" />)}
               {activeTab === 'ultra4' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000" src="/horizontal_cetvrti_box.mp4" />)}
+              {/* 🔥 UBAČEN NOVI HORIZONTALNI VIDEO ZA TAB 5 🔥 */}
+              {activeTab === 'ultra5' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000" src="/HORIZONTAL_GLASS.mp4" />)}
 
               <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050505]/40 via-[#050505]/80 to-[#050505]"></div>
               
               <div className="relative z-10 text-center py-20 px-6">
-                  {/* 🔥 NASLOVI ZA 4 TABA 🔥 */}
+                  {/* 🔥 NASLOVI ZA 5 TABA 🔥 */}
                   <h1 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter mb-4 text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)] transition-all">
                       {activeTab === 'ultra1' && (<>V10 150MP ULTRA <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500 drop-shadow-none">COLLECTION OF PREMIUM MOCKUPS</span></>)}
                       {activeTab === 'ultra2' && (<>V10 150MP ULTRA <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-600 drop-shadow-none">COLLECTION OF LUXURY MOCKUPS</span></>)}
                       {activeTab === 'ultra3' && (<>V10 150MP ULTRA <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-500 drop-shadow-none">COLLECTION OF BILLBOARD MOCKUPS</span></>)}
                       {activeTab === 'ultra4' && (<>V10 150MP ULTRA <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-500 drop-shadow-none">COLLECTION OF WALL MOCKUPS</span></>)}
+                      {activeTab === 'ultra5' && (<>V10 150MP ULTRA <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-500 drop-shadow-none">COLLECTION OF EXECUTIVE PLAQUES</span></>)}
                   </h1>
                  <p className="text-zinc-200 font-bold uppercase tracking-[0.2em] text-[10px] md:text-[12px] max-w-4xl mx-auto leading-relaxed mb-10 drop-shadow-lg bg-black/30 p-4 rounded-lg backdrop-blur-sm transition-all">
                   {activeTab === 'ultra1' && "THE ABSOLUTE PINNACLE OF VISUAL ENGINEERING. 150 MEGAPIXELS OF FLAWLESS, CINEMATIC REALITY—CRAFTED STRICTLY FOR ELITE B2B PRESENTATIONS, HIGH-TICKET SAAS MARKETING, AND PIXEL-PERFECT EXTREME CROPPING."}
                   {activeTab === 'ultra2' && "THE APEX OF DIGITAL PRESTIGE. 150 MEGAPIXELS OF UNCOMPROMISING, PHOTOREALISTIC LUXURY—METICULOUSLY CRAFTED FOR HIGH-END BRANDING, ENTERPRISE SHOWCASES, AND VISIONARY DESIGN STUDIOS DEMANDING ABSOLUTE PERFECTION."}
                   {activeTab === 'ultra3' && "THE ULTIMATE OUT-OF-HOME PRESTIGE. 150 MEGAPIXELS OF FLAWLESS OUTDOOR REALITY—ENGINEERED FOR MEGA-SCALE CAMPAIGNS, URBAN BILLBOARDS, AND ELITE ADVERTISING AGENCIES."}
                   {activeTab === 'ultra4' && "THE APEX OF INTERIOR SHOWCASING. 150 MEGAPIXELS OF ARCHITECTURAL PERFECTION—CRAFTED FOR GALLERY DISPLAYS, MUSEUM EXHIBITIONS, AND PREMIUM INDOOR BRANDING."}
+                  {activeTab === 'ultra5' && "THE PINNACLE OF CORPORATE PRESTIGE. 150 MEGAPIXELS OF LUXURY AWARD SHOWCASES—CRAFTED STRICTLY FOR EXECUTIVE PORTFOLIOS, ENTERPRISE ACHIEVEMENTS, AND ELITE BRAND RECOGNITION."}
                  </p>
                   
-                  {/* 🔥 DUGMIĆI ZA 4 TABA 🔥 */}
+                  {/* 🔥 DUGMIĆI ZA 5 TABA 🔥 */}
                   <div className="flex justify-center relative z-10 mt-10">
-                      <div className="bg-[#050505]/80 backdrop-blur-md border border-white/10 p-3 rounded-[2rem] inline-flex flex-wrap items-center justify-center shadow-xl gap-4 md:gap-6 max-w-5xl mx-auto">
+                      <div className="bg-[#050505]/80 backdrop-blur-md border border-white/10 p-3 rounded-[2rem] inline-flex flex-wrap items-center justify-center shadow-xl gap-4 md:gap-6 max-w-6xl mx-auto">
                           
                           <button onClick={() => setActiveTab('ultra1')} className={`px-5 py-4 md:px-6 md:py-4 rounded-full font-black text-[11px] md:text-[13px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'ultra1' ? 'bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 text-black shadow-[0_0_30px_rgba(245,158,11,0.5)] border-2 border-amber-300 scale-105' : 'text-zinc-400 bg-black/60 hover:bg-[#1a0d00] hover:text-amber-500 border border-white/20 hover:border-amber-500/50'}`}>
                             <Briefcase className="w-4 h-4 md:w-5 md:h-5" /> STANDARD DEVICE
@@ -641,6 +779,11 @@ export default function StandardMocup() {
 
                           <button onClick={() => setActiveTab('ultra4')} className={`px-5 py-4 md:px-6 md:py-4 rounded-full font-black text-[11px] md:text-[13px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'ultra4' ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-[0_0_25px_rgba(59,130,246,0.8)] border-2 border-blue-400 scale-105' : 'text-zinc-400 bg-black/60 hover:bg-blue-900/30 hover:text-white border border-white/20 hover:border-blue-500/50'}`}>
                             <LayoutGrid className="w-4 h-4 md:w-5 md:h-5" /> WALL MOCKUP
+                          </button>
+
+                          {/* 🔥 NOVO: EXECUTIVE PLAQUES DUGME 🔥 */}
+                          <button onClick={() => setActiveTab('ultra5')} className={`px-5 py-4 md:px-6 md:py-4 rounded-full font-black text-[11px] md:text-[13px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'ultra5' ? 'bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white shadow-[0_0_25px_rgba(139,92,246,0.8)] border-2 border-violet-400 scale-105' : 'text-zinc-400 bg-black/60 hover:bg-violet-900/30 hover:text-white border border-white/20 hover:border-violet-500/50'}`}>
+                            <Award className="w-4 h-4 md:w-5 md:h-5" /> EXECUTIVE PLAQUES
                           </button>
                       
                       </div>
@@ -716,9 +859,26 @@ export default function StandardMocup() {
             </motion.div>
           )}
 
+          {/* 🔥 3 SLIKE (EXECUTIVE GRID) - VIDLJIVO SAMO NA ULTRA 5 TABU 🔥 */}
+          {activeTab === 'ultra5' && (
+            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4 }} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16 px-4 lg:px-0">
+              {[
+                { src: "/glass_1.webp", alt: "Plaque 1", badge: "CORPORATE AWARD", colorClass: "border-violet-500/40 text-violet-400 shadow-[0_0_15px_rgba(139,92,246,0.2)]" },
+                { src: "/glass_2.png", alt: "Plaque 2", badge: "EXECUTIVE DESK", colorClass: "border-fuchsia-500/40 text-fuchsia-400 shadow-[0_0_15px_rgba(217,70,239,0.2)]" },
+                { src: "/glass_3 (1).webp", alt: "Plaque 3", badge: "PREMIUM RECOGNITION", colorClass: "border-purple-500/40 text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.2)]" }
+              ].map((img, idx) => (
+                <div key={idx} onClick={() => setFullScreenImageUrl(img.src)} className="relative rounded-3xl overflow-hidden border border-white/10 hover:border-violet-500/50 transition-all duration-500 cursor-zoom-in group shadow-[0_10px_30px_rgba(0,0,0,0.5)] hover:shadow-[0_0_30px_rgba(139,92,246,0.2)] bg-[#111]">
+                  <div className={`absolute top-4 left-4 z-20 bg-black/70 backdrop-blur-md border px-3 py-1.5 rounded-lg ${img.colorClass} group-hover:scale-105 transition-transform duration-300`}><span className="text-[9px] font-black uppercase tracking-widest drop-shadow-md">{img.badge}</span></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 pointer-events-none"></div>
+                  <img src={img.src} alt={img.alt} className="w-full aspect-[16/9] object-cover transform-gpu group-hover:scale-105 transition-transform duration-700" />
+                </div>
+              ))}
+            </motion.div>
+          )}
+
           {/* 🔥 ADMIN FORMA ZA DODAVANJE MOCKUPOVA 🔥 */}
           {isAdmin && (
-            <form onSubmit={dodajPaket} className="bg-[#0a0a0a] border-2 border-[#FF8C00]/50 rounded-[2.5rem] p-8 mb-16 shadow-[0_0_30px_rgba(255,140,0,0.1)] max-w-4xl mx-auto">
+            <form onSubmit={dodajPaket} className="bg-[#0a0a0a] border-2 border-[#FF8C00]/50 rounded-[2.5rem] p-8 mb-16 shadow-[0_0_30px_rgba(255,140,0,0.1)] max-w-5xl mx-auto">
               <h2 className="text-xl font-black text-[#FF8C00] uppercase tracking-widest mb-8 flex items-center gap-2 border-b border-[#FF8C00]/20 pb-4">
                 <Zap className="w-6 h-6" /> {editingPaketId ? 'EDIT PACKAGE' : 'ADD NEW ZIP PACKAGE'}
               </h2>
@@ -754,18 +914,19 @@ export default function StandardMocup() {
 
                     <div className="flex flex-col gap-2">
                         <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase"><MonitorPlay size={14} /> FORMAT</label>
-                        {/* 🔥 4 OPCIJE U ADMIN PANELU ZA FORMAT 🔥 */}
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-                            {['150MP STANDARD DEVICE MOCKUPS', '150MP PREMIUM DEVICE MOCKUPS', '150MP BILLBOARD MOCKUPS', '150MP WALL MOCKUPS'].map((fmt) => {
+                        {/* 🔥 SVIH 5 OPCIJA U ADMIN PANELU ZA FORMAT 🔥 */}
+                        <div className="flex flex-wrap gap-2">
+                            {['150MP STANDARD DEVICE MOCKUPS', '150MP PREMIUM DEVICE MOCKUPS', '150MP BILLBOARD MOCKUPS', '150MP WALL MOCKUPS', '150MP EXECUTIVE PLAQUES'].map((fmt) => {
                                 let styleClass = 'bg-black border-white/10 text-zinc-500 hover:border-[#FF8C00]/50';
                                 if (noviFormat === fmt) {
                                     if (fmt.includes('STANDARD')) styleClass = 'bg-gradient-to-r from-orange-600 to-amber-500 border-[#FF8C00] text-black shadow-[0_0_15px_rgba(245,158,11,0.5)]';
                                     else if (fmt.includes('PREMIUM')) styleClass = 'bg-gradient-to-r from-red-600 to-orange-600 border-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]';
                                     else if (fmt.includes('BILLBOARD')) styleClass = 'bg-gradient-to-r from-emerald-600 to-green-500 border-emerald-400 text-white shadow-[0_0_15px_rgba(16,185,129,0.5)]';
                                     else if (fmt.includes('WALL')) styleClass = 'bg-gradient-to-r from-blue-600 to-cyan-500 border-blue-400 text-white shadow-[0_0_15px_rgba(59,130,246,0.5)]';
+                                    else if (fmt.includes('EXECUTIVE')) styleClass = 'bg-gradient-to-r from-violet-600 to-fuchsia-500 border-violet-400 text-white shadow-[0_0_15px_rgba(139,92,246,0.5)]';
                                 }
                                 return (
-                                <label key={fmt} className={`cursor-pointer p-2 rounded-xl border-2 transition-all text-center font-black text-[8px] md:text-[9px] uppercase flex items-center justify-center ${styleClass}`}>
+                                <label key={fmt} className={`cursor-pointer p-2 rounded-xl border-2 transition-all text-center font-black text-[8px] md:text-[9px] uppercase flex items-center justify-center flex-1 min-w-[120px] ${styleClass}`}>
                                     <input type="radio" name="format" value={fmt} checked={noviFormat === fmt} onChange={(e) => setNoviFormat(e.target.value)} className="hidden" />
                                     {fmt.replace('150MP ', '')}
                                 </label>
@@ -833,15 +994,18 @@ export default function StandardMocup() {
           )}
 
           <div className="flex flex-wrap justify-center gap-6 lg:gap-12 w-full mx-auto px-4 lg:px-8">
-            {/* 🔥 RENDER ZA SVA 4 TABA DIREKTNO IZ OVOG FAJLA 🔥 */}
+            {/* 🔥 RENDER ZA SVIH 5 TABA DIREKTNO IZ OVOG FAJLA 🔥 */}
             {activeTab === 'ultra1' && (<> {renderV8Manifest()} {renderV10Cards(ultra150Paketi, 'ultra1')} </>)}
             {activeTab === 'ultra2' && (<> {renderV8Manifest()} {renderV10Cards(ultra150_2Paketi, 'ultra2')} </>)}
             {activeTab === 'ultra3' && (<> {renderV8Manifest()} {renderV10Cards(ultra150_3Paketi, 'ultra3')} </>)}
             {activeTab === 'ultra4' && (<> {renderV8Manifest()} {renderV10Cards(ultra150_4Paketi, 'ultra4')} </>)}
+            
+            {/* 🔥 NOVO: BUNDLE INFO KARTICA + PROIZVODI SAMO ZA ULTRA 5 🔥 */}
+            {activeTab === 'ultra5' && (<> {renderV8Manifest()} {renderV10ExecutiveBundle()} {renderV10Cards(ultra150_5Paketi, 'ultra5')} </>)}
           </div>
         </div>
       </div>
     </div>
   );
 }
-// KRAJ FUNKCIJE: StandardMocup
+// KRAJ FAJLA: StandardMocup

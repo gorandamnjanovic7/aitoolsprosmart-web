@@ -4,26 +4,23 @@ import { createPortal } from 'react-dom';
 import { db, auth } from './firebase'; 
 import { collection, addDoc, serverTimestamp, doc, onSnapshot } from 'firebase/firestore';
 import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from 'firebase/auth'; 
-import { useNavigate } from 'react-router-dom'; // 🔥 DODATO: Import za navigaciju 🔥
+import { useNavigate } from 'react-router-dom'; 
 import { motion } from 'framer-motion'; 
 import { ShieldCheck, Mail, BellRing, Key, X, Lock, Earth, CheckCircle, Bitcoin, Wallet, Zap, CreditCard, Link, Download, Radar, Loader2 } from 'lucide-react';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js"; 
+import { Turnstile } from '@marsidev/react-turnstile'; // 🔥 Anti-Bot štit
 
 const countryList = [
   "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia", "Cameroon", "Canada", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo", "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "North Macedonia", "Norway", "Oman", "Pakistan", "Palau", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"
 ];
 
-// Početak funkcije: getBackendUrl
 const getBackendUrl = () => {
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  // 🔥 UPISAN PRAVI RAILWAY LINK 🔥
   return isLocal ? "http://localhost:8080" : "https://aitoolsprosmart-becend-production.up.railway.app";
 };
-// Kraj funkcije: getBackendUrl
 
-// Početak funkcije: V8SecureCheckout
 const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
-  const navigate = useNavigate(); // 🔥 DODATO: Inicijalizacija navigacije 🔥
+  const navigate = useNavigate(); 
   const [user, setUser] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('card'); 
   const [firstName, setFirstName] = useState('');
@@ -36,6 +33,8 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
   
   const [downloadUrl, setDownloadUrl] = useState(null);
   const [cryptoOrderId, setCryptoOrderId] = useState(null);
+  
+  const [captchaToken, setCaptchaToken] = useState(null); 
 
   const initialOptions = {
     "client-id": import.meta.env.VITE_PAYPAL_CLIENT_ID,
@@ -43,7 +42,6 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
     intent: "capture",
   };
 
-  // Početak funkcije: triggerGoogleAnalyticsPurchase
   const triggerGoogleAnalyticsPurchase = (transactionId, finalPrice) => {
     if (typeof window !== "undefined" && window.gtag) {
         window.gtag("event", "purchase", {
@@ -59,12 +57,9 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
                 }
             ]
         });
-        console.log("GA4 Purchase Event poslat! Kampanja se otključava.");
     }
   };
-  // Kraj funkcije: triggerGoogleAnalyticsPurchase
 
-  // Početak funkcije: triggerGoogleAdsConversion
   const triggerGoogleAdsConversion = (transactionId, finalPrice) => {
     if (typeof window !== "undefined" && window.gtag) {
         window.gtag('event', 'conversion', {
@@ -73,10 +68,8 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
             'currency': 'USD',
             'transaction_id': transactionId
         });
-        console.log("Google Ads Konverzija okidana! Vrednost:", finalPrice);
     }
   };
-  // Kraj funkcije: triggerGoogleAdsConversion
 
   useEffect(() => {
     if (isOpen) document.body.style.overflow = 'hidden';
@@ -99,10 +92,10 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
       setShowPayPalModal(false);
       setDownloadUrl(null);
       setCryptoOrderId(null);
+      setCaptchaToken(null); 
     }
   }, [isOpen]);
 
-  // Početak funkcije: cryptoRadarEffect
   useEffect(() => {
     if (cryptoOrderId && paymentMethod === 'crypto') {
       const unsub = onSnapshot(doc(db, "v8_crypto_requests", cryptoOrderId), (docSnap) => {
@@ -110,24 +103,20 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
           const data = docSnap.data();
           if (data.status === 'PLAĆENO') {
             setDownloadUrl(data.zipLink);
-            // 🔥 OKIDANJE KONVERZIJA ZA KRIPTO UPLATE 🔥
             triggerGoogleAnalyticsPurchase(cryptoOrderId, price);
             triggerGoogleAdsConversion(cryptoOrderId, price);
 
-            // 🔥 DODATO: REDIREKCIJA/AUTO-ZATVARANJE NAKON USPEHA 🔥
             setTimeout(() => {
               onClose();
               window.scrollTo({ top: 0, behavior: 'smooth' });
-            }, 5000); // 5 sekundi pauze da stigne da klikne preuzmi
+            }, 5000); 
           }
         }
       });
       return () => unsub();
     }
   }, [cryptoOrderId, paymentMethod]);
-  // Kraj funkcije: cryptoRadarEffect
 
-  // Početak funkcije: handleGoogleLogin
   const handleGoogleLogin = async () => {
     try {
       const provider = new GoogleAuthProvider();
@@ -140,11 +129,15 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
       alert("Google login failed or was cancelled. Please try again.");
     }
   };
-  // Kraj funkcije: handleGoogleLogin
 
-  // Početak funkcije: handleSubmit
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
+    
+    if (!captchaToken) {
+      alert("Security Check: Anti-bot verification failed.");
+      return;
+    }
+
     if (!user || !firstName || !lastName || !country || !email) {
       alert("Please link your Google Account and fill in all fields.");
       return;
@@ -161,15 +154,13 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
         setSuccess(true);
         setLoading(false);
 
-        // 🔥 DODATO: OKIDANJE KONVERZIJA ZA PAYONEER (B2B) 🔥
         triggerGoogleAnalyticsPurchase(docRef.id, price);
         triggerGoogleAdsConversion(docRef.id, price);
 
-        // 🔥 DODATO: REDIREKCIJA/AUTO-ZATVARANJE NAKON USPEHA 🔥
         setTimeout(() => {
           onClose();
           window.scrollTo({ top: 0, behavior: 'smooth' });
-        }, 3500); // 3.5 sekunde da pročita poruku o poslatom linku na email
+        }, 3500); 
 
       } else if (paymentMethod === 'crypto') {
         const docRef = await addDoc(collection(db, "v8_crypto_requests"), {
@@ -202,11 +193,9 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
       setLoading(false);
     }
   };
-  // Kraj funkcije: handleSubmit
 
   if (!isOpen) return null;
 
-  // Početak funkcije: render
   return createPortal(
     <PayPalScriptProvider options={initialOptions}>
       <div className="fixed inset-0 z-[9999999] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-[#02040a]/90 backdrop-blur-md">
@@ -286,7 +275,6 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
               <div className="flex-1 flex flex-col items-center justify-center text-center py-6 relative z-10 my-auto">
                 
                 {downloadUrl ? (
-                  // 🔥 SLUČAJ 1: PARE SU LEGLE, PRIKAZUJ DUGME 🔥
                   <motion.div initial={{scale:0.8, opacity:0}} animate={{scale:1, opacity:1}} className="flex flex-col items-center">
                     <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center border-2 border-emerald-500 mb-6 shadow-[0_0_50px_rgba(16,185,129,0.4)]">
                       <Download className="w-10 h-10 text-emerald-400 animate-bounce" />
@@ -298,7 +286,6 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
                     </a>
                   </motion.div>
                 ) : paymentMethod === 'crypto' ? (
-                  // 🔥 SLUČAJ 2: RADAR OSLUŠKUJE BLOCKCHAIN 🔥
                   <div className="flex flex-col items-center">
                     <div className="relative w-24 h-24 mb-6 flex items-center justify-center">
                       <div className="absolute inset-0 rounded-full border-2 border-orange-500/30 animate-ping"></div>
@@ -316,7 +303,6 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
                     </div>
                   </div>
                 ) : (
-                  // 🔥 SLUČAJ 3: PAYONEER STANDARDNA PORUKA 🔥
                   <div className="flex flex-col items-center">
                     <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center border border-blue-500/30 mb-4 shadow-[0_0_30px_rgba(37,99,235,0.2)]">
                       <CheckCircle className="w-8 h-8 text-blue-400" />
@@ -372,15 +358,31 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
                       </div>
                     </div>
 
-                    <div className="pt-6 shrink-0 relative z-50">
+                    {/* 🔥 POČETAK: CLOUDFLARE TURNSTILE OKLOP OKO DUGMETA 🔥 */}
+                    <div className="pt-6 shrink-0 relative z-50 flex flex-col items-center gap-4">
+                      
+                      <div className="w-full flex justify-center">
+                        <Turnstile
+                          siteKey="0x4AAAAAAEAzM1v_xGbxGO60" // 🔥 Ubačen tvoj pravi ključ
+                          onSuccess={(token) => setCaptchaToken(token)}
+                          onError={() => setCaptchaToken(null)}
+                          onExpire={() => setCaptchaToken(null)}
+                          options={{ theme: 'dark' }} 
+                        />
+                      </div>
+
                       <button 
                         type={paymentMethod === 'card' ? 'button' : 'submit'} 
                         onClick={() => {
+                            if (!captchaToken) {
+                                alert("Security Check: Please allow the anti-bot verification to complete.");
+                                return;
+                            }
                             if (paymentMethod === 'card' && firstName && lastName && country) {
                                 setShowPayPalModal(true);
                             }
                         }}
-                        disabled={loading || !country || !user || (paymentMethod === 'card' && (!firstName || !lastName))} 
+                        disabled={loading || !country || !user || !captchaToken || (paymentMethod === 'card' && (!firstName || !lastName))} 
                         className={`w-full text-white font-black py-4 sm:py-4.5 rounded-xl text-[11px] sm:text-sm tracking-widest uppercase transition-all duration-300 disabled:opacity-50 shadow-[0_0_20px_rgba(0,0,0,0.3)] outline-none ${
                           paymentMethod === 'crypto' ? 'bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 shadow-[0_0_30px_rgba(249,115,22,0.5)]'
                           : paymentMethod === 'payoneer' ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.5)]'
@@ -390,6 +392,8 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
                         {loading ? 'Processing...' : paymentMethod === 'card' ? 'PROCEED TO SECURE PAYMENT' : paymentMethod === 'crypto' ? 'PROCEED TO CRYPTO' : 'REQUEST SECURE LINK'}
                       </button>
                     </div>
+                    {/* 🔥 KRAJ: CLOUDFLARE TURNSTILE OKLOP OKO DUGMETA 🔥 */}
+
                   </form>
                 )}
               </div>
@@ -517,7 +521,6 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
                 </div>
 
                 <div className="relative z-10 w-full min-h-[300px]">
-                  {/* Početak funkcije: PayPalButtons */}
                   <PayPalButtons 
                       style={{ layout: "vertical", color: "blue", shape: "rect", label: "pay" }}
                       createOrder={(data, actions) => {
@@ -532,7 +535,7 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
                           try {
                               const details = await actions.order.capture();
                               
-                              const backendUrl = getBackendUrl(); // 🔥 Povlači Railway link
+                              const backendUrl = getBackendUrl(); 
                               
                               const response = await fetch(`${backendUrl}/api/paypal-verify`, {
                                   method: 'POST',
@@ -553,18 +556,15 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
                               
                               if(resData.success) {
                                   setShowPayPalModal(false); 
-                                  // 🔥 IZMENJENA LINIJA: OSIGURAČ ZA DUGME 🔥
                                   setDownloadUrl(resData.downloadUrl || zipLink);
                                   setSuccess(true);
-                                  // 🔥 OKIDANJE SVIH KONVERZIJA ZA PAYPAL I KARTICE 🔥
                                   triggerGoogleAnalyticsPurchase(details.id, price);
                                   triggerGoogleAdsConversion(details.id, price);
 
-                                  // 🔥 DODATO: REDIREKCIJA/AUTO-ZATVARANJE NAKON USPEHA 🔥
                                   setTimeout(() => {
                                     onClose();
                                     window.scrollTo({ top: 0, behavior: 'smooth' });
-                                  }, 5000); // 5 sekundi vremena da klikne preuzmi
+                                  }, 5000); 
                               } else {
                                   alert("Payment verification failed on the server. Please contact support.");
                               }
@@ -578,7 +578,6 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
                           alert("There was an issue processing your payment. Please try again.");
                       }}
                   />
-                  {/* Kraj funkcije: PayPalButtons */}
                 </div>
                 
                 <div className="mt-6 flex items-center justify-center gap-2 opacity-50 pb-4">
@@ -596,9 +595,7 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
     </PayPalScriptProvider>,
     document.body
   );
-  // Kraj funkcije: render
 };
-// Kraj funkcije: V8SecureCheckout
 
 export default V8SecureCheckout;
 // KRAJ FAJLA: V8SecureCheckout.jsx

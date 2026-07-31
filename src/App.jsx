@@ -165,7 +165,7 @@ const V8ToastContainer = () => {
     <div className="fixed top-24 right-6 z-[99999999] flex flex-col gap-3 pointer-events-none">
       <AnimatePresence>
         {toasts.map(t => (
-          <motion.div key={t.id} initial={{ opacity: 0, x: 50, scale: 0.9 }} animate={{ opacity: 1, x: 0, scale: 1 }} exit={{ opacity: 0, x: 20, scale: 0.9 }} className={`p-4 rounded-xl shadow-2xl border flex items-center gap-3 backdrop-blur-xl ${t.type === 'success' ? 'bg-green-900/40 border-green-500/50 text-green-100' : 'bg-red-900/40 border-red-500/50 text-red-100'}`}>
+          <motion.div key={t.id} initial={{ opacity: 0, x: 50, scale: 0.9 }} animate={{ opacity: 1, x: 0, scale: 1 }} exit={{ opacity: 0, x: 20, scale: 0.9 }} className={`p-4 rounded-xl shadow-2xl border flex items-center gap-3 backdrop-blur-xl transform-gpu ${t.type === 'success' ? 'bg-green-900/40 border-green-500/50 text-green-100' : 'bg-red-900/40 border-red-500/50 text-red-100'}`}>
             {t.type === 'success' ? <CheckCircle className="w-5 h-5 text-green-400" /> : <ShieldAlert className="w-5 h-5 text-red-400" />}
             <span className="text-[11px] font-black uppercase tracking-widest">{t.msg}</span>
           </motion.div>
@@ -210,7 +210,7 @@ const V8AlertModalContainer = () => {
           initial={{ opacity: 0, x: 100, scale: 0.9 }} 
           animate={{ opacity: 1, x: 0, scale: 1 }} 
           exit={{ opacity: 0, x: 100, scale: 0.9 }} 
-          className={`fixed top-6 right-6 z-[99999999] w-80 md:w-96 rounded-2xl p-5 text-white shadow-2xl border border-white/20 backdrop-blur-xl ${themeBg}`}
+          className={`fixed top-6 right-6 z-[99999999] w-80 md:w-96 rounded-2xl p-5 text-white shadow-2xl border border-white/20 backdrop-blur-xl transform-gpu ${themeBg}`}
         >
           <button onClick={handleClose} className="absolute top-3 right-3 text-white/70 hover:text-white transition-colors cursor-pointer z-50">
             <X size={24} strokeWidth={3} />
@@ -375,7 +375,7 @@ const FullScreenBoot = ({ onComplete }) => {
   return (
     <motion.div className="fixed inset-0 z-[9999] bg-[#050505] flex flex-col items-center justify-center overflow-hidden" exit={{ opacity: 0, scale: 1.05, filter: "blur(15px)" }} transition={{ duration: 0.8, ease: "easeInOut" }}>
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <motion.div animate={{ scale: isIgniting ? 4 : [1, 1.2, 1], opacity: isIgniting ? 0 : [0.05, 0.15, 0.05] }} transition={{ duration: isIgniting ? 0.8 : 2, repeat: isIgniting ? 0 : Infinity }} className="w-96 h-96 bg-orange-600 rounded-full blur-[100px]" />
+        <motion.div animate={{ scale: isIgniting ? 4 : [1, 1.2, 1], opacity: isIgniting ? 0 : [0.05, 0.15, 0.05] }} transition={{ duration: isIgniting ? 0.8 : 2, repeat: isIgniting ? 0 : Infinity }} className="w-96 h-96 bg-orange-600 rounded-full blur-[100px] transform-gpu" />
       </div>
       <div className="relative z-10 flex flex-col items-center">
         <div className="relative w-48 h-48 flex items-center justify-center mb-12">
@@ -426,7 +426,6 @@ const SmartScrollButton = () => {
 };
 
 function AppContent({ appsData, refreshData }) {
-  // 🔥 PREKIDAČ ZA ODRŽAVANJE JE SADA UGAŠEN 🔥
   const IS_MAINTENANCE = false;
 
   const [isBooting, setIsBooting] = useState(true);
@@ -530,31 +529,23 @@ function AppContent({ appsData, refreshData }) {
 
   const handleHomeClick = (e) => { if (location.pathname === '/') { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); window.history.replaceState(null, '', '/'); } };
 
-  // 🔴 AKO JE ODRŽAVANJE UPALJENO, PRIKAZUJE SE SAMO OVAJ EKRAN 🔴
   if (IS_MAINTENANCE) {
     return (
       <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center relative overflow-hidden font-sans">
         <Helmet>
           <title>System Maintenance | V8 Engine</title>
         </Helmet>
-        
-        {/* Pozadinsko svetlo */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-          <div className="w-[600px] h-[600px] bg-amber-600/10 rounded-full blur-[120px]" />
+          <div className="w-[600px] h-[600px] bg-amber-600/10 rounded-full blur-[120px] transform-gpu" />
         </div>
-        
-        {/* Sadržaj na sredini */}
         <div className="relative z-10 text-center px-6 flex flex-col items-center">
           <ShieldAlert className="w-24 h-24 text-amber-500 mb-8 animate-pulse drop-shadow-[0_0_20px_rgba(245,158,11,0.5)]" />
-          
           <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-600 uppercase tracking-tighter mb-4 drop-shadow-sm">
             Server Maintenance
           </h1>
-          
           <p className="text-lg md:text-2xl text-zinc-400 font-medium tracking-widest uppercase mb-10">
             We will be back today
           </p>
-          
           <div className="inline-block border border-amber-500/30 bg-black/50 backdrop-blur-md px-6 py-3 rounded-full shadow-[0_0_30px_rgba(245,158,11,0.15)]">
              <span className="text-amber-500 text-xs md:text-sm font-mono font-black uppercase tracking-widest flex items-center gap-3">
                <span className="w-2 h-2 bg-amber-500 rounded-full animate-ping"></span>
@@ -566,9 +557,13 @@ function AppContent({ appsData, refreshData }) {
     );
   }
 
-  // 🟢 AKO JE ODRŽAVANJE UGAŠENO, UČITAVA SE NORMALAN SAJT 🟢
+  // 🟢 HARDVERSKI OPTIMIZOVAN ROOT ELEMENT BEZ ZAKUCAVANJA SCROLLA 🟢
   return (
-    <div key={authVersion} className="min-h-screen text-zinc-100 font-sans relative text-left bg-[url('/v8-supercomputer-bg.jpg')] bg-cover bg-center bg-fixed bg-no-repeat">
+    <div key={authVersion} className="min-h-screen text-zinc-100 font-sans relative text-left">
+      
+      {/* ODVOJENA FIKSNA POZADINA ZA MAKSIMALAN FPS */}
+      <div className="fixed inset-0 z-[-2] bg-[url('/v8-supercomputer-bg.jpg')] bg-cover bg-center bg-no-repeat pointer-events-none transform-gpu" />
+      <div className="fixed inset-0 z-[-1] bg-[radial-gradient(circle_at_center,_rgba(5,5,5,0.95)_30%,_rgba(5,5,5,0.4)_100%)] pointer-events-none transform-gpu" />
       
       <style>{`
         #v8-counter-container {
@@ -587,8 +582,6 @@ function AppContent({ appsData, refreshData }) {
           margin: 0 !important;
         }
       `}</style>
-
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(5,5,5,0.95)_30%,_rgba(5,5,5,0.3)_100%)] backdrop-blur-[1px] pointer-events-none z-0"></div>
 
       <div className="relative z-10 flex flex-col min-h-screen w-full pb-20 lg:pb-0">
         
@@ -653,7 +646,7 @@ function AppContent({ appsData, refreshData }) {
         <SmartScrollButton />
         <V8ContactWidget />
         
-        {isDesktop && <UgcAvatar />}
+        {/* PAUZIRANO UGC AVATAR: {isDesktop && <UgcAvatar />} */}
 
         {isDesktop && (
           <div id="v8-counter-container">
