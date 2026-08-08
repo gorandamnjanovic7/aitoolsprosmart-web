@@ -58,12 +58,12 @@ export default function V10UltraAncientAssets({
                     )}
                 </div>
 
-                {/* 🔥 GLAVNA SLIKA SA TAJMING NARANDŽASTOM MUNJOM 🔥 */}
-                <div className="w-full aspect-video rounded-2xl overflow-hidden cursor-pointer relative group border border-white/5" onClick={() => setFullScreenImageUrl(paket.previewUrl)}>
+                {/* 🔥 GLAVNA SLIKA SA TAJMING NARANDŽASTOM MUNJOM I KONTAKTNOM SENKOM 🔥 */}
+                <div className="w-full aspect-video rounded-2xl overflow-hidden cursor-pointer relative group border border-white/5 v8-glass-container" onClick={() => setFullScreenImageUrl(paket.previewUrl)}>
                     <motion.img 
                       src={paket.previewUrl} 
                       alt={paket.nazivEn} 
-                      className="w-full h-full object-cover transform-gpu" 
+                      className="w-full h-full transform-gpu v8-glass-image" 
                       animate={{ scale: [1, 1.05, 1] }}
                       transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
                     />
@@ -91,14 +91,14 @@ export default function V10UltraAncientAssets({
                     </motion.div>
                 </div>
 
-                {/* 🔥 GALERIJA MALIH SLIKA (8 KOMADA) 🔥 */}
+                {/* 🔥 GALERIJA MALIH SLIKA (8 KOMADA) SA KONTAKTNOM SENKOM 🔥 */}
                 {paket.primeri && paket.primeri.length > 0 && (
                   <div className="grid grid-cols-4 gap-4 md:gap-6 mt-6">
                     {paket.primeri.slice(0, 8).map((imgUrl, idx) => (
                       <motion.div 
                         key={idx} 
                         onClick={(e) => { e.stopPropagation(); setFullScreenImageUrl(imgUrl); }}
-                        className={`relative cursor-zoom-in group rounded-xl overflow-hidden border border-white/10 ${hoverBorder} transition-all duration-300 aspect-video bg-[#050505] shadow-lg`}
+                        className={`relative cursor-zoom-in group rounded-xl overflow-hidden border border-white/10 ${hoverBorder} transition-all duration-300 aspect-video bg-[#050505] shadow-lg v8-glass-container`}
                         animate={{ scale: [1, 1.04, 1] }}
                         transition={{ duration: 3 + (idx % 4), repeat: Infinity, ease: "easeInOut" }}
                       >
@@ -106,7 +106,7 @@ export default function V10UltraAncientAssets({
                         <img 
                           src={imgUrl} 
                           alt={`Preview ${idx + 1}`} 
-                          className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" 
+                          className="w-full h-full transform group-hover:scale-110 transition-transform duration-700 v8-glass-image" 
                         />
                       </motion.div>
                     ))}

@@ -1,13 +1,12 @@
-// POČETAK FAJLA: HomePage.jsx
+// START OF FILE: HomePage.jsx
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
-// V8 KOCKICE
+// V8 BLOCKS
 import HeroBanner from './HeroBanner';
 import B2BProtocols from './B2BProtocols';
-import PromptFactoryPromo from './PromptFactoryPromo'; // 🔥 POMERENO VISOKO GORE 🔥
-import V8Decks from './V8Decks'; 
+import VerticalCardsBox from './VerticalCardsBox'; 
 import IntelProtocols from './IntelProtocols';
 import SaasPromo from './SaasPromo'; 
 import UnlockTheBeast from './UnlockTheBeast'; 
@@ -34,10 +33,11 @@ export default function HomePage({ apps = [] }) {
       <div className="max-w-7xl mx-auto px-6 text-left">
         <B2BProtocols />
         
-        {/* 🔥 REKLAMA ZA PROMPT FACTORY (ODMAH ISPOD B2B AGENCIJSKOG DELA) 🔥 */}
-        <PromptFactoryPromo />
+        {/* 🔥 VERTICAL CARDS BOX MOUNTED HERE 🔥 */}
+        <div className="my-16">
+          <VerticalCardsBox />
+        </div>
         
-        <V8Decks />
         <IntelProtocols />
         <SaasPromo />
         <UnlockTheBeast />
@@ -48,4 +48,4 @@ export default function HomePage({ apps = [] }) {
     </>
   );
 }
-// KRAJ FAJLA: HomePage.jsx
+// END OF FILE: HomePage.jsx

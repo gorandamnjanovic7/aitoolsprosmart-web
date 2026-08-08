@@ -53,8 +53,24 @@ export default function SaaSProtocolPage({ openCheckout, isAdmin }) {
   const navigate = useNavigate(); 
   const mockupRef = useRef(null); 
   
-  // 🔥 STRIKTNA DETEKCIJA ADMINA 🔥
-  const isAdminMode = isAdmin === true;
+  // 🔥 PAMETNA DETEKCIJA ADMINA (Zamenjena striktna detekcija da bi radilo lokalno) 🔥
+  const [isAdminMode, setIsAdminMode] = useState(() => {
+    return isAdmin === true || (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || localStorage.getItem('v8_goran_mode') === 'true'));
+  });
+
+  useEffect(() => {
+    if (isAdmin === true) {
+      setIsAdminMode(true);
+    }
+  }, [isAdmin]);
+
+  const toggleAdminMode = () => {
+    const newState = !isAdminMode;
+    setIsAdminMode(newState);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('v8_goran_mode', newState);
+    }
+  };
 
   const [isCalibratorMinimized, setIsCalibratorMinimized] = useState(false);
 
@@ -196,12 +212,16 @@ export default function SaaSProtocolPage({ openCheckout, isAdmin }) {
 
   const currentDev = calibs[activeDeviceTab] || DEFAULT_CALIBS[activeDeviceTab]; 
 
+  // 🔥 DODATE TVOJE SLIKE U DRUGI RED 🔥
   const galleryImages = [
     "magnific_premium-tech-setup-on-a-p_2994483605.png",
     "magnific_a-highly-detailed-photore_2994474179.png", 
     "/red_2_mocup_1.jpeg",                               
-    "magnific_a-rugged-yet-premium-tech_2994476068.png", 
-    "/red_3_mocup_1.jpeg"
+    "/red_3_mocup_1.jpeg",
+    "/14.jpeg",
+    "/6.jpeg",
+    "/12.jpeg",
+    "/16.png"
   ];
 
   return (
@@ -242,7 +262,17 @@ export default function SaaSProtocolPage({ openCheckout, isAdmin }) {
         }
       `}</style>
 
-      {/* 🔥 OMNI KONTROLNI V8 PANEL (PRIKAZUJE SE SAMO ULOGOVANOM ADMINU) 🔥 */}
+      {/* 🔥 TAJNA AKTIVACIJA ADMINA (DODATA NAZAD DA BI MOGAO RUČNO DA PALIŠ/GASIŠ) 🔥 */}
+      <div className="fixed bottom-4 left-4 z-[99999]">
+        <button 
+          onClick={toggleAdminMode} 
+          className={`px-3 py-1.5 rounded-lg text-[10px] uppercase font-mono tracking-widest transition-all border transform-gpu ${isAdminMode ? 'bg-amber-500 text-black border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.5)]' : 'bg-zinc-900/80 hover:bg-amber-500 hover:text-black border-white/10 text-zinc-500'}`}
+        >
+          {isAdminMode ? "🔒 Zatvori V8 Panel" : "🛠️ Goran Mode"}
+        </button>
+      </div>
+
+      {/* 🔥 OMNI KONTROLNI V8 PANEL (PRIKAZUJE SE SAMO KAD JE UPALJEN ADMIN MODE) 🔥 */}
       {isAdminMode && (
         <div className="fixed top-24 right-6 bg-[#0a0a0a]/95 backdrop-blur-xl border-2 border-amber-500 p-5 rounded-2xl z-[999999] text-xs text-amber-500 shadow-[0_0_40px_rgba(245,158,11,0.4)] w-80 font-mono flex flex-col max-h-[80vh] transition-all duration-300">
           

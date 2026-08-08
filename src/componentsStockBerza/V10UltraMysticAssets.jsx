@@ -44,14 +44,14 @@ const V10UltraMysticAssets = ({ paketi, isAdmin, getGlobalCena, getAspectClass, 
                     )}
                  </div>
 
-                 {/* GLAVNA SLIKA SA PULSIRANJEM I TAJMING MUNJOM */}
-                 <div className="w-full aspect-[16/9] rounded-2xl overflow-hidden cursor-pointer relative group border border-white/5" onClick={() => setFullScreenImageUrl(paket.previewUrl)}>
+                 {/* GLAVNA SLIKA SA PULSIRANJEM, TAJMING MUNJOM I KONTAKTNOM SENKOM */}
+                 <div className="w-full aspect-[16/9] rounded-2xl overflow-hidden cursor-pointer relative group border border-white/5 v8-glass-container" onClick={() => setFullScreenImageUrl(paket.previewUrl)}>
                     
                     {/* PULSIRAJUĆA SLIKA */}
                     <motion.img 
                       src={paket.previewUrl} 
                       alt={paket.nazivEn} 
-                      className="w-full h-full object-cover transform-gpu" 
+                      className="w-full h-full transform-gpu v8-glass-image" 
                       animate={{ scale: [1, 1.05, 1] }}
                       transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
                     />
@@ -80,16 +80,16 @@ const V10UltraMysticAssets = ({ paketi, isAdmin, getGlobalCena, getAspectClass, 
 
                  </div>
 
-                 {/* MALE SLIKE (THUMBNAILS) SA ASINHRONIM PULSIRANJEM */}
+                 {/* MALE SLIKE (THUMBNAILS) SA ASINHRONIM PULSIRANJEM I KONTAKTNIM SENKAMA */}
                  {paket.primeri && paket.primeri.length > 0 && (
                     <div className="grid grid-cols-4 gap-3 mt-3">
                        {paket.primeri.slice(0, 4).map((thumb, idx) => (
-                          <div key={idx} className="aspect-square rounded-xl overflow-hidden cursor-pointer relative group border border-white/5" onClick={() => setFullScreenImageUrl(thumb)}>
+                          <div key={idx} className="aspect-square rounded-xl overflow-hidden cursor-pointer relative group border border-white/5 v8-glass-container" onClick={() => setFullScreenImageUrl(thumb)}>
                              
                              <motion.img 
                                src={thumb} 
                                alt={`Preview ${idx}`} 
-                               className="w-full h-full object-cover transform-gpu" 
+                               className="w-full h-full transform-gpu v8-glass-image" 
                                animate={{ scale: [1, 1.15, 1] }}
                                // Trajanje svake male slike je drugačije (5s, 6s, 7s, 8s) da ne dišu sve u istom trenutku!
                                transition={{ duration: 5 + idx, repeat: Infinity, ease: "easeInOut" }}

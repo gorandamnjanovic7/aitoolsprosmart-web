@@ -3,7 +3,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Helmet } from 'react-helmet-async'; 
 import { CLOUDINARY_UPLOAD_PRESET, CLOUDINARY_CLOUD_NAME } from './data';
-// 🔥 DODATE IKONICE: CheckCircle2, Smartphone, Maximize, ArrowLeft 🔥
 import { Zap, X, Image as ImageIcon, Images, DownloadCloud, Crown, AlertCircle, Type, Layers, FolderArchive, FileText, Wallet, MonitorPlay, Link as LinkIcon, Diamond, RefreshCcw, Aperture, Trash2, Upload, Briefcase, Monitor, LayoutGrid, ShieldCheck, Edit, Award, CheckCircle2, Smartphone, Maximize, ArrowLeft } from 'lucide-react';
 import { db, auth } from './firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, serverTimestamp, query, orderBy, getDoc, setDoc, where, onSnapshot } from 'firebase/firestore';
@@ -145,7 +144,7 @@ export default function StandardMocup() {
       setNoviOpisEn("V10 WALL MOCKUPS BUNDLE: THE PINNACLE OF 150MP RESOLUTION FOR HIGH-END ARCHITECTURAL SHOWCASES. INCLUDES A CURATED 5-FILE COLLECTION OF EXTERIOR & INTERIOR WALL DISPLAYS: 16:9 ASPECT RATIO. Processed through the V10 Master Engine utilizing precision LANCZOS interpolation. Includes advanced UnsharpMask micro-contrast, custom NumPy matrix processing for flawless indoor/outdoor lighting reflection, and deep shadow profiling. Strict sRGB ICC profile embedding. Perfect for luxury retail exhibitions, boutique showcases, and premium waterfront branding. Zero text, watermarks, or logos. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Fully production-ready.\n\n■ 5 premium architectural 150MP wall renders\n■ Luxury Retail & Boutique Environments engineered for prestige\n■ Full premium design toolkit (Web, Portfolios, Investor Decks)"); 
     }
     else if (noviFormat === '150MP EXECUTIVE PLAQUES') { 
-      setNoviOpisEn("V10 EXECUTIVE PLAQUES BUNDLE: THE PINNACLE OF 150MP RESOLUTION FOR HIGH-END CORPORATE SHOWCASES. INCLUDES A CURATED 5-FILE COLLECTION IN 16:9, 5-FILE COLLECTION IN 9:16, 5-FILE COLLECTION IN 21:9 OF PRESTIGIOUS AWARDS & PLAQUES. Processed through the V10 Master Engine utilizing precision LANCZOS interpolation. Includes advanced UnsharpMask micro-contrast, custom NumPy matrix processing for flawless glass/metal reflections, and deep shadow profiling. Strict sRGB ICC profile embedding. Perfect for enterprise achievements, premium certifications, and executive portfolio showcases. Zero text, watermarks, or logos. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Fully production-ready.\n\n■ 5 premium 150MP executive plaque renders\n■ Corporate & Executive Environments engineered for prestige\n■ Full premium design toolkit (Web, Portfolios, Investor Decks)"); 
+      setNoviOpisEn("V10 EXECUTIVE PLAQUES BUNDLE: THE PINNACLE OF 150MP RESOLUTION FOR HIGH-END CORPORATE SHOWCASES. INCLUDES A CURATED 5-FILE COLLECTION IN 16:9 OF PRESTIGIOUS AWARDS & PLAQUES. Processed through the V10 Master Engine utilizing precision LANCZOS interpolation. Includes advanced UnsharpMask micro-contrast, custom NumPy matrix processing for flawless glass/metal reflections, and deep shadow profiling. Strict sRGB ICC profile embedding. Perfect for enterprise achievements, premium certifications, and executive portfolio showcases. Zero text, watermarks, or logos. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Fully production-ready.\n\n■ 5 premium 150MP executive plaque renders\n■ Corporate & Executive Environments engineered for prestige\n■ Full premium design toolkit (Web, Portfolios, Investor Decks)"); 
     }
   }, [noviFormat, editingPaketId]); 
 
@@ -380,29 +379,13 @@ export default function StandardMocup() {
             </p>
 
             <div className="space-y-3">
-              <p className="text-zinc-500 text-[10px] uppercase font-black tracking-widest mb-3">Multi-Format Collection</p>
+              <p className="text-zinc-500 text-[10px] uppercase font-black tracking-widest mb-3">Format Collection</p>
               
               <div className="flex items-center gap-3 bg-[#050914] border border-blue-900/30 p-3 rounded-xl shadow-inner">
                 <Monitor className="text-blue-500 w-5 h-5" />
                 <div>
                   <p className="text-white text-xs font-bold tracking-wider">5 FILES IN 16:9</p>
-                  <p className="text-zinc-500 text-[10px]">Standard Displays</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3 bg-[#050914] border border-blue-900/30 p-3 rounded-xl shadow-inner">
-                <Smartphone className="text-emerald-500 w-5 h-5" />
-                <div>
-                  <p className="text-white text-xs font-bold tracking-wider">5 FILES IN 9:16</p>
-                  <p className="text-zinc-500 text-[10px]">Vertical / Mobile</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3 bg-[#050914] border border-blue-900/30 p-3 rounded-xl shadow-inner">
-                <Maximize className="text-purple-500 w-5 h-5" />
-                <div>
-                  <p className="text-white text-xs font-bold tracking-wider">5 FILES IN 21:9</p>
-                  <p className="text-zinc-500 text-[10px]">Ultra-Wide Cinematic</p>
+                  <p className="text-zinc-500 text-[10px]">Premium Horizontal Displays</p>
                 </div>
               </div>
             </div>
@@ -417,7 +400,7 @@ export default function StandardMocup() {
           </div>
 
           <p className="text-zinc-300 text-[13px] md:text-sm leading-relaxed mb-6 font-medium text-justify">
-            <strong className="text-white">V10 EXECUTIVE PLAQUES BUNDLE: THE PINNACLE OF 150MP RESOLUTION FOR HIGH-END CORPORATE SHOWCASES.</strong> INCLUDES A CURATED COLLECTION OF PRESTIGIOUS AWARDS & PLAQUES (5 FILES IN 16:9, 5 FILES IN 9:16, AND 5 FILES IN 21:9). Processed through the V10 Master Engine utilizing precision LANCZOS interpolation. Includes advanced UnsharpMask micro-contrast, custom NumPy matrix processing for flawless glass/metal reflections, and deep shadow profiling. Strict sRGB ICC profile embedding. Perfect for enterprise achievements, premium certifications, and executive portfolio showcases. Zero text, watermarks, or logos. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Fully production-ready.
+            <strong className="text-white">V10 EXECUTIVE PLAQUES BUNDLE: THE PINNACLE OF 150MP RESOLUTION FOR HIGH-END CORPORATE SHOWCASES.</strong> INCLUDES A CURATED 5-FILE COLLECTION IN 16:9 OF PRESTIGIOUS AWARDS & PLAQUES. Processed through the V10 Master Engine utilizing precision LANCZOS interpolation. Includes advanced UnsharpMask micro-contrast, custom NumPy matrix processing for flawless glass/metal reflections, and deep shadow profiling. Strict sRGB ICC profile embedding. Perfect for enterprise achievements, premium certifications, and executive portfolio showcases. Zero text, watermarks, or logos. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Fully production-ready.
           </p>
 
           <div className="w-full h-px bg-gradient-to-r from-transparent via-blue-900/50 to-transparent my-6"></div>
@@ -428,7 +411,7 @@ export default function StandardMocup() {
                 <CheckCircle2 className="w-3 h-3 text-blue-400" />
               </div>
               <span className="text-white text-xs md:text-sm font-bold tracking-wide">
-                15 premium 150MP executive plaque renders (Multi-Format Collection)
+                5 premium 150MP executive plaque renders
               </span>
             </li>
             <li className="flex items-start gap-3">
@@ -707,7 +690,6 @@ export default function StandardMocup() {
       {activeTab === 'ultra2' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/vertical_drugo_dugme.mp4" />)}
       {activeTab === 'ultra3' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/vertical_trece_dugme.mp4" />)}
       {activeTab === 'ultra4' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/vertical_cetvrto_dugme.mp4" />)}
-      {/* 🔥 UBAČEN NOVI VERTIKALNI VIDEO ZA TAB 5 🔥 */}
       {activeTab === 'ultra5' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/VERTIKAL_GLASS.mp4" />)}
 
       <div className="fixed inset-0 bg-[#050505]/60 z-0 pointer-events-none"></div>
@@ -739,7 +721,6 @@ export default function StandardMocup() {
               {activeTab === 'ultra2' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000" src="/horizontal_drugi_box.mp4" />)}
               {activeTab === 'ultra3' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000" src="/horizontal_treci_box.mp4" />)}
               {activeTab === 'ultra4' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000" src="/horizontal_cetvrti_box.mp4" />)}
-              {/* 🔥 UBAČEN NOVI HORIZONTALNI VIDEO ZA TAB 5 🔥 */}
               {activeTab === 'ultra5' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000" src="/HORIZONTAL_GLASS.mp4" />)}
 
               <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050505]/40 via-[#050505]/80 to-[#050505]"></div>
@@ -1000,7 +981,7 @@ export default function StandardMocup() {
             {activeTab === 'ultra3' && (<> {renderV8Manifest()} {renderV10Cards(ultra150_3Paketi, 'ultra3')} </>)}
             {activeTab === 'ultra4' && (<> {renderV8Manifest()} {renderV10Cards(ultra150_4Paketi, 'ultra4')} </>)}
             
-            {/* 🔥 NOVO: BUNDLE INFO KARTICA + PROIZVODI SAMO ZA ULTRA 5 🔥 */}
+            {/* 🔥 BUNDLE INFO KARTICA + PROIZVODI SAMO ZA ULTRA 5 🔥 */}
             {activeTab === 'ultra5' && (<> {renderV8Manifest()} {renderV10ExecutiveBundle()} {renderV10Cards(ultra150_5Paketi, 'ultra5')} </>)}
           </div>
         </div>

@@ -384,6 +384,37 @@ const V8StockBerza = () => {
         .v8-card-content div.grid { align-items: stretch; }
         .v8-card-content div.grid > div { height: 100%; }
         .v8-card-content div.grid img { height: 100% !important; min-height: 160px !important; width: 100% !important; object-fit: cover !important; background-color: transparent !important; border-radius: 0.75rem !important; border: 1px solid rgba(255,255,255,0.1); padding: 0 !important; display: block; }
+
+        /* 🔥 V8 KONTAKTNE SENKE ZA PNG PRODUKTE (FLAŠE I ČAŠE) 🔥 */
+        .v8-glass-container {
+          position: relative;
+          display: flex;
+          justify-content: center;
+          align-items: flex-end;
+          background: transparent !important;
+        }
+
+        .v8-glass-container::after {
+          content: '';
+          position: absolute;
+          bottom: 2%;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 50%;
+          height: 12px;
+          background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.6) 40%, transparent 75%);
+          filter: blur(4px);
+          z-index: 0;
+          pointer-events: none;
+        }
+
+        .v8-glass-image {
+          position: relative;
+          z-index: 1;
+          object-fit: contain !important;
+          filter: drop-shadow(0 25px 35px rgba(0,0,0,0.85));
+          padding-bottom: 5% !important;
+        }
       `}</style>
 
       <Helmet>
@@ -413,7 +444,7 @@ const V8StockBerza = () => {
             <div className="w-full flex justify-end mb-6 relative z-20">
               <button 
                 onClick={() => navigate('/stock-2')}
-                className="relative group p-[2px] rounded-xl overflow-hidden transition-all duration-300 hover:shadow-[0_0_35px_rgba(245,158,11,0.5)] active:scale-95"
+                className="v8-pay-btn relative group p-[2px] rounded-xl overflow-hidden transition-all duration-300 hover:shadow-[0_0_35px_rgba(245,158,11,0.5)] active:scale-95"
               >
                 <div className="absolute top-1/2 left-1/2 w-[250%] h-[250%] -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,transparent_0%,transparent_50%,#F59E0B_70%,#EF4444_85%,#F59E0B_100%)] animate-ai-spin pointer-events-none"></div>
                 <div className="relative z-10 px-8 py-3 bg-[#050505] text-amber-500 rounded-[10px] font-black text-xs md:text-sm uppercase tracking-widest border border-amber-500/30 group-hover:text-white transition-colors flex items-center gap-2">
@@ -447,10 +478,10 @@ const V8StockBerza = () => {
                  </p>
                   <div className="flex justify-center relative z-10 mt-10">
                       <div className="bg-[#050505]/80 backdrop-blur-md border border-white/10 p-2 rounded-full inline-flex flex-wrap items-center justify-center shadow-xl gap-2">
-                          <button onClick={() => setActiveTab('premium')} className={`px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[13px] md:text-[15px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'premium' ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-white shadow-[0_0_25px_rgba(234,88,12,0.8)] border-2 border-orange-400 scale-105' : 'text-zinc-100 bg-black/60 hover:bg-orange-900/40 hover:text-white border border-white/20'}`}><Zap className="w-5 h-5" /> 33MP Premium</button>
-                          <button onClick={() => setActiveTab('bundles')} className={`px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[13px] md:text-[15px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'bundles' ? 'bg-gradient-to-r from-blue-600 to-indigo-500 text-white shadow-[0_0_25px_rgba(59,130,246,0.8)] border-2 border-blue-400 scale-105' : 'text-zinc-100 bg-black/60 hover:bg-blue-900/40 hover:text-white border border-white/20'}`}><Crown className="w-5 h-5" /> 45MP Bundles</button>
-                          <button onClick={() => setActiveTab('signature')} className={`px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[13px] md:text-[15px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'signature' ? 'bg-gradient-to-r from-yellow-600 to-amber-500 text-white shadow-[0_0_25px_rgba(245,158,11,0.8)] border-2 border-yellow-400 scale-105' : 'text-zinc-100 bg-black/60 hover:bg-yellow-900/40 hover:text-white border border-white/20'}`}><Diamond className="w-5 h-5" /> 60MP Signature</button>
-                          <button onClick={() => setActiveTab('ultra150')} className={`px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[13px] md:text-[15px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'ultra150' ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-[0_0_25px_rgba(168,85,247,0.8)] border-2 border-purple-400 scale-105' : 'text-zinc-100 bg-black/60 hover:bg-purple-900/40 hover:text-white border border-white/20'}`}><Aperture className="w-5 h-5" /> 150MP Ultra</button>
+                          <button onClick={() => setActiveTab('premium')} className={`v8-pay-btn px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[13px] md:text-[15px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'premium' ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-white shadow-[0_0_25px_rgba(234,88,12,0.8)] border-2 border-orange-400 scale-105' : 'text-zinc-100 bg-black/60 hover:bg-orange-900/40 hover:text-white border border-white/20'}`}><Zap className="w-5 h-5" /> 33MP Premium</button>
+                          <button onClick={() => setActiveTab('bundles')} className={`v8-pay-btn px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[13px] md:text-[15px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'bundles' ? 'bg-gradient-to-r from-blue-600 to-indigo-500 text-white shadow-[0_0_25px_rgba(59,130,246,0.8)] border-2 border-blue-400 scale-105' : 'text-zinc-100 bg-black/60 hover:bg-blue-900/40 hover:text-white border border-white/20'}`}><Crown className="w-5 h-5" /> 45MP Bundles</button>
+                          <button onClick={() => setActiveTab('signature')} className={`v8-pay-btn px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[13px] md:text-[15px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'signature' ? 'bg-gradient-to-r from-yellow-600 to-amber-500 text-white shadow-[0_0_25px_rgba(245,158,11,0.8)] border-2 border-yellow-400 scale-105' : 'text-zinc-100 bg-black/60 hover:bg-yellow-900/40 hover:text-white border border-white/20'}`}><Diamond className="w-5 h-5" /> 60MP Signature</button>
+                          <button onClick={() => setActiveTab('ultra150')} className={`v8-pay-btn px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[13px] md:text-[15px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'ultra150' ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-[0_0_25px_rgba(168,85,247,0.8)] border-2 border-purple-400 scale-105' : 'text-zinc-100 bg-black/60 hover:bg-purple-900/40 hover:text-white border border-white/20'}`}><Aperture className="w-5 h-5" /> 150MP Ultra</button>
                       </div>
                   </div>
               </div>
@@ -595,7 +626,7 @@ const V8StockBerza = () => {
                           <input type="file" multiple ref={galleryImagesRef} onChange={handleUploadPrimeri} className="hidden" /> 
                       </div>
 
-                      <button type="submit" className="ml-auto px-10 py-5 rounded-xl font-black text-[15px] md:text-[17px] tracking-widest uppercase bg-[#FF8C00] hover:bg-orange-500 text-black transition-all shadow-[0_0_30px_rgba(255,140,0,0.8)] flex items-center gap-2 hover:scale-105 drop-shadow-[0_2px_4px_rgba(255,255,255,0.4)]"> 
+                      <button type="submit" className="v8-pay-btn ml-auto px-10 py-5 rounded-xl font-black text-[15px] md:text-[17px] tracking-widest uppercase bg-[#FF8C00] hover:bg-orange-500 text-black transition-all shadow-[0_0_30px_rgba(255,140,0,0.8)] flex items-center gap-2 hover:scale-105 drop-shadow-[0_2px_4px_rgba(255,255,255,0.4)]"> 
                         <Zap size={20} strokeWidth={3} /> {editingPaketId ? 'SAVE CHANGES' : 'SAVE PACKAGE'} 
                       </button>
                     </div>

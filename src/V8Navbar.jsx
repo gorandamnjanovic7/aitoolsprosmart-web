@@ -1,7 +1,8 @@
 // POČETAK FAJLA: V8Navbar.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay, FileText, Code, ShieldCheck, LayoutGrid, Cpu, Maximize, Gift, Menu, X, Terminal, ScanLine } from 'lucide-react';
+// 🔥 DODATE NOVE IKONICE: Sparkles, Aperture, Clapperboard 🔥
+import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay, FileText, Code, ShieldCheck, LayoutGrid, Cpu, Maximize, Gift, Menu, X, Terminal, ScanLine, Briefcase, Sparkles, Aperture, Clapperboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // FIREBASE & TOOLS
@@ -214,11 +215,32 @@ const V8Navbar = ({ handleHomeClick }) => {
           {/* Desktop navigacija */}
           <div className="hidden xl:flex items-center justify-end gap-2 xl:gap-3 font-black uppercase tracking-widest shrink-0">
             
-            <MagneticButton>
-               <Link to="/" onClick={handleHomeClick} className="flex items-center gap-2 px-3 xl:px-5 py-2.5 rounded-full bg-emerald-900/30 border border-emerald-500/40 text-emerald-400 text-[9px] xl:text-[11px] hover:text-white hover:bg-emerald-800/50 hover:border-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] cursor-pointer whitespace-nowrap">
-                 <Globe className="w-4 h-4 shrink-0" /> Home
-               </Link>
-            </MagneticButton>
+            {/* 🔥 HOME DUGME SA PORTFOLIO DROPDOWN-OM 🔥 */}
+            <div className="relative group">
+              <MagneticButton>
+                 <Link to="/" onClick={handleHomeClick} className="flex items-center gap-1 xl:gap-2 px-3 xl:px-5 py-2.5 rounded-full bg-emerald-900/30 border border-emerald-500/40 text-emerald-400 text-[9px] xl:text-[11px] hover:text-white hover:bg-emerald-800/50 hover:border-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] cursor-pointer whitespace-nowrap">
+                   <Globe className="w-4 h-4 shrink-0" /> 
+                   <span>HOME</span>
+                   <ChevronDown className="w-3 h-3 group-hover:rotate-180 transition-transform duration-300 shrink-0" />
+                 </Link>
+              </MagneticButton>
+              
+              <div className="absolute top-full left-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-400 z-[9999]">
+                <div className="bg-black/90 backdrop-blur-2xl border border-white/10 border-t-emerald-500 border-b-emerald-500/30 rounded-2xl p-2 w-52 shadow-[0_30px_60px_rgba(0,0,0,0.9)] flex flex-col gap-1 relative overflow-hidden">
+                  <div className="absolute -top-12 -left-12 w-32 h-32 bg-emerald-600/20 rounded-full blur-[40px] pointer-events-none z-0"></div>
+
+                  <Link to="/portfolio" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-emerald-500/30">
+                    <div className="bg-emerald-500/20 p-2 rounded-lg group-hover/item:bg-emerald-500/40 transition-colors shadow-[0_0_10px_rgba(16,185,129,0.3)] shrink-0">
+                      <Briefcase className="w-5 h-5 text-emerald-400 transition-transform group-hover/item:scale-110" />
+                    </div>
+                    <div className="flex flex-col text-left overflow-hidden">
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-emerald-400 transition-all drop-shadow-md truncate">PORTFOLIO</span>
+                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">V8 Master Gallery</span>
+                    </div>
+                  </Link>
+                </div>
+              </div>
+            </div>
 
             {/* MASTER UPSCALERS DROPDOWN */}
             <div className="relative group">
@@ -294,12 +316,13 @@ const V8Navbar = ({ handleHomeClick }) => {
                 <div className="bg-black/90 backdrop-blur-2xl border border-white/10 border-t-orange-500 border-b-orange-500/30 rounded-2xl p-2 w-72 shadow-[0_30px_60px_rgba(0,0,0,0.9)] flex flex-col gap-1 relative overflow-hidden">
                   <div className="absolute -top-12 -right-12 w-32 h-32 bg-orange-600/30 rounded-full blur-[40px] pointer-events-none z-0"></div>
 
+                  {/* 🔥 AŽURIRANO: 10X VIZION 🔥 */}
                   <Link to="/enxance" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-orange-500/30">
                     <div className="bg-orange-500/20 p-2 rounded-lg group-hover/item:bg-orange-500/40 transition-colors shadow-[0_0_10px_rgba(249,115,22,0.3)] shrink-0">
-                      <Zap className="w-5 h-5 text-orange-400 transition-transform group-hover/item:scale-110" />
+                      <Sparkles className="w-5 h-5 text-orange-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-orange-400 transition-all drop-shadow-md truncate">10X ENHANCER</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-orange-400 transition-all drop-shadow-md truncate">10X VIZION</span>
                       <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Premium AI Engine</span>
                     </div>
                   </Link>
@@ -314,7 +337,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   </Link>
 
-                  {/* 🔥 NEURAL FORGE 🔥 */}
                   <Link to="/neural-forge" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-cyan-500/30 mt-1">
                     <div className="bg-cyan-500/20 p-2 rounded-lg group-hover/item:bg-cyan-500/40 transition-colors shadow-[0_0_10px_rgba(6,182,212,0.3)] shrink-0">
                       <Terminal className="w-5 h-5 text-cyan-400 transition-transform group-hover/item:scale-110" />
@@ -325,10 +347,11 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   </Link>
 
+                  {/* 🔥 AŽURIRANO: RAW REALITY ENGINE 🔥 */}
                   <Link to="/raw-reality" className="flex items-center justify-between gap-2 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-orange-500/30 mt-1">
                     <div className="flex items-center gap-4 overflow-hidden">
                       <div className="bg-orange-500/20 p-2 rounded-lg group-hover/item:bg-orange-500/40 transition-colors shadow-[0_0_10px_rgba(249,115,22,0.3)] shrink-0">
-                        <ScanLine className="w-5 h-5 text-orange-400 transition-transform group-hover/item:scale-110" />
+                        <Aperture className="w-5 h-5 text-orange-400 transition-transform group-hover/item:scale-110" />
                       </div>
                       <div className="flex flex-col text-left overflow-hidden">
                         <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-orange-400 transition-all drop-shadow-md truncate">RAW REALITY ENGINE</span>
@@ -338,12 +361,13 @@ const V8Navbar = ({ handleHomeClick }) => {
                     <span className="text-[8px] bg-orange-600 text-white px-2 py-0.5 rounded font-black tracking-widest shadow-[0_0_8px_rgba(234,88,12,0.5)] shrink-0">HOT</span>
                   </Link>
 
+                  {/* 🔥 AŽURIRANO: V8 CINEMATIK SYSTEM 🔥 */}
                   <Link to="/grid-system" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-yellow-500/30 mt-1">
                     <div className="bg-yellow-500/20 p-2 rounded-lg group-hover/item:bg-yellow-500/40 transition-colors shadow-[0_0_10px_rgba(234,179,8,0.3)] shrink-0">
-                      <LayoutGrid className="w-5 h-5 text-yellow-400 transition-transform group-hover/item:scale-110" />
+                      <Clapperboard className="w-5 h-5 text-yellow-400 transition-transform group-hover/item:scale-110" />
                     </div>
                     <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-yellow-400 transition-all drop-shadow-md truncate">V8 GRID SYSTEM</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-yellow-400 transition-all drop-shadow-md truncate">V8 CINEMATIK SYSTEM</span>
                       <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Cinematic Matrix Gen</span>
                     </div>
                   </Link>
@@ -432,7 +456,6 @@ const V8Navbar = ({ handleHomeClick }) => {
           <div className="hidden xl:flex items-center gap-2 2xl:gap-3 ml-2 border-l border-white/10 pl-3 xl:pl-4 shrink-0">
             
             <MagneticButton>
-              {/* OVO SAD GADJA /neural-forge */}
               <Link to="/neural-forge" onClick={() => window.scrollTo(0,0)} className="flex items-center gap-1.5 xl:gap-2 px-4 xl:px-5 py-2.5 xl:py-3 rounded-full bg-cyan-600 border-2 border-cyan-400 text-white font-black hover:bg-cyan-500 hover:scale-105 transition-all shadow-[0_0_20px_rgba(6,182,212,0.6)] whitespace-nowrap cursor-pointer">
                 <Terminal className="w-3 h-3 xl:w-4 xl:h-4 shrink-0 drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
                 <span className="text-[9px] xl:text-[11px] 2xl:text-[12px] uppercase tracking-widest">FORGE</span>
@@ -673,9 +696,19 @@ const V8Navbar = ({ handleHomeClick }) => {
                 {/* Glavni Meni */}
                 <div className="flex flex-col gap-3 w-full">
                   <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2 truncate w-full">Glavni Meni</h4>
+                  
                   <Link to="/" onClick={handleMobileLinkClick} className="flex items-center gap-3 sm:gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
                     <div className="bg-emerald-500/10 p-3 rounded-xl shrink-0"><Globe className="w-6 h-6 text-emerald-500" /></div>
                     <span className="text-[13px] sm:text-[14px] font-black uppercase tracking-widest text-white truncate w-full">Početna Strana</span>
+                  </Link>
+
+                  {/* 🔥 PORTFOLIO (NOVO U MOBILNOM) 🔥 */}
+                  <Link to="/portfolio" onClick={handleMobileLinkClick} className="flex items-center gap-3 sm:gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
+                    <div className="bg-emerald-500/10 p-3 rounded-xl shrink-0"><Briefcase className="w-6 h-6 text-emerald-500" /></div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-[13px] sm:text-[14px] font-black uppercase tracking-widest text-white truncate w-full">Portfolio</span>
+                      <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">V8 Master Gallery</span>
+                    </div>
                   </Link>
 
                   {/* 🔥 NEURAL FORGE (ISTAKNUT U MOBILNOM) 🔥 */}
@@ -729,11 +762,12 @@ const V8Navbar = ({ handleHomeClick }) => {
                 <div className="flex flex-col gap-3 w-full">
                   <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2 truncate w-full">V8 Premium Tools</h4>
                   
+                  {/* 🔥 AŽURIRANO: 10X VIZION 🔥 */}
                   <Link to="/enxance" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border border-white/5 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0 w-full">
-                      <div className="bg-orange-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><Zap className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" /></div>
+                      <div className="bg-orange-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" /></div>
                       <div className="flex flex-col min-w-0">
-                        <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full">10X Enhancer</span>
+                        <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full">10X VIZION</span>
                         <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">AI Engine</span>
                       </div>
                     </div>
@@ -749,9 +783,10 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   </Link>
 
+                  {/* 🔥 AŽURIRANO: RAW REALITY ENGINE 🔥 */}
                   <Link to="/raw-reality" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border border-orange-500/30 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                      <div className="bg-orange-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><ScanLine className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" /></div>
+                      <div className="bg-orange-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><Aperture className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" /></div>
                       <div className="flex flex-col min-w-0">
                         <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full">Raw Reality Engine</span>
                         <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">Anti-Aesthetic</span>
@@ -760,11 +795,12 @@ const V8Navbar = ({ handleHomeClick }) => {
                     <span className="text-[7px] bg-orange-600 text-white px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 ml-2">HOT</span>
                   </Link>
 
+                  {/* 🔥 AŽURIRANO: V8 CINEMATIK SYSTEM 🔥 */}
                   <Link to="/grid-system" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border border-white/5 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0 w-full">
-                      <div className="bg-yellow-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><LayoutGrid className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" /></div>
+                      <div className="bg-yellow-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><Clapperboard className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" /></div>
                       <div className="flex flex-col min-w-0">
-                        <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full">Grid System</span>
+                        <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full">V8 Cinematik System</span>
                         <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">Cinematic Gen</span>
                       </div>
                     </div>

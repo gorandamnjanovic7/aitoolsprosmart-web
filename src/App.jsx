@@ -58,6 +58,9 @@ import StandardMocup from './StandardMocup';
 
 import { NotificationListener, NotificationModal } from './NotificationSystem';
 
+// 🔥 NOVI IMPORT: Portfolio 🔥
+import Portfolio from './Portfolio';
+
 if (typeof window !== 'undefined') {
   if ('scrollRestoration' in window.history) { window.history.scrollRestoration = 'manual'; }
   if (window.location.hash) { window.history.replaceState(null, '', window.location.pathname); }
@@ -639,6 +642,9 @@ function AppContent({ appsData, refreshData }) {
               <Route path="/privacy" element={<V8PageWrapper><V8Privacy /></V8PageWrapper>} />
               <Route path="/refund" element={<V8PageWrapper><V8Refund /></V8PageWrapper>} />
               <Route path="/media" element={<V8PageWrapper><V8MediaViewer /></V8PageWrapper>} />
+
+              {/* 🔥 NOVA PORTFOLIO RUTA 🔥 */}
+              <Route path="/portfolio" element={<V8PageWrapper><Portfolio /></V8PageWrapper>} />
             </Routes>
           </AnimatePresence>
         </div>
