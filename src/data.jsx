@@ -30,7 +30,7 @@ export const BANNER_DATA = [
   { 
     // 1. MESTO
     image: godTierFistImg, 
-    badge: "V10 ULTRA ENGINE // 150MP APEX PROTOCOL", 
+    badge: "150MP UNYIELDING SUPREMACY", 
     title: "150MP UNYIELDING SUPREMACY", 
     subtitle: "Upgrade your visual authority instantly. The V10 Master Engine provides elite agencies and solo creators with 150-Megapixel, photorealistic mockups and digital assets. No rendering times. No compromise. Inject pure commercial perfection into your UI showcases, global campaigns, and large-scale print production.",
     duration: 168000, 

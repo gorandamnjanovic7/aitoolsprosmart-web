@@ -45,13 +45,12 @@ const V8Stock2 = () => {
   const navigate = useNavigate();
   const [paketi, setPaketi] = useState([]);
   
-  // FORMA UVEK OTKLJUČANA ZA TEBE
-  const [isAdmin, setIsAdmin] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [currentUser, setCurrentUser] = useState(null); 
   
   const [checkoutData, setCheckoutData] = useState({ isOpen: false, name: '', price: 0 });
   const [loginRequiredData, setLoginRequiredData] = useState({ isOpen: false, paket: null, name: '', price: 0 });
-  const [isFullScreenImageUrl, setFullScreenImageUrl] = useState(null);
+  const [fullScreenImageUrl, setFullScreenImageUrl] = useState(null);
   
   // STATE ZA FORMU
   const [isUploading, setIsUploading] = useState(false);
@@ -78,15 +77,14 @@ const V8Stock2 = () => {
 
   useEffect(() => {
     localStorage.setItem('v8_active_extra_tab', activeTab);
+    trackV8Action('tab_view', { event_category: 'Navigation', event_label: activeTab });
     
-    // Auto promena formata kad se menja tab (samo ako ne editujemo)
     if (!editingPaketId) {
       if (activeTab === 'ultra150_2') setNoviFormat('150MP ULTRA MYSTIC BUNDLE');
       else if (activeTab === 'ultra150_3') setNoviFormat('150MP ANCIENT CIVILIZATIONS');
     }
   }, [activeTab, editingPaketId]);
 
-  // 🔥 PRILAGOĐENI TEKSTOVI PO TVOM ŠABLONU 🔥
   useEffect(() => {
     if (editingPaketId) return; 
     
@@ -108,11 +106,12 @@ const V8Stock2 = () => {
     const unsub = onAuthStateChanged(auth, (user) => {
       if (user) {
           setCurrentUser(user);
+          setIsAdmin(user.email === "damnjanovicgoran7@gmail.com" || user.email === "aitoolsprosmart@gmail.com");
       } else { 
           setCurrentUser(null); 
+          setIsAdmin(false);
           setKupljeniPaketiIds([]); 
       }
-      setIsAdmin(true); // Uvek otključano
     });
     fetchPaketi();
     return () => unsub();
@@ -151,7 +150,6 @@ const V8Stock2 = () => {
     setPaketi(snap.docs.map(d => ({ id: d.id, ...d.data() })));
   };
 
-  // UPLOAD LOGIKA
   const handleUploadPreview = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -186,7 +184,6 @@ const V8Stock2 = () => {
   const removeMainImage = () => setPreviewUrl('');
   const removeThumbnail = (indexToRemove) => setPrimeriUrls(prev => prev.filter((_, idx) => idx !== indexToRemove));
 
-  // SNIMANJE PAKETA
   const dodajPaket = async (e) => {
     e.preventDefault();
     if (!previewUrl || !zipLink) { v8Toast.error("Image & ZIP needed!"); return; }
@@ -219,16 +216,19 @@ const V8Stock2 = () => {
 
   const prijavaIKupovina = async (paket) => {
     if (paket.isFree || paket.cena === "0.00" || parseFloat(paket.cena) === 0) {
+        trackV8Action('free_asset_download', { asset_name: paket.nazivEn });
         window.open(paket.zipLink, '_blank');
         return;
     }
     if (kupljeniPaketiIds.includes(paket.id)) {
+        trackV8Action('owned_asset_download', { asset_name: paket.nazivEn });
         window.open(paket.zipLink, '_blank');
         return;
     }
     const fullName = paket.volume ? `${paket.nazivEn} - ${paket.volume}` : paket.nazivEn;
     const finalPrice = getGlobalCena(paket.cena);
     const userNow = currentUser || auth.currentUser;
+    trackV8Action('checkout_initiated', { event_category: 'B2B_Sales', item_name: fullName, value: Number(finalPrice), currency: 'USD' });
     if (userNow) {
       await snimiKupcaUPayoneerBazu(userNow, paket);
       if (paket.paddleLink && paket.paddleLink.trim() !== "") { window.location.href = paket.paddleLink; return; }
@@ -245,6 +245,8 @@ const V8Stock2 = () => {
   };
 
   const getGlobalCena = (cena) => { const numCena = parseFloat(cena); return isNaN(numCena) ? "0.00" : numCena.toFixed(2); };
+  
+  // 🔥 FIX: OVO MORA BITI TU DA NE PUKNE KOMPONENTA
   const getAspectClass = (format) => { return (!format || format.includes('16:9 ONLY')) ? 'aspect-video' : 'aspect-square'; };
 
   const ultra150_2Paketi = paketi.filter(p => {
@@ -257,6 +259,7 @@ const V8Stock2 = () => {
     return fmt.includes('150MP ANCIENT CIVILIZATIONS') || fmt.includes('150MP ANCIENT CIVILIZATION');
   });
 
+  // 🔥 FIX: VRATIO SAM TI ONAJ FULL MANIFEST SA OPISOM KAO NA GLAVNOJ BERZI
   const renderV8Manifest = (rezolucija) => {
     const specifikacije = [
       { t: `1. Lanczos Upscale`, d: "Direct premium interpolation.", insight: `Direct premium LANCZOS interpolation to approx. ${rezolucija} by aspect ratio.` },
@@ -280,7 +283,13 @@ const V8Stock2 = () => {
           {specifikacije.map((item, i) => {
             const isOpen = otvoreniOpisi.includes(i);
             return (
-              <div key={i} onClick={() => setOtvoreniOpisi(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i])}
+              <div key={i} onClick={() => {
+                  setOtvoreniOpisi(prev => {
+                      const isNowOpen = !prev.includes(i);
+                      if (isNowOpen) { trackV8Action('manifest_read', { event_category: 'Engagement', event_label: item.t }); }
+                      return isNowOpen ? [...prev, i] : prev.filter(x => x !== i);
+                  });
+                }}
                 className={`bg-white/5 border p-6 rounded-2xl transition-all duration-500 cursor-pointer relative overflow-hidden group ${isOpen ? (rezolucija.includes('ANCIENT') ? 'border-[#6B4224]/50 shadow-[0_0_15px_rgba(69,42,21,0.2)]' : 'border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.1)]') : 'border-white/5 hover:border-white/20'}`}
               >
                 <div className="relative z-10 flex justify-between items-center">
@@ -290,7 +299,16 @@ const V8Stock2 = () => {
                     </h4>
                     <p className={`text-[11px] md:text-[13px] font-medium leading-relaxed transition-colors duration-300 ${isOpen ? 'text-white' : 'text-zinc-400'}`}>{item.d}</p>
                   </div>
-                  <div className="text-xs">▼</div>
+                  <div className={`ml-4 text-xs md:text-sm font-black transition-all duration-500 ${isOpen ? `rotate-180 ${rezolucija.includes('ANCIENT') ? 'text-[#8a5a33] drop-shadow-[0_0_8px_rgba(138,90,51,0.8)]' : 'text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.8)]'}` : (rezolucija.includes('ANCIENT') ? 'text-[#6B4224]' : 'text-purple-500')}`}>▼</div>
+                </div>
+                <div className={`grid transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] relative z-10 ${isOpen ? 'grid-rows-[1fr] mt-4 opacity-100 filter-none' : 'grid-rows-[0fr] opacity-0 blur-sm'}`}>
+                  <div className="overflow-hidden">
+                    <div className="pt-4 border-t border-white/10">
+                      <p className={`text-[11px] md:text-[12px] text-zinc-300 font-mono leading-relaxed border-l-2 pl-3 ${rezolucija.includes('ANCIENT') ? 'border-[#8a5a33]' : 'border-pink-500'}`}>
+                        <span className={`font-bold ${rezolucija.includes('ANCIENT') ? 'text-[#8a5a33]' : 'text-pink-400'}`}>Tech Insight:</span> {item.insight}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             );
@@ -510,11 +528,15 @@ const V8Stock2 = () => {
           )}
 
         <div className="flex flex-wrap justify-center gap-6 lg:gap-12 w-full mx-auto px-4 lg:px-8">
+          {/* 🔥 FIX: DODAT JE getAspectClass={getAspectClass} U OBE KOMPONENTE KAKO NE BI PUKLE 🔥 */}
           {activeTab === 'ultra150_2' && (<> {renderV8Manifest("150MP (FANTASY)")} <V10UltraMysticAssets paketi={ultra150_2Paketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} kupljeniPaketiIds={kupljeniPaketiIds} /> </>)}
-          {activeTab === 'ultra150_3' && (<> {renderV8Manifest("150MP (ANCIENT)")} <V10UltraAncientAssets paketi={ultra150_3Paketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} kupljeniPaketiIds={kupljeniPaketiIds} /> </>)}
+          {activeTab === 'ultra150_3' && (<> {renderV8Manifest("150MP (ANCIENT)")} <V10UltraAncientAssets paketi={ultra150_3Paketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} kupljeniPaketiIds={kupljeniPaketiIds} /> </>)}
         </div>
       </div>
-      <FullScreenLightbox imageUrl={isFullScreenImageUrl} onClose={() => setFullScreenImageUrl(null)} />
+      
+      {/* KOREKTNO POZICIONIRANI MODALI */}
+      <LoginRequiredModal isOpen={loginRequiredData.isOpen} onClose={() => setLoginRequiredData({ isOpen: false, paket: null, name: '', price: 0 })} packageName={loginRequiredData.name} price={loginRequiredData.price} onLoginSuccess={async (user) => { if (loginRequiredData.paket) await otvoriCheckoutIliPaddle(user, loginRequiredData.paket); setLoginRequiredData({ isOpen: false, paket: null, name: '', price: 0 }); }} />
+      <FullScreenLightbox imageUrl={fullScreenImageUrl} onClose={() => setFullScreenImageUrl(null)} />
       <AnimatePresence>
         {checkoutData.isOpen && (<V8SecureCheckout isOpen={checkoutData.isOpen} productName={checkoutData.name} price={checkoutData.price} onClose={() => setCheckoutData({ isOpen: false, name: '', price: 0 })} />)}
       </AnimatePresence>
