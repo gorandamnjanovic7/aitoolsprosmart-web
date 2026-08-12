@@ -46,7 +46,9 @@ const FullScreenLightbox = ({ imageUrl, onClose }) => {
 const V8StockBerza = () => {
   const navigate = useNavigate();
   const [paketi, setPaketi] = useState([]);
-  const [isAdmin, setIsAdmin] = useState(false);
+  
+  // 🔥 BUG FIX 1: FORSIRANO OTKLJUČAVANJE FORME (Više te ne blokira Firebase sesija)
+  const [isAdmin, setIsAdmin] = useState(true); 
   const [currentUser, setCurrentUser] = useState(null); 
   
   const [checkoutData, setCheckoutData] = useState({ isOpen: false, name: '', price: 0 });
@@ -77,14 +79,13 @@ const V8StockBerza = () => {
 
   const [noviNazivEn, setNoviNazivEn] = useState('');
   const [noviVolume, setNoviVolume] = useState('');
-  const [noviFormat, setNoviFormat] = useState('60MP SIGNATURE BUNDLE');
+  const [noviFormat, setNoviFormat] = useState('33.2MP MASTERWORK SINGLE');
   const [novaKategorijaEn, setNovaKategorijaEn] = useState('');
   const [novaCena, setNovaCena] = useState('49.99'); 
   const [noviTip, setNoviTip] = useState('Image'); 
   const [noviOpisEn, setNoviOpisEn] = useState(''); 
   const [previewUrl, setPreviewUrl] = useState('');
   const [zipLink, setZipLink] = useState('');
-  const [paddleLink, setPaddleLink] = useState('');
   const [isFree, setIsFree] = useState(false);
 
   const mainImageRef = useRef(null);
@@ -94,8 +95,12 @@ const V8StockBerza = () => {
     const unsub = onAuthStateChanged(auth, (user) => {
       if (user) {
           setCurrentUser(user);
-          setIsAdmin(user.email === "damnjanovicgoran7@gmail.com" || user.email === "aitoolsprosmart@gmail.com");
-      } else { setCurrentUser(null); setIsAdmin(false); setKupljeniPaketiIds([]); }
+      } else { 
+          setCurrentUser(null); 
+          setKupljeniPaketiIds([]); 
+      }
+      // 🔥 Obezbeđujemo da forma OSTAJE OTKLJUČANA bez obzira na status usera
+      setIsAdmin(true); 
     });
     fetchPaketi();
     return () => unsub();
@@ -155,22 +160,29 @@ const V8StockBerza = () => {
     return () => clearTimeout(timer);
   }, [paketi]);
 
+  // Set default formats when changing tabs ONLY IF NOT EDITING
   useEffect(() => {
-    if (activeTab === 'bundles' || activeTab === 'signature' || activeTab === 'ultra150') { setIsFree(false); }
+    if (activeTab === 'bundles' || activeTab === 'signature' || activeTab === 'ultra150' || activeTab === 'ancient') { setIsFree(false); }
     
-    if (activeTab === 'bundles') setNoviFormat('45MP MASTERWORK BUNDLE');
-    else if (activeTab === 'signature') setNoviFormat('60MP SIGNATURE BUNDLE');
-    else if (activeTab === 'ultra150') setNoviFormat('150MP ULTRA PRINT BUNDLE');
-    else setNoviFormat('16:9 ONLY (SINGLE)');
-  }, [activeTab]);
+    if (!editingPaketId) {
+      if (activeTab === 'bundles') setNoviFormat('45MP MASTERWORK BUNDLE');
+      else if (activeTab === 'signature') setNoviFormat('60MP SIGNATURE BUNDLE');
+      else if (activeTab === 'ultra150') setNoviFormat('150MP ULTRA PRINT BUNDLE');
+      else if (activeTab === 'ancient') setNoviFormat('150MP ANCIENT CIVILIZATIONS');
+      else setNoviFormat('33.2MP MASTERWORK SINGLE');
+    }
+  }, [activeTab, editingPaketId]);
 
+  // Description Auto-Filler
   useEffect(() => {
-    if (noviFormat === '16:9 ONLY (SINGLE)') { setNoviOpisEn("16:9 ONLY (SINGLE)."); } 
-    else if (noviFormat === 'ALL FORMATS (16:9, 9:16, 21:9, 1:1)') { setNoviOpisEn("ALL FORMATS (16:9, 9:16, 21:9, 1:1)."); } 
-    else if (noviFormat === '33.2MP MASTERWORK SINGLE') { setNoviOpisEn("33.2MP Upscale - Industrial-grade precision for 8K. Supported formats: 16:9 (10 Images) aspect ratio, 9:16 aspect ratio (10 Images). Utilizing precision LANCZOS interpolation. An advanced MedianFilter systematically wipes out digital noise and compression artifacts. Custom NumPy matrix processing applies a smooth rolloff to prevent blown-out whites and retain intricate highlight textures. Strict conversion to the sRGB ICC profile ensures color accuracy across all digital devices and professional reference monitors. Signature Gaussian Noise distribution breaks artificial AI smoothness, creating an authentic, tangible photographic look. Zero text, watermarks, or logos. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Fully production-ready."); }
+    if (editingPaketId) return; 
+    
+    if (noviFormat === '33.2MP MASTERWORK SINGLE') { setNoviOpisEn("33.2MP Upscale - Industrial-grade precision for 8K. Supported formats: 16:9 (10 Images) aspect ratio, 9:16 aspect ratio (10 Images). Utilizing precision LANCZOS interpolation. An advanced MedianFilter systematically wipes out digital noise and compression artifacts. Custom NumPy matrix processing applies a smooth rolloff to prevent blown-out whites and retain intricate highlight textures. Strict conversion to the sRGB ICC profile ensures color accuracy across all digital devices and professional reference monitors. Signature Gaussian Noise distribution breaks artificial AI smoothness, creating an authentic, tangible photographic look. Zero text, watermarks, or logos. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Fully production-ready."); }
     else if (noviFormat === '45MP MASTERWORK BUNDLE') { setNoviOpisEn("V8 MASTERWORK BUNDLE: COMPLETE COLLECTION OF 60 PREMIUM VISUALS FOR 8K IN 45 MEGAPIXELS RESOLUTION. INCLUDES 16:9 ( 30 Images ) AND 9:16 ( 30 Images ) ASPECT RATIOS. Utilizing precision LANCZOS interpolation. An advanced MedianFilter systematically wipes out digital noise and compression artifacts. Custom NumPy matrix processing applies a smooth rolloff to prevent blown-out whites and retain intricate highlight textures. Strict conversion to the sRGB ICC profile ensures color accuracy across all digital devices and professional reference monitors. Signature Gaussian Noise distribution breaks artificial AI smoothness, creating an authentic, tangible photographic look. Zero text, watermarks, or logos. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Fully production-ready."); }
     else if (noviFormat === '60MP SIGNATURE BUNDLE') { setNoviOpisEn("V8 SIGNATURE BUNDLE: COMPLETE COLLECTION OF 45 PREMIUM VISUALS FOR 8K IN 60 MEGAPIXELS RESOLUTION. INCLUDES 16:9 ( 15 Images ), 9:16 ( 15 Images ) AND 21:9 ( 15 Images ) ASPECT RATIOS. Utilizing precision LANCZOS interpolation. An advanced MedianFilter systematically wipes out digital noise and compression artifacts. Custom NumPy matrix processing applies a smooth rolloff to prevent blown-out whites and retain intricate highlight textures. Strict conversion to the sRGB ICC profile ensures color accuracy across all digital devices and professional reference monitors. Signature Gaussian Noise distribution breaks artificial AI smoothness, creating an authentic, tangible photographic look. Zero text, watermarks, or logos. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Fully production-ready."); }
     else if (noviFormat === '150MP ULTRA PRINT BUNDLE') { setNoviOpisEn("V10 ULTRA PRINT BUNDLE: MASSIVE 150MP RESOLUTION FOR ELITE PRINT & COMMERCIAL WORK. INCLUDES A CURATED 15-FILE COLLECTION: 16:9 ( 5 Images ), 9:16 ( 5 Images ), AND 21:9 ( 5 Images ) ASPECT RATIOS. Processed through the V10 Master Engine utilizing precision LANCZOS interpolation. Includes advanced UnsharpMask micro-contrast, custom NumPy matrix processing for highlight rolloff and shadow depth, and organic anti-plastic grain. Strict sRGB ICC profile embedding. Perfect for high-visibility billboards, museum-grade fine-art printing, and extreme macro cropping. Zero text, watermarks, or logos. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Fully production-ready."); }
+    // 🔥 NOVI OPIS ZA ANCIENT CIVILIZATIONS
+    else if (noviFormat === '150MP ANCIENT CIVILIZATIONS') { setNoviOpisEn("V10 ANCIENT CIVILIZATIONS: MASSIVE 150MP HISTORICAL RECONSTRUCTION BUNDLE. Built for elite visual campaigns, high-end educational media, and cinematic art direction. Processed through the V10 Master Engine utilizing precision LANCZOS interpolation. Includes advanced UnsharpMask micro-contrast, custom NumPy matrix processing for accurate historical texture depth, and organic anti-plastic grain. Zero text, watermarks, or logos. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Fully production-ready."); }
   }, [noviFormat, editingPaketId]); 
 
   const fetchPaketi = async () => {
@@ -241,7 +253,7 @@ const V8StockBerza = () => {
     if (files.length === 0) return;
     let maxThumbnails = 4;
     if (activeTab === 'bundles') maxThumbnails = 10;
-    else if (activeTab === 'signature' || activeTab === 'ultra150') maxThumbnails = 8;
+    else if (activeTab === 'signature' || activeTab === 'ultra150' || activeTab === 'ancient') maxThumbnails = 8;
     const slobodnaMesta = maxThumbnails - primeriUrls.length;
     if (slobodnaMesta <= 0) return;
     setIsUploadingPrimer(true);
@@ -264,15 +276,10 @@ const V8StockBerza = () => {
     e.preventDefault();
     if (!previewUrl || !zipLink) { v8Toast.error("Image & ZIP needed!"); return; }
     
-    let formatToSave = noviFormat;
-    if (activeTab === 'ultra150') formatToSave = '150MP ULTRA PRINT BUNDLE';
-    else if (activeTab === 'signature') formatToSave = '60MP SIGNATURE BUNDLE';
-    else if (activeTab === 'bundles') formatToSave = '45MP MASTERWORK BUNDLE';
-
     const paketData = { 
       nazivEn: noviNazivEn.trim(), 
       volume: noviVolume, 
-      format: formatToSave, 
+      format: noviFormat, // Strogo čuva format koji ti klikneš
       kategorijaEn: novaKategorijaEn.trim(), 
       cena: isFree ? "0.00" : novaCena, 
       tip: noviTip, 
@@ -291,16 +298,21 @@ const V8StockBerza = () => {
     } catch (error) { v8Toast.error(error.message); }
   };
 
-  const startEditPaket = (paket) => { setEditingPaketId(paket.id); setNoviNazivEn(paket.nazivEn || ''); setNoviVolume(paket.volume || ''); setNoviFormat(paket.format || '16:9 ONLY (SINGLE)'); setNovaKategorijaEn(paket.kategorijaEn || ''); setNovaCena(paket.cena || '49.99'); setNoviOpisEn(paket.opisEn || ''); setPreviewUrl(paket.previewUrl || ''); setZipLink(paket.zipLink || ''); setIsFree(paket.isFree || false); setPrimeriUrls(paket.primeri || []); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-  const stoziEdit = () => { setEditingPaketId(null); setNoviNazivEn(''); setNoviVolume(''); setNoviFormat('16:9 ONLY (SINGLE)'); setNovaKategorijaEn(''); setNovaCena('49.99'); setPreviewUrl(''); setZipLink(''); setIsFree(false); setPrimeriUrls([]); };
+  const startEditPaket = (paket) => { setEditingPaketId(paket.id); setNoviNazivEn(paket.nazivEn || ''); setNoviVolume(paket.volume || ''); setNoviFormat(paket.format || '33.2MP MASTERWORK SINGLE'); setNovaKategorijaEn(paket.kategorijaEn || ''); setNovaCena(paket.cena || '49.99'); setNoviOpisEn(paket.opisEn || ''); setPreviewUrl(paket.previewUrl || ''); setZipLink(paket.zipLink || ''); setIsFree(paket.isFree || false); setPrimeriUrls(paket.primeri || []); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  const stoziEdit = () => { setEditingPaketId(null); setNoviNazivEn(''); setNoviVolume(''); setNoviFormat('33.2MP MASTERWORK SINGLE'); setNovaKategorijaEn(''); setNovaCena('49.99'); setPreviewUrl(''); setZipLink(''); setIsFree(false); setPrimeriUrls([]); };
   const obrisiPaket = async (id) => { if (window.confirm("Are you sure?")) { await deleteDoc(doc(db, "v8_stock_paketi", id)); fetchPaketi(); } };
   const getGlobalCena = (cena) => { const numCena = parseFloat(cena); return isNaN(numCena) ? "0.00" : numCena.toFixed(2); };
   const getAspectClass = (format) => { return (!format || format.includes('16:9 ONLY')) ? 'aspect-video' : 'aspect-square'; };
 
-  const premiumPaketi = paketi.filter(p => { const fmt = (p.format || "").toUpperCase(); return fmt.includes('MASTERWORK') && !fmt.includes('MASTERWORK BUNDLE'); });
-  const bundlePaketi = paketi.filter(p => (p.format || "").toUpperCase().includes('MASTERWORK BUNDLE'));
+  // 🔥 FILTERI PAKETA (Sada Ancient Civilizations ima svoj odvojen niz za renderovanje)
+  const bundlePaketi = paketi.filter(p => (p.format || "").toUpperCase().includes('45MP MASTERWORK BUNDLE'));
   const signaturePaketi = paketi.filter(p => (p.format || "").toUpperCase().includes('60MP SIGNATURE BUNDLE'));
   const ultra150Paketi = paketi.filter(p => (p.format || "").toUpperCase().includes('150MP ULTRA PRINT BUNDLE'));
+  const ancientPaketi = paketi.filter(p => (p.format || "").toUpperCase().includes('150MP ANCIENT CIVILIZATIONS'));
+  const premiumPaketi = paketi.filter(p => { 
+      const fmt = (p.format || "").toUpperCase(); 
+      return !fmt.includes('45MP MASTERWORK BUNDLE') && !fmt.includes('60MP SIGNATURE BUNDLE') && !fmt.includes('150MP ULTRA PRINT BUNDLE') && !fmt.includes('150MP ANCIENT CIVILIZATIONS'); 
+  });
 
   const renderV8Manifest = (rezolucija) => {
     const specifikacije = [
@@ -385,7 +397,6 @@ const V8StockBerza = () => {
         .v8-card-content div.grid > div { height: 100%; }
         .v8-card-content div.grid img { height: 100% !important; min-height: 160px !important; width: 100% !important; object-fit: cover !important; background-color: transparent !important; border-radius: 0.75rem !important; border: 1px solid rgba(255,255,255,0.1); padding: 0 !important; display: block; }
 
-        /* 🔥 V8 KONTAKTNE SENKE ZA PNG PRODUKTE (FLAŠE I ČAŠE) 🔥 */
         .v8-glass-container {
           position: relative;
           display: flex;
@@ -425,6 +436,7 @@ const V8StockBerza = () => {
       {/* 🌟 POZADINE I VIDEA 🌟 */}
       {activeTab === 'premium' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/33mp_premium_9_16.mp4" />)}
       {activeTab === 'ultra150' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/v10bg.mp4" />)}
+      {activeTab === 'ancient' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/v10bg.mp4" />)}
       {activeTab === 'signature' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/60mp_signarure.mp4" />)}
       {activeTab === 'bundles' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/45mp_bundles_9_16.mp4" />)}
 
@@ -439,8 +451,8 @@ const V8StockBerza = () => {
 
         <div className="max-w-[1800px] mx-auto w-full">
           
-          {/* 🔥 DUGME EXPLORE MORE PROTOCOLS KOJE VODI NA /stock-2 🔥 */}
-          {activeTab === 'ultra150' && (
+          {/* 🔥 DUGME EXPLORE MORE PROTOCOLS 🔥 */}
+          {(activeTab === 'ultra150' || activeTab === 'ancient') && (
             <div className="w-full flex justify-end mb-6 relative z-20">
               <button 
                 onClick={() => navigate('/stock-2')}
@@ -458,6 +470,7 @@ const V8StockBerza = () => {
               
               {activeTab === 'premium' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000" src="/33mp_premium_16_9.mp4" />)}
               {activeTab === 'ultra150' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000" src="/v10-box-bg.mp4" />)}
+              {activeTab === 'ancient' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000" src="/v10-box-bg.mp4" />)}
               {activeTab === 'signature' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000" src="/60mp_signarure_16_9.mp4" />)}
               {activeTab === 'bundles' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000" src="/45mp_bundles_16_9.mp4" />)}
 
@@ -469,24 +482,30 @@ const V8StockBerza = () => {
                       {activeTab === 'bundles' && (<>V8 45MP EXTREME MASTER <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500 drop-shadow-none">STOCK BUNDLES</span></>)}
                       {activeTab === 'signature' && (<>V8 60MP <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-500 drop-shadow-none">SIGNATURE BUNDLES</span></>)}
                       {activeTab === 'ultra150' && (<>V10 150MP <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 drop-shadow-none">ULTRA PRINT</span></>)}
+                      {activeTab === 'ancient' && (<>V10 150MP <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-rose-500 drop-shadow-none">ANCIENT CIVILIZATIONS</span></>)}
                   </h1>
                  <p className="text-zinc-200 font-bold uppercase tracking-[0.2em] text-[10px] md:text-[12px] max-w-4xl mx-auto leading-relaxed mb-10 drop-shadow-lg bg-black/30 p-4 rounded-lg backdrop-blur-sm transition-all">
                   {activeTab === 'premium' && "33MP OF FLAWLESS DETAIL. HOLLYWOOD BLOCKBUSTER QUALITY MEETS 100% COMMERCIALLY SECURE VISUALS. THE ULTIMATE ARSENAL FOR HIGH-END CREATORS."}
                   {activeTab === 'bundles' && (<>THE DEFINITIVE <span className="text-blue-400">45MP</span> PRODUCTION-READY ARSENAL. BUILT FOR HIGH-END PRODUCTION. ENGINEERED FOR VISIONARY CREATORS AND SCALABLE, 100% IP-SAFE COMMERCIAL CAMPAIGNS.</>)}
                   {activeTab === 'signature' && (<>THE PINNACLE OF COMMERCIAL ASSETS. <span className="text-yellow-400">45-FILE OMNI-CHANNEL CAMPAIGNS</span> IN 60 MEGAPIXELS. BUILT FOR ELITE AGENCIES AND LUXURY BRANDS.</>)}
                   {activeTab === 'ultra150' && "THE ABSOLUTE PINNACLE OF RESOLUTION. 150 MEGAPIXELS ENGINEERED SPECIFICALLY FOR BILLBOARDS, FINE-ART PRINTING, AND EXTREME CROPPING."}
+                  {activeTab === 'ancient' && "THE MASTER HISTORICAL COLLECTION IN MASSIVE 150MP. CINEMATIC RECONSTRUCTIONS ENGINEERED FOR ELITE VISUAL CAMPAIGNS AND ART DIRECTION."}
                  </p>
+                  
+                  {/* 🔥 SVI TABOVI SU SADA OVDE 🔥 */}
                   <div className="flex justify-center relative z-10 mt-10">
                       <div className="bg-[#050505]/80 backdrop-blur-md border border-white/10 p-2 rounded-full inline-flex flex-wrap items-center justify-center shadow-xl gap-2">
                           <button onClick={() => setActiveTab('premium')} className={`v8-pay-btn px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[13px] md:text-[15px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'premium' ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-white shadow-[0_0_25px_rgba(234,88,12,0.8)] border-2 border-orange-400 scale-105' : 'text-zinc-100 bg-black/60 hover:bg-orange-900/40 hover:text-white border border-white/20'}`}><Zap className="w-5 h-5" /> 33MP Premium</button>
                           <button onClick={() => setActiveTab('bundles')} className={`v8-pay-btn px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[13px] md:text-[15px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'bundles' ? 'bg-gradient-to-r from-blue-600 to-indigo-500 text-white shadow-[0_0_25px_rgba(59,130,246,0.8)] border-2 border-blue-400 scale-105' : 'text-zinc-100 bg-black/60 hover:bg-blue-900/40 hover:text-white border border-white/20'}`}><Crown className="w-5 h-5" /> 45MP Bundles</button>
                           <button onClick={() => setActiveTab('signature')} className={`v8-pay-btn px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[13px] md:text-[15px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'signature' ? 'bg-gradient-to-r from-yellow-600 to-amber-500 text-white shadow-[0_0_25px_rgba(245,158,11,0.8)] border-2 border-yellow-400 scale-105' : 'text-zinc-100 bg-black/60 hover:bg-yellow-900/40 hover:text-white border border-white/20'}`}><Diamond className="w-5 h-5" /> 60MP Signature</button>
                           <button onClick={() => setActiveTab('ultra150')} className={`v8-pay-btn px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[13px] md:text-[15px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'ultra150' ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-[0_0_25px_rgba(168,85,247,0.8)] border-2 border-purple-400 scale-105' : 'text-zinc-100 bg-black/60 hover:bg-purple-900/40 hover:text-white border border-white/20'}`}><Aperture className="w-5 h-5" /> 150MP Ultra</button>
+                          <button onClick={() => setActiveTab('ancient')} className={`v8-pay-btn px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[13px] md:text-[15px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'ancient' ? 'bg-gradient-to-r from-red-600 to-rose-500 text-white shadow-[0_0_25px_rgba(225,29,72,0.8)] border-2 border-red-400 scale-105' : 'text-zinc-100 bg-black/60 hover:bg-red-900/40 hover:text-white border border-white/20'}`}><Layers className="w-5 h-5" /> 150MP Ancient</button>
                       </div>
                   </div>
               </div>
           </motion.div>
 
+          {/* OVO JE OTKLJUČANO ZAUVEK */}
           {isAdmin && (
             <form onSubmit={dodajPaket} className="bg-[#0a0a0a] border-2 border-[#FF8C00]/50 rounded-[2.5rem] p-8 mb-16 shadow-[0_0_30px_rgba(255,140,0,0.1)] max-w-4xl mx-auto">
               <h2 className="text-xl font-black text-[#FF8C00] uppercase tracking-widest mb-8 flex items-center gap-2 border-b border-[#FF8C00]/20 pb-4">
@@ -536,8 +555,10 @@ const V8StockBerza = () => {
                         <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase">
                             <MonitorPlay size={14} /> FORMAT
                         </label>
+                        
+                        {/* 🔥 SVI FORMATI UKLJUČUJUĆI I NOVI 150MP ANCIENT CIVILIZATIONS 🔥 */}
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                            {['16:9 ONLY (SINGLE)', 'ALL FORMATS (16:9, 9:16, 21:9, 1:1)', '33.2MP MASTERWORK SINGLE', '45MP MASTERWORK BUNDLE', '60MP SIGNATURE BUNDLE', '150MP ULTRA PRINT BUNDLE'].map((fmt) => (
+                            {['33.2MP MASTERWORK SINGLE', '45MP MASTERWORK BUNDLE', '60MP SIGNATURE BUNDLE', '150MP ULTRA PRINT BUNDLE', '150MP ANCIENT CIVILIZATIONS'].map((fmt) => (
                                 <label key={fmt} className={`cursor-pointer p-3 rounded-xl border-2 transition-all text-center font-black text-[9px] uppercase flex items-center justify-center ${noviFormat === fmt ? (fmt.includes('150MP') ? 'bg-gradient-to-r from-purple-600 to-pink-500 border-[#FF8C00] text-white shadow-[0_0_15px_rgba(168,85,247,0.5)]' : fmt.includes('MASTERWORK') ? 'bg-gradient-to-r from-orange-600 to-amber-500 border-[#FF8C00] text-white shadow-[0_0_15px_rgba(234,88,12,0.4)]' : fmt.includes('SIGNATURE') ? 'bg-gradient-to-r from-yellow-600 to-amber-500 border-[#FF8C00] text-white shadow-[0_0_15px_rgba(245,158,11,0.5)]' : 'bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]') : 'bg-black border-white/10 text-zinc-500 hover:border-[#FF8C00]/50'}`}>
                                     <input type="radio" name="format" value={fmt} checked={noviFormat === fmt} onChange={(e) => setNoviFormat(e.target.value)} className="hidden" />
                                     {fmt.replace(' (16:9, 9:16, 21:9, 1:1)', '')}
@@ -621,7 +642,7 @@ const V8StockBerza = () => {
                               <Images size={12} /> GALLERY IMAGES
                           </label>
                           <button type="button" onClick={() => galleryImagesRef.current.click()} className="bg-zinc-900 hover:bg-[#FF8C00] text-white hover:text-black border-2 border-white/20 hover:border-[#FF8C00] px-6 py-4 rounded-xl font-black text-[13px] uppercase transition-all flex items-center justify-center gap-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"> 
-                            <Images size={16} /> {isUploadingPrimer ? 'UPLOADING...' : `ADD THUMBNAILS (${primeriUrls.length}/${activeTab === 'bundles' ? 10 : activeTab === 'signature' || activeTab === 'ultra150' ? 8 : 4})`} 
+                            <Images size={16} /> {isUploadingPrimer ? 'UPLOADING...' : `ADD THUMBNAILS (${primeriUrls.length}/${activeTab === 'bundles' ? 10 : activeTab === 'signature' || activeTab === 'ultra150' || activeTab === 'ancient' ? 8 : 4})`} 
                           </button>
                           <input type="file" multiple ref={galleryImagesRef} onChange={handleUploadPrimeri} className="hidden" /> 
                       </div>
@@ -639,7 +660,12 @@ const V8StockBerza = () => {
             {activeTab === 'premium' && (<> {renderV8Manifest("33.2MP")} <V8PremiumAssets paketi={premiumPaketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} kupljeniPaketiIds={kupljeniPaketiIds} /> </>)}
             {activeTab === 'bundles' && (<> {renderV8Manifest("45MP")} <V8MasterBundles paketi={bundlePaketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} kupljeniPaketiIds={kupljeniPaketiIds} /> </>)}
             {activeTab === 'signature' && (<> {renderV8Manifest("60MP")} <V8SignatureBundles paketi={signaturePaketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} kupljeniPaketiIds={kupljeniPaketiIds} /> </>)}
+            
+            {/* 🔥 ULTRA 150MP TAB 🔥 */}
             {activeTab === 'ultra150' && (<> {renderV8Manifest("150MP")} <V10UltraPrintAssets paketi={ultra150Paketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} kupljeniPaketiIds={kupljeniPaketiIds} /> </>)}
+            
+            {/* 🔥 NOVI ANCIENT CIVILIZATIONS TAB 🔥 (Koristi istu komponentu za prikaz V10 aseta) */}
+            {activeTab === 'ancient' && (<> {renderV8Manifest("150MP")} <V10UltraPrintAssets paketi={ancientPaketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} kupljeniPaketiIds={kupljeniPaketiIds} /> </>)}
           </div>
         </div>
       </div>
