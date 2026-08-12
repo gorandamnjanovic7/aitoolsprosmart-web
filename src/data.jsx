@@ -32,7 +32,7 @@ export const BANNER_DATA = [
     image: godTierFistImg, 
     badge: "V10 ULTRA ENGINE // 150MP APEX PROTOCOL", 
     title: "150MP UNYIELDING SUPREMACY", 
-    subtitle: "The absolute zenith of digital asset engineering. Forged through the V10 Master Engine, this 150 Megapixel titan shatters the boundaries of commercial resolution. Experience microscopic obsidian fractures, hyper-luminous molten gold textures, and flawless sRGB micro-contrast. Engineered exclusively for elite fine-art printing, colossal billboards, and visionary global campaigns.",
+    subtitle: "Upgrade your visual authority instantly. The V10 Master Engine provides elite agencies and solo creators with 150-Megapixel, photorealistic mockups and digital assets. No rendering times. No compromise. Inject pure commercial perfection into your UI showcases, global campaigns, and large-scale print production.",
     duration: 168000, 
   },
   { 
