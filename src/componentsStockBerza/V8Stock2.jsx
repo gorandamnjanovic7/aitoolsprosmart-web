@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
-import { Zap, X, Aperture, Type, Layers, FolderArchive, FileText, Wallet, MonitorPlay, Link as LinkIcon, Image as ImageIcon, Images } from 'lucide-react';
+import { Zap, X, Aperture, Type, Layers, FolderArchive, FileText, Wallet, MonitorPlay, Link as LinkIcon, Image as ImageIcon, Images, ArrowLeft } from 'lucide-react';
 
 import { CLOUDINARY_UPLOAD_PRESET, CLOUDINARY_CLOUD_NAME } from '../data';
 import { db, auth } from '../firebase';
@@ -48,11 +48,11 @@ const V8Stock2 = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentUser, setCurrentUser] = useState(null); 
   
-  const [checkoutData, setCheckoutData] = useState({ isOpen: false, name: '', price: 0 });
+  // 🔥 FIX: DODAT zipLink U KASU 🔥
+  const [checkoutData, setCheckoutData] = useState({ isOpen: false, name: '', price: 0, zipLink: '' });
   const [loginRequiredData, setLoginRequiredData] = useState({ isOpen: false, paket: null, name: '', price: 0 });
   const [fullScreenImageUrl, setFullScreenImageUrl] = useState(null);
   
-  // STATE ZA FORMU
   const [isUploading, setIsUploading] = useState(false);
   const [isUploadingPrimer, setIsUploadingPrimer] = useState(false);
   const [primeriUrls, setPrimeriUrls] = useState([]); 
@@ -77,7 +77,6 @@ const V8Stock2 = () => {
 
   useEffect(() => {
     localStorage.setItem('v8_active_extra_tab', activeTab);
-    trackV8Action('tab_view', { event_category: 'Navigation', event_label: activeTab });
     
     if (!editingPaketId) {
       if (activeTab === 'ultra150_2') setNoviFormat('150MP ULTRA MYSTIC BUNDLE');
@@ -232,7 +231,8 @@ const V8Stock2 = () => {
     if (userNow) {
       await snimiKupcaUPayoneerBazu(userNow, paket);
       if (paket.paddleLink && paket.paddleLink.trim() !== "") { window.location.href = paket.paddleLink; return; }
-      setCheckoutData({ isOpen: true, name: fullName, price: finalPrice });
+      // 🔥 FIX: DODAT zipLink U KASU 🔥
+      setCheckoutData({ isOpen: true, name: fullName, price: finalPrice, zipLink: paket.zipLink });
       return;
     }
     setLoginRequiredData({ isOpen: true, paket, name: fullName, price: finalPrice });
@@ -245,21 +245,31 @@ const V8Stock2 = () => {
   };
 
   const getGlobalCena = (cena) => { const numCena = parseFloat(cena); return isNaN(numCena) ? "0.00" : numCena.toFixed(2); };
-  
-  // 🔥 FIX: OVO MORA BITI TU DA NE PUKNE KOMPONENTA
   const getAspectClass = (format) => { return (!format || format.includes('16:9 ONLY')) ? 'aspect-video' : 'aspect-square'; };
 
   const ultra150_2Paketi = paketi.filter(p => {
     const fmt = (p.format || "").toUpperCase();
-    return fmt.includes('150MP ULTRA MYSTIC BUNDLE') || fmt.includes('150MP ULTRA 2 BUNDLE');
+    const kat = (p.kategorijaEn || "").toUpperCase();
+    const naziv = (p.nazivEn || "").toUpperCase();
+    return fmt.includes('150MP ULTRA MYSTIC BUNDLE') || 
+           fmt.includes('150MP ULTRA 2 BUNDLE') || 
+           kat.includes('MYSTIC') || 
+           kat.includes('FANTASY') ||
+           naziv.includes('MYSTIC') || 
+           naziv.includes('FANTASY');
   });
 
   const ultra150_3Paketi = paketi.filter(p => {
     const fmt = (p.format || "").toUpperCase();
-    return fmt.includes('150MP ANCIENT CIVILIZATIONS') || fmt.includes('150MP ANCIENT CIVILIZATION');
+    const kat = (p.kategorijaEn || "").toUpperCase();
+    const naziv = (p.nazivEn || "").toUpperCase();
+    return fmt.includes('150MP ANCIENT CIVILIZATIONS') || 
+           fmt.includes('150MP ANCIENT CIVILIZATION') || 
+           fmt.includes('150MP ANCIENT') ||
+           kat.includes('ANCIENT') || 
+           naziv.includes('ANCIENT');
   });
 
-  // 🔥 FIX: VRATIO SAM TI ONAJ FULL MANIFEST SA OPISOM KAO NA GLAVNOJ BERZI
   const renderV8Manifest = (rezolucija) => {
     const specifikacije = [
       { t: `1. Lanczos Upscale`, d: "Direct premium interpolation.", insight: `Direct premium LANCZOS interpolation to approx. ${rezolucija} by aspect ratio.` },
@@ -283,13 +293,7 @@ const V8Stock2 = () => {
           {specifikacije.map((item, i) => {
             const isOpen = otvoreniOpisi.includes(i);
             return (
-              <div key={i} onClick={() => {
-                  setOtvoreniOpisi(prev => {
-                      const isNowOpen = !prev.includes(i);
-                      if (isNowOpen) { trackV8Action('manifest_read', { event_category: 'Engagement', event_label: item.t }); }
-                      return isNowOpen ? [...prev, i] : prev.filter(x => x !== i);
-                  });
-                }}
+              <div key={i} onClick={() => setOtvoreniOpisi(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i])}
                 className={`bg-white/5 border p-6 rounded-2xl transition-all duration-500 cursor-pointer relative overflow-hidden group ${isOpen ? (rezolucija.includes('ANCIENT') ? 'border-[#6B4224]/50 shadow-[0_0_15px_rgba(69,42,21,0.2)]' : 'border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.1)]') : 'border-white/5 hover:border-white/20'}`}
               >
                 <div className="relative z-10 flex justify-between items-center">
@@ -329,22 +333,26 @@ const V8Stock2 = () => {
       </Helmet>
 
       {/* POZADINSKI VIDEI */}
-      {activeTab === 'ultra150_2' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/v10_mystic_bg_9_16.mp4" />)}
-      {activeTab === 'ultra150_3' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/v10_ancient_bg_9_16.mp4" />)}
+      {activeTab === 'ultra150_2' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40 pointer-events-none" src="/v10_mystic_bg_9_16.mp4" />)}
+      {activeTab === 'ultra150_3' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40 pointer-events-none" src="/v10_ancient_bg_9_16.mp4" />)}
       <div className="fixed inset-0 bg-[#050505]/60 z-0 pointer-events-none"></div>
 
       <div className="relative z-10 max-w-[1800px] mx-auto w-full">
+        
         {/* BACK TO MARKETPLACE BUTTON */}
-        <div className="w-full flex justify-start mb-6">
-          <button onClick={() => navigate('/stock')} className="text-xs uppercase tracking-widest font-black bg-white/5 border border-white/10 px-5 py-2.5 rounded-xl hover:bg-white/10 transition-colors">
-            ← Back To Marketplace
+        <div className="w-full flex justify-start mb-6 relative z-[99999] pointer-events-auto">
+          <button 
+            onClick={() => window.location.href = '/stock'} 
+            className="flex items-center gap-3 bg-black/80 backdrop-blur-xl hover:bg-[#FF8C00] text-white hover:text-black border-2 border-white/20 hover:border-[#FF8C00] px-6 py-3 rounded-full transition-all shadow-[0_0_20px_rgba(0,0,0,0.8)] hover:shadow-[0_0_30px_rgba(255,140,0,0.6)] font-black uppercase text-[12px] tracking-widest cursor-pointer"
+          >
+            <ArrowLeft size={18} strokeWidth={3} /> RETURN TO MARKETPLACE
           </button>
         </div>
 
         <div className="relative w-full mb-16 rounded-[3rem] overflow-hidden border border-white/10 shadow-2xl">
-          {activeTab === 'ultra150_2' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40" src="/v10_mystic_box_16_9.mp4" />)}
-          {activeTab === 'ultra150_3' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40" src="/v10_ancient_box_16_9.mp4" />)}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/40 via-[#050505]/80 to-[#050505]"></div>
+          {activeTab === 'ultra150_2' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 pointer-events-none" src="/v10_mystic_box_16_9.mp4" />)}
+          {activeTab === 'ultra150_3' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 pointer-events-none" src="/v10_ancient_box_16_9.mp4" />)}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/40 via-[#050505]/80 to-[#050505] pointer-events-none"></div>
 
           <div className="relative z-10 text-center py-20 px-6">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter mb-4 text-white">
@@ -378,9 +386,9 @@ const V8Stock2 = () => {
           </div>
         </div>
 
-        {/* 🔥 ADMIN FORMA 🔥 */}
+        {/* ADMIN FORMA */}
         {isAdmin && (
-            <form onSubmit={dodajPaket} className="bg-[#0a0a0a] border-2 border-[#FF8C00]/50 rounded-[2.5rem] p-8 mb-16 shadow-[0_0_30px_rgba(255,140,0,0.1)] max-w-4xl mx-auto">
+            <form onSubmit={dodajPaket} className="bg-[#0a0a0a] border-2 border-[#FF8C00]/50 rounded-[2.5rem] p-8 mb-16 shadow-[0_0_30px_rgba(255,140,0,0.1)] max-w-4xl mx-auto relative z-50">
               <h2 className="text-xl font-black text-[#FF8C00] uppercase tracking-widest mb-8 flex items-center gap-2 border-b border-[#FF8C00]/20 pb-4">
                 <Zap className="w-6 h-6" /> {editingPaketId ? 'EDIT PACKAGE' : 'ADD NEW ZIP PACKAGE (V10 EXTRA)'}
               </h2>
@@ -527,18 +535,17 @@ const V8Stock2 = () => {
             </form>
           )}
 
-        <div className="flex flex-wrap justify-center gap-6 lg:gap-12 w-full mx-auto px-4 lg:px-8">
-          {/* 🔥 FIX: DODAT JE getAspectClass={getAspectClass} U OBE KOMPONENTE KAKO NE BI PUKLE 🔥 */}
+        <div className="flex flex-wrap justify-center gap-6 lg:gap-12 w-full mx-auto px-4 lg:px-8 relative z-10">
           {activeTab === 'ultra150_2' && (<> {renderV8Manifest("150MP (FANTASY)")} <V10UltraMysticAssets paketi={ultra150_2Paketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} kupljeniPaketiIds={kupljeniPaketiIds} /> </>)}
           {activeTab === 'ultra150_3' && (<> {renderV8Manifest("150MP (ANCIENT)")} <V10UltraAncientAssets paketi={ultra150_3Paketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} kupljeniPaketiIds={kupljeniPaketiIds} /> </>)}
         </div>
       </div>
       
-      {/* KOREKTNO POZICIONIRANI MODALI */}
       <LoginRequiredModal isOpen={loginRequiredData.isOpen} onClose={() => setLoginRequiredData({ isOpen: false, paket: null, name: '', price: 0 })} packageName={loginRequiredData.name} price={loginRequiredData.price} onLoginSuccess={async (user) => { if (loginRequiredData.paket) await otvoriCheckoutIliPaddle(user, loginRequiredData.paket); setLoginRequiredData({ isOpen: false, paket: null, name: '', price: 0 }); }} />
       <FullScreenLightbox imageUrl={fullScreenImageUrl} onClose={() => setFullScreenImageUrl(null)} />
       <AnimatePresence>
-        {checkoutData.isOpen && (<V8SecureCheckout isOpen={checkoutData.isOpen} productName={checkoutData.name} price={checkoutData.price} onClose={() => setCheckoutData({ isOpen: false, name: '', price: 0 })} />)}
+        {/* 🔥 FIX: DODAT zipLink U KASU 🔥 */}
+        {checkoutData.isOpen && (<V8SecureCheckout isOpen={checkoutData.isOpen} productName={checkoutData.name} price={checkoutData.price} zipLink={checkoutData.zipLink} onClose={() => setCheckoutData({ isOpen: false, name: '', price: 0, zipLink: '' })} />)}
       </AnimatePresence>
     </div>
   );
