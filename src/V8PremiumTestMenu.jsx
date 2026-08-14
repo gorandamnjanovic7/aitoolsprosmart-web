@@ -1,210 +1,379 @@
-// POČETAK FAJLA: PublicMenuTestQRMenu.jsx
+// POČETAK FAJLA: V8PremiumTestMenu.jsx
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { v8Toast } from './v8Utils';
 import { db } from './firebase';
-import { doc, getDoc } from 'firebase/firestore';
-import { motion } from 'framer-motion';
-import { Utensils, Coffee, Star, Info } from 'lucide-react';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { QrCode, Plus, Trash2, Save, Download, Utensils, Coffee, CheckCircle, Store, Palette, Coins, Star } from 'lucide-react';
 
-export default function PublicMenuTestQRMenu() {
-  const { menuId } = useParams();
-  const [menuData, setMenuData] = useState(null);
-  const [loading, setLoading] = useState(true);
+export default function V8PremiumTestMenu() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
-  // 🔥 MAKSIMALNO NABUDŽEN TEST JELOVNIK (SVE KATEGORIJE, CENE I OPISI) 🔥
-  const FALLBACK_DEMO_MENU = {
-    restaurantName: "AURA Fine Dining & Lounge",
-    currency: "€",
-    themeColor: "#eab308",
-    items: [
-      // --- HOUSE SPECIAL (STEAK & CAVIAR) ---
-      { category: "House Special", name: "Wagyu A5 Tomahawk (1kg)", desc: "Pure Japanese Wagyu beef, 24k gold leaf flakes, black truffle mash.", price: "240.00" },
-      { category: "House Special", name: "Beluga Caviar & Blinis", desc: "50g premium Beluga caviar served with traditional blinis, quail egg and crème fraîche.", price: "280.00" },
-      { category: "House Special", name: "Black Angus Ribeye (400g)", desc: "Dry-aged for 45 days, served with bone marrow and chimichurri sauce.", price: "85.00" },
-      { category: "House Special", name: "Chateaubriand for Two", desc: "Center cut tenderloin, roasted vegetables, red wine reduction.", price: "120.00" },
-      
-      // --- SOUPS & BROTHS (SUPE I ČORBE) ---
-      { category: "Soups & Broths", name: "Lobster Bisque", desc: "Creamy Maine lobster soup infused with cognac and fresh tarragon.", price: "28.00" },
-      { category: "Soups & Broths", name: "Traditional Veal Ragout (Teleća Čorba)", desc: "Slow-cooked veal broth with root vegetables and a touch of sour cream.", price: "14.00" },
-      { category: "Soups & Broths", name: "French Onion Soup", desc: "Caramelized onions, rich beef broth, topped with melted Gruyère cheese crostini.", price: "18.00" },
-      { category: "Soups & Broths", name: "Cream of Forest Mushroom", desc: "Wild porcini and chanterelle mushrooms, finished with white truffle oil.", price: "16.00" },
+  // 🔥 DEMO PODACI SPREMNI ZA REKLAMU I PREZENTACIJU KLIJENTU 🔥
+  const [restaurantName, setRestaurantName] = useState('AURA Fine Dining');
+  const [currency, setCurrency] = useState('€');
+  const [themeColor, setThemeColor] = useState('#eab308'); // Zlatna boja za luksuz
 
-      // --- SALADS (SALATE) ---
-      { category: "Salads", name: "Burrata & Heirloom Tomato", desc: "Fresh Italian burrata, organic heirloom tomatoes, basil pesto, 15-year balsamic glaze.", price: "22.00" },
-      { category: "Salads", name: "Caesar Royal", desc: "Crisp romaine, quail eggs, pancetta crisps, parmesan shavings, truffle dressing.", price: "24.00" },
-      { category: "Salads", name: "Mediterranean Octopus Salad", desc: "Slow-cooked octopus, cherry tomatoes, capers, kalamata olives, lemon vinaigrette.", price: "29.00" },
-      { category: "Salads", name: "Quinoa & Avocado Bowl", desc: "Organic quinoa, Hass avocado, pomegranate seeds, toasted almonds, citrus dressing.", price: "19.00" },
+  const [items, setItems] = useState([
+    { 
+      id: 1, 
+      category: 'House Special', 
+      name: 'Wagyu A5 Tomahawk', 
+      desc: 'Pure Japanese Wagyu beef, 24k gold leaf flakes, black truffle mash, charred asparagus.', 
+      price: '140.00' 
+    },
+    { 
+      id: 2, 
+      category: 'Food', 
+      name: 'Beluga Caviar Risotto', 
+      desc: 'Creamy arborio rice, wild mushrooms, topped with 15g of premium Beluga caviar.', 
+      price: '85.00' 
+    },
+    { 
+      id: 3, 
+      category: 'Drinks', 
+      name: 'Truffle Old Fashioned', 
+      desc: 'Aged bourbon, black truffle honey, angostura bitters, served in a smoked oak glass.', 
+      price: '24.00' 
+    },
+    { 
+      id: 4, 
+      category: 'Drinks', 
+      name: 'Casa Dragones Blanco', 
+      desc: 'Ultra-premium sipping tequila, crisp and smooth with hints of citrus and spice.', 
+      price: '35.00' 
+    },
+    { 
+      id: 5, 
+      category: 'Desserts', 
+      name: 'Dark Chocolate Sphere', 
+      desc: 'Valrhona chocolate, raspberry coulis center, edible gold, vanilla bean ice cream.', 
+      price: '22.00' 
+    }
+  ]);
+  
+  const [isSaving, setIsSaving] = useState(false);
+  const [generatedMenuId, setGeneratedMenuId] = useState(null);
 
-      // --- STARTERS (PREDJELA) ---
-      { category: "Starters", name: "Royal Beef Tartare", desc: "Hand-cut premium beef tenderloin, quail egg, capers, white truffle oil.", price: "45.00" },
-      { category: "Starters", name: "Hokkaido Scallops", desc: "Pan-seared sea scallops with saffron puree and crispy pancetta dust.", price: "38.00" },
-      { category: "Starters", name: "Foie Gras Terrine", desc: "Duck liver terrine, fig jam, toasted artisanal brioche.", price: "42.00" },
-      { category: "Starters", name: "Premium Cheese & Cured Meat Board", desc: "Selection of aged cheeses, San Daniele prosciutto, truffle honey.", price: "55.00" },
-
-      // --- PIZZA ---
-      { category: "Pizza", name: "Truffle Mushroom Pizza", desc: "White base, fior di latte, wild forest mushrooms, fresh black truffle shavings.", price: "32.00" },
-      { category: "Pizza", name: "Diavola Premium", desc: "San Marzano tomato sauce, spicy Calabrian salami, fresh basil, buffalo mozzarella.", price: "25.00" },
-      { category: "Pizza", name: "Margherita Extra", desc: "San Marzano D.O.P., mozzarella di bufala, fresh basil, extra virgin olive oil.", price: "19.00" },
-      { category: "Pizza", name: "Prosciutto e Rucola", desc: "Tomato sauce, mozzarella, 24-month aged prosciutto di Parma, fresh arugula, parmesan.", price: "27.00" },
-
-      // --- PASTA & RISOTTO ---
-      { category: "Pasta", name: "Lobster Linguine", desc: "Fresh handmade linguine, cherry tomatoes, chili, half-tail of Atlantic lobster.", price: "48.00" },
-      { category: "Pasta", name: "Truffle Gnocchi", desc: "Handmade potato gnocchi, rich parmesan cream sauce, topped with fresh black truffles.", price: "36.00" },
-      { category: "Pasta", name: "Carbonara Originale", desc: "Spaghetti, crispy guanciale, pecorino romano, egg yolks, black pepper.", price: "24.00" },
-      { category: "Pasta", name: "Seafood Saffron Risotto", desc: "Carnaroli rice, tiger prawns, mussels, calamari, infused with Spanish saffron.", price: "39.00" },
-
-      // --- MAINS (GLAVNA JELA) ---
-      { category: "Mains", name: "Chilean Sea Bass", desc: "Miso-glazed sea bass filet served on a bed of squid ink risotto.", price: "95.00" },
-      { category: "Mains", name: "Duck Breast à l'Orange", desc: "Pan-seared duck breast, sweet potato purée, Grand Marnier orange reduction.", price: "65.00" },
-      { category: "Mains", name: "Herb-Crusted Rack of Lamb", desc: "New Zealand lamb chops, mint pesto, roasted garlic puree.", price: "72.00" },
-      { category: "Mains", name: "Wild Caught Salmon Teriyaki", desc: "Grilled salmon fillet, homemade teriyaki glaze, wok-tossed bok choy.", price: "45.00" },
-
-      // --- SIDE DISHES (PRILOZI) ---
-      { category: "Side Dishes", name: "Truffle Mashed Potatoes", desc: "Creamy Yukon gold potatoes infused with white truffle butter.", price: "12.00" },
-      { category: "Side Dishes", name: "Grilled Asparagus", desc: "Jumbo asparagus spears, lemon zest, shaved parmesan.", price: "14.00" },
-      { category: "Side Dishes", name: "Sweet Potato Fries", desc: "Crispy sweet potato, rosemary salt, garlic aioli dip.", price: "9.00" },
-      { category: "Side Dishes", name: "Creamed Spinach", desc: "Baby spinach, nutmeg, rich cream sauce, parmesan crust.", price: "11.00" },
-
-      // --- DESSERTS (DEZERTI) ---
-      { category: "Desserts", name: "24k Gold Chocolate Sphere", desc: "Dark Belgian chocolate filled with hazelnut mousse, melted tableside.", price: "35.00" },
-      { category: "Desserts", name: "Tiramisu Authentico", desc: "Mascarpone cream, espresso-soaked ladyfingers, premium cocoa dusting.", price: "18.00" },
-      { category: "Desserts", name: "Pistachio Soufflé", desc: "Warm Sicilian pistachio soufflé, served with Madagascar vanilla bean ice cream.", price: "24.00" },
-      { category: "Desserts", name: "Classic Crème Brûlée", desc: "Rich vanilla custard base topped with a layer of hardened caramelized sugar.", price: "16.00" },
-
-      // --- DRINKS (PIĆA) ---
-      { category: "Drinks", name: "Dom Pérignon Vintage 2013", desc: "Luminous and elegant champagne with notes of citrus and toasted brioche.", price: "450.00" },
-      { category: "Drinks", name: "Macallan 18 Year Old", desc: "Single malt scotch whisky, sherry oak cask (50ml).", price: "65.00" },
-      { category: "Drinks", name: "Signature Roku Cocktail", desc: "Roku Gin, yuzu extract, smoked rosemary, and a touch of gold dust.", price: "25.00" },
-      { category: "Drinks", name: "Freshly Squeezed Orange Juice", desc: "100% organic oranges, cold-pressed.", price: "9.00" },
-      { category: "Drinks", name: "Acqua Panna (750ml)", desc: "Natural still mineral water from Tuscany.", price: "8.00" },
-      { category: "Drinks", name: "Premium Espresso", desc: "100% Arabica single-origin espresso shot.", price: "4.50" }
-    ]
+  // LOGIKA ZA DODAVANJE I BRISANJE STAVKI
+  const handleAddItem = () => {
+    setItems([...items, { id: Date.now(), category: 'Food', name: '', desc: '', price: '' }]);
   };
 
-  useEffect(() => {
-    const fetchMenu = async () => {
-      try {
-        if (!menuId || menuId === 'TEST') {
-          setMenuData(FALLBACK_DEMO_MENU);
-          setLoading(false);
-          return;
-        }
-        
-        const docRef = doc(db, 'v8_qr_menus', menuId);
-        const docSnap = await getDoc(docRef);
+  const handleRemoveItem = (id) => {
+    setItems(items.filter(item => item.id !== id));
+  };
 
-        if (docSnap.exists()) {
-          setMenuData(docSnap.data());
-        } else {
-          setMenuData(FALLBACK_DEMO_MENU);
-        }
-      } catch (error) {
-        console.error("Error fetching menu:", error);
-        setMenuData(FALLBACK_DEMO_MENU);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const handleItemChange = (id, field, value) => {
+    setItems(items.map(item => item.id === id ? { ...item, [field]: value } : item));
+  };
 
-    fetchMenu();
-  }, [menuId]);
+  // ČUVANJE U BAZU I GENERISANJE QR KODA
+  const handleGenerateQR = async () => {
+    if (!restaurantName.trim() || items.length === 0) {
+      if(typeof v8Toast !== 'undefined') v8Toast.error("Enter a restaurant name and at least one item!");
+      return;
+    }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-[#ff6b00] border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
+    setIsSaving(true);
+    try {
+      const docRef = await addDoc(collection(db, 'v8_qr_menus'), {
+        restaurantName,
+        currency,
+        themeColor,
+        items,
+        createdAt: serverTimestamp(),
+        status: 'active'
+      });
+      
+      setGeneratedMenuId(docRef.id);
+      if(typeof v8Toast !== 'undefined') v8Toast.success("Menu generated successfully! QR code is ready.");
+    } catch (error) {
+      console.error(error);
+      if(typeof v8Toast !== 'undefined') v8Toast.error("Error saving menu to the database.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
-  // Grupisanje stavki po kategorijama (da se lepo razdvoje na ekranu)
-  const groupedItems = menuData.items.reduce((acc, item) => {
-    if (!acc[item.category]) acc[item.category] = [];
-    acc[item.category].push(item);
-    return acc;
-  }, {});
+  const publicMenuUrl = `https://aitoolsprosmart.com/m/${generatedMenuId}`;
+  
+  const qrCodeImageUrl = generatedMenuId 
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=512x512&data=${encodeURIComponent(publicMenuUrl)}&color=000000&bgcolor=ffffff` 
+    : null;
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex justify-center selection:bg-[#ff6b00] selection:text-white relative z-50">
+    <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-[#ff6b00] selection:text-white pb-12 pt-24 relative z-10">
       
-      {/* MOBILNI KONTEJNER */}
-      <div className="w-full max-w-[480px] bg-[#0a0a0a] min-h-screen relative shadow-2xl pb-24 border-x border-[#111]">
-        
-        {/* POZADINSKI GLOW */}
-        <div 
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-48 blur-[80px] opacity-10 pointer-events-none" 
-          style={{ backgroundColor: menuData.themeColor }}
-        ></div>
-
-        {/* HEADER */}
-        <header className="pt-12 pb-8 px-6 text-center relative z-10 border-b border-[#222] bg-gradient-to-b from-black/80 to-transparent">
-          <h1 
-            className="text-2xl font-black uppercase tracking-widest mb-2 drop-shadow-md"
-            style={{ color: menuData.themeColor }}
-          >
-            {menuData.restaurantName}
+      {/* V8 Premium Header */}
+      <header className="p-6 border-b border-[#222222] bg-[#0a0a0a]/90 backdrop-blur-md z-40 shadow-xl max-w-[1600px] mx-auto rounded-2xl mb-8 flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-black uppercase tracking-widest text-white flex items-center gap-3">
+            <span className="w-2 h-8 bg-[#ff6b00] block shadow-[0_0_15px_rgba(255,107,0,0.8)]"></span>
+            QR MENU BUILDER
           </h1>
-          <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Premium Digital Menu</p>
-        </header>
+          <p className="text-zinc-400 mt-2 text-xs md:text-sm tracking-widest uppercase font-bold">
+            B2B SaaS Generator for Restaurants & Clubs (Live Demo)
+          </p>
+        </div>
+        <div className="hidden md:flex items-center gap-2 bg-[#ff6b00]/10 border border-[#ff6b00]/30 px-4 py-2 rounded-xl text-[#ff6b00]">
+          <QrCode size={20} />
+          <span className="font-black text-xs uppercase tracking-widest">SaaS Module</span>
+        </div>
+      </header>
 
-        {/* LISTA KATEGORIJA I STAVKI */}
-        <main className="px-4 py-6 space-y-10 relative z-10">
-          {Object.keys(groupedItems).map((category, idx) => (
-            <motion.div 
-              key={category}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
-            >
-              {/* NASLOV KATEGORIJE */}
-              <h2 className="text-white font-black text-lg uppercase tracking-widest mb-4 flex items-center gap-3 sticky top-0 bg-[#0a0a0a]/90 backdrop-blur-md py-2 z-20">
-                <span className="w-1.5 h-5 rounded-full" style={{ backgroundColor: menuData.themeColor }}></span>
-                {category}
+      <main className="max-w-[1600px] mx-auto px-4 md:px-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        {/* LEVA STRANA: FORMA ZA UNOS MENIJA */}
+        <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-6">
+          
+          <div className="bg-[#0a0a0a] border border-[#222] rounded-3xl p-6 md:p-8 shadow-2xl">
+            
+            {/* RESTAURANT SETTINGS */}
+            <div className="flex items-center gap-2 border-b border-[#222] pb-4 mb-6">
+              <Store size={18} className="text-[#ff6b00]" /> 
+              <h2 className="text-lg font-black uppercase tracking-widest text-zinc-300">Restaurant Settings</h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-10">
+              <div className="md:col-span-6">
+                <label className="text-zinc-500 font-bold uppercase tracking-widest text-[10px] mb-2 flex items-center gap-2">
+                  Restaurant / Club Name
+                </label>
+                <input 
+                  type="text" 
+                  value={restaurantName}
+                  onChange={(e) => setRestaurantName(e.target.value)}
+                  placeholder="e.g., Casa Dragones Lounge"
+                  className="w-full bg-[#111] border border-[#333] focus:border-[#ff6b00] text-white text-lg font-black px-4 py-3 rounded-xl outline-none transition-colors"
+                />
+              </div>
+
+              <div className="md:col-span-3">
+                <label className="text-zinc-500 font-bold uppercase tracking-widest text-[10px] mb-2 flex items-center gap-2">
+                  <Coins size={12} /> Currency
+                </label>
+                <select 
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value)}
+                  className="w-full bg-[#111] border border-[#333] focus:border-[#ff6b00] text-white text-lg font-black px-4 py-3 rounded-xl outline-none transition-colors"
+                >
+                  <option value="€">EUR (€)</option>
+                  <option value="$">USD ($)</option>
+                  <option value="RSD">RSD</option>
+                  <option value="£">GBP (£)</option>
+                </select>
+              </div>
+
+              <div className="md:col-span-3">
+                <label className="text-zinc-500 font-bold uppercase tracking-widest text-[10px] mb-2 flex items-center gap-2">
+                  <Palette size={12} /> Theme Color
+                </label>
+                <select 
+                  value={themeColor}
+                  onChange={(e) => setThemeColor(e.target.value)}
+                  className="w-full bg-[#111] border border-[#333] focus:border-[#ff6b00] text-white text-sm font-bold px-4 py-3.5 rounded-xl outline-none transition-colors"
+                >
+                  <option value="#ff6b00">Orange</option>
+                  <option value="#3b82f6">Blue</option>
+                  <option value="#10b981">Emerald</option>
+                  <option value="#a855f7">Purple</option>
+                  <option value="#eab308">Gold</option>
+                  <option value="#ef4444">Red</option>
+                </select>
+              </div>
+            </div>
+
+            {/* STAVKE MENIJA */}
+            <div className="flex items-center justify-between border-b border-[#222] pb-4 mb-6">
+              <h2 className="text-lg font-black uppercase tracking-widest text-zinc-300 flex items-center gap-2">
+                <Utensils size={18} className="text-[#ff6b00]" /> Menu Items
+              </h2>
+              <button 
+                onClick={handleAddItem}
+                className="flex items-center gap-2 bg-[#111] hover:bg-[#ff6b00]/20 border border-[#333] hover:border-[#ff6b00] text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase tracking-widest transition-all"
+              >
+                <Plus size={14} /> Add Item
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <AnimatePresence>
+                {items.map((item) => (
+                  <motion.div 
+                    key={item.id}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="bg-[#111] border border-[#222] rounded-2xl p-5 relative group transition-colors focus-within:border-[#ff6b00]/50 shadow-md"
+                  >
+                    <button 
+                      onClick={() => handleRemoveItem(item.id)}
+                      className="absolute top-4 right-4 text-zinc-600 hover:text-red-500 transition-colors"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 pr-8">
+                      <div>
+                        <label className="text-zinc-500 font-bold uppercase tracking-widest text-[9px] mb-1.5 block">Category</label>
+                        <select 
+                          value={item.category}
+                          onChange={(e) => handleItemChange(item.id, 'category', e.target.value)}
+                          className="w-full bg-black border border-[#333] rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-[#ff6b00]"
+                        >
+                          <option value="Drinks">🍹 Drinks</option>
+                          <option value="Food">🍔 Food</option>
+                          <option value="Desserts">🍰 Desserts</option>
+                          <option value="House Special">🔥 House Special</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-zinc-500 font-bold uppercase tracking-widest text-[9px] mb-1.5 block">Item Name</label>
+                        <input 
+                          type="text" 
+                          value={item.name}
+                          onChange={(e) => handleItemChange(item.id, 'name', e.target.value)}
+                          placeholder="e.g., Premium Burger"
+                          className="w-full bg-black border border-[#333] rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-[#ff6b00]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                      <div className="md:col-span-9">
+                        <label className="text-zinc-500 font-bold uppercase tracking-widest text-[9px] mb-1.5 block">Short Description</label>
+                        <textarea 
+                          value={item.desc}
+                          onChange={(e) => handleItemChange(item.id, 'desc', e.target.value)}
+                          placeholder="Ingredients, preparation method..."
+                          rows={2}
+                          className="w-full bg-black border border-[#333] rounded-lg px-3 py-2 text-zinc-300 text-xs outline-none focus:border-[#ff6b00] resize-none"
+                        />
+                      </div>
+                      <div className="md:col-span-3">
+                        <label className="text-zinc-500 font-bold uppercase tracking-widest text-[9px] mb-1.5 block">Price</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 font-black">{currency}</span>
+                          <input 
+                            type="text" 
+                            value={item.price}
+                            onChange={(e) => handleItemChange(item.id, 'price', e.target.value)}
+                            placeholder="e.g., 25.00"
+                            className="w-full bg-black border border-[#333] rounded-lg pl-8 pr-3 py-2 text-[#ff6b00] font-black text-sm outline-none focus:border-[#ff6b00]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+
+        {/* DESNA STRANA: PREVIEW I QR KOD */}
+        <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-6 sticky top-[120px]">
+          
+          {/* AKCIJSKI PANEL (GENERISANJE) */}
+          <div className="bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-[#ff6b00]/30 rounded-3xl p-6 shadow-[0_0_30px_rgba(255,107,0,0.1)]">
+            {!generatedMenuId ? (
+              <div className="flex flex-col items-center text-center">
+                <QrCode size={48} className="text-[#ff6b00] mb-4 opacity-50" />
+                <h3 className="text-white font-black uppercase tracking-widest mb-2">Save Menu For Client</h3>
+                <p className="text-zinc-400 text-xs mb-6">Once saved, you will receive a unique QR code ready for table printing.</p>
+                <button 
+                  onClick={handleGenerateQR}
+                  disabled={isSaving}
+                  className="w-full bg-[#ff6b00] hover:bg-orange-500 text-black font-black uppercase tracking-widest py-4 rounded-xl shadow-[0_0_20px_rgba(255,107,0,0.4)] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {isSaving ? 'Generating database...' : <><Save size={18} /> GENERATE QR CODE</>}
+                </button>
+              </div>
+            ) : (
+              <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center text-center">
+                <div className="bg-white p-4 rounded-2xl mb-4 shadow-[0_0_40px_rgba(255,107,0,0.3)]">
+                  <img src={qrCodeImageUrl} alt="QR Code" className="w-48 h-48 object-contain" />
+                </div>
+                <div className="flex items-center gap-2 text-emerald-400 mb-2">
+                  <CheckCircle size={16} />
+                  <span className="font-black uppercase tracking-widest text-[11px]">Database Created</span>
+                </div>
+                <p className="text-zinc-500 text-[10px] mb-6 font-mono break-all px-4">{publicMenuUrl}</p>
+                
+                <a 
+                  href={qrCodeImageUrl} 
+                  download={`QR_Menu_${restaurantName.replace(/\s+/g, '_')}.png`}
+                  target="_blank" rel="noreferrer"
+                  className="w-full bg-zinc-100 hover:bg-white text-black font-black uppercase tracking-widest py-3.5 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 mb-3"
+                >
+                  <Download size={18} /> DOWNLOAD QR FOR PRINT
+                </a>
+
+                <button 
+                  onClick={() => setGeneratedMenuId(null)}
+                  className="text-zinc-500 hover:text-white text-[10px] font-bold uppercase tracking-widest underline transition-colors"
+                >
+                  ← Back to editing
+                </button>
+              </motion.div>
+            )}
+          </div>
+
+          {/* TELEFON PREVIEW (LIVE DEMO) */}
+          <div className="bg-black border-[12px] border-zinc-900 rounded-[2.5rem] overflow-hidden aspect-[9/19] shadow-2xl relative flex flex-col max-h-[600px] mx-auto w-full max-w-[320px] ring-1 ring-white/10">
+            {/* Notch */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-zinc-900 rounded-b-2xl z-50"></div>
+            
+            <div className="bg-[#0a0a0a] flex-1 overflow-y-auto custom-scrollbar pt-10 pb-6 px-4 relative">
+              {/* Pozadinski glow efekat zasnovan na boji teme */}
+              <div 
+                className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-32 blur-[50px] opacity-20 pointer-events-none" 
+                style={{ backgroundColor: themeColor }}
+              ></div>
+
+              {/* Ime Restorana - Menja boju prema temi */}
+              <h2 
+                className="text-center font-black uppercase tracking-widest text-lg mb-6 border-b border-[#222] pb-4 transition-colors relative z-10"
+                style={{ color: themeColor }}
+              >
+                {restaurantName || 'Your Restaurant'}
               </h2>
 
-              {/* JELA U TOJ KATEGORIJI */}
-              <div className="flex flex-col gap-4">
-                {groupedItems[category].map((item, itemIdx) => (
-                  <div key={itemIdx} className="bg-[#111] p-4 rounded-2xl border border-[#222] shadow-lg">
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="text-zinc-100 font-bold text-sm uppercase leading-tight pr-4 flex items-center gap-1">
-                        {category === 'House Special' && <Star size={14} style={{ color: menuData.themeColor }} fill={menuData.themeColor} />}
-                        {item.name}
-                      </h3>
-                      <span className="font-black text-sm shrink-0 drop-shadow-md" style={{ color: menuData.themeColor }}>
-                        {menuData.currency} {item.price}
+              <div className="flex flex-col gap-4 relative z-10">
+                {items.map((item, idx) => (
+                  <div key={idx} className="bg-[#111] p-3 rounded-xl border border-[#222] hover:border-white/10 transition-colors shadow-lg">
+                    <div className="flex justify-between items-start mb-1.5">
+                      <h4 className="text-white font-bold text-sm uppercase leading-tight truncate mr-2 flex items-center gap-1">
+                        {item.category === 'House Special' && <Star size={12} style={{ color: themeColor }} fill={themeColor} />}
+                        {item.name || 'Item Name'}
+                      </h4>
+                      
+                      {/* Cena - Menja boju prema temi i prikazuje odabranu valutu */}
+                      <span className="font-black text-sm shrink-0 drop-shadow-md" style={{ color: themeColor }}>
+                        {currency} {item.price ? `${item.price}` : '0.00'}
                       </span>
                     </div>
-                    {item.desc && (
-                      <p className="text-zinc-400 text-xs leading-relaxed font-medium">
-                        {item.desc}
-                      </p>
-                    )}
+                    <span className="text-zinc-600 text-[8px] uppercase tracking-widest font-black mb-1.5 block">{item.category}</span>
+                    <p className="text-zinc-400 text-[10px] leading-relaxed line-clamp-2">{item.desc || 'Item description will appear here...'}</p>
                   </div>
                 ))}
               </div>
-            </motion.div>
-          ))}
-        </main>
+            </div>
+            
+            {/* Navigacija na dnu telefona */}
+            <div className="bg-[#111] border-t border-[#222] p-3 flex justify-around relative z-20 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
+              <Utensils size={18} style={{ color: themeColor }} className="drop-shadow-md" />
+              <Coffee size={18} className="text-zinc-600" />
+            </div>
+          </div>
 
-        {/* BOTTOM NAVIGATION BARIĆ */}
-        <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-[#0a0a0a]/90 backdrop-blur-xl border-t border-[#222] p-4 flex justify-around items-center z-50">
-          <button className="flex flex-col items-center gap-1 opacity-100" style={{ color: menuData.themeColor }}>
-            <Utensils size={20} />
-            <span className="text-[9px] font-black uppercase tracking-widest">Menu</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 text-zinc-500 hover:text-white transition-colors">
-            <Coffee size={20} />
-            <span className="text-[9px] font-black uppercase tracking-widest">Call Staff</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 text-zinc-500 hover:text-white transition-colors">
-            <Info size={20} />
-            <span className="text-[9px] font-black uppercase tracking-widest">Info</span>
-          </button>
         </div>
 
-      </div>
+      </main>
     </div>
   );
 }
-// KRAJ FAJLA: PublicMenuTestQRMenu.jsx
+// KRAJ FAJLA: V8PremiumTestMenu.jsx
