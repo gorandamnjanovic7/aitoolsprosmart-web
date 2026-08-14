@@ -25,21 +25,34 @@
     <meta name="twitter:description" content="Mathematical cinematic environments and hyper-realistic device mockups engineered for elite B2B presentations." />
     <meta name="twitter:image" content="/mocup_11.webp" />
 
-    <!-- Google tag (gtag.js) - GLAVNA SKRIPTA KOJA UČITAVA SVE -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-86XYNNT6H8"></script>
+    <!-- 🔥 PAMETNA GOOGLE ANALITIKA SA ZASTITOM ZA DEVELOPERA 🔥 -->
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
+      // Proveravamo da li je u tvom Chrome-u aktiviran tajni ključ
+      const isDeveloper = localStorage.getItem('developer_mode') === 'true';
 
-      // 1. Tvoja postojeća Google Analytics 4 (GA4)
-      gtag('config', 'G-86XYNNT6H8');
-      
-      // 2. Tvoj stari Google Ads ID 
-      gtag('config', 'AW-8776444421');
+      if (!isDeveloper) {
+        // AKO NIJE DEVELOPER (pravi klijent): Učitavamo skriptu i šaljemo podatke
+        var script = document.createElement('script');
+        script.async = true;
+        script.src = 'https://www.googletagmanager.com/gtag/js?id=G-86XYNNT6H8';
+        document.head.appendChild(script);
 
-      // 3. 🔥 NAŠ NOVI ADS ID: Neophodan da bi V8 konverzije radile 🔥
-      gtag('config', 'AW-377804713');
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        // 1. Tvoja postojeća Google Analytics 4 (GA4)
+        gtag('config', 'G-86XYNNT6H8');
+        
+        // 2. Tvoj stari Google Ads ID 
+        gtag('config', 'AW-8776444421');
+
+        // 3. 🔥 NAŠ NOVI ADS ID: Neophodan da bi V8 konverzije radile 🔥
+        gtag('config', 'AW-377804713');
+      } else {
+        // AKO JESI DEVELOPER: Google Analytics se uopšte ne učitava
+        console.log('🚧 V10 Developer Mode: Google Analitika i Ads praćenje su potpuno ISKLJUČENI za tebe. Testiraj Security Checkout bez brige oko lažnih konverzija.');
+      }
     </script>
 
     <!-- 🔥 POSTHOG ANALITIKA I SESSION REPLAY 🔥 -->
