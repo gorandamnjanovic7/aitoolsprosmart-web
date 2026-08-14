@@ -60,8 +60,10 @@ import { NotificationListener, NotificationModal } from './NotificationSystem';
 
 // 🔥 NOVI IMPORT: Portfolio 🔥
 import Portfolio from './Portfolio';
-// 🔥 NOVI IMPORT: Premium QR Menu 🔥
-import V8PremiumMenu from './V8PremiumMenu';
+
+// 🔥 AŽURIRANI IMPORTI ZA PREMIUM QR MENI 🔥
+import V8PremiumTestMenu from './V8PremiumTestMenu';
+import PublicMenuTestQRMenu from './PublicMenuTestQRMenu';
 
 if (typeof window !== 'undefined') {
   if ('scrollRestoration' in window.history) { window.history.scrollRestoration = 'manual'; }
@@ -467,6 +469,9 @@ function AppContent({ appsData, refreshData }) {
 
   const [isDesktop, setIsDesktop] = useState(true);
 
+  // 🔥 LOGIKA ZA SKRIVANJE MENIJA KADA SE OTVORI PUBLIC QR MENI 🔥
+  const isPublicMenuRoute = location.pathname.startsWith('/m/');
+
   useEffect(() => {
     const checkScreen = () => setIsDesktop(window.innerWidth >= 1024);
     checkScreen(); 
@@ -623,11 +628,13 @@ function AppContent({ appsData, refreshData }) {
           {isBooting && <FullScreenBoot key="boot" onComplete={() => { setIsBooting(false); window.scrollTo(0,0); }} />}
         </AnimatePresence>
         
-        <V8Navbar handleHomeClick={handleHomeClick} />
-        <V8AdminLiveNotifier />
-        <V8UnlockModal />
+        {/* SAKRIVAMO GLAVNE KOMPONENTE SAJTA AKO SMO U QR MENIJU */}
+        {!isPublicMenuRoute && <V8Navbar handleHomeClick={handleHomeClick} />}
+        {!isPublicMenuRoute && <V8AdminLiveNotifier />}
+        {!isPublicMenuRoute && <V8UnlockModal />}
         
-        <div className="flex-1 text-left pt-20">
+        {/* SKIDAMO TOP PADDING KAKO BI MENI IŠAO DO KRAJA EKRANA GORE */}
+        <div className={`flex-1 text-left ${isPublicMenuRoute ? '' : 'pt-20'}`}>
           <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
            <Routes location={location} key={location.pathname}>
               <Route path="/" element={<V8PageWrapper><HomePage apps={appsData} openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
@@ -666,26 +673,26 @@ function AppContent({ appsData, refreshData }) {
               <Route path="/refund" element={<V8PageWrapper><V8Refund /></V8PageWrapper>} />
               <Route path="/media" element={<V8PageWrapper><V8MediaViewer /></V8PageWrapper>} />
 
-              {/* 🔥 NOVA PORTFOLIO RUTA 🔥 */}
               <Route path="/portfolio" element={<V8PageWrapper><Portfolio /></V8PageWrapper>} />
-              {/* 🔥 NOVA PREMIUM MENU RUTA 🔥 */}
-              <Route path="/premium-menu" element={<V8PageWrapper><V8PremiumMenu /></V8PageWrapper>} />
+              
+              {/* 🔥 NOVE RUTE ZA QR MENI 🔥 */}
+              <Route path="/premium-menu" element={<V8PageWrapper><V8PremiumTestMenu /></V8PageWrapper>} />
+              <Route path="/m/:menuId" element={<PublicMenuTestQRMenu />} />
             </Routes>
           </AnimatePresence>
         </div>
         
-        <SmartScrollButton />
-        <V8ContactWidget />
+        {/* SAKRIVAMO DONJE KOMPONENTE SAJTA AKO SMO U QR MENIJU */}
+        {!isPublicMenuRoute && <SmartScrollButton />}
+        {!isPublicMenuRoute && <V8ContactWidget />}
         
-        {/* PAUZIRANO UGC AVATAR: {isDesktop && <UgcAvatar />} */}
-
-        {isDesktop && (
+        {!isPublicMenuRoute && isDesktop && (
           <div id="v8-counter-container">
             <VisitorCounter />
           </div>
         )}
 
-        <V8Footer />
+        {!isPublicMenuRoute && <V8Footer />}
 
         <LoginRequiredModal
           isOpen={loginRequiredData.isOpen}
