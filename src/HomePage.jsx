@@ -1,4 +1,4 @@
-// START OF FILE: HomePage.jsx
+// POČETAK FAJLA: HomePage.jsx
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -7,6 +7,7 @@ import { Helmet } from 'react-helmet-async';
 import HeroBanner from './HeroBanner';
 import B2BProtocols from './B2BProtocols';
 import VerticalCardsBox from './VerticalCardsBox'; 
+import QRMenuPromo from './QRMenuPromo'; // 🔥 Import za reklamu QR Menija
 import IntelProtocols from './IntelProtocols';
 import SaasPromo from './SaasPromo'; 
 import UnlockTheBeast from './UnlockTheBeast'; 
@@ -14,7 +15,7 @@ import EnhancerPromo from './EnhancerPromo';
 import StockBundles from './StockBundles';
 import Marketplace from './Marketplace';
 
-export default function HomePage({ apps = [] }) {
+export default function HomePage({ apps = [] }) { // POČETAK FUNKCIJE: HomePage
   const location = useLocation();
 
   useEffect(() => { 
@@ -31,11 +32,17 @@ export default function HomePage({ apps = [] }) {
       <HeroBanner />
       
       <div className="max-w-7xl mx-auto px-6 text-left">
+        
+        {/* ENTERPRISE SOLUTIONS SEKCIJA */}
         <B2BProtocols />
         
-        {/* 🔥 VERTICAL CARDS BOX MOUNTED HERE 🔥 */}
         <div className="my-16">
           <VerticalCardsBox />
+        </div>
+        
+        {/* 🔥 REKLAMA ZA QR MENI (Spuštena tačno ispod Enterprise Solutions) 🔥 */}
+        <div className="mb-16">
+          <QRMenuPromo />
         </div>
         
         <IntelProtocols />
@@ -47,5 +54,5 @@ export default function HomePage({ apps = [] }) {
       </div>
     </>
   );
-}
-// END OF FILE: HomePage.jsx
+} // KRAJ FUNKCIJE: HomePage
+// KRAJ FAJLA: HomePage.jsx

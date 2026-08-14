@@ -393,6 +393,20 @@ const V8Navbar = ({ handleHomeClick }) => {
                     <span className="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded font-black tracking-widest shadow-[0_0_8px_rgba(16,185,129,0.5)] shrink-0">NEW</span>
                   </Link>
 
+                  {/* 🔥 DODATO: PREMIUM QR MENU 🔥 */}
+                  <Link to="/premium-menu" className="flex items-center justify-between gap-2 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-purple-500/30 mt-1">
+                    <div className="flex items-center gap-4 overflow-hidden">
+                      <div className="bg-purple-500/20 p-2 rounded-lg group-hover/item:bg-purple-500/40 transition-colors shadow-[0_0_10px_rgba(168,85,247,0.3)] shrink-0">
+                        <ScanLine className="w-5 h-5 text-purple-400 transition-transform group-hover/item:scale-110" />
+                      </div>
+                      <div className="flex flex-col text-left overflow-hidden">
+                        <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-purple-400 transition-all drop-shadow-md truncate">PREMIUM QR MENU</span>
+                        <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Smart Hospitality</span>
+                      </div>
+                    </div>
+                    <span className="text-[8px] bg-purple-600 text-white px-2 py-0.5 rounded font-black tracking-widest shadow-[0_0_8px_rgba(168,85,247,0.5)] shrink-0">B2B</span>
+                  </Link>
+
                   <div className="mt-1 grid w-full min-w-0 grid-cols-2 gap-2 sm:gap-3">
                     <Link to="/seedance" onClick={() => window.scrollTo(0,0)} className="bg-[#0a0a0a] border border-green-500/20 p-3 sm:p-4 rounded-2xl flex flex-col items-center text-center gap-2 w-full overflow-hidden">
                       <MonitorPlay className="w-6 h-6 sm:w-8 sm:h-8 text-green-500 shrink-0" />
@@ -825,6 +839,20 @@ const V8Navbar = ({ handleHomeClick }) => {
                       </div>
                     </div>
                     <span className="text-[7px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 ml-2">NEW</span>
+                  </Link>
+
+                  {/* 🔥 DODATO: PREMIUM QR MENU (MOBILNI) 🔥 */}
+                  <Link to="/premium-menu" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border border-purple-500/30 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                      <div className="bg-purple-500/10 p-2.5 sm:p-3 rounded-xl shrink-0">
+                        <ScanLine className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500" />
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full">Premium QR Menu</span>
+                        <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">Smart Hospitality</span>
+                      </div>
+                    </div>
+                    <span className="text-[7px] bg-purple-600 text-white px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 ml-2 shadow-[0_0_8px_rgba(168,85,247,0.5)]">B2B</span>
                   </Link>
 
                   <div className="mt-1 grid w-full min-w-0 grid-cols-2 gap-2 sm:gap-3">

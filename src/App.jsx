@@ -60,6 +60,8 @@ import { NotificationListener, NotificationModal } from './NotificationSystem';
 
 // 🔥 NOVI IMPORT: Portfolio 🔥
 import Portfolio from './Portfolio';
+// 🔥 NOVI IMPORT: Premium QR Menu 🔥
+import V8PremiumMenu from './V8PremiumMenu';
 
 if (typeof window !== 'undefined') {
   if ('scrollRestoration' in window.history) { window.history.scrollRestoration = 'manual'; }
@@ -69,6 +71,7 @@ if (typeof window !== 'undefined') {
 
 let currentAudio = null; 
 
+// POČETAK FUNKCIJE playV8Sound
 export const playV8Sound = (type) => {
   try {
     if (currentAudio) {
@@ -88,7 +91,9 @@ export const playV8Sound = (type) => {
     }
   } catch (err) {}
 };
+// KRAJ FUNKCIJE playV8Sound
 
+// POČETAK FUNKCIJE stopV8Sound
 export const stopV8Sound = () => {
   try {
     if (currentAudio) {
@@ -98,6 +103,7 @@ export const stopV8Sound = () => {
     }
   } catch (err) {}
 };
+// KRAJ FUNKCIJE stopV8Sound
 
 export const v8AlertModal = {
   listeners: [],
@@ -117,6 +123,7 @@ const MOJA_IP = "213.196.99.2";
 let globalUserIp = "";
 const currentSessionId = Math.random().toString(36).substring(2, 15);
 
+// POČETAK FUNKCIJE fetchUserIp
 const fetchUserIp = async () => {
   try {
     const res = await fetch('https://api.ipify.org?format=json');
@@ -124,7 +131,9 @@ const fetchUserIp = async () => {
   } catch (err) {}
 };
 fetchUserIp();
+// KRAJ FUNKCIJE fetchUserIp
 
+// POČETAK FUNKCIJE logAnalyticsEvent
 export const logAnalyticsEvent = async (type, details) => {
   const currentUser = auth.currentUser;
   if (!currentUser) return; 
@@ -142,6 +151,7 @@ export const logAnalyticsEvent = async (type, details) => {
     }); 
   } catch (err) {}
 };
+// KRAJ FUNKCIJE logAnalyticsEvent
 
 export const v8Toast = {
   listeners: [],
@@ -156,6 +166,7 @@ export const v8Toast = {
   subscribe: (l) => { v8Toast.listeners.push(l); return () => v8Toast.listeners = v8Toast.listeners.filter(cb => cb !== l); }
 };
 
+// POČETAK FUNKCIJE V8ToastContainer
 const V8ToastContainer = () => {
   const [toasts, setToasts] = useState([]);
   useEffect(() => {
@@ -177,7 +188,9 @@ const V8ToastContainer = () => {
     </div>
   );
 };
+// KRAJ FUNKCIJE V8ToastContainer
 
+// POČETAK FUNKCIJE V8AlertModalContainer
 const V8AlertModalContainer = () => {
   const [modalData, setModalData] = useState(null);
 
@@ -268,7 +281,9 @@ const V8AlertModalContainer = () => {
     </AnimatePresence>
   );
 };
+// KRAJ FUNKCIJE V8AlertModalContainer
 
+// POČETAK FUNKCIJE AdminLiveSalesTracker
 const AdminLiveSalesTracker = () => {
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -349,7 +364,9 @@ const AdminLiveSalesTracker = () => {
 
   return null;
 };
+// KRAJ FUNKCIJE AdminLiveSalesTracker
 
+// POČETAK FUNKCIJE V8PageWrapper
 const V8PageWrapper = ({ children }) => {
   return (
     <>
@@ -360,7 +377,9 @@ const V8PageWrapper = ({ children }) => {
     </>
   );
 };
+// KRAJ FUNKCIJE V8PageWrapper
 
+// POČETAK FUNKCIJE FullScreenBoot
 const FullScreenBoot = ({ onComplete }) => {
   const [progress, setProgress] = useState(0);
   const [isIgniting, setIsIgniting] = useState(false);
@@ -404,7 +423,9 @@ const FullScreenBoot = ({ onComplete }) => {
     </motion.div>
   );
 };
+// KRAJ FUNKCIJE FullScreenBoot
 
+// POČETAK FUNKCIJE SmartScrollButton
 const SmartScrollButton = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   
@@ -427,7 +448,9 @@ const SmartScrollButton = () => {
     </button>
   );
 };
+// KRAJ FUNKCIJE SmartScrollButton
 
+// POČETAK FUNKCIJE AppContent
 function AppContent({ appsData, refreshData }) {
   const IS_MAINTENANCE = false;
 
@@ -645,6 +668,8 @@ function AppContent({ appsData, refreshData }) {
 
               {/* 🔥 NOVA PORTFOLIO RUTA 🔥 */}
               <Route path="/portfolio" element={<V8PageWrapper><Portfolio /></V8PageWrapper>} />
+              {/* 🔥 NOVA PREMIUM MENU RUTA 🔥 */}
+              <Route path="/premium-menu" element={<V8PageWrapper><V8PremiumMenu /></V8PageWrapper>} />
             </Routes>
           </AnimatePresence>
         </div>
@@ -694,7 +719,9 @@ function AppContent({ appsData, refreshData }) {
     </div>
   );
 }
+// KRAJ FUNKCIJE AppContent
 
+// POČETAK FUNKCIJE App
 export default function App() {
   const [appsData, setAppsData] = useState([]);
 
@@ -719,4 +746,5 @@ export default function App() {
     </HelmetProvider>
   );
 }
+// KRAJ FUNKCIJE App
 // KRAJ FAJLA: App.jsx
