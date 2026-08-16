@@ -16,17 +16,49 @@ export default function PublicMenuTestQRMenu() {
 
     const fetchMenu = async () => {
       try {
-        // 🔥 FALLBACK ZA TESTIRANJE 🔥
+        // 🔥 FALLBACK ZA TESTIRANJE - FULL PREMIUM IZLOG 🔥
         if (menuId === "TEST-QR-PREVIEW-123") {
           setTimeout(() => {
             setMenuData({
-              restaurantName: "AURA Fine Dining (TEST)",
+              restaurantName: "AURA Fine Dining",
               themeColor: "#FF8C00",
               currency: "€",
               items: [
-                { category: "Breakfast", name: "Royal Eggs Benedict", price: "24.00", desc: "Perfectly poached heritage eggs, Norwegian smoked salmon.", img: "https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&w=600&q=80" },
-                { category: "Breakfast", name: "Truffle Avocado Toast", price: "19.00", desc: "Smashed Hass avocado, shaved black summer truffle.", img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80" },
-                { category: "Main Courses", name: "Wagyu Tomahawk", price: "150.00", desc: "Premium A5 Wagyu beef, grilled over open flame.", img: "https://images.unsplash.com/photo-1547592165-e1d17f1a0655?auto=format&fit=crop&w=600&q=80" }
+                // BREAKFAST & BRUNCH
+                { category: "Breakfast & Brunch", name: "Royal Eggs Benedict", price: "24.00", desc: "Perfectly poached heritage eggs, Norwegian smoked salmon, hollandaise.", img: "https://images.unsplash.com/photo-1608039829572-78524f79c4c7?auto=format&fit=crop&w=800&q=80", isSignature: false },
+                { category: "Breakfast & Brunch", name: "Truffle Avocado Toast", price: "19.00", desc: "Smashed Hass avocado, shaved black summer truffle, artisanal sourdough.", img: "https://images.unsplash.com/photo-1541519227354-08fa5d50c44d?auto=format&fit=crop&w=800&q=80", isSignature: false },
+                { category: "Breakfast & Brunch", name: "Beluga Caviar Blini", price: "85.00", desc: "Traditional buckwheat blinis, crème fraîche, 30g premium Beluga caviar.", img: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=800&q=80", isSignature: true },
+                { category: "Breakfast & Brunch", name: "Lobster Omelette", price: "32.00", desc: "Three-egg French folded omelette, butter-poached lobster tail, fine chives.", img: "https://images.unsplash.com/photo-1510693662589-51478fb4830b?auto=format&fit=crop&w=800&q=80", isSignature: false },
+
+                // STARTERS & APPETIZERS
+                { category: "Starters & Appetizers", name: "Beef Tartare", price: "28.00", desc: "Hand-cut prime beef tenderloin, quail egg, truffle emulsion, crostini.", img: "https://images.unsplash.com/photo-1626804475297-41609ea004eb?auto=format&fit=crop&w=800&q=80", isSignature: false },
+                { category: "Starters & Appetizers", name: "Seared Foie Gras", price: "35.00", desc: "Pan-seared foie gras, fig compote, aged balsamic reduction, toasted brioche.", img: "https://images.unsplash.com/photo-1626804475157-19069d2f2d4e?auto=format&fit=crop&w=800&q=80", isSignature: true },
+                { category: "Starters & Appetizers", name: "Oysters Rockefeller", price: "26.00", desc: "Half-dozen freshly shucked oysters, spinach, Pernod, hollandaise glaze.", img: "https://images.unsplash.com/photo-1599839619722-39751411ea63?auto=format&fit=crop&w=800&q=80", isSignature: false },
+                { category: "Starters & Appetizers", name: "Carpaccio di Manzo", price: "24.00", desc: "Thinly sliced raw beef, wild arugula, 24-month Parmigiano-Reggiano, cold-pressed olive oil.", img: "https://images.unsplash.com/photo-1619881589316-56c7f9e6b587?auto=format&fit=crop&w=800&q=80", isSignature: false },
+                { category: "Starters & Appetizers", name: "Burrata & Heirloom Tomato", price: "22.00", desc: "Fresh Apulian burrata, organic heirloom tomatoes, basil oil, balsamic pearls.", img: "https://images.unsplash.com/photo-1608897013039-887f214b985c?auto=format&fit=crop&w=800&q=80", isSignature: false },
+
+                // FISH & SEAFOOD
+                { category: "Fish & Seafood", name: "Chilean Sea Bass", price: "55.00", desc: "Miso-glazed sea bass, bok choy, dashi broth, enoki mushrooms.", img: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=800&q=80", isSignature: true },
+                { category: "Fish & Seafood", name: "Grilled Octopus", price: "34.00", desc: "Charred Mediterranean octopus, smoked paprika potato crema, chimichurri.", img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=800&q=80", isSignature: false },
+                { category: "Fish & Seafood", name: "Pan-Seared Scallops", price: "38.00", desc: "Hokkaido scallops, cauliflower purée, crispy pancetta, caper butter.", img: "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=800&q=80", isSignature: false },
+                { category: "Fish & Seafood", name: "Lobster Thermidor", price: "85.00", desc: "Whole Maine lobster, cognac cream sauce, Gruyère cheese crust.", img: "https://images.unsplash.com/photo-1553659971-f01207815844?auto=format&fit=crop&w=800&q=80", isSignature: true },
+
+                // PASTA & RISOTTO
+                { category: "Pasta & Risotto", name: "Truffle Risotto", price: "36.00", desc: "Acquerello rice, wild mushrooms, fresh black truffle shavings, Parmigiano.", img: "https://images.unsplash.com/photo-1563245415-321ab9681bc0?auto=format&fit=crop&w=800&q=80", isSignature: true },
+                { category: "Pasta & Risotto", name: "Lobster Linguine", price: "45.00", desc: "Artisanal linguine, half lobster, cherry tomatoes, white wine, bisque reduction.", img: "https://images.unsplash.com/photo-1563379926898-05f4575a45d8?auto=format&fit=crop&w=800&q=80", isSignature: false },
+                { category: "Pasta & Risotto", name: "Saffron Seafood Risotto", price: "42.00", desc: "Carnaroli rice, Spanish saffron, wild-caught prawns, mussels, calamari.", img: "https://images.unsplash.com/photo-1601000676451-b0db313daef1?auto=format&fit=crop&w=800&q=80", isSignature: false },
+
+                // MAIN COURSES (MEAT)
+                { category: "Main Courses", name: "Wagyu Tomahawk", price: "150.00", desc: "Premium A5 Wagyu beef, grilled over open flame, smoked sea salt.", img: "https://images.unsplash.com/photo-1594046243098-0fceea9d451e?auto=format&fit=crop&w=800&q=80", isSignature: true },
+                { category: "Main Courses", name: "Herb-Crusted Rack of Lamb", price: "48.00", desc: "New Zealand lamb rack, pistachio crust, mint pea purée, red wine jus.", img: "https://images.unsplash.com/photo-1514516871322-a9b05d15c7e0?auto=format&fit=crop&w=800&q=80", isSignature: false },
+                { category: "Main Courses", name: "Duck Magret", price: "42.00", desc: "Pan-roasted duck breast, wild berry reduction, celery root mousseline.", img: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=800&q=80", isSignature: false },
+                { category: "Main Courses", name: "Filet Mignon Rossini", price: "65.00", desc: "Prime center-cut filet, pan-seared foie gras, black truffle shavings, Madeira sauce.", img: "https://images.unsplash.com/photo-1544025162-8353383827d0?auto=format&fit=crop&w=800&q=80", isSignature: true },
+
+                // DESSERTS
+                { category: "Desserts", name: "Valrhona Chocolate Fondant", price: "18.00", desc: "Warm molten chocolate cake, Madagascar vanilla bean gelato, gold leaf.", img: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=800&q=80", isSignature: true },
+                { category: "Desserts", name: "Classic Crème Brûlée", price: "15.00", desc: "Tahitian vanilla custard, caramelized sugar crust, fresh seasonal berries.", img: "https://images.unsplash.com/photo-1590137876181-2a5a7e340308?auto=format&fit=crop&w=800&q=80", isSignature: false },
+                { category: "Desserts", name: "Tiramisu al Limoncello", price: "16.00", desc: "Savoiardi biscuits, Amalfi lemon mascarpone cream, white chocolate shavings.", img: "https://images.unsplash.com/photo-1571115177098-24ec42ed204d?auto=format&fit=crop&w=800&q=80", isSignature: false },
+                { category: "Desserts", name: "Artisanal Cheese Board", price: "28.00", desc: "Selection of aged European cheeses, honeycomb, candied walnuts, fig jam.", img: "https://images.unsplash.com/photo-1631379577038-518296ec519c?auto=format&fit=crop&w=800&q=80", isSignature: false }
               ]
             });
             setLoading(false);
