@@ -5,6 +5,24 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import { Utensils, AlertTriangle, Loader2, Crown } from 'lucide-react';
 
+// 🔥 GENERATOR ZA SVIH 146 ITALIJANSKIH JELA ZA TELEFON 🔥
+const ITALIAN_ALL_ITEMS = [
+  ...["Spaghetti Carbonara", "Cacio e Pepe", "Amatriciana", "Pasta alla Gricia", "Spaghetti Aglio e Olio", "Pasta al Pesto Genovese", "Tagliatelle al Ragù Bolognese", "Pappardelle al Cinghiale", "Lasagne alla Bolognese", "Lasagne al Pesto", "Penne all’Arrabbiata", "Pasta alla Norma", "Pasta Puttanesca", "Linguine alle Vongole", "Spaghetti ai Frutti di Mare", "Fettuccine al Tartufo", "Orecchiette con Cime di Rapa", "Trofie al Pesto", "Ravioli Ricotta e Spinaci", "Ravioli al Tartufo", "Tortellini in Brodo", "Tortellini alla Panna", "Cannelloni", "Gnocchi al Pomodoro", "Gnocchi al Gorgonzola", "Gnocchi alla Sorrentina"].map(name => ({ category: "Pasta", name, price: "18.00", desc: `Authentic Italian ${name} prepared with DOP ingredients and cold-pressed olive oil.`, img: "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=600&q=80", isSignature: false })),
+  ...["Pizza Margherita", "Pizza Marinara", "Pizza Napoletana", "Pizza Diavola", "Pizza Capricciosa", "Pizza Quattro Formaggi", "Pizza Quattro Stagioni", "Pizza Prosciutto e Funghi", "Pizza Ortolana", "Pizza Bianca", "Pizza al Tartufo", "Calzone", "Focaccia Genovese", "Focaccia Barese", "Focaccia al Rosmarino"].map(name => ({ category: "Pizza & Focaccia", name, price: "15.00", desc: `Wood-fired ${name} baked to perfection with a crisp, airy crust.`, img: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=600&q=80", isSignature: false })),
+  ...["Risotto alla Milanese", "Risotto ai Funghi Porcini", "Risotto al Tartufo", "Risotto ai Frutti di Mare", "Risotto al Limone", "Risotto alla Zucca", "Risotto al Radicchio", "Risotto al Gorgonzola", "Risi e Bisi", "Arancini Siciliani", "Supplì"].map(name => ({ category: "Risotto & Rice Dishes", name, price: "22.00", desc: `Creamy and rich ${name}, a comforting Italian classic.`, img: "https://images.unsplash.com/photo-1563245415-321ab9681bc0?auto=format&fit=crop&w=600&q=80", isSignature: false })),
+  ...["Ossobuco alla Milanese", "Saltimbocca alla Romana", "Cotoletta alla Milanese", "Pollo alla Cacciatora", "Vitello Tonnato", "Brasato al Barolo", "Bistecca alla Fiorentina", "Porchetta", "Polpette al Sugo", "Involtini di Carne", "Spezzatino di Manzo", "Abbacchio alla Romana", "Salsiccia e Peperoni"].map(name => ({ category: "Meat Dishes", name, price: "32.00", desc: `Tender, slow-cooked ${name} with signature Italian herbs and wine.`, img: "https://images.unsplash.com/photo-1544025162-8353383827d0?auto=format&fit=crop&w=600&q=80", isSignature: false })),
+  ...["Branzino al Forno", "Orata al Forno", "Fritto Misto di Mare", "Calamari Fritti", "Polpo alla Griglia", "Polpo e Patate", "Seppie al Nero", "Baccalà alla Vicentina", "Baccalà Mantecato", "Zuppa di Pesce", "Cacciucco", "Impepata di Cozze", "Cozze alla Marinara", "Gamberi all’Aglio"].map(name => ({ category: "Fish & Seafood", name, price: "35.00", desc: `Fresh Mediterranean ${name}, bringing the taste of the Italian coast to your table.`, img: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=600&q=80", isSignature: false })),
+  ...["Minestrone", "Ribollita", "Pasta e Fagioli", "Pasta e Ceci", "Zuppa Toscana", "Acquacotta", "Stracciatella alla Romana", "Pappa al Pomodoro", "Brodo con Tortellini", "Zuppa di Lenticchie"].map(name => ({ category: "Soups & Traditional", name, price: "14.00", desc: `Warm, hearty, and authentic rustic ${name}.`, img: "https://images.unsplash.com/photo-1548943487-a2e4b43b485f?auto=format&fit=crop&w=600&q=80", isSignature: false })),
+  ...["Bruschetta al Pomodoro", "Bruschetta ai Funghi", "Caprese", "Prosciutto e Melone", "Prosciutto di Parma con Burrata", "Burrata con Pomodorini", "Carpaccio di Manzo", "Carpaccio di Tonno", "Vitello Tonnato", "Crostini Toscani", "Olive Ascolane", "Mozzarella in Carrozza", "Fiori di Zucca Fritti", "Melanzane alla Parmigiana", "Arancini"].map(name => ({ category: "Appetizers & Antipasti", name, price: "16.00", desc: `Perfect Italian starter: ${name} served fresh with the finest ingredients.`, img: "https://images.unsplash.com/photo-1608897013039-887f214b985c?auto=format&fit=crop&w=600&q=80", isSignature: false })),
+  ...["Parmigiana di Melanzane", "Caponata Siciliana", "Peperonata", "Carciofi alla Romana", "Carciofi alla Giudia", "Verdure Grigliate", "Patate al Rosmarino", "Zucchine alla Scapece", "Fagioli all’Uccelletto", "Insalata Panzanella"].map(name => ({ category: "Vegetables & Side Dishes", name, price: "12.00", desc: `Fresh, seasonal ${name}, a perfect accompaniment.`, img: "https://images.unsplash.com/photo-1599557456721-e73082531a7b?auto=format&fit=crop&w=600&q=80", isSignature: false })),
+  ...["Panino con Porchetta", "Panino Caprese", "Panino Prosciutto e Mozzarella", "Piadina Romagnola", "Tramezzini", "Lampredotto", "Panzerotti", "Pizza al Taglio", "Sfincione Siciliano", "Focaccia Ripiena"].map(name => ({ category: "Sandwiches & Street Food", name, price: "10.00", desc: `Delicious, authentic Italian street food: ${name}.`, img: "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=600&q=80", isSignature: false })),
+  ...["Tiramisù", "Panna Cotta", "Cannoli Siciliani", "Cassata Siciliana", "Sfogliatella", "Babà Napoletano", "Zeppole", "Bomboloni", "Crostata", "Torta Caprese", "Torta della Nonna", "Zabaione", "Semifreddo", "Affogato", "Gelato", "Granita Siciliana", "Amaretti", "Cantucci", "Panettone", "Pandoro", "Torrone", "Ricciarelli"].map(name => ({ category: "Desserts", name, price: "12.00", desc: `Sweet, traditional Italian ${name} to perfectly finish your meal.`, img: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=600&q=80", isSignature: false }))
+];
+
+ITALIAN_ALL_ITEMS[0].isSignature = true; 
+ITALIAN_ALL_ITEMS[26].isSignature = true; 
+ITALIAN_ALL_ITEMS[124].isSignature = true;
+
 export default function PublicMenuTestQRMenu() {
   const { menuId } = useParams();
   const [menuData, setMenuData] = useState(null);
@@ -16,7 +34,7 @@ export default function PublicMenuTestQRMenu() {
 
     const fetchMenu = async () => {
       try {
-        // 🔥 FALLBACK ZA TESTIRANJE - FULL PREMIUM IZLOG 🔥
+        // 🔥 FALLBACK 1: AURA (Ako baci grešku pri generisanju glavnog)
         if (menuId === "TEST-QR-PREVIEW-123") {
           setTimeout(() => {
             setMenuData({
@@ -24,41 +42,8 @@ export default function PublicMenuTestQRMenu() {
               themeColor: "#FF8C00",
               currency: "€",
               items: [
-                // BREAKFAST & BRUNCH
-                { category: "Breakfast & Brunch", name: "Royal Eggs Benedict", price: "24.00", desc: "Perfectly poached heritage eggs, Norwegian smoked salmon, hollandaise.", img: "https://images.unsplash.com/photo-1608039829572-78524f79c4c7?auto=format&fit=crop&w=800&q=80", isSignature: false },
-                { category: "Breakfast & Brunch", name: "Truffle Avocado Toast", price: "19.00", desc: "Smashed Hass avocado, shaved black summer truffle, artisanal sourdough.", img: "https://images.unsplash.com/photo-1541519227354-08fa5d50c44d?auto=format&fit=crop&w=800&q=80", isSignature: false },
-                { category: "Breakfast & Brunch", name: "Beluga Caviar Blini", price: "85.00", desc: "Traditional buckwheat blinis, crème fraîche, 30g premium Beluga caviar.", img: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=800&q=80", isSignature: true },
-                { category: "Breakfast & Brunch", name: "Lobster Omelette", price: "32.00", desc: "Three-egg French folded omelette, butter-poached lobster tail, fine chives.", img: "https://images.unsplash.com/photo-1510693662589-51478fb4830b?auto=format&fit=crop&w=800&q=80", isSignature: false },
-
-                // STARTERS & APPETIZERS
-                { category: "Starters & Appetizers", name: "Beef Tartare", price: "28.00", desc: "Hand-cut prime beef tenderloin, quail egg, truffle emulsion, crostini.", img: "https://images.unsplash.com/photo-1626804475297-41609ea004eb?auto=format&fit=crop&w=800&q=80", isSignature: false },
-                { category: "Starters & Appetizers", name: "Seared Foie Gras", price: "35.00", desc: "Pan-seared foie gras, fig compote, aged balsamic reduction, toasted brioche.", img: "https://images.unsplash.com/photo-1626804475157-19069d2f2d4e?auto=format&fit=crop&w=800&q=80", isSignature: true },
-                { category: "Starters & Appetizers", name: "Oysters Rockefeller", price: "26.00", desc: "Half-dozen freshly shucked oysters, spinach, Pernod, hollandaise glaze.", img: "https://images.unsplash.com/photo-1599839619722-39751411ea63?auto=format&fit=crop&w=800&q=80", isSignature: false },
-                { category: "Starters & Appetizers", name: "Carpaccio di Manzo", price: "24.00", desc: "Thinly sliced raw beef, wild arugula, 24-month Parmigiano-Reggiano, cold-pressed olive oil.", img: "https://images.unsplash.com/photo-1619881589316-56c7f9e6b587?auto=format&fit=crop&w=800&q=80", isSignature: false },
-                { category: "Starters & Appetizers", name: "Burrata & Heirloom Tomato", price: "22.00", desc: "Fresh Apulian burrata, organic heirloom tomatoes, basil oil, balsamic pearls.", img: "https://images.unsplash.com/photo-1608897013039-887f214b985c?auto=format&fit=crop&w=800&q=80", isSignature: false },
-
-                // FISH & SEAFOOD
-                { category: "Fish & Seafood", name: "Chilean Sea Bass", price: "55.00", desc: "Miso-glazed sea bass, bok choy, dashi broth, enoki mushrooms.", img: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=800&q=80", isSignature: true },
-                { category: "Fish & Seafood", name: "Grilled Octopus", price: "34.00", desc: "Charred Mediterranean octopus, smoked paprika potato crema, chimichurri.", img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=800&q=80", isSignature: false },
-                { category: "Fish & Seafood", name: "Pan-Seared Scallops", price: "38.00", desc: "Hokkaido scallops, cauliflower purée, crispy pancetta, caper butter.", img: "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=800&q=80", isSignature: false },
-                { category: "Fish & Seafood", name: "Lobster Thermidor", price: "85.00", desc: "Whole Maine lobster, cognac cream sauce, Gruyère cheese crust.", img: "https://images.unsplash.com/photo-1553659971-f01207815844?auto=format&fit=crop&w=800&q=80", isSignature: true },
-
-                // PASTA & RISOTTO
-                { category: "Pasta & Risotto", name: "Truffle Risotto", price: "36.00", desc: "Acquerello rice, wild mushrooms, fresh black truffle shavings, Parmigiano.", img: "https://images.unsplash.com/photo-1563245415-321ab9681bc0?auto=format&fit=crop&w=800&q=80", isSignature: true },
-                { category: "Pasta & Risotto", name: "Lobster Linguine", price: "45.00", desc: "Artisanal linguine, half lobster, cherry tomatoes, white wine, bisque reduction.", img: "https://images.unsplash.com/photo-1563379926898-05f4575a45d8?auto=format&fit=crop&w=800&q=80", isSignature: false },
-                { category: "Pasta & Risotto", name: "Saffron Seafood Risotto", price: "42.00", desc: "Carnaroli rice, Spanish saffron, wild-caught prawns, mussels, calamari.", img: "https://images.unsplash.com/photo-1601000676451-b0db313daef1?auto=format&fit=crop&w=800&q=80", isSignature: false },
-
-                // MAIN COURSES (MEAT)
-                { category: "Main Courses", name: "Wagyu Tomahawk", price: "150.00", desc: "Premium A5 Wagyu beef, grilled over open flame, smoked sea salt.", img: "https://images.unsplash.com/photo-1594046243098-0fceea9d451e?auto=format&fit=crop&w=800&q=80", isSignature: true },
-                { category: "Main Courses", name: "Herb-Crusted Rack of Lamb", price: "48.00", desc: "New Zealand lamb rack, pistachio crust, mint pea purée, red wine jus.", img: "https://images.unsplash.com/photo-1514516871322-a9b05d15c7e0?auto=format&fit=crop&w=800&q=80", isSignature: false },
-                { category: "Main Courses", name: "Duck Magret", price: "42.00", desc: "Pan-roasted duck breast, wild berry reduction, celery root mousseline.", img: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=800&q=80", isSignature: false },
-                { category: "Main Courses", name: "Filet Mignon Rossini", price: "65.00", desc: "Prime center-cut filet, pan-seared foie gras, black truffle shavings, Madeira sauce.", img: "https://images.unsplash.com/photo-1544025162-8353383827d0?auto=format&fit=crop&w=800&q=80", isSignature: true },
-
-                // DESSERTS
-                { category: "Desserts", name: "Valrhona Chocolate Fondant", price: "18.00", desc: "Warm molten chocolate cake, Madagascar vanilla bean gelato, gold leaf.", img: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=800&q=80", isSignature: true },
-                { category: "Desserts", name: "Classic Crème Brûlée", price: "15.00", desc: "Tahitian vanilla custard, caramelized sugar crust, fresh seasonal berries.", img: "https://images.unsplash.com/photo-1590137876181-2a5a7e340308?auto=format&fit=crop&w=800&q=80", isSignature: false },
-                { category: "Desserts", name: "Tiramisu al Limoncello", price: "16.00", desc: "Savoiardi biscuits, Amalfi lemon mascarpone cream, white chocolate shavings.", img: "https://images.unsplash.com/photo-1571115177098-24ec42ed204d?auto=format&fit=crop&w=800&q=80", isSignature: false },
-                { category: "Desserts", name: "Artisanal Cheese Board", price: "28.00", desc: "Selection of aged European cheeses, honeycomb, candied walnuts, fig jam.", img: "https://images.unsplash.com/photo-1631379577038-518296ec519c?auto=format&fit=crop&w=800&q=80", isSignature: false }
+                { category: "Breakfast", name: "Royal Eggs Benedict", price: "24.00", desc: "Perfectly poached heritage eggs, Norwegian smoked salmon.", img: "https://images.unsplash.com/photo-1608039829572-78524f79c4c7?auto=format&fit=crop&w=800&q=80" },
+                { category: "Main Courses", name: "Wagyu Tomahawk", price: "150.00", desc: "Premium A5 Wagyu beef, grilled over open flame.", img: "https://images.unsplash.com/photo-1594046243098-0fceea9d451e?auto=format&fit=crop&w=800&q=80" }
               ]
             });
             setLoading(false);
@@ -66,7 +51,20 @@ export default function PublicMenuTestQRMenu() {
           return;
         }
 
-        // PRAVO POVLAČENJE IZ BAZE
+        // 🔥 FALLBACK 2: ITALIAN DEMO (146 JELA) 🔥
+        if (menuId === "TEST-QR-ITALIAN-123") {
+          setTimeout(() => {
+            setMenuData({
+              restaurantName: "Ristorante L'Antica Ricetta",
+              themeColor: "#eab308", // Zlatna
+              currency: "€",
+              items: ITALIAN_ALL_ITEMS
+            });
+            setLoading(false);
+          }, 800);
+          return;
+        }
+
         const docRef = doc(db, 'v8_qr_menus', menuId);
         const docSnap = await getDoc(docRef);
 
@@ -76,7 +74,6 @@ export default function PublicMenuTestQRMenu() {
           setError(true);
         }
       } catch (err) {
-        console.error("Greška pri povlačenju menija:", err);
         setError(true);
       } finally {
         setLoading(false);
@@ -105,7 +102,6 @@ export default function PublicMenuTestQRMenu() {
     );
   }
 
-  // Grupisanje jela po kategorijama
   const groupedItems = menuData.items.reduce((acc, item) => {
     if (!acc[item.category]) acc[item.category] = [];
     acc[item.category].push(item);
@@ -119,8 +115,6 @@ export default function PublicMenuTestQRMenu() {
 
   return (
     <div className="min-h-[100dvh] bg-[#050505] font-sans selection:bg-[#FF8C00] selection:text-white pb-16 relative z-50">
-      
-      {/* HEADER RESTORANA */}
       <div className="relative pt-12 pb-8 px-6 text-center overflow-hidden bg-[#0a0a0a] shadow-2xl mb-8">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-32 blur-[80px] opacity-20 pointer-events-none" style={{ backgroundColor: themeColor }}></div>
         <div className="relative z-10 flex flex-col items-center">
@@ -132,40 +126,26 @@ export default function PublicMenuTestQRMenu() {
         </div>
       </div>
 
-      {/* CONTINUOUS SCROLL LISTA (BEZ HARMONIKE) */}
       <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 flex flex-col">
         {categories.map((category) => (
           <div key={category} className="mb-12">
-            
-            {/* Naslov Kategorije (Odvajač) */}
             <div className="flex items-center gap-4 mb-6">
               <div className="h-px bg-white/10 flex-1"></div>
-              <h2 className="text-white font-black text-[15px] md:text-lg uppercase tracking-[0.2em]" style={{ color: themeColor }}>
+              <h2 className="text-white font-black text-[15px] md:text-lg uppercase tracking-[0.2em] text-center" style={{ color: themeColor }}>
                 {category}
               </h2>
               <div className="h-px bg-white/10 flex-1"></div>
             </div>
 
-            {/* Jela u Kategoriji */}
             <div className="flex flex-col gap-6">
               {groupedItems[category].map((item, idx) => (
                 <div key={idx} className="bg-[#0a0e17] rounded-3xl border border-white/5 overflow-hidden flex flex-col shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
-                  
-                  {/* Slika jela */}
                   {item.img && (
                     <div className="w-full h-56 relative bg-zinc-900">
-                      <img 
-                        src={item.img} 
-                        alt={item.name} 
-                        className="w-full h-full object-cover" 
-                        onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_IMAGE_URL; }} 
-                      />
-                      {/* Tamni prelaz ka tekstu */}
+                      <img src={item.img} alt={item.name} className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_IMAGE_URL; }} />
                       <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e17] via-[#0a0e17]/20 to-transparent"></div>
                     </div>
                   )}
-
-                  {/* Info o jelu */}
                   <div className="p-5 flex flex-col gap-2 relative z-10">
                     <div className="flex justify-between items-start gap-4">
                       <h3 className="text-white font-black text-[15px] md:text-base uppercase leading-tight flex items-start gap-1.5">
@@ -176,29 +156,20 @@ export default function PublicMenuTestQRMenu() {
                         {currency} {item.price}
                       </span>
                     </div>
-                    
-                    {item.desc && (
-                      <p className="text-zinc-400 text-xs leading-relaxed mt-1">
-                        {item.desc}
-                      </p>
-                    )}
+                    {item.desc && <p className="text-zinc-400 text-xs leading-relaxed mt-1">{item.desc}</p>}
                   </div>
-
                 </div>
               ))}
             </div>
-            
           </div>
         ))}
       </div>
 
-      {/* V8 WATERMARK NA DNU */}
       <div className="mt-8 w-full flex flex-col items-center justify-center opacity-40">
         <Crown size={16} className="text-zinc-500 mb-2" />
         <span className="text-[9px] font-black tracking-[0.2em] text-zinc-500 uppercase">Powered by V8 Engine</span>
       </div>
-      
     </div>
   );
 }
-// KRAJ FAJLA: PublicMenuTestQRMenu.jsx
+// KRAJ FAJLA: PublicMenuTestQRMenu.jsxs
