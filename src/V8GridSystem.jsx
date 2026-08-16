@@ -1,1614 +1,191 @@
 // POČETAK FAJLA: V8GridSystem.jsx
-import React, { useState, useEffect, useRef, useCallback, memo } from "react";
-import { Helmet } from 'react-helmet-async'; 
-import { Copy, RefreshCw, Zap, Lock, ShieldCheck, FileText, Code, Trash2, LayoutGrid, ChevronDown, Timer, Crown, Diamond, ArrowUpCircle, Download, CheckCircle, Cpu, Archive, X, Eye, Upload, Database, AlertTriangle } from "lucide-react";
-import { auth, db } from './firebase'; 
-import { doc, getDoc, setDoc, onSnapshot, collection, query, where, increment, serverTimestamp } from 'firebase/firestore';
-import { onAuthStateChanged } from "firebase/auth";
-import { v8Toast } from './v8Utils'; 
-import { motion, AnimatePresence } from 'framer-motion';
-import V8SecureCheckout from './V8SecureCheckout';
-import LoginRequiredModal from './LoginRequiredModal';
+import React, { useState, useEffect } from 'react';
+import { Crosshair, Cpu, Aperture, Sun, Settings, ShieldCheck, Database } from 'lucide-react';
+import { 
+  DEFAULT_CATEGORIES, 
+  SUB_CATEGORIES_DB, 
+  CAMERA_PRESETS, 
+  LIGHTING_PRESETS, 
+  STYLE_PRESETS 
+} from './V8_Database.js';
 
-import { DEFAULT_CATEGORIES, SUB_CATEGORIES_DB, DEFAULT_CATEGORIES_2, SUB_CATEGORIES_DB_2, DEFAULT_CATEGORIES_3, SUB_CATEGORIES_DB_3, DEFAULT_CATEGORIES_4, SUB_CATEGORIES_DB_4, STYLE_PRESETS, CAMERA_PRESETS, LIGHTING_PRESETS } from './V8_Database';
-
-// 🔥 GA4 ANALITIKA 🔥
-import { trackV8Action } from './utils/analytics';
-
-// --- HELPERS (ANTI-BLEED & STRICT GEOMETRY ENGINE) ---
-const DYNAMIC_ANGLES = ["Eye-level perspective", "High-angle shot", "Low-angle dynamic shot", "Extreme macro close-up", "Wide environmental frame", "Overhead top-down view", "Dutch angle", "Isometric perspective", "Shallow focus depth", "Direct front profile"];
-const DYNAMIC_MOODS = ["dramatic atmospheric", "clean studio isolated", "moody cinematic", "high-key bright", "vibrant color contrast", "golden hour natural", "harsh stark shadow", "soft ethereal diffused", "sharp rim-lit", "dark moody silhouette"];
-
-// POČETAK FUNKCIJE: seededRandom
-function seededRandom(seed) { 
-  const x = Math.sin(seed * 12.9898) * 43758.5453;
-  return x - Math.floor(x); 
-}
-// KRAJ FUNKCIJE: seededRandom
-
-// POČETAK FUNKCIJE: pick
-function pick(arr, seed) { 
-  return arr[Math.floor(seededRandom(seed) * arr.length) % arr.length]; 
-}
-// KRAJ FUNKCIJE: pick
-
-// POČETAK FUNKCIJE: seededShuffle
-function seededShuffle(array, seed) {
-  let s = seed;
-  const shuffled = [...array];
-  for (let k = shuffled.length - 1; k > 0; k--) {
-    s = Math.sin(s * 12.9898) * 43758.5453;
-    const r = Math.floor((s - Math.floor(s)) * (k + 1));
-    [shuffled[k], shuffled[r]] = [shuffled[r], shuffled[k]];
-  }
-  return shuffled;
-}
-// KRAJ FUNKCIJE: seededShuffle
-
-// POČETAK FUNKCIJE: autoDescription
-function autoDescription(category, originalIndex, seed, promptIndex, dbType = 1) {
-  // Za DB 5 - Ako korisnik nije kucao ništa, izbacujemo placeholder
-  if (dbType === 5 && (!category || category.trim() === "")) {
-     return "Awaiting custom input to generate V8 Smart Blueprint...";
-  }
-
-  const baseList = dbType === 1 ? DEFAULT_CATEGORIES : dbType === 2 ? DEFAULT_CATEGORIES_2 : dbType === 3 ? DEFAULT_CATEGORIES_3 : dbType === 4 ? DEFAULT_CATEGORIES_4 : [];
-  const subDb = dbType === 1 ? SUB_CATEGORIES_DB : dbType === 2 ? SUB_CATEGORIES_DB_2 : dbType === 3 ? SUB_CATEGORIES_DB_3 : dbType === 4 ? SUB_CATEGORIES_DB_4 : {};
-  
-  const baseCat = baseList[originalIndex] ? baseList[originalIndex].toLowerCase() : category.toLowerCase();
-  
-  const uniqueSeed = seed + (promptIndex * 13377) + (originalIndex * 9973);
-  
-  const camera = pick(CAMERA_PRESETS, uniqueSeed);
-  const lighting = pick(LIGHTING_PRESETS, uniqueSeed + 50);
-  const angle = pick(DYNAMIC_ANGLES, uniqueSeed + 150);
-  const mood = pick(DYNAMIC_MOODS, uniqueSeed + 250);
-
-  let finalSubject = category;
-  const matchedKey = Object.keys(subDb).find(k => k.toLowerCase() === category.toLowerCase());
-  
-  if (matchedKey && subDb[matchedKey] && subDb[matchedKey].length > 0) {
-      finalSubject = pick(subDb[matchedKey], uniqueSeed + 333);
-  }
-
-  let prefix = `${angle}, ${mood} environment. `;
-  let suffix = `ultra-detailed premium commercial image with ${lighting}, realistic materials, elegant composition, deep blacks, controlled highlights, subtle imperfections, anti-plastic realism, ${camera}.`;
-  
-  if (baseCat.includes("supercar") || baseCat.includes("car") || baseCat.includes("vehicle") || baseCat.includes("hoverbike") || baseCat.includes("submarine")) {
-     suffix = `cinematic automotive/machinery shot, debadged unbranded, sharp mechanical details, glossy reflections, dynamic environment, ${lighting}, luxury campaign look, ${camera}.`;
-  } else if (baseCat.includes("watch") || baseCat.includes("jewelry") || baseCat.includes("ring") || baseCat.includes("necklace") || baseCat.includes("product") || baseCat.includes("perfume") || baseCat.includes("tiara")) {
-     suffix = `ultra-luxury macro product photography, unbranded product, premium materials, sharp details, dark elegant studio background, ${lighting}, refined product-advertising finish, ${camera}.`;
-  } else if (baseCat.includes("villa") || baseCat.includes("jet") || baseCat.includes("fashion") || baseCat.includes("architecture") || baseCat.includes("resort") || baseCat.includes("library") || baseCat.includes("stadium") || baseCat.includes("pyramid") || baseCat.includes("laboratory")) {
-     suffix = `cinematic wide environment, moody atmosphere, rich textures, ${lighting}, high-end commercial editorial aesthetic, ${camera}.`;
-  } else if (baseCat.includes("salmon") || baseCat.includes("food") || baseCat.includes("dish") || baseCat.includes("cake") || baseCat.includes("splashing in espresso")) {
-     suffix = `premium food photography, beautifully plated dish on a clean studio surface, no background clutter, ${lighting}, highly appetizing culinary finish, ${camera}.`;
-  } else if (baseCat.includes("macro") || baseCat.includes("insect") || baseCat.includes("scale") || baseCat.includes("eye")) {
-     suffix = `hyper-macro photography, extreme close-up, microscopic details, focus stacking, sharp center focus, beautifully blurred background, ${lighting}, ${camera}.`;
-  }
-
-  return `${prefix} ${finalSubject}, ${suffix}`;
-}
-// KRAJ FUNKCIJE: autoDescription
-
-// POČETAK FUNKCIJE: makeSinglePrompt
-function makeSinglePrompt({ categories, seed, presetName, strictNoBrand, includeNegative, promptIndex, aspectRatio, selectedIndices, gridFormat, activeDB }) {
-  const preset = STYLE_PRESETS[presetName] || STYLE_PRESETS["Nano Banana 2 / Pro"];
-  const descriptions = categories.map((cat, i) => autoDescription(cat, selectedIndices[i], seed, promptIndex, activeDB));
-  
-  let rows, cols;
-  if (aspectRatio === "9:16") {
-      if (gridFormat === "2x6") { rows = 6; cols = 2; }
-      else if (gridFormat === "2x4") { rows = 4; cols = 2; }
-      else if (gridFormat === "2x3") { rows = 3; cols = 2; }
-      else { rows = 2; cols = 2; }
-  } else {
-      if (gridFormat === "2x6") { rows = 2; cols = 6; }
-      else if (gridFormat === "2x4") { rows = 2; cols = 4; }
-      else if (gridFormat === "2x3") { rows = 2; cols = 3; }
-      else { rows = 2; cols = 2; }
-  }
-
-  const totalPanels = rows * cols;
-  
-  const gridHeader = `Strict split-screen composition: A perfect ${cols}x${rows} grid layout containing EXACTLY ${totalPanels} distinct images. Arranged specifically in ${cols} vertical columns and ${rows} horizontal rows. Seamless transitions, no borders.`;
-  
-  const panelText = descriptions.slice(0, totalPanels).map((d,i) => `[Panel ${i+1}]: ${d}`).join(" | ");
-  const positiveStyle = `GLOBAL STYLE: ${preset.suffix}, pure cinematic realism, high-end commercial ad aesthetic, debadged, unbranded.`;
-
-  let negativeArr = ["collage", "moodboard", "varying sizes", "mixed sizes", "asymmetric layout", "merged sections", "overlapping", "white lines", "black lines", "borders", "margins", "frames", "picture within picture"];
-  
-  const wrongGrids = [
-      { p: 4, name: "2x2" },
-      { p: 6, name: "3x2" },
-      { p: 6, name: "2x3" },
-      { p: 8, name: "4x2" },
-      { p: 8, name: "2x4" },
-      { p: 9, name: "3x3" },
-      { p: 10, name: "5x2" },
-      { p: 12, name: "4x3" },
-      { p: 12, name: "3x4" },
-      { p: 16, name: "4x4" }
-  ];
-  
-  wrongGrids.forEach(g => {
-      if (g.p !== totalPanels) {
-          negativeArr.push(`${g.p} panels`, `${g.p} sections`, `${g.p} images`, `${g.name} grid layout`);
-      }
-  });
-
-  if (totalPanels === 12) {
-      negativeArr.push("4x3 grid layout", "3x4 grid layout", "3 columns and 4 rows", "4 columns and 3 rows");
-  }
-  
-  if (strictNoBrand) {
-      negativeArr.push("text", "watermark", "logo", "brand", "typography", "letters", "signature", "badge", "emblem", "words");
-  }
-  
-  if (includeNegative) {
-      negativeArr.push("hybrid objects", "surrealism", "plastic", "blurry", "cropped", "out of frame", "split objects");
-  }
-
-  const finalNegative = ` NEGATIVE PROMPT: ${negativeArr.join(", ")}.`;
-  const hashSeed = seed + (promptIndex * 888);
-  const hash = Math.abs(Math.sin(hashSeed * 12.9898) * 10000000).toString(16).substring(0, 8).toUpperCase();
-  
-  return `${gridHeader} Contents: ${panelText}. ${positiveStyle}${finalNegative} --ar ${aspectRatio} --style raw --v 6.0 --seed ${hashSeed} [V8-HASH: ${hash}]`;
-}
-// KRAJ FUNKCIJE: makeSinglePrompt
-
-// POČETAK FUNKCIJE: makeVariations
-function makeVariations(options) {
-  const panelsPerPrompt = options.gridFormat === "2x6" ? 12 : options.gridFormat === "2x4" ? 8 : options.gridFormat === "2x3" ? 6 : 4;
-  return Array.from({ length: 100 }, (_, promptIndex) => {
-    const currentSeed = options.seed + promptIndex * 101;
-    const selectedIndices = seededShuffle(Array.from({ length: panelsPerPrompt }, (_, idx) => idx), currentSeed);
-    return makeSinglePrompt({ ...options, categories: selectedIndices.map(idx => options.categories[idx]), seed: currentSeed, promptIndex, selectedIndices, gridFormat: options.gridFormat });
-  });
-}
-// KRAJ FUNKCIJE: makeVariations
-
-// POČETAK FUNKCIJE: MemoizedPanel
-const MemoizedPanel = memo(({ index, category, autoDesc, subOptions, updateCategory, openDropdown, setOpenDropdown }) => (
-  <div className="rounded-2xl border border-white/5 bg-[#050505]/90 p-4 md:p-5 relative group hover:border-orange-500/30 transition-colors flex flex-col">
-    <div className="absolute top-0 right-0 bg-white/5 text-zinc-500 text-[8px] font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest">PANEL: {index + 1}</div>
-    <label className="mb-2 block text-[9px] font-black uppercase tracking-widest text-blue-500 mt-2">SUBJECT CATEGORY</label>
-    <div className="relative mb-4">
-        <div className="v8-magic-border w-full">
-            <div className="v8-magic-inner flex items-center justify-between px-3 md:px-4 py-2.5 md:py-3 cursor-pointer" onClick={(e) => { e.stopPropagation(); if(subOptions && subOptions.length > 0) setOpenDropdown(openDropdown === index ? null : index); }}>
-                <input value={category} onChange={(e) => updateCategory(index, e.target.value)} className="bg-transparent text-white font-bold text-xs outline-none w-full cursor-text" placeholder={`Subject for panel ${index + 1}`} onClick={(e) => e.stopPropagation()} />
-                {subOptions && subOptions.length > 0 && (
-                  <ChevronDown size={14} className={`text-orange-500 transition-transform ${openDropdown === index ? 'rotate-180' : ''}`} />
-                )}
-            </div>
-        </div>
-        {openDropdown === index && subOptions && subOptions.length > 0 && (
-          <div className="absolute z-[999] top-[105%] left-0 w-full bg-[#0a0a0a] border border-orange-500/50 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.9)] max-h-[220px] overflow-y-auto v8-gradient-scrollbar py-2">
-            {subOptions.map((sub, subIdx) => (
-              <div 
-                key={subIdx} 
-                className="px-4 py-2 text-xs font-bold text-zinc-300 hover:bg-orange-500/20 hover:text-white cursor-pointer transition-colors border-b border-white/5 last:border-0"
-                onClick={(e) => { e.stopPropagation(); updateCategory(index, sub); setOpenDropdown(null); }}
-              >
-                {sub}
-              </div>
-            ))}
-          </div>
-        )}
-    </div>
-    <label className="mb-2 block text-[9px] font-black uppercase tracking-widest text-emerald-500">V8 SMART BLUEPRINT</label>
-    <div className="v8-magic-border flex-grow w-full">
-        <textarea readOnly value={autoDesc} className="v8-magic-inner p-3 font-mono text-[10px] md:text-[11px] text-zinc-400 leading-relaxed outline-none resize-none v8-gradient-scrollbar h-full min-h-[100px] md:min-h-[120px] cursor-not-allowed opacity-80" />
-    </div>
-  </div>
-));
-// KRAJ FUNKCIJE: MemoizedPanel
-
-// POČETAK FUNKCIJE: V8GridSystem
 export default function V8GridSystem() {
-  const [activeDB, setActiveDB] = useState(1);
-
-  const [categories1, setCategories1] = useState(() => JSON.parse(localStorage.getItem('v8_categories1')) || DEFAULT_CATEGORIES);
-  const [openDropdown1, setOpenDropdown1] = useState(null);
+  // State za selektovane parametre
+  const [selectedCategory, setSelectedCategory] = useState(DEFAULT_CATEGORIES[0]);
+  const [selectedSub, setSelectedSub] = useState(SUB_CATEGORIES_DB[DEFAULT_CATEGORIES[0]][0]);
+  const [selectedCamera, setSelectedCamera] = useState(CAMERA_PRESETS[0]);
+  const [selectedLighting, setSelectedLighting] = useState(LIGHTING_PRESETS[0]);
+  const [selectedStyle, setSelectedStyle] = useState(Object.keys(STYLE_PRESETS)[0]);
   
-  const [categories2, setCategories2] = useState(() => JSON.parse(localStorage.getItem('v8_categories2')) || DEFAULT_CATEGORIES_2);
-  const [openDropdown2, setOpenDropdown2] = useState(null);
+  // Finalni generisani prompt
+  const [generatedPrompt, setGeneratedPrompt] = useState("");
 
-  const [categories3, setCategories3] = useState(() => JSON.parse(localStorage.getItem('v8_categories3')) || DEFAULT_CATEGORIES_3);
-  const [openDropdown3, setOpenDropdown3] = useState(null);
-
-  const [categories4, setCategories4] = useState(() => JSON.parse(localStorage.getItem('v8_categories4')) || DEFAULT_CATEGORIES_4);
-  const [openDropdown4, setOpenDropdown4] = useState(null);
-
-  // Dodata DB 5 (Prazna Custom Baza)
-  const [categories5, setCategories5] = useState(() => JSON.parse(localStorage.getItem('v8_categories5')) || Array(12).fill(""));
-  const [openDropdown5, setOpenDropdown5] = useState(null);
-
-  const [seed, setSeed] = useState(() => Number(localStorage.getItem('v8_seed')) || 2026);
-  const [presetName, setPresetName] = useState(() => localStorage.getItem('v8_preset') || "Nano Banana 2 / Pro");
-  const [aspectRatio, setAspectRatio] = useState(() => localStorage.getItem('v8_aspect') || "16:9");
-  const [gridFormat, setGridFormat] = useState(() => localStorage.getItem('v8_gridFormat') || "2x6");
-  const [strictNoBrand, setStrictNoBrand] = useState(() => JSON.parse(localStorage.getItem('v8_nobrand')) ?? true);
-  const [includeNegative, setIncludeNegative] = useState(() => JSON.parse(localStorage.getItem('v8_negative')) ?? true);
-  
-  const [generatedPrompts, setGeneratedPrompts] = useState([]);
-  const [copiedStates, setCopiedStates] = useState({});
-  const [otvorenOpis, setOtvorenOpis] = useState(null);
-  
-  const [currentPage, setCurrentPage] = useState(1);
-  const promptsPerPage = 12; 
-  const promptsTopRef = useRef(null); 
-
-  const [fullscreenImage, setFullscreenImage] = useState(null);
-
-  const [currentUser, setCurrentUser] = useState(null);
-  const [isVIP, setIsVIP] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [promptsUsed, setPromptsUsed] = useState(0);
-  const [promptLimit, setPromptLimit] = useState(0);
-  const [amountPaid, setAmountPaid] = useState(0);
-  const [currentPlan, setCurrentPlan] = useState('NONE');
-  const [isCheckingAccess, setIsCheckingAccess] = useState(true);
-  const [cooldownTime, setCooldownTime] = useState(null);
-  const [cooldownDisplay, setCooldownDisplay] = useState("");
-  const [isEngineCoolingDown, setIsEngineCoolingDown] = useState(false);
-
-  const [payData, setPayData] = useState([]);
-  const [vipData, setVipData] = useState({});
-
-  const dropdownRef1 = useRef(null);
-  const dropdownRef2 = useRef(null);
-  const dropdownRef3 = useRef(null);
-  const dropdownRef4 = useRef(null);
-  const dropdownRef5 = useRef(null);
-
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [isLoginRequiredOpen, setIsLoginRequiredOpen] = useState(false);
-  const [checkoutProduct, setCheckoutProduct] = useState('');
-  const [checkoutPrice, setCheckoutPrice] = useState(0);
-
-  const ASPECT_OPTIONS = [
-    { value: "1:1", ratio: "1 / 1", badge: "1:1 SQUARE" },
-    { value: "9:16", ratio: "9 / 16", badge: "9:16 VERTICAL" },
-    { value: "16:9", ratio: "16 / 9", badge: "16:9 CINEMATIC" },
-    { value: "21:9", ratio: "21 / 9", badge: "21:9 ULTRAWIDE" }
-  ];
-
-  const GRID_TIERS = [
-    { format: "2x6", title: "PREMIUM 2x6 GRID TIER DELIVERABLES" },
-    { format: "2x4", title: "PREMIUM 2x4 GRID TIER DELIVERABLES" },
-    { format: "2x3", title: "PREMIUM 2x3 GRID TIER DELIVERABLES" },
-    { format: "2x2", title: "PREMIUM 2x2 GRID TIER DELIVERABLES" }
-  ];
-
+  // Ažuriranje podkategorije kada se promeni glavna kategorija
   useEffect(() => {
-    if (fullscreenImage) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
+    if (SUB_CATEGORIES_DB[selectedCategory]) {
+      setSelectedSub(SUB_CATEGORIES_DB[selectedCategory][0]);
     }
-    return () => document.body.style.overflow = "auto";
-  }, [fullscreenImage]);
+  }, [selectedCategory]);
 
-  useEffect(() => {
-      localStorage.setItem('v8_categories1', JSON.stringify(categories1));
-      localStorage.setItem('v8_categories2', JSON.stringify(categories2));
-      localStorage.setItem('v8_categories3', JSON.stringify(categories3));
-      localStorage.setItem('v8_categories4', JSON.stringify(categories4));
-      localStorage.setItem('v8_categories5', JSON.stringify(categories5));
-      localStorage.setItem('v8_seed', seed);
-      localStorage.setItem('v8_preset', presetName);
-      localStorage.setItem('v8_aspect', aspectRatio);
-      localStorage.setItem('v8_gridFormat', gridFormat);
-      localStorage.setItem('v8_nobrand', JSON.stringify(strictNoBrand));
-      localStorage.setItem('v8_negative', JSON.stringify(includeNegative));
-  }, [categories1, categories2, categories3, categories4, categories5, seed, presetName, aspectRatio, gridFormat, strictNoBrand, includeNegative]);
-
-  useEffect(() => {
-    let unsubPayoneer = () => {};
-    let unsubCrypto = () => {};
-    let unsubPayPal = () => {};
-    let unsubVip = () => {};
-
-    const unsubAuth = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
-
-      if (!user) {
-        setPayData([]);
-        setVipData({});
-        setIsCheckingAccess(false);
-        setAmountPaid(0);
-        setCurrentPlan('NONE');
-        setIsVIP(false);
-        setIsAdmin(false);
-        return;
-      }
-
-      const email = user.email.toLowerCase();
-      setIsAdmin(
-        email === "damnjanovicgoran7@gmail.com" ||
-        email === "aitoolsprosmart@gmail.com"
-      );
-
-      let payoneerDocs = [];
-      let cryptoDocs = [];
-      let paypalDocs = [];
-
-      const updateAllPayData = () => {
-         setPayData([...payoneerDocs, ...cryptoDocs, ...paypalDocs]);
-      };
-
-      unsubPayoneer = onSnapshot(query(collection(db, "v8_payoneer_requests"), where("clientEmail", "==", email)), snap => {
-         payoneerDocs = snap.docs.map(d => d.data());
-         updateAllPayData();
-      });
-
-      unsubCrypto = onSnapshot(query(collection(db, "v8_crypto_requests"), where("clientEmail", "==", email)), snap => {
-         cryptoDocs = snap.docs.map(d => d.data());
-         updateAllPayData();
-      });
-
-      unsubPayPal = onSnapshot(query(collection(db, "v8_paypal_requests"), where("clientEmail", "==", email)), snap => {
-         paypalDocs = snap.docs.map(d => d.data());
-         updateAllPayData();
-      });
-
-      unsubVip = onSnapshot(doc(db, "vip_users", email), (snap) => {
-        setVipData(snap.exists() ? snap.data() : {});
-      });
-    });
-
-    return () => {
-      unsubAuth();
-      unsubPayoneer();
-      unsubCrypto();
-      unsubPayPal();
-      unsubVip();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!currentUser) {
-      setIsVIP(false);
-      setPromptsUsed(0);
-      setPromptLimit(0);
-      setAmountPaid(0);
-      setCurrentPlan('NONE');
-      setCooldownTime(null);
-      setIsEngineCoolingDown(false);
-      return;
-    }
-
-    if (isAdmin) {
-      setIsVIP(true);
-      setPromptsUsed(0);
-      setPromptLimit(999999);
-      setAmountPaid(549);
-      setCurrentPlan('ENTERPRISE');
-      setIsCheckingAccess(false);
-      setCooldownTime(null);
-      setIsEngineCoolingDown(false);
-      return;
-    }
-
-    let hasAccess = false;
-    let calculatedLimit = 0;
-    let maxPaid = 0;
-    let highestPlan = 'NONE';
-
-    payData.forEach((data) => {
-      if (data.status === "paid" || data.status === "PAID" || data.status === "PLAĆENO" || data.status === "completed_verified") {
-        const productName = data.productName ? data.productName.toUpperCase() : "";
-        const price = Number(data.price) || 0;
-
-        if (productName.includes("PROMPT FACTORY") || productName.includes("MATRIX")) {
-            return; 
-        }
-
-        if (productName.includes("GRID") || productName.includes("BUNDLE") || productName.includes("SYSTEM") || productName.includes("SECURITY CHECKOUT")) {
-          hasAccess = true;
-
-          if (productName.includes("ENTERPRISE") || price >= 549) {
-            if (maxPaid < 549) { maxPaid = 549; highestPlan = 'ENTERPRISE'; }
-            calculatedLimit = Math.max(calculatedLimit, 100000);
-          } else if (productName.includes("PRO") || price >= 249) {
-            if (maxPaid < 249) { maxPaid = 249; highestPlan = 'PRO'; }
-            calculatedLimit = Math.max(calculatedLimit, 25000);
-          } else if (productName.includes("STARTER") || price >= 149) {
-            if (maxPaid < 149) { maxPaid = 149; highestPlan = 'STARTER'; }
-            calculatedLimit = Math.max(calculatedLimit, 5000);
-          } else {
-            if (maxPaid < 149) { maxPaid = 149; highestPlan = 'STARTER'; }
-            calculatedLimit = Math.max(calculatedLimit, 5000);
-          }
-        }
-      }
-    });
-
-    if (hasAccess) {
-      setIsVIP(true);
-      setAmountPaid(maxPaid);
-      setCurrentPlan(highestPlan);
-      setPromptLimit(calculatedLimit);
-
-      const used = vipData.promptsUsed || 0;
-      setPromptsUsed(used);
-      
-      const exhaustedTimestamp = vipData.exhaustedAt ? new Date(vipData.exhaustedAt).getTime() : null;
-
-      if (used >= calculatedLimit || exhaustedTimestamp) {
-        const cooldownStart = exhaustedTimestamp || Date.now();
-        const targetTime = cooldownStart + (30 * 24 * 60 * 60 * 1000); 
-        
-        if (Date.now() >= targetTime) {
-          resetQuota(currentUser.email.toLowerCase());
-        } else {
-          setIsEngineCoolingDown(true);
-          setCooldownTime(targetTime);
-        }
-      } else {
-        setIsEngineCoolingDown(false);
-        setCooldownTime(null);
-      }
-    } else {
-      setIsVIP(false);
-      setPromptsUsed(0);
-      setPromptLimit(0);
-      setAmountPaid(0);
-      setCurrentPlan('NONE');
-      setCooldownTime(null);
-      setIsEngineCoolingDown(false);
-    }
-
-    setIsCheckingAccess(false);
-  }, [payData, vipData, currentUser, isAdmin]);
-
-  useEffect(() => {
-    let interval;
-    if (isEngineCoolingDown && cooldownTime) {
-      interval = setInterval(() => {
-        const now = Date.now();
-        const diff = cooldownTime - now;
-
-        if (diff <= 0) {
-          clearInterval(interval);
-          if (currentUser) resetQuota(currentUser.email.toLowerCase());
-        } else {
-          const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-          const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-          const s = Math.floor((diff % (1000 * 60)) / 1000);
-          setCooldownDisplay(`${days}D ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
-        }
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isEngineCoolingDown, cooldownTime, currentUser]);
-
-  const resetQuota = async (emailToReset) => {
-    try {
-      await setDoc(doc(db, "vip_users", emailToReset), { 
-         promptsUsed: 0, 
-         exhaustedAt: null 
-      }, { merge: true });
-    } catch(e) { console.error("Failed to reset limit", e); }
-  };
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef1.current && !dropdownRef1.current.contains(event.target)) setOpenDropdown1(null);
-      if (dropdownRef2.current && !dropdownRef2.current.contains(event.target)) setOpenDropdown2(null);
-      if (dropdownRef3.current && !dropdownRef3.current.contains(event.target)) setOpenDropdown3(null);
-      if (dropdownRef4.current && !dropdownRef4.current.contains(event.target)) setOpenDropdown4(null);
-      if (dropdownRef5.current && !dropdownRef5.current.contains(event.target)) setOpenDropdown5(null);
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const updateCategory1 = useCallback((index, value) => setCategories1(prev => { const next = [...prev]; next[index] = value; return next; }), []);
-  const updateCategory2 = useCallback((index, value) => setCategories2(prev => { const next = [...prev]; next[index] = value; return next; }), []);
-  const updateCategory3 = useCallback((index, value) => setCategories3(prev => { const next = [...prev]; next[index] = value; return next; }), []);
-  const updateCategory4 = useCallback((index, value) => setCategories4(prev => { const next = [...prev]; next[index] = value; return next; }), []);
-  const updateCategory5 = useCallback((index, value) => setCategories5(prev => { const next = [...prev]; next[index] = value; return next; }), []);
-
-  const recordUsage = async () => {
-      if (currentUser && isVIP && !isAdmin) {
-          try {
-              const docRef = doc(db, "vip_users", currentUser.email.toLowerCase());
-              const snap = await getDoc(docRef);
-              let currentUsage = snap.exists() ? (snap.data().promptsUsed || 0) : 0;
-              let newUsage = currentUsage + 100;
-              
-              let updateData = { promptsUsed: newUsage };
-              if (newUsage >= promptLimit) {
-                  updateData.exhaustedAt = new Date().toISOString();
-              }
-              await setDoc(docRef, updateData, { merge: true });
-          } catch(e) { console.error("Failed to update limit", e); }
-      }
-  };
-
-  const openCheckoutForPackage = (paketName, fullPrice) => {
-    const razlika = fullPrice - amountPaid;
-    const finalPrice = razlika > 0 ? razlika : fullPrice;
-    const isUpgrade = amountPaid > 0;
-    const naslovCheckouta = isUpgrade ? `V8 GRID SYSTEM - ${paketName.toUpperCase()} (UPGRADE)` : `V8 GRID SYSTEM - ${paketName.toUpperCase()}`;
-    
-    setCheckoutProduct(naslovCheckouta);
-    setCheckoutPrice(finalPrice);
-    setIsCheckoutOpen(true);
-  };
-
-  const pokreniKupovinu = (paketName, fullPrice) => {
-    const userNow = currentUser || auth.currentUser;
-    const isUpgrade = amountPaid > 0;
-    const razlika = fullPrice - amountPaid;
-    const finalPrice = razlika > 0 ? razlika : fullPrice;
-
-    // 🔥 GA4 ANALITIKA 🔥
-    trackV8Action("grid_checkout_initiated", { 
-        paket: paketName, 
-        cena: finalPrice, 
-        tip_klijenta: isUpgrade ? "upgrade" : "new" 
-    });
-
-    if (userNow) {
-      openCheckoutForPackage(paketName, fullPrice);
-      return;
-    }
-    
-    setCheckoutProduct(isUpgrade ? `V8 GRID SYSTEM - ${paketName.toUpperCase()} (UPGRADE)` : `V8 GRID SYSTEM - ${paketName.toUpperCase()}`);
-    setCheckoutPrice(finalPrice);
-    setIsLoginRequiredOpen(true);
-  };
-
-  const handleLoginRequiredSuccess = (user) => {
-    setCurrentUser(user);
-    setIsLoginRequiredOpen(false);
-    setTimeout(() => { setIsCheckoutOpen(true); }, 250);
-  };
-
-  const handleGenerate100 = (dbType) => {
-      if (isEngineCoolingDown) { v8Toast.error("Engine Cooling Down. Wait for refill."); return; }
-      if (!isVIP) { v8Toast.error("Access Restricted. Select a Plan."); return; }
-      
-      setActiveDB(dbType); 
-      const activeCategories = dbType === 1 ? categories1 : dbType === 2 ? categories2 : dbType === 3 ? categories3 : dbType === 4 ? categories4 : categories5;
-      const newPrompts = makeVariations({ categories: activeCategories, seed, presetName, strictNoBrand, includeNegative, aspectRatio, gridFormat, activeDB: dbType });
-      
-      setGeneratedPrompts(newPrompts);
-      setCurrentPage(1); 
-      setCopiedStates({});
-      recordUsage();
-
-      // 🔥 GA4 ANALITIKA 🔥
-      trackV8Action("prompts_generated", { db_type: dbType, preset: presetName, grid_format: gridFormat });
-      
-      v8Toast.success(`100 Unique Prompts Generated from DB ${dbType}!`);
-  };
-
-  const handleRegenerate100 = (dbType) => {
-      if (isEngineCoolingDown) { v8Toast.error("Engine Cooling Down. Wait for refill."); return; }
-      if (!isVIP) { v8Toast.error("Access Restricted. Select a Plan."); return; }
-
-      const newSeed = Math.floor(Math.random() * 999999);
-      setSeed(newSeed);
-      const activeCategories = dbType === 1 ? categories1 : dbType === 2 ? categories2 : dbType === 3 ? categories3 : dbType === 4 ? categories4 : categories5;
-      const newPrompts = makeVariations({ categories: activeCategories, seed: newSeed, presetName, strictNoBrand, includeNegative, aspectRatio, gridFormat, activeDB: dbType });
-      
-      setGeneratedPrompts(newPrompts);
-      setCurrentPage(1); 
-      setCopiedStates({});
-      recordUsage();
-
-      // 🔥 GA4 ANALITIKA 🔥
-      trackV8Action("prompts_regenerated", { db_type: dbType, preset: presetName, grid_format: gridFormat });
-
-      v8Toast.success(`Regenerated 100 New Prompts from DB ${dbType}!`);
-  };
-
-  const clearPrompts = () => {
-      setGeneratedPrompts([]);
-      setCurrentPage(1);
-      setCopiedStates({});
-  };
-
-  const outputTextAll = generatedPrompts.map((p, i) => `PROMPT ${String(i + 1).padStart(3, '0')}\n${p}`).join("\n\n------------------------------------------------------------\n\n");
-
-  const downloadTxt = () => {
-    if (isEngineCoolingDown || !isVIP || generatedPrompts.length === 0) return;
-    const blob = new Blob([outputTextAll], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `V8-grid-pack-100-prompts-seed-${seed}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-
-    // 🔥 GA4 ANALITIKA 🔥
-    trackV8Action("download_txt", { type: "grid_prompts" });
-  };
-
-  const downloadJson = () => {
-    if (isEngineCoolingDown || !isVIP || generatedPrompts.length === 0) return;
-    const jsonObj = generatedPrompts.map((p, i) => ({ id: String(i + 1).padStart(3, '0'), prompt: p }));
-    const blob = new Blob([JSON.stringify(jsonObj, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `V8-grid-pack-100-prompts-seed-${seed}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-
-    // 🔥 GA4 ANALITIKA 🔥
-    trackV8Action("download_json", { type: "grid_prompts" });
-  };
-
-  const copySingle = async (index, text) => {
-    if (isEngineCoolingDown || !isVIP) { v8Toast.error("Engine Cooling Down. Wait for refill."); return; }
-    await navigator.clipboard.writeText(text);
-    setCopiedStates(prev => ({ ...prev, [index]: true }));
-
-    // 🔥 GA4 ANALITIKA 🔥
-    trackV8Action("prompt_copied", { format: gridFormat, preset: presetName });
-
-    v8Toast.success(`Prompt copied!`);
-  };
-
-  const renderPricingPlans = () => {
-    if (amountPaid >= 549) {
-      return (
-        <div className="w-full max-w-5xl mx-auto mt-16 px-4 mb-16">
-           <div className="bg-gradient-to-r from-[#1a0b2e] to-[#050505] border border-purple-500/40 rounded-[2.5rem] p-8 md:p-12 text-center shadow-[0_0_50px_rgba(168,85,247,0.15)] relative overflow-hidden">
-              <Crown className="w-16 h-16 md:w-20 md:h-20 text-purple-400 mx-auto mb-6 drop-shadow-[0_0_20px_rgba(168,85,247,0.6)]" />
-              <h2 className="text-2xl md:text-4xl font-black text-white uppercase tracking-widest mb-4">
-                ENTERPRISE TIER <span className="text-purple-500 block md:inline">UNLOCKED</span>
-              </h2>
-              <p className="text-purple-200/60 font-bold uppercase tracking-widest text-[10px] md:text-sm max-w-2xl mx-auto">
-                You possess the highest level V8 License. All protocols are fully operational at maximum capacity.
-              </p>
-           </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="w-full max-w-5xl mx-auto mt-12 md:mt-16 px-4 mb-16 relative z-30">
-        <div className="text-center mb-10 md:mb-12">
-          <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-widest mb-4">
-            {amountPaid > 0 ? "V8 UPGRADE PROTOCOL." : "LIFETIME ACCESS."} <span className={amountPaid > 0 ? "text-blue-500 block lg:inline mt-2 lg:mt-0" : "text-orange-500 block lg:inline mt-2 lg:mt-0"}>
-              {amountPaid > 0 ? "UNLOCK HIGHER TIERS." : "CHOOSE YOUR V8 PLAN."}
-            </span>
-          </h2>
-          
-          <div className="mt-6 md:mt-8 bg-[#0a0a0a]/90 backdrop-blur-md border border-white/10 rounded-2xl p-6 md:p-8 text-left space-y-4 shadow-inner max-w-4xl mx-auto mb-8">
-             <h4 className="text-orange-500 font-black uppercase tracking-[0.2em] text-[11px] md:text-[13px] border-b border-orange-500/20 pb-3 mb-4 flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5" /> V8 LICENSE PROTOCOL
-             </h4>
-             <p className="text-[12px] md:text-[14px] text-zinc-300"><strong className="text-white">1. ONE-TIME PAYMENT:</strong> Pay once. Secure your Lifetime License. Zero monthly subscriptions.</p>
-             <p className="text-[12px] md:text-[14px] text-zinc-300"><strong className="text-white">2. THE ROLLING QUOTA:</strong> You get a dedicated pool of prompts based on your tier. Use them in 24 hours or stretch them across 365 days. Your cycle only ends when your prompts hit zero.</p>
-             <p className="text-[12px] md:text-[14px] text-zinc-300"><strong className="text-white">3. THE 30-DAY AUTO-REFILL:</strong> Burned through your entire quota? The Engine enters a mandatory 30-day cooling phase. After exactly 30 days, your prompts auto-replenish to full capacity. <span className="text-emerald-400 font-black">For free. Forever.</span></p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full max-w-sm lg:max-w-none mx-auto z-10 relative">
-          
-          {amountPaid < 149 && (
-            <div className="w-full bg-[#050505] border border-blue-500/30 rounded-3xl p-6 md:p-8 flex flex-col hover:border-blue-500/60 transition-all shadow-xl">
-                <div className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-blue-500/10 mb-4 md:mb-6 mx-auto"><Diamond className="w-5 h-5 md:w-6 md:h-6 text-blue-500" /></div>
-                <h3 className="text-lg md:text-xl font-black text-white uppercase text-center">Starter</h3>
-                <span className="text-3xl md:text-4xl font-black text-blue-400 my-4 text-center">$149</span>
-                <div className="w-full text-left space-y-3 mb-8 text-[11px] md:text-[12px] text-zinc-400 font-bold uppercase tracking-widest flex-grow">
-                   <p className="flex items-start gap-2"><span className="shrink-0">✅</span> 5,000 Prompts Included</p>
-                   <p className="flex items-start gap-2"><span className="shrink-0">⏳</span> Use in 24h or stretch over 365 days</p>
-                   <p className="flex items-start gap-2"><span className="shrink-0">🔄</span> Rolling Quota (No expiry)</p>
-                </div>
-                <button onClick={() => pokreniKupovinu('STARTER', 149)} className="w-full bg-zinc-800 text-white hover:bg-blue-500 py-3 md:py-4 rounded-xl font-black uppercase tracking-widest text-[12px] md:text-[13px] transition-all shadow-md">
-                   SELECT STARTER
-                </button>
-            </div>
-          )}
-
-          {amountPaid < 249 && (
-            <div className="w-full bg-[#050505] border-2 border-orange-500/50 rounded-3xl p-6 md:p-8 flex flex-col relative hover:border-orange-500/80 transition-all shadow-[0_0_30px_rgba(234,88,12,0.15)] transform lg:scale-105 z-10">
-                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-orange-600 to-amber-500 rounded-t-[1.4rem]"></div>
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-orange-500 text-black px-6 py-1.5 rounded-full font-black text-[9px] md:text-[10px] uppercase tracking-widest shadow-lg">Bestseller</div>
-                
-                <div className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-orange-500/10 mb-4 md:mb-6 mx-auto mt-2"><Zap className="w-5 h-5 md:w-6 md:h-6 text-orange-500" /></div>
-                <h3 className="text-lg md:text-xl font-black text-white uppercase text-center">Pro</h3>
-                <span className="text-3xl md:text-4xl font-black text-orange-500 my-4 text-center flex items-center justify-center gap-3">
-                   {amountPaid > 0 ? `$${249 - amountPaid}` : "$249"}
-                </span>
-                <div className="w-full text-left space-y-3 mb-8 text-[11px] md:text-[12px] text-zinc-300 font-bold uppercase tracking-widest flex-grow">
-                   <p className="flex items-start gap-2"><span className="shrink-0">✅</span> 25,000 Prompts Included</p>
-                   <p className="flex items-start gap-2"><span className="shrink-0">⏳</span> Use in 24h or stretch over 365 days</p>
-                   <p className="flex items-start gap-2"><span className="shrink-0">🔄</span> Rolling Quota (No expiry)</p>
-                </div>
-                <button onClick={() => pokreniKupovinu('PRO', 249)} className={`w-full py-3 md:py-4 rounded-xl font-black uppercase tracking-widest text-[12px] md:text-[13px] transition-all ${amountPaid > 0 ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-white shadow-[0_0_20px_rgba(234,88,12,0.4)]' : 'bg-orange-500 text-white hover:bg-orange-400 shadow-[0_0_20px_rgba(234,88,12,0.4)]'}`}>
-                   {amountPaid > 0 ? "UPGRADE TO PRO" : "SELECT PRO"}
-                </button>
-            </div>
-          )}
-
-          {amountPaid < 549 && (
-            <div className="w-full bg-[#050505] border border-purple-500/30 rounded-3xl p-6 md:p-8 flex flex-col hover:border-purple-500/60 transition-all shadow-xl">
-                <div className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-purple-500/10 mb-4 md:mb-6 mx-auto"><Crown className="w-5 h-5 md:w-6 md:h-6 text-purple-500" /></div>
-                <h3 className="text-lg md:text-xl font-black text-white uppercase text-center">Enterprise</h3>
-                <span className="text-3xl md:text-4xl font-black text-purple-400 my-4 text-center flex items-center justify-center gap-3">
-                   {amountPaid > 0 ? `$${549 - amountPaid}` : "$549"}
-                </span>
-                <div className="w-full text-left space-y-3 mb-8 text-[11px] md:text-[12px] text-zinc-400 font-bold uppercase tracking-widest flex-grow">
-                   <p className="flex items-start gap-2"><span className="shrink-0">✅</span> 100,000 Prompts Included</p>
-                   <p className="flex items-start gap-2"><span className="shrink-0">⏳</span> Use in 24h or stretch over 365 days</p>
-                   <p className="flex items-start gap-2"><span className="shrink-0">🔄</span> Lifetime Access (Rolling Quota)</p>
-                </div>
-                <button onClick={() => pokreniKupovinu('ENTERPRISE', 549)} className={`w-full py-3 md:py-4 rounded-xl font-black uppercase tracking-widest text-[12px] md:text-[13px] transition-all shadow-md ${amountPaid > 0 ? 'bg-gradient-to-r from-purple-700 to-purple-500 hover:from-purple-600 hover:to-purple-400 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)]' : 'bg-zinc-800 text-white hover:bg-purple-500'}`}>
-                   {amountPaid > 0 ? "UPGRADE TO ENTERPRISE" : "SELECT ENTERPRISE"}
-                </button>
-            </div>
-          )}
-        </div>
-
-        {amountPaid > 0 && amountPaid < 549 && (
-           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-4xl mx-auto mt-10 md:mt-12 bg-gradient-to-r from-blue-950/80 to-blue-900/30 border border-blue-500/40 p-6 md:p-8 rounded-3xl md:rounded-[2rem] flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8 shadow-[0_0_40px_rgba(59,130,246,0.25)] relative overflow-hidden backdrop-blur-md">
-             <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay"></div>
-             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50"></div>
-             
-             <div className="w-12 h-12 md:w-16 md:h-16 bg-blue-900/40 rounded-full flex items-center justify-center border border-blue-500/50 relative flex-shrink-0 shadow-[0_0_20px_rgba(59,130,246,0.4)]">
-                <div className="absolute inset-0 rounded-full border-t-2 border-blue-400 animate-spin"></div>
-                <ArrowUpCircle className="w-6 h-6 md:w-8 md:h-8 text-blue-400" />
-             </div>
-
-             <div className="text-center md:text-left relative z-10">
-                <div className="inline-block bg-blue-900/50 border border-blue-500/30 px-3 py-1 rounded-full text-blue-300 font-bold uppercase tracking-widest text-[9px] md:text-[10px] mb-3">
-                  SMART UPGRADE SYSTEM ACTIVE
-                </div>
-                <h3 className="text-white text-lg md:text-xl font-black uppercase tracking-widest mb-2 drop-shadow-md">
-                  PRORATED UPGRADE POLICY
-                </h3>
-                <p className="text-zinc-300 text-[12px] md:text-[14px] leading-relaxed max-w-2xl font-medium">
-                  System radar has detected your active V8 License valued at <strong className="text-blue-400">${amountPaid}</strong>. 
-                  You can upgrade to a higher tier by paying <strong className="text-white border-b border-blue-500/50 pb-0.5">ONLY THE PRICE DIFFERENCE</strong>. The package prices displayed above have already been automatically reduced!
-                </p>
-             </div>
-           </motion.div>
-        )}
-      </div>
-    );
-  };
-
-  const renderPromptSecrets = () => {
-    const secrets = [
-        { t: "1. IMG_2047.ARW", d: "Sony Alpha Full-Frame RAW", insight: "Mimics ultra-high-resolution RAW files shot on Sony Alpha full-frame cameras. Triggers the model to favor natural shadows, full dynamic range, and unedited DSLR realism." },
-        { t: "2. DSC_0402.NEF", d: "Nikon RAW Format", insight: "Injects Nikon DSLR realism with accurate skin tones, neutral color grading, and crisp optics. AI tools associate this with high optical clarity and lens fidelity." },
-        { t: "3. Cinematic Still, Paramount", d: "Hollywood Studio Archive", insight: "Produces frames that look pulled from a Hollywood film, with film grain, anamorphic blur, and cinematic color grading. Perfect for storytelling visuals." },
-        { t: "4. iPhone ProRAW, IMG_4490", d: "Apple Mobile RAW", insight: "Renders unfiltered, iPhone-quality realism with HDR balance and slight motion blur. Ideal for Instagram-style casual photorealistic shots." },
-        { t: "5. Kodak Portra 800, scanned", d: "Vintage Film Stock", insight: "Produces a vintage film look with authentic grain, creamy tones, and slight fading. Guides the sampler toward Portra's signature warm skin tones." },
-        { t: "6. contact sheet scan, vogue.com", d: "Editorial Proof Spreads", insight: "Simulates editorial proof sheet spreads, often seen in Vogue fashion test shoots. Yields multiple-frame storytelling with natural posing variations." },
-        { t: "7. Leica M10 Monochrom, 35mm", d: "High-End B&W Photography", insight: "Ultra-shallow depth of field, creamy bokeh, and black & white realism. Leica gear is synonymous with photojournalistic quality and minimalist tones." },
-        { t: "8. Fuji Superia 400, point-and-shoot", d: "90s Casual Aesthetic", insight: "Captures spontaneous 90s-style images in parties with color shifts and soft flash. Fuels the model to emulate disposable camera charm." },
-        { t: "9. Scanned 120mm medium format", d: "Medium Format Studio", insight: "Generates museum-grade fashion portraits with unparalleled detail and ultra-sharp skin texture. Medium format tags trigger sensor realism." },
-        { t: "10. GettyImages watermark, editorial", d: "Commercial Photojournalism", insight: "Replicates commercial photojournalism style with watermarked authenticity and journalistic framing. Perfect for 'on-location' event coverage realism." }
-    ];
-
-    return (
-        <div className="w-full max-w-5xl mx-auto mb-10 bg-black/40 border border-white/5 rounded-3xl md:rounded-[2rem] p-6 md:p-10 relative z-10 shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-          
-          <div className="absolute inset-0 bg-[#050505]/60 z-0 pointer-events-none"></div>
-
-          <div className="text-center mb-8 md:mb-10 relative z-10">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-black uppercase tracking-[0.2em] text-white">TOP 10 HIDDEN SECRETS</h2>
-            <p className="text-[10px] md:text-[12px] text-orange-500 font-bold uppercase tracking-[0.3em] mt-3 italic">Cheat Sheet of Hidden Tokens</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 items-start relative z-10">
-            {secrets.map((item, i) => {
-              const isOpen = otvorenOpis === i;
-              return (
-                <div 
-                  key={i} 
-                  onClick={() => setOtvorenOpis(isOpen ? null : i)}
-                  className={`bg-white/5 border p-5 md:p-6 rounded-2xl cursor-pointer transition-all duration-300 ${
-                    isOpen ? 'border-orange-500/50 bg-black/40 shadow-[0_0_15px_rgba(234,88,12,0.15)]' : 'border-white/5 hover:border-white/20'
-                  }`}
-                >
-                  <div className="flex justify-between items-center gap-4">
-                    <div className="pr-4">
-                      <h4 className="text-orange-500 font-black uppercase text-[12px] md:text-[14px] leading-tight">{item.t}</h4>
-                      <p className="text-[10px] md:text-[12px] text-zinc-400 mt-1.5">{item.d}</p>
-                    </div>
-                    <ChevronDown 
-                      size={18} 
-                      className={`flex-shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180 text-orange-500 drop-shadow-[0_0_8px_rgba(234,88,12,0.8)]' : 'text-zinc-600 group-hover:text-zinc-400'}`} 
-                    />
-                  </div>
-                  {isOpen && (
-                    <div className="mt-4 pt-4 border-t border-white/10">
-                      <p className="text-[11px] md:text-[12px] text-zinc-300 font-mono leading-relaxed border-l-2 border-orange-500 pl-3">
-                        <span className="text-orange-500 font-bold">Effect Triggered:</span> {item.insight}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-    );
-  };
-
-  const visiblePanelsCount = gridFormat === "2x6" ? 12 : gridFormat === "2x4" ? 8 : gridFormat === "2x3" ? 6 : 4;
-
-  const indexOfLastPrompt = currentPage * promptsPerPage;
-  const indexOfFirstPrompt = indexOfLastPrompt - promptsPerPage;
-  const currentPrompts = generatedPrompts.slice(indexOfFirstPrompt, indexOfLastPrompt);
-  const totalPages = Math.ceil(generatedPrompts.length / promptsPerPage);
-
-  const paginate = (pageNumber) => {
-    setCurrentPage(pageNumber);
-    if (promptsTopRef.current) {
-      const y = promptsTopRef.current.getBoundingClientRect().top + window.scrollY - 100;
-      window.scrollTo({ top: y, behavior: 'smooth' });
-    }
+  // Funkcija za inženjersko generisanje prompta sa 0% odstupanja
+  const handleGeneratePrompt = () => {
+    const styleData = STYLE_PRESETS[selectedStyle];
+    const prompt = `${selectedSub}. ${selectedCamera}. ${selectedLighting}. ${styleData.suffix}`;
+    setGeneratedPrompt(prompt);
   };
 
   return (
-    <div className="relative min-h-screen pt-8 md:pt-10 pb-20 px-4 md:px-8 text-white font-sans overflow-hidden" onClick={() => { setOpenDropdown1(null); setOpenDropdown2(null); setOpenDropdown3(null); setOpenDropdown4(null); setOpenDropdown5(null); }}>
-      
-      {/* 🔥 SEO TAGOVI SAMO ZA OVU STRANICU 🔥 */}
-      <Helmet>
-        <title>Cinematic Grid Prompts | V8 Grid System</title>
-        <meta name="description" content="Generate 100+ unique cinematic grid prompts instantly. The ultimate text-generation algorithm strictly optimized for Google Nano Banana 2 and commercial AI platforms." />
-        <meta name="keywords" content="cinematic AI prompts, grid system prompt generator, nano banana 2 prompts, professional AI art prompts, commercial AI templates" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-      </Helmet>
-
-      {/* V8SmartQuota - Embedovan Centralni Brojač */}
-      {(isVIP || isAdmin) && (
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 w-max max-w-[90vw]">
-          <motion.div
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className={`bg-black/80 backdrop-blur-xl border px-4 md:px-6 py-2 rounded-full flex items-center gap-3 md:gap-4 shadow-lg w-full justify-center ${
-              isEngineCoolingDown ? 'border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.3)]' : 'border-orange-500/50 shadow-[0_0_20px_rgba(234,88,12,0.3)]'
-            }`}
-          >
-            {isEngineCoolingDown ? (
-              <Timer className="w-4 h-4 md:w-5 md:h-5 text-red-500 animate-pulse shrink-0" />
-            ) : (
-              <ShieldCheck className="w-4 h-4 md:w-5 md:h-5 text-orange-500 animate-pulse shrink-0" />
-            )}
-            
-            <div className="flex flex-col items-center">
-               <span className="text-[8px] md:text-[9px] uppercase tracking-[0.2em] font-black text-zinc-400 leading-none">
-                 {isEngineCoolingDown ? 'COOLING DOWN' : 'MONTHLY QUOTA'}
-               </span>
-               
-               {isEngineCoolingDown ? (
-                  <span className="text-[12px] md:text-[14px] font-mono font-black tracking-widest leading-none mt-1 text-red-500">
-                     {cooldownDisplay}
-                  </span>
-               ) : isAdmin ? (
-                  <span className="text-[13px] md:text-[15px] font-black tracking-widest leading-none mt-1 text-purple-500 drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]">
-                     MASTER ADMIN : ∞
-                  </span>
-               ) : (
-                  <span className={`text-[13px] md:text-[15px] font-black tracking-widest leading-none mt-1 ${promptsUsed >= promptLimit ? 'text-red-500' : 'text-emerald-400'}`}>
-                     {promptsUsed} / {promptLimit}
-                  </span>
-               )}
-            </div>
-          </motion.div>
+    <div className="min-h-screen bg-zinc-950 text-zinc-300 p-8 font-mono">
+      {/* HEADER V8 ENGINE */}
+      <header className="mb-8 border-b border-orange-500/30 pb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-white tracking-wider flex items-center gap-3">
+            <Cpu className="text-orange-500" size={32} />
+            V8 VISUAL ENGINE
+          </h1>
+          <p className="text-zinc-500 mt-2 text-sm">Advanced Mathematical Model • 150MP CGI Rendering • 0% Geometric Deviation</p>
         </div>
-      )}
+        <div className="flex items-center gap-2 text-orange-500 bg-orange-500/10 px-4 py-2 rounded border border-orange-500/20">
+          <Database size={18} />
+          <span className="text-sm font-semibold tracking-widest">DB CONNECTED</span>
+        </div>
+      </header>
 
-      {/* 🔥 GLOBALNA POZADINA (CELA STRANICA) 🔥 */}
-      <video autoPlay loop muted playsInline className="fixed top-0 left-0 w-screen h-screen object-cover z-0 opacity-60 pointer-events-none">
-        <source src="/v8-liquid-obsidian.mp4" type="video/mp4" />
-      </video>
-      <div className="fixed top-0 left-0 w-screen h-screen bg-[#050505]/40 z-0 pointer-events-none"></div>
-
-      <style>{`
-        .v8-gradient-scrollbar::-webkit-scrollbar { width: 6px; }
-        .v8-gradient-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); border-radius: 10px; }
-        .v8-gradient-scrollbar::-webkit-scrollbar-thumb { background: linear-gradient(to bottom, #3b82f6, #f97316); border-radius: 10px; }
-        .v8-gradient-scrollbar::-webkit-scrollbar-thumb:hover { background: linear-gradient(to bottom, #2563eb, #ea580c); }
-        .v8-gradient-scrollbar { scrollbar-width: thin; scrollbar-color: #f97316 rgba(255,255,255,0.02); }
-
-        @keyframes v8-ai-flow {
-          0% { background-position: 0% 50%; }
-          100% { background-position: 200% 50%; }
-        }
-        .v8-magic-border {
-          position: relative;
-          padding: 2px;
-          border-radius: 0.75rem; 
-          background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570, #f9ab00, #4285f4);
-          background-size: 200% auto;
-          animation: v8-ai-flow 3s linear infinite;
-        }
-        .v8-magic-inner {
-          background-color: #050505;
-          border-radius: calc(0.75rem - 2px);
-          width: 100%;
-          height: 100%;
-        }
-      `}</style>
-
-      <AnimatePresence>
-        {fullscreenImage && (
-           <motion.div 
-             initial={{ opacity: 0 }} 
-             animate={{ opacity: 1 }} 
-             exit={{ opacity: 0 }} 
-             style={{ zIndex: 2147483640 }}
-             className="fixed inset-0 w-screen h-screen flex items-center justify-center bg-[#050505] p-4"
-             onClick={() => setFullscreenImage(null)}
-           >
-              <button 
-                onClick={(e) => { e.stopPropagation(); setFullscreenImage(null); }}
-                style={{ zIndex: 2147483647 }}
-                className="absolute top-6 right-6 md:top-12 md:right-12 bg-red-600 hover:bg-red-500 text-white p-3 md:p-4 rounded-full shadow-[0_0_20px_rgba(220,38,38,0.8)] cursor-pointer border-2 border-white/20"
-              >
-                <X size={24} md:size={32} strokeWidth={3} />
-              </button>
-              <img 
-                src={fullscreenImage} 
-                className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-[0_0_40px_rgba(234,88,12,0.2)]"
-                onClick={(e) => e.stopPropagation()} 
-                alt="Fullscreen Preview"
-              />
-           </motion.div>
-        )}
-      </AnimatePresence>
-
-      <LoginRequiredModal
-        isOpen={isLoginRequiredOpen}
-        onClose={() => setIsLoginRequiredOpen(false)}
-        packageName={checkoutProduct}
-        price={checkoutPrice}
-        onLoginSuccess={(user) => {
-          if (user?.email) {
-            setCurrentUser(user);
-          }
-          setIsCheckoutOpen(true);
-        }}
-      />
-
-      <AnimatePresence>
-        {isCheckoutOpen && (
-          <V8SecureCheckout 
-            isOpen={isCheckoutOpen} 
-            onClose={() => setIsCheckoutOpen(false)} 
-            productName={checkoutProduct} 
-            price={checkoutPrice} 
-          />
-        )}
-      </AnimatePresence>
-
-      <div className="mx-auto max-w-[1600px] space-y-8 relative z-10 mt-16 md:mt-20">
+      {/* MAIN GRID SYSTEM */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* 🔥 HEADER BOX SA NOVIM NANO BANANA VIDEOM 🔥 */}
-        <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="rounded-3xl md:rounded-[2.5rem] border border-orange-500/30 px-6 py-16 md:px-8 md:py-36 shadow-[0_0_50px_rgba(234,88,12,0.15)] relative overflow-hidden max-w-7xl mx-auto bg-[#050505] mb-12"
-        >
-            <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-80 z-0 pointer-events-none mix-blend-screen">
-               <source src="/nano-banana-bg.mp4" type="video/mp4" />
-            </video>
-            
-            <div className="absolute inset-0 z-0 bg-black/30"></div>
-            <div className="absolute inset-0 z-0 bg-gradient-to-b from-transparent to-[#050505]/80"></div>
-            <div className="absolute top-0 right-0 w-80 h-80 bg-orange-600/15 rounded-full blur-[100px] pointer-events-none z-0"></div>
-            
-            <div className="flex flex-col items-center text-center gap-6 relative z-10">
-              <div className="flex flex-col items-center">
-                <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-500/40 bg-orange-500/10 px-4 py-1.5 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-orange-400 shadow-[0_0_15px_rgba(234,88,12,0.2)] backdrop-blur-md">
-                  <Zap size={12} className="animate-pulse" /> V8 GRID SYSTEM
-                </div>
-                <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-white uppercase italic drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)]">
-                  CINEMATIC GRID <span className="text-orange-500 block sm:inline">SYSTEM</span>
-                </h1>
-                <p className="mt-4 max-w-2xl text-zinc-300 text-xs md:text-base font-medium mx-auto drop-shadow-md px-4">
-                  The ultimate text-generation algorithm strictly optimized for Google Nano Banana 2. Selectable cinematic aspect ratios.
-                </p>
-              </div>
-            </div>
-
-            {/* 🔥 PRAVI KORISNIČKI BROJAČI PROMPTOVA 🔥 */}
-            {(isVIP || isAdmin) && (
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 mt-8 md:mt-12 relative z-20 w-full max-w-3xl mx-auto px-4">
-                
-                <div className="bg-[#050505]/80 backdrop-blur-xl border border-emerald-500/30 px-5 md:px-6 py-4 rounded-2xl flex items-center justify-center sm:justify-start gap-4 md:gap-5 shadow-[0_0_30px_rgba(16,185,129,0.15)] w-full sm:w-1/2 group">
-                   <div className="bg-emerald-900/40 p-2.5 md:p-3 rounded-xl border border-emerald-500/20 shrink-0">
-                      <Database className="text-emerald-400 w-5 h-5 md:w-6 md:h-6" />
-                   </div>
-                   <div className="flex flex-col text-left">
-                      <span className="text-[8px] md:text-[9px] text-emerald-300 font-black uppercase tracking-[0.2em] mb-1">AVAILABLE PROMPTS</span>
-                      <span className="text-xl md:text-2xl font-black text-white tracking-widest drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
-                         {isAdmin ? '∞' : promptLimit - promptsUsed}
-                      </span>
-                   </div>
-                </div>
-                
-                <div className="bg-[#050505]/80 backdrop-blur-xl border border-orange-500/30 px-5 md:px-6 py-4 rounded-2xl flex items-center justify-center sm:justify-start gap-4 md:gap-5 shadow-[0_0_30px_rgba(234,88,12,0.15)] w-full sm:w-1/2 group">
-                   <div className="bg-orange-900/40 p-2.5 md:p-3 rounded-xl border border-orange-500/20 shrink-0">
-                      <Zap className="text-orange-400 w-5 h-5 md:w-6 md:h-6" />
-                   </div>
-                   <div className="flex flex-col text-left">
-                      <span className="text-[8px] md:text-[9px] text-orange-300 font-black uppercase tracking-[0.2em] mb-1">PROMPTS GENERATED</span>
-                      <span className="text-xl md:text-2xl font-black text-white tracking-widest flex items-center gap-3">
-                         {isAdmin ? '∞' : promptsUsed}
-                      </span>
-                   </div>
-                </div>
-              </div>
-            )}
-        </motion.div>
-
-        {/* 🔥 NOVI ACCORDION: 10 SECRET PROMPTS 🔥 */}
-        {renderPromptSecrets()}
-
-        {/* 🔥 DOWNLOAD DUGME (SAMO LICENCA) 🔥 */}
-        <div className="flex justify-center max-w-md mx-auto mb-16 relative z-10 w-full px-4 md:px-0">
-          <a href="/v8-license.pdf" download onClick={() => trackV8Action("download_grid_license")} className="w-full bg-black/40 border border-orange-500/30 hover:border-orange-400 p-5 md:p-6 rounded-2xl flex items-center gap-4 md:gap-5 transition-all duration-300 hover:bg-orange-900/20 group hover:-translate-y-1 shadow-lg hover:shadow-[0_10px_30px_rgba(234,88,12,0.2)]">
-              <div className="bg-orange-500/10 p-3 md:p-4 rounded-full border border-orange-500/20 group-hover:bg-orange-500/20 transition-all shrink-0"><FileText className="w-6 h-6 md:w-8 md:h-8 text-orange-400" /></div>
-              <div className="text-left">
-                  <h4 className="text-white font-black uppercase tracking-widest text-[12px] md:text-[13px] mb-1">Commercial License</h4>
-                  <p className="text-zinc-400 text-[10px] md:text-[11px] font-bold">Download Legal Terms (PDF)</p>
-              </div>
-          </a>
+        {/* LEVA KOLONA: KATEGORIJE (Prikazuje sve bez skraćivanja) */}
+        <div className="lg:col-span-4 bg-black border border-zinc-800 p-6 rounded shadow-2xl">
+          <h2 className="text-orange-500 font-bold mb-4 flex items-center gap-2 border-b border-zinc-800 pb-2">
+            <Settings size={18} />
+            ROOT CATEGORY
+          </h2>
+          <div className="space-y-2 h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+            {DEFAULT_CATEGORIES.map((cat, index) => (
+              <button
+                key={index}
+                onClick={() => setSelectedCategory(cat)}
+                className={`w-full text-left px-4 py-3 rounded transition-all duration-200 text-sm ${
+                  selectedCategory === cat 
+                    ? 'bg-orange-500/20 text-orange-500 border border-orange-500/50' 
+                    : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800 border border-transparent'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div className="w-full max-w-6xl mx-auto mb-16 relative z-10 space-y-12 md:space-y-16 px-4">
-          {GRID_TIERS.map(tier => (
-            <div key={tier.format}>
-               <div className="text-center mb-6 md:mb-8">
-                  <h2 className="text-xl md:text-2xl font-black uppercase tracking-[0.1em] md:tracking-[0.2em] text-white">{tier.title}</h2>
-               </div>
-               
-               <div className="flex flex-wrap justify-center gap-4 md:gap-6 pt-2">
-                  {ASPECT_OPTIONS.map(opt => {
-                     const isSelected = aspectRatio === opt.value && gridFormat === tier.format;
-                     const safeValue = opt.value.replace(':', '-');
-                     const imageSrc = `/ratio-${safeValue}-${tier.format}.webp`;
-
-                     return (
-                         <div
-                           key={opt.value}
-                           onClick={() => { 
-                              setAspectRatio(opt.value); 
-                              setGridFormat(tier.format);
-                              setGeneratedPrompts([]); 
-                           }}
-                           className="relative group cursor-pointer flex flex-col items-center"
-                         >
-                            <div
-                              className={`relative rounded-2xl md:rounded-[1.35rem] p-[3px] transition-all duration-500 ${
-                                isSelected
-                                  ? 'bg-orange-500 shadow-[0_0_35px_rgba(234,88,12,0.35)] scale-105'
-                                  : 'bg-orange-500/45 hover:bg-orange-500 hover:shadow-[0_0_28px_rgba(234,88,12,0.25)]'
-                              }`}
-                              style={{ width: opt.value === '9:16' ? '120px' : opt.value === '21:9' ? '240px' : opt.value === '16:9' ? '210px' : '180px' }}
-                            >
-                              <div className="rounded-[1.1rem] md:rounded-[1.18rem] bg-[#050505] p-[4px] md:p-[5px] border border-orange-500/30">
-                                <div
-                                  className={`relative rounded-xl md:rounded-2xl overflow-hidden bg-black border transition-all duration-500 ${
-                                    isSelected
-                                      ? 'border-orange-400 shadow-inner'
-                                      : 'border-orange-500/40 group-hover:border-orange-400'
-                                  }`}
-                                  style={{ aspectRatio: opt.ratio }}
-                                >
-                                  <img
-                                    src={imageSrc}
-                                    alt={opt.badge}
-                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                  />
-
-                                  <div className="absolute inset-0 bg-black/35 group-hover:bg-black/50 transition-colors duration-300"></div>
-
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setFullscreenImage(imageSrc);
-                                    }}
-                                    title="Pregled preko celog ekrana"
-                                    className="absolute inset-0 z-20 flex items-center justify-center"
-                                  >
-                                    <span className={`flex items-center justify-center rounded-full backdrop-blur-md border transition-all duration-300 ${
-                                      isSelected
-                                        ? 'w-12 h-12 md:w-16 md:h-16 bg-orange-500 text-black border-orange-300 shadow-[0_0_24px_rgba(234,88,12,0.6)]'
-                                        : 'w-10 h-10 md:w-14 md:h-14 bg-black/55 text-white border-orange-500/50 group-hover:bg-orange-500 group-hover:text-black group-hover:border-orange-300 group-hover:shadow-[0_0_22px_rgba(234,88,12,0.55)]'
-                                    }`}>
-                                      <Eye size={20} className="md:w-[26px] md:h-[26px]" strokeWidth={2.4} />
-                                    </span>
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="mt-3 md:mt-4 text-center">
-                              <div className={`text-[9px] md:text-[11px] font-black uppercase tracking-[0.2em] transition-colors ${isSelected ? 'text-orange-400' : 'text-zinc-400 group-hover:text-orange-300'}`}>
-                                {opt.badge}
-                              </div>
-                              <div className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.18em] text-zinc-600 mt-1">
-                                {tier.format} Preview
-                              </div>
-                            </div>
-                         </div>
-                     );
-                  })}
-               </div>
-            </div>
-          ))}
-        </div>
-
-        {/* PRICING PLANS SEKCIJA */}
-        {!isCheckingAccess && currentPlan !== 'ENTERPRISE' && (
-           <div className="relative z-20 w-full">{renderPricingPlans()}</div>
-        )}
-
-        <div className={`transition-all duration-500 w-full flex flex-col items-center ${!isVIP && !isAdmin ? 'opacity-30 grayscale-[70%] pointer-events-none' : ''}`}>
+        {/* SREDNJA KOLONA: PODKATEGORIJE & KONTROLE */}
+        <div className="lg:col-span-8 flex flex-col gap-6">
           
-          {isEngineCoolingDown && !isAdmin && (
-            <div className="mb-10 w-full max-w-7xl mx-auto bg-red-950/40 border border-red-500/50 rounded-2xl p-6 text-center shadow-inner relative overflow-hidden">
-              <div className="absolute inset-0 bg-red-500/10 animate-pulse"></div>
-              <AlertTriangle className="w-10 h-10 text-red-500 mx-auto mb-3 relative z-10 drop-shadow-[0_0_15px_rgba(239,68,68,0.8)]" />
-              <h4 className="text-red-400 font-black uppercase text-[14px] md:text-[16px] tracking-widest relative z-10 mb-2">
-                V8 ENGINE COOLING PROTOCOL ACTIVE
-              </h4>
-              <p className="text-zinc-300 text-[11px] md:text-[12px] font-bold tracking-widest relative z-10">
-                You have exhausted your processing credits. System will auto-refill exactly 30 days after your last batch.
-              </p>
-            </div>
-          )}
-
-          {/* ENGINE PARAMETERS */}
-          <div className="rounded-3xl md:rounded-[2rem] border border-white/10 bg-[#0a0a0a]/80 backdrop-blur-md p-5 md:p-6 shadow-2xl max-w-7xl mx-auto flex flex-col items-center w-full mb-10 md:mb-12">
-            <h2 className="text-sm md:text-base font-black uppercase tracking-widest text-white border-b border-white/10 pb-3 md:pb-4 w-full text-center">Engine Parameters</h2>
-
-            <div className="flex flex-wrap items-end justify-center gap-3 md:gap-4 w-full pt-2 md:pt-4">
-              
-              <div className="space-y-2 w-[48%] md:flex-grow md:max-w-[180px]">
-                <span className="block text-[8px] md:text-[9px] font-black uppercase tracking-widest text-orange-500 text-center">ALGORITHM SEED</span>
-                <div className="v8-magic-border w-full">
-                  <input type="number" value={seed} onChange={(e) => setSeed(Number(e.target.value || 0))} className="v8-magic-inner px-3 py-3 md:px-4 md:py-3.5 text-white font-mono text-xs md:text-sm text-center outline-none" />
-                </div>
-              </div>
-
-              <div className="space-y-2 w-[48%] md:flex-grow md:max-w-[200px]">
-                <span className="block text-[8px] md:text-[9px] font-black uppercase tracking-widest text-orange-500 text-center">ASPECT RATIO</span>
-                <div className="v8-magic-border w-full">
-                  <select 
-                    value={aspectRatio} 
-                    onChange={(e) => { 
-                      setAspectRatio(e.target.value); 
-                      setGeneratedPrompts([]); 
-                    }} 
-                    className="v8-magic-inner px-2 py-3 md:px-4 md:py-3.5 text-white font-bold text-[10px] md:text-sm text-center uppercase outline-none cursor-pointer"
-                  >
-                    <option value="1:1">1:1 (Square)</option>
-                    <option value="9:16">9:16 (Vertical)</option>
-                    <option value="16:9">16:9 (Cinematic)</option>
-                    <option value="21:9">21:9 (Ultrawide)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="space-y-2 w-[48%] md:flex-grow md:max-w-[200px]">
-                <span className="block text-[8px] md:text-[9px] font-black uppercase tracking-widest text-emerald-500 text-center">GRID SYSTEM</span>
-                <div className="v8-magic-border w-full">
-                  <select 
-                    value={gridFormat} 
-                    onChange={(e) => { 
-                      setGridFormat(e.target.value); 
-                      setGeneratedPrompts([]); 
-                    }} 
-                    className="v8-magic-inner px-2 py-3 md:px-4 md:py-3.5 text-white font-bold text-[10px] md:text-sm text-center uppercase outline-none cursor-pointer"
-                  >
-                    <option value="2x6">2x6 (12 Panels)</option>
-                    <option value="2x4">2x4 (8 Panels)</option>
-                    <option value="2x3">2x3 (6 Panels)</option>
-                    <option value="2x2">2x2 (4 Panels)</option>
-                  </select>
-                </div>
-              </div>
-              
-              <div className="space-y-2 w-[48%] md:flex-grow md:max-w-[240px]">
-                <span className="block text-[8px] md:text-[9px] font-black uppercase tracking-widest text-orange-500 text-center">PRESET STYLE</span>
-                <div className="v8-magic-border w-full">
-                  <select value={presetName} onChange={(e) => setPresetName(e.target.value)} className="v8-magic-inner px-2 py-3 md:px-4 md:py-3.5 text-white font-bold uppercase text-[10px] md:text-sm text-center outline-none cursor-pointer">
-                    {Object.keys(STYLE_PRESETS).map((name) => (<option key={name} value={name}>{name.toUpperCase()}</option>))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="w-full md:w-auto flex justify-center gap-3 md:gap-4 mt-2 md:mt-0">
-                <label className="flex items-center gap-2 md:gap-3 rounded-xl border border-white/10 bg-black px-4 md:px-5 py-3 md:py-4 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-zinc-300 cursor-pointer hover:border-orange-500/50 transition-colors w-1/2 md:w-auto justify-center">
-                  <input type="checkbox" checked={strictNoBrand} onChange={(e) => setStrictNoBrand(e.target.checked)} className="accent-orange-500 w-3 h-3 md:w-4 md:h-4 shrink-0" />
-                  NO BRAND
-                </label>
-                <label className="flex items-center gap-2 md:gap-3 rounded-xl border border-white/10 bg-black px-4 md:px-5 py-3 md:py-4 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-zinc-300 cursor-pointer hover:border-orange-500/50 transition-colors w-1/2 md:w-auto justify-center">
-                  <input type="checkbox" checked={includeNegative} onChange={(e) => setIncludeNegative(e.target.checked)} className="accent-orange-500 w-3 h-3 md:w-4 md:h-4 shrink-0" />
-                  NEGATIVE
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-2xl md:rounded-[1.5rem] border border-emerald-500/30 bg-emerald-900/20 backdrop-blur-sm p-3 md:p-4 text-[11px] md:text-xs text-emerald-200 font-medium leading-relaxed max-w-4xl mx-auto text-center mb-8 px-4">
-            <span className="font-black text-emerald-400 uppercase tracking-widest block mb-1 text-[9px] md:text-[10px]">V8 SMART BLUEPRINT ACTIVE</span>
-            The V8 Engine is dynamically injecting premium cinematic metadata, lighting arrays, and specific camera equipment in real-time based on your selected subjects and seed.
-          </div>
-
-          {/* ===================================== */}
-          {/* MASTER DATABASE CONTROL SWITCHER */}
-          {/* ===================================== */}
-          <div className="flex flex-col items-center w-full max-w-7xl mx-auto mb-8 md:mb-10 px-2 md:px-0">
-            <div className="inline-flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-[#050505] border border-white/10 mb-5 md:mb-6 shadow-inner">
-              <Database size={12} className="md:w-[14px] md:h-[14px] text-emerald-500" />
-              <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Master Database Control</span>
-            </div>
-            
-            <div className="grid grid-cols-2 lg:grid-cols-5 md:flex md:flex-wrap justify-center gap-3 md:gap-4 w-full">
-               {[1, 2, 3, 4, 5].map(num => {
-                  const isActive = activeDB === num;
-                  let activeColors = "";
-                  if (num === 1) activeColors = "bg-blue-600/20 border-blue-500 text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.3)] scale-[1.02] md:scale-105";
-                  if (num === 2) activeColors = "bg-orange-600/20 border-orange-500 text-orange-400 shadow-[0_0_20px_rgba(234,88,12,0.3)] scale-[1.02] md:scale-105";
-                  if (num === 3) activeColors = "bg-purple-600/20 border-purple-500 text-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.3)] scale-[1.02] md:scale-105";
-                  if (num === 4) activeColors = "bg-red-600/20 border-red-500 text-red-400 shadow-[0_0_20px_rgba(220,38,38,0.3)] scale-[1.02] md:scale-105";
-                  if (num === 5) activeColors = "bg-cyan-600/20 border-cyan-500 text-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)] scale-[1.02] md:scale-105";
-                  
-                  return (
-                    <button 
-                      key={`switch-${num}`}
-                      onClick={() => setActiveDB(num)}
-                      className={`w-full md:w-[180px] h-[45px] md:h-[55px] rounded-xl md:rounded-2xl font-black uppercase tracking-widest transition-all duration-300 text-[9px] md:text-[10px] border flex items-center justify-center gap-1.5 md:gap-2 ${
-                        isActive 
-                          ? activeColors 
-                          : "bg-[#050505] border-white/5 text-zinc-500 hover:border-white/20 hover:text-zinc-300"
-                      } ${num === 5 ? 'col-span-2 lg:col-span-1' : ''}`}
-                    >
-                      {isActive ? <CheckCircle size={12} className="md:w-[14px] md:h-[14px]" /> : <Lock size={10} className="md:w-[12px] md:h-[12px] opacity-40" />}
-                      {isActive ? `ACTIVE: DB ${num}` : num === 5 ? `CUSTOM DB 5` : `DB ${num}`}
-                    </button>
-                  )
-               })}
-            </div>
-          </div>
-
-          {/* ===================================== */}
-          {/* GRID LAYOUT DATABASE 1 */}
-          {/* ===================================== */}
-          <div className={`transition-all duration-500 w-full ${activeDB !== 1 ? 'opacity-20 grayscale pointer-events-none scale-[0.98] hidden' : 'scale-100 z-10 relative block'}`}>
-            <div className="rounded-3xl md:rounded-[2rem] border border-white/10 bg-[#0a0a0a]/80 backdrop-blur-md p-5 md:p-8 shadow-2xl w-full" ref={dropdownRef1}>
-              <div className="flex flex-col mb-6 md:mb-8">
-                <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 gap-2">
-                   <h2 className="text-base md:text-lg font-black uppercase tracking-widest text-white text-center md:text-left">Grid Database 1</h2>
-                   <span className="text-[9px] md:text-[10px] bg-zinc-800 text-zinc-300 px-3 py-1 rounded-full font-black tracking-widest self-center md:self-auto">
-                      {visiblePanelsCount} PANELS ACTIVE
-                   </span>
-                </div>
-                <div style={{ width: '100%', height: '0.5px', background: 'linear-gradient(90deg, #4285f4, #9b72cb, #d96570, #f9ab00, #4285f4)', opacity: 0.9 }}></div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-                {categories1.slice(0, visiblePanelsCount).map((category, index) => {
-                  const originalCategory = DEFAULT_CATEGORIES[index];
-                  const subOptions = SUB_CATEGORIES_DB[originalCategory] || [];
-                  const autoDesc = autoDescription(category, index, seed, 0, 1);
-
-                  return (
-                    <MemoizedPanel 
-                      key={`db1-${index}`}
-                      index={index}
-                      category={category}
-                      autoDesc={autoDesc}
-                      subOptions={subOptions}
-                      updateCategory={updateCategory1}
-                      openDropdown={openDropdown1}
-                      setOpenDropdown={setOpenDropdown1}
-                    />
-                  )
-                })}
-              </div>
-            </div>
-            <div style={{ width: '100%', height: '0.5px', background: 'linear-gradient(90deg, #4285f4, #9b72cb, #d96570, #f9ab00, #4285f4)', opacity: 0.9, marginTop: '24px', marginBottom: '24px' }}></div>
-          </div>
-
-          {/* ===================================== */}
-          {/* GRID LAYOUT DATABASE 2 */}
-          {/* ===================================== */}
-          <div className={`transition-all duration-500 w-full ${activeDB !== 2 ? 'opacity-20 grayscale pointer-events-none scale-[0.98] hidden' : 'scale-100 z-10 relative block'}`}>
-            <div className="rounded-3xl md:rounded-[2rem] border border-white/10 bg-[#0a0a0a]/80 backdrop-blur-md p-5 md:p-8 shadow-2xl w-full" ref={dropdownRef2}>
-              <div className="flex flex-col mb-6 md:mb-8">
-                <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 gap-2">
-                   <h2 className="text-base md:text-lg font-black uppercase tracking-widest text-white text-center md:text-left">Grid Database 2</h2>
-                   <span className="text-[9px] md:text-[10px] bg-zinc-800 text-zinc-300 px-3 py-1 rounded-full font-black tracking-widest self-center md:self-auto">
-                      {visiblePanelsCount} PANELS ACTIVE
-                   </span>
-                </div>
-                <div style={{ width: '100%', height: '0.5px', background: 'linear-gradient(90deg, #4285f4, #9b72cb, #d96570, #f9ab00, #4285f4)', opacity: 0.9 }}></div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-                {categories2.slice(0, visiblePanelsCount).map((category, index) => {
-                  const originalCategory = DEFAULT_CATEGORIES_2[index];
-                  const subOptions = SUB_CATEGORIES_DB_2[originalCategory] || [];
-                  const autoDesc = autoDescription(category, index, seed, 0, 2);
-
-                  return (
-                    <MemoizedPanel 
-                      key={`db2-${index}`}
-                      index={index}
-                      category={category}
-                      autoDesc={autoDesc}
-                      subOptions={subOptions}
-                      updateCategory={updateCategory2}
-                      openDropdown={openDropdown2}
-                      setOpenDropdown={setOpenDropdown2}
-                    />
-                  )
-                })}
-              </div>
-            </div>
-            <div style={{ width: '100%', height: '0.5px', background: 'linear-gradient(90deg, #4285f4, #9b72cb, #d96570, #f9ab00, #4285f4)', opacity: 0.9, marginTop: '24px', marginBottom: '24px' }}></div>
-          </div>
-
-          {/* ===================================== */}
-          {/* GRID LAYOUT DATABASE 3 */}
-          {/* ===================================== */}
-          <div className={`transition-all duration-500 w-full ${activeDB !== 3 ? 'opacity-20 grayscale pointer-events-none scale-[0.98] hidden' : 'scale-100 z-10 relative block'}`}>
-            <div className="rounded-3xl md:rounded-[2rem] border border-white/10 bg-[#0a0a0a]/80 backdrop-blur-md p-5 md:p-8 shadow-2xl w-full" ref={dropdownRef3}>
-              <div className="flex flex-col mb-6 md:mb-8">
-                <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 gap-2">
-                   <h2 className="text-base md:text-lg font-black uppercase tracking-widest text-white text-center md:text-left">Grid Database 3</h2>
-                   <span className="text-[9px] md:text-[10px] bg-zinc-800 text-zinc-300 px-3 py-1 rounded-full font-black tracking-widest self-center md:self-auto">
-                      {visiblePanelsCount} PANELS ACTIVE
-                   </span>
-                </div>
-                <div style={{ width: '100%', height: '0.5px', background: 'linear-gradient(90deg, #4285f4, #9b72cb, #d96570, #f9ab00, #4285f4)', opacity: 0.9 }}></div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-                {categories3.slice(0, visiblePanelsCount).map((category, index) => {
-                  const originalCategory = DEFAULT_CATEGORIES_3[index];
-                  const subOptions = SUB_CATEGORIES_DB_3[originalCategory] || [];
-                  const autoDesc = autoDescription(category, index, seed, 0, 3);
-
-                  return (
-                    <MemoizedPanel 
-                      key={`db3-${index}`}
-                      index={index}
-                      category={category}
-                      autoDesc={autoDesc}
-                      subOptions={subOptions}
-                      updateCategory={updateCategory3}
-                      openDropdown={openDropdown3}
-                      setOpenDropdown={setOpenDropdown3}
-                    />
-                  )
-                })}
-              </div>
-            </div>
-            <div style={{ width: '100%', height: '0.5px', background: 'linear-gradient(90deg, #4285f4, #9b72cb, #d96570, #f9ab00, #4285f4)', opacity: 0.9, marginTop: '24px', marginBottom: '24px' }}></div>
-          </div>
-
-          {/* ===================================== */}
-          {/* GRID LAYOUT DATABASE 4 */}
-          {/* ===================================== */}
-          <div className={`transition-all duration-500 w-full ${activeDB !== 4 ? 'opacity-20 grayscale pointer-events-none scale-[0.98] hidden' : 'scale-100 z-10 relative block'}`}>
-            <div className="rounded-3xl md:rounded-[2rem] border border-white/10 bg-[#0a0a0a]/80 backdrop-blur-md p-5 md:p-8 shadow-2xl w-full" ref={dropdownRef4}>
-              <div className="flex flex-col mb-6 md:mb-8">
-                <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 gap-2">
-                   <h2 className="text-base md:text-lg font-black uppercase tracking-widest text-white text-center md:text-left">Grid Database 4</h2>
-                   <span className="text-[9px] md:text-[10px] bg-zinc-800 text-zinc-300 px-3 py-1 rounded-full font-black tracking-widest self-center md:self-auto">
-                      {visiblePanelsCount} PANELS ACTIVE
-                   </span>
-                </div>
-                <div style={{ width: '100%', height: '0.5px', background: 'linear-gradient(90deg, #4285f4, #9b72cb, #d96570, #f9ab00, #4285f4)', opacity: 0.9 }}></div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-                {categories4.slice(0, visiblePanelsCount).map((category, index) => {
-                  const originalCategory = DEFAULT_CATEGORIES_4[index];
-                  const subOptions = SUB_CATEGORIES_DB_4[originalCategory] || [];
-                  const autoDesc = autoDescription(category, index, seed, 0, 4);
-
-                  return (
-                    <MemoizedPanel 
-                      key={`db4-${index}`}
-                      index={index}
-                      category={category}
-                      autoDesc={autoDesc}
-                      subOptions={subOptions}
-                      updateCategory={updateCategory4}
-                      openDropdown={openDropdown4}
-                      setOpenDropdown={setOpenDropdown4}
-                    />
-                  )
-                })}
-              </div>
-            </div>
-            <div style={{ width: '100%', height: '0.5px', background: 'linear-gradient(90deg, #4285f4, #9b72cb, #d96570, #f9ab00, #4285f4)', opacity: 0.9, marginTop: '24px', marginBottom: '24px' }}></div>
-          </div>
-
-          {/* ===================================== */}
-          {/* GRID LAYOUT DATABASE 5 (CUSTOM) */}
-          {/* ===================================== */}
-          <div className={`transition-all duration-500 w-full ${activeDB !== 5 ? 'opacity-20 grayscale pointer-events-none scale-[0.98] hidden' : 'scale-100 z-10 relative block'}`}>
-            <div className="rounded-3xl md:rounded-[2rem] border border-cyan-500/30 bg-[#0a0a0a]/80 backdrop-blur-md p-5 md:p-8 shadow-[0_0_40px_rgba(6,182,212,0.15)] w-full" ref={dropdownRef5}>
-              <div className="flex flex-col mb-6 md:mb-8">
-                <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 gap-2">
-                   <h2 className="text-base md:text-lg font-black uppercase tracking-widest text-cyan-400 text-center md:text-left flex items-center gap-3">
-                     Custom Database 5 <span className="bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded text-[10px] font-bold border border-cyan-500/30">Sandbox</span>
-                   </h2>
-                   <span className="text-[9px] md:text-[10px] bg-cyan-900/50 text-cyan-300 px-3 py-1 rounded-full font-black tracking-widest self-center md:self-auto border border-cyan-500/30">
-                      {visiblePanelsCount} PANELS ACTIVE
-                   </span>
-                </div>
-                <div style={{ width: '100%', height: '0.5px', background: 'linear-gradient(90deg, #06b6d4, #3b82f6, #06b6d4)', opacity: 0.9 }}></div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-                {categories5.slice(0, visiblePanelsCount).map((category, index) => {
-                  const autoDesc = autoDescription(category, index, seed, 0, 5);
-
-                  return (
-                    <MemoizedPanel 
-                      key={`db5-${index}`}
-                      index={index}
-                      category={category}
-                      autoDesc={autoDesc}
-                      subOptions={[]} 
-                      updateCategory={updateCategory5}
-                      openDropdown={openDropdown5}
-                      setOpenDropdown={setOpenDropdown5}
-                    />
-                  )
-                })}
-              </div>
-            </div>
-            <div style={{ width: '100%', height: '0.5px', background: 'linear-gradient(90deg, #4285f4, #9b72cb, #d96570, #f9ab00, #4285f4)', opacity: 0.9, marginTop: '24px', marginBottom: '24px' }}></div>
-          </div>
-
-          {/* GENERATE I REGENERATE SEKCIJA */}
-          <div className="rounded-[2rem] md:rounded-[2.5rem] border border-orange-500/40 bg-[#0a0a0a]/90 backdrop-blur-md p-6 md:p-8 shadow-[0_0_40px_rgba(234,88,12,0.15)] relative mt-8 md:mt-10 max-w-7xl mx-auto w-full">
-            
-            {generatedPrompts.length === 0 ? (
-              
-              <div className="flex flex-col items-center justify-center py-12 md:py-20 text-center">
-                <Zap className="w-12 h-12 md:w-16 md:h-16 text-zinc-700 mb-4 md:mb-6" />
-                <h2 className="text-xl md:text-2xl font-black text-zinc-500 uppercase tracking-widest mb-6 md:mb-8">SYSTEM STANDBY</h2>
-                
-                <button 
-                  onClick={() => handleGenerate100(activeDB)} 
-                  disabled={isEngineCoolingDown && !isAdmin}
-                  className={`w-full sm:w-[280px] h-[55px] md:h-[65px] bg-gradient-to-r text-white font-black uppercase tracking-widest rounded-2xl transition-all flex items-center justify-center text-[11px] md:text-[12px] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${
-                     activeDB === 1 ? 'from-blue-700 to-blue-500 hover:from-blue-600 hover:to-blue-400 shadow-[0_0_30px_rgba(59,130,246,0.3)]' :
-                     activeDB === 2 ? 'from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 shadow-[0_0_30px_rgba(234,88,12,0.3)]' :
-                     activeDB === 3 ? 'from-purple-700 to-purple-500 hover:from-purple-600 hover:to-purple-400 shadow-[0_0_30px_rgba(168,85,247,0.3)]' :
-                     activeDB === 4 ? 'from-red-700 to-red-500 hover:from-red-600 hover:to-red-400 shadow-[0_0_30px_rgba(220,38,38,0.3)]' :
-                     'from-cyan-600 to-blue-500 hover:from-cyan-500 hover:to-blue-400 shadow-[0_0_30px_rgba(6,182,212,0.3)]'
-                  } ${!isEngineCoolingDown || isAdmin ? 'hover:scale-[1.05]' : ''}`}
+          {/* PODKATEGORIJE */}
+          <div className="bg-black border border-zinc-800 p-6 rounded shadow-2xl">
+            <h2 className="text-orange-500 font-bold mb-4 flex items-center gap-2 border-b border-zinc-800 pb-2">
+              <Crosshair size={18} />
+              EXACT TARGET (SUBCATEGORY)
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+              {SUB_CATEGORIES_DB[selectedCategory]?.map((sub, index) => (
+                <button
+                  key={index}
+                  onClick={() => setSelectedSub(sub)}
+                  className={`text-left px-4 py-3 rounded transition-all duration-200 text-xs truncate ${
+                    selectedSub === sub 
+                      ? 'bg-orange-500/20 text-orange-500 border border-orange-500/50' 
+                      : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800 border border-transparent'
+                  }`}
                 >
-                   GENERATE 100 PROMPTS (DB {activeDB})
+                  {sub}
                 </button>
+              ))}
+            </div>
+          </div>
+
+          {/* V8 OPTICAL & LIGHTING ENGINE */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            {/* KAMERA */}
+            <div className="bg-black border border-zinc-800 p-4 rounded">
+              <label className="text-orange-500 text-xs font-bold mb-3 flex items-center gap-2">
+                <Aperture size={14} /> CAMERA PRESET
+              </label>
+              <select 
+                className="w-full bg-zinc-900 text-zinc-300 border border-zinc-700 rounded p-2 text-sm focus:border-orange-500 focus:outline-none"
+                value={selectedCamera}
+                onChange={(e) => setSelectedCamera(e.target.value)}
+              >
+                {CAMERA_PRESETS.map((cam, index) => (
+                  <option key={index} value={cam}>{cam}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* OSVETLJENJE */}
+            <div className="bg-black border border-zinc-800 p-4 rounded">
+              <label className="text-orange-500 text-xs font-bold mb-3 flex items-center gap-2">
+                <Sun size={14} /> LIGHTING ENVIRONMENT
+              </label>
+              <select 
+                className="w-full bg-zinc-900 text-zinc-300 border border-zinc-700 rounded p-2 text-sm focus:border-orange-500 focus:outline-none"
+                value={selectedLighting}
+                onChange={(e) => setSelectedLighting(e.target.value)}
+              >
+                {LIGHTING_PRESETS.map((light, index) => (
+                  <option key={index} value={light}>{light}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* STIL */}
+            <div className="bg-black border border-zinc-800 p-4 rounded">
+              <label className="text-orange-500 text-xs font-bold mb-3 flex items-center gap-2">
+                <Settings size={14} /> STYLE PRESET
+              </label>
+              <select 
+                className="w-full bg-zinc-900 text-zinc-300 border border-zinc-700 rounded p-2 text-sm focus:border-orange-500 focus:outline-none"
+                value={selectedStyle}
+                onChange={(e) => setSelectedStyle(e.target.value)}
+              >
+                {Object.keys(STYLE_PRESETS).map((styleKey, index) => (
+                  <option key={index} value={styleKey}>{STYLE_PRESETS[styleKey].label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* AKCIJA I OUTPUT */}
+          <div className="mt-auto flex flex-col gap-4">
+            <button 
+              onClick={handleGeneratePrompt}
+              className="w-full bg-orange-600 hover:bg-orange-500 text-black font-bold py-4 rounded transition-colors duration-200 flex items-center justify-center gap-2 uppercase tracking-widest"
+            >
+              <Cpu size={20} />
+              Construct Prompt Engineering Matrix
+            </button>
+
+            {generatedPrompt && (
+              <div className="bg-zinc-900 border border-orange-500/50 p-4 rounded relative">
+                <span className="absolute -top-3 left-4 bg-zinc-950 px-2 text-xs text-orange-500 font-bold">FINAL V8 OUTPUT</span>
+                <p className="text-white text-sm leading-relaxed">{generatedPrompt}</p>
               </div>
-
-            ) : (
-
-              <>
-                <div ref={promptsTopRef} className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-white/10 pb-5 md:pb-6">
-                  <div>
-                    <h2 className="text-lg md:text-xl font-black uppercase tracking-widest text-white flex items-center justify-center lg:justify-start gap-2 md:gap-3">
-                      <span className="bg-green-500 text-black px-2 md:px-3 py-1 rounded-lg text-[10px] md:text-xs font-black">100</span>
-                      PROMPTS DEPLOYED
-                    </h2>
-                  </div>
-                  <div className="flex flex-wrap items-center justify-center lg:justify-end gap-2 md:gap-3">
-                    
-                    <button 
-                      onClick={() => handleRegenerate100(activeDB)} 
-                      disabled={isEngineCoolingDown && !isAdmin}
-                      className={`flex items-center gap-1.5 md:gap-2 text-white px-4 md:px-5 py-3 md:py-3.5 rounded-xl font-black text-[9px] md:text-[10px] uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                         activeDB === 1 ? 'bg-blue-600 hover:bg-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.4)]' :
-                         activeDB === 2 ? 'bg-orange-600 hover:bg-orange-500 shadow-[0_0_20px_rgba(234,88,12,0.4)]' :
-                         activeDB === 3 ? 'bg-purple-600 hover:bg-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.4)]' :
-                         activeDB === 4 ? 'bg-red-600 hover:bg-red-500 shadow-[0_0_20px_rgba(220,38,38,0.4)]' :
-                         'bg-cyan-600 hover:bg-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.4)]'
-                      }`}
-                    >
-                       <RefreshCw size={12} className="md:w-[14px] md:h-[14px]" /> REGEN (DB {activeDB})
-                    </button>
-
-                    <div className="hidden sm:block w-px h-6 md:h-8 bg-white/10 mx-1 md:mx-2"></div>
-                    
-                    <button onClick={downloadTxt} title="Export as TXT" className="p-2.5 md:p-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-all border border-white/5"><FileText size={16} className="md:w-[18px] md:h-[18px]" /></button>
-                    <button onClick={downloadJson} title="Export as JSON" className="p-2.5 md:p-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-all border border-white/5"><Code size={16} className="md:w-[18px] md:h-[18px]" /></button>
-                    <button onClick={clearPrompts} title="Clear All" className="p-2.5 md:p-3 bg-red-900/20 hover:bg-red-600 text-red-500 hover:text-white rounded-xl transition-all border border-red-500/30"><Trash2 size={16} className="md:w-[18px] md:h-[18px] animate-pulse" /></button>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 p-1 md:p-2">
-                  {currentPrompts.map((promptText, i) => {
-                     const absoluteIndex = indexOfFirstPrompt + i; 
-                     return (
-                         <div key={absoluteIndex} className="bg-[#050505] border border-white/5 rounded-xl md:rounded-2xl p-4 hover:border-orange-500/30 transition-colors relative group flex flex-col h-full">
-                            <div className="flex flex-row items-center justify-between mb-3 border-b border-white/5 pb-3">
-                               <span className="text-[9px] md:text-[10px] font-black text-orange-500 uppercase tracking-widest">
-                                  PROMPT #{String(absoluteIndex + 1).padStart(3, '0')}
-                               </span>
-                               <button 
-                                  onClick={() => copySingle(absoluteIndex, promptText)}
-                                  className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-5 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[8px] md:text-[9px] font-black uppercase transition-all shadow-lg ${copiedStates[absoluteIndex] ? 'bg-green-500 text-black shadow-[0_0_15px_rgba(34,197,94,0.4)]' : 'bg-orange-600 text-white hover:bg-orange-500'}`}
-                               >
-                                  <Copy size={10} className="md:w-[12px] md:h-[12px]" /> {copiedStates[absoluteIndex] ? 'COPIED!' : 'COPY'}
-                               </button>
-                            </div>
-                            <div className="v8-magic-border w-full flex-grow">
-                               <textarea 
-                                  readOnly 
-                                  value={promptText} 
-                                  className="v8-magic-inner p-3 font-mono text-[10px] md:text-[11px] text-zinc-300 resize-none outline-none v8-gradient-scrollbar h-full min-h-[200px] md:min-h-[250px]" 
-                               />
-                            </div>
-                         </div>
-                     );
-                  })}
-                </div>
-
-                {totalPages > 1 && (
-                  <div className="flex flex-col sm:flex-row justify-center items-center gap-3 md:gap-4 mt-8 md:mt-10 pt-6 md:pt-8 border-t border-white/10 w-full">
-                     <button 
-                        onClick={() => paginate(Math.max(1, currentPage - 1))}
-                        disabled={currentPage === 1}
-                        className="w-full sm:w-auto px-6 py-3 bg-[#050505] border border-white/10 rounded-xl text-zinc-400 hover:text-orange-500 hover:border-orange-500/50 disabled:opacity-30 disabled:cursor-not-allowed transition-all font-black text-[9px] md:text-[10px] uppercase tracking-widest"
-                     >
-                        PREVIOUS
-                     </button>
-                     
-                     <div className="flex gap-2 overflow-x-auto max-w-full sm:max-w-[50vw] v8-gradient-scrollbar px-2 py-1">
-                        {[...Array(totalPages)].map((_, idx) => (
-                           <button
-                              key={idx + 1}
-                              onClick={() => paginate(idx + 1)}
-                              className={`w-8 h-8 md:w-10 md:h-10 flex-shrink-0 flex items-center justify-center rounded-xl text-[10px] md:text-[11px] font-black transition-all ${
-                                 currentPage === idx + 1 
-                                    ? 'bg-orange-500 text-black shadow-[0_0_15px_rgba(234,88,12,0.4)] scale-110' 
-                                    : 'bg-zinc-900/50 text-zinc-400 border border-white/5 hover:border-orange-500/30 hover:text-orange-400'
-                              }`}
-                           >
-                              {idx + 1}
-                           </button>
-                        ))}
-                     </div>
-
-                     <button 
-                        onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
-                        disabled={currentPage === totalPages}
-                        className="w-full sm:w-auto px-6 py-3 bg-[#050505] border border-white/10 rounded-xl text-zinc-400 hover:text-orange-500 hover:border-orange-500/50 disabled:opacity-30 disabled:cursor-not-allowed transition-all font-black text-[9px] md:text-[10px] uppercase tracking-widest"
-                     >
-                        NEXT
-                     </button>
-                  </div>
-                )}
-              </>
             )}
           </div>
+
         </div>
       </div>
+
+      {/* FOOTER - PAYMENT & SECURITY */}
+      <footer className="mt-12 pt-6 border-t border-zinc-800 flex items-center justify-between">
+        <p className="text-zinc-600 text-xs">V8 Engine Environment v1.0.0</p>
+        <button className="flex items-center gap-2 text-green-500 bg-green-500/10 px-4 py-2 rounded text-sm hover:bg-green-500/20 transition border border-green-500/20 font-bold tracking-wide">
+          <ShieldCheck size={16} />
+          PROCEED TO SECURITY CHECKOUT
+        </button>
+      </footer>
+
     </div>
   );
 }
-// KRAJ FUNKCIJE: V8GridSystem
 // KRAJ FAJLA: V8GridSystem.jsx
