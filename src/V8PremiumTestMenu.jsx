@@ -1,14 +1,112 @@
-// POČETAK FAJLA: V8PremiumTestMenu.jsx
+// POČETAK FAJLA: src/V8PremiumTestMenu.jsx
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { v8Toast } from './v8Utils';
 import { db } from './firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { QrCode, Save, Download, Store, Crown, Image as ImageIcon, Code, ChevronDown, Upload, RefreshCcw, PenTool, CheckCircle, Utensils, Coffee, Pizza } from 'lucide-react';
+import { Settings, Home, Layout, Zap, Image as ImageIcon, Box, Lock, ChevronDown, Store, FileText, PenTool, Crown, Upload, RefreshCcw, CheckCircle, Globe, Pizza, Save, Download, Flame } from 'lucide-react';
 
 import { CLOUDINARY_UPLOAD_PRESET, CLOUDINARY_CLOUD_NAME } from './data';
-import { CATEGORY_LIMITS, IMG_POOL, RAW_DB } from './v8MenuQRCodeData';
+import { CATEGORY_LIMITS, IMG_POOL, RAW_DB } from './v8MenuQRCodeData.js';
+import { ITALIAN_MASSIVE_MENU } from './DemoData/italianMassiveData.js';
+import { GLOBAL_STREET_MENU } from './DemoData/globalStreetFoodData.js';
+import { MEXICAN_MASSIVE_MENU } from './DemoData/mexicanMassiveData.js';
 
+// 🔥 REČNIK BOJA - Centralizovana kontrola V8 tema 🔥
+const themeStyles = {
+  'V8 Orange': {
+    hex: '#ea580c',
+    text: 'text-orange-500',
+    bg: 'bg-orange-500',
+    border: 'border-orange-500/50',
+    ring: 'focus:border-orange-500/50 focus:ring-orange-500/50',
+    btnText: 'text-black'
+  },
+  'V8 Blue': {
+    hex: '#3b82f6',
+    text: 'text-blue-500',
+    bg: 'bg-blue-500',
+    border: 'border-blue-500/50',
+    ring: 'focus:border-blue-500/50 focus:ring-blue-500/50',
+    btnText: 'text-white'
+  },
+  'V8 Green': {
+    hex: '#22c55e',
+    text: 'text-green-500',
+    bg: 'bg-green-500',
+    border: 'border-green-500/50',
+    ring: 'focus:border-green-500/50 focus:ring-green-500/50',
+    btnText: 'text-black'
+  },
+  'V8 Red': {
+    hex: '#ef4444',
+    text: 'text-red-500',
+    bg: 'bg-red-500',
+    border: 'border-red-500/50',
+    ring: 'focus:border-red-500/50 focus:ring-red-500/50',
+    btnText: 'text-white'
+  },
+  'V8 Purple': {
+    hex: '#a855f7',
+    text: 'text-purple-500',
+    bg: 'bg-purple-500',
+    border: 'border-purple-500/50',
+    ring: 'focus:border-purple-500/50 focus:ring-purple-500/50',
+    btnText: 'text-white'
+  },
+  'V8 Gold': {
+    hex: '#eab308',
+    text: 'text-yellow-500',
+    bg: 'bg-yellow-500',
+    border: 'border-yellow-500/50',
+    ring: 'focus:border-yellow-500/50 focus:ring-yellow-500/50',
+    btnText: 'text-black'
+  }
+};
+
+// 🔥 NAVBAR KOMPONENTA 🔥
+const Navbar = () => {
+  return (
+    <nav className="w-full flex items-center justify-between px-6 py-4 bg-black/80 backdrop-blur-md border-b border-white/5 sticky top-0 z-50">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-full bg-orange-600/20 flex items-center justify-center border border-orange-500/50 shadow-[0_0_15px_rgba(234,88,12,0.3)]">
+          <Zap className="text-orange-500 w-5 h-5" />
+        </div>
+        <div className="flex flex-col">
+          <span className="text-blue-500 font-black text-sm leading-tight tracking-wider">AI TOOLS</span>
+          <span className="text-orange-500 font-black text-sm leading-tight tracking-wider">PRO SMART</span>
+        </div>
+      </div>
+
+      <div className="hidden lg:flex items-center gap-3 text-[11px] font-bold tracking-widest uppercase">
+        <button className="flex items-center gap-2 px-4 py-2 rounded-full border border-green-500/30 text-green-400 hover:bg-green-500/10 transition-colors">
+          <Home className="w-3 h-3" /> HOME <ChevronDown className="w-3 h-3" />
+        </button>
+        <button className="flex items-center gap-2 px-4 py-2 rounded-full border border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10 transition-colors">
+          <Layout className="w-3 h-3" /> MASTER UPSCALERS <ChevronDown className="w-3 h-3" />
+        </button>
+        <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-600/90 text-white hover:bg-red-500 transition-colors shadow-[0_0_15px_rgba(220,38,38,0.4)]">
+          <Zap className="w-3 h-3" /> V8 MASTER TOOLS <ChevronDown className="w-3 h-3" />
+        </button>
+        <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-500 transition-colors">
+          <ImageIcon className="w-3 h-3" /> PREMIUM STOCK <ChevronDown className="w-3 h-3" />
+        </button>
+        <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500 text-black hover:bg-cyan-400 transition-colors">
+          <Box className="w-3 h-3" /> FORGE
+        </button>
+        <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500 text-black hover:bg-orange-400 transition-colors shadow-[0_0_15px_rgba(249,115,22,0.4)]">
+          <Store className="w-3 h-3" /> SAAS MOCKUPS
+        </button>
+      </div>
+
+      <button className="flex items-center gap-2 px-6 py-2 rounded-full border border-white/20 text-white/70 hover:text-white hover:border-white/50 transition-colors text-xs font-bold tracking-widest">
+        <Lock className="w-3 h-3" /> LOGIN
+      </button>
+    </nav>
+  );
+};
+
+// Funkcije za generisanje praznih polja
 const generateInitialItems = (isBlank = false) => {
   let idCounter = 1;
   const finalItems = [];
@@ -43,58 +141,43 @@ const getSuggestionsWithImages = (categoryName, catIndex) => {
   }));
 };
 
-// 🔥 GENERATOR ZA SVIH 146 ITALIJANSKIH JELA 🔥
-const ITALIAN_ALL_ITEMS = [
-  ...["Spaghetti Carbonara", "Cacio e Pepe", "Amatriciana", "Pasta alla Gricia", "Spaghetti Aglio e Olio", "Pasta al Pesto Genovese", "Tagliatelle al Ragù Bolognese", "Pappardelle al Cinghiale", "Lasagne alla Bolognese", "Lasagne al Pesto", "Penne all’Arrabbiata", "Pasta alla Norma", "Pasta Puttanesca", "Linguine alle Vongole", "Spaghetti ai Frutti di Mare", "Fettuccine al Tartufo", "Orecchiette con Cime di Rapa", "Trofie al Pesto", "Ravioli Ricotta e Spinaci", "Ravioli al Tartufo", "Tortellini in Brodo", "Tortellini alla Panna", "Cannelloni", "Gnocchi al Pomodoro", "Gnocchi al Gorgonzola", "Gnocchi alla Sorrentina"].map(name => ({ category: "Pasta", name, price: "18.00", desc: `Authentic Italian ${name} prepared with DOP ingredients and cold-pressed olive oil.`, img: "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=600&q=80", isSignature: false })),
-  ...["Pizza Margherita", "Pizza Marinara", "Pizza Napoletana", "Pizza Diavola", "Pizza Capricciosa", "Pizza Quattro Formaggi", "Pizza Quattro Stagioni", "Pizza Prosciutto e Funghi", "Pizza Ortolana", "Pizza Bianca", "Pizza al Tartufo", "Calzone", "Focaccia Genovese", "Focaccia Barese", "Focaccia al Rosmarino"].map(name => ({ category: "Pizza & Focaccia", name, price: "15.00", desc: `Wood-fired ${name} baked to perfection with a crisp, airy crust.`, img: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=600&q=80", isSignature: false })),
-  ...["Risotto alla Milanese", "Risotto ai Funghi Porcini", "Risotto al Tartufo", "Risotto ai Frutti di Mare", "Risotto al Limone", "Risotto alla Zucca", "Risotto al Radicchio", "Risotto al Gorgonzola", "Risi e Bisi", "Arancini Siciliani", "Supplì"].map(name => ({ category: "Risotto & Rice Dishes", name, price: "22.00", desc: `Creamy and rich ${name}, a comforting Italian classic.`, img: "https://images.unsplash.com/photo-1563245415-321ab9681bc0?auto=format&fit=crop&w=600&q=80", isSignature: false })),
-  ...["Ossobuco alla Milanese", "Saltimbocca alla Romana", "Cotoletta alla Milanese", "Pollo alla Cacciatora", "Vitello Tonnato", "Brasato al Barolo", "Bistecca alla Fiorentina", "Porchetta", "Polpette al Sugo", "Involtini di Carne", "Spezzatino di Manzo", "Abbacchio alla Romana", "Salsiccia e Peperoni"].map(name => ({ category: "Meat Dishes", name, price: "32.00", desc: `Tender, slow-cooked ${name} with signature Italian herbs and wine.`, img: "https://images.unsplash.com/photo-1544025162-8353383827d0?auto=format&fit=crop&w=600&q=80", isSignature: false })),
-  ...["Branzino al Forno", "Orata al Forno", "Fritto Misto di Mare", "Calamari Fritti", "Polpo alla Griglia", "Polpo e Patate", "Seppie al Nero", "Baccalà alla Vicentina", "Baccalà Mantecato", "Zuppa di Pesce", "Cacciucco", "Impepata di Cozze", "Cozze alla Marinara", "Gamberi all’Aglio"].map(name => ({ category: "Fish & Seafood", name, price: "35.00", desc: `Fresh Mediterranean ${name}, bringing the taste of the Italian coast to your table.`, img: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=600&q=80", isSignature: false })),
-  ...["Minestrone", "Ribollita", "Pasta e Fagioli", "Pasta e Ceci", "Zuppa Toscana", "Acquacotta", "Stracciatella alla Romana", "Pappa al Pomodoro", "Brodo con Tortellini", "Zuppa di Lenticchie"].map(name => ({ category: "Soups & Traditional", name, price: "14.00", desc: `Warm, hearty, and authentic rustic ${name}.`, img: "https://images.unsplash.com/photo-1548943487-a2e4b43b485f?auto=format&fit=crop&w=600&q=80", isSignature: false })),
-  ...["Bruschetta al Pomodoro", "Bruschetta ai Funghi", "Caprese", "Prosciutto e Melone", "Prosciutto di Parma con Burrata", "Burrata con Pomodorini", "Carpaccio di Manzo", "Carpaccio di Tonno", "Vitello Tonnato", "Crostini Toscani", "Olive Ascolane", "Mozzarella in Carrozza", "Fiori di Zucca Fritti", "Melanzane alla Parmigiana", "Arancini"].map(name => ({ category: "Appetizers & Antipasti", name, price: "16.00", desc: `Perfect Italian starter: ${name} served fresh with the finest ingredients.`, img: "https://images.unsplash.com/photo-1608897013039-887f214b985c?auto=format&fit=crop&w=600&q=80", isSignature: false })),
-  ...["Parmigiana di Melanzane", "Caponata Siciliana", "Peperonata", "Carciofi alla Romana", "Carciofi alla Giudia", "Verdure Grigliate", "Patate al Rosmarino", "Zucchine alla Scapece", "Fagioli all’Uccelletto", "Insalata Panzanella"].map(name => ({ category: "Vegetables & Side Dishes", name, price: "12.00", desc: `Fresh, seasonal ${name}, a perfect accompaniment.`, img: "https://images.unsplash.com/photo-1599557456721-e73082531a7b?auto=format&fit=crop&w=600&q=80", isSignature: false })),
-  ...["Panino con Porchetta", "Panino Caprese", "Panino Prosciutto e Mozzarella", "Piadina Romagnola", "Tramezzini", "Lampredotto", "Panzerotti", "Pizza al Taglio", "Sfincione Siciliano", "Focaccia Ripiena"].map(name => ({ category: "Sandwiches & Street Food", name, price: "10.00", desc: `Delicious, authentic Italian street food: ${name}.`, img: "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=600&q=80", isSignature: false })),
-  ...["Tiramisù", "Panna Cotta", "Cannoli Siciliani", "Cassata Siciliana", "Sfogliatella", "Babà Napoletano", "Zeppole", "Bomboloni", "Crostata", "Torta Caprese", "Torta della Nonna", "Zabaione", "Semifreddo", "Affogato", "Gelato", "Granita Siciliana", "Amaretti", "Cantucci", "Panettone", "Pandoro", "Torrone", "Ricciarelli"].map(name => ({ category: "Desserts", name, price: "12.00", desc: `Sweet, traditional Italian ${name} to perfectly finish your meal.`, img: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=600&q=80", isSignature: false }))
-];
-
-ITALIAN_ALL_ITEMS[0].isSignature = true; 
-ITALIAN_ALL_ITEMS[26].isSignature = true; 
-ITALIAN_ALL_ITEMS[124].isSignature = true; 
-
-const ITALIAN_MENU_DATA = {
-  restaurantName: "Ristorante L'Antica Ricetta",
-  themeColor: "#eab308", 
-  currency: "€",
-  items: ITALIAN_ALL_ITEMS
-};
-
-export default function V8PremiumTestMenu() {
+// 🔥 GLAVNA KOMPONENTA 🔥
+export default function PremiumMenu() {
   const [items, setItems] = useState(() => generateInitialItems(false));
   const [restaurantName, setRestaurantName] = useState('AURA Fine Dining');
   const [currency, setCurrency] = useState('€');
-  const [themeColor, setThemeColor] = useState('#FF8C00');
+  const [theme, setTheme] = useState('V8 Orange');
 
   const [customItems, setCustomItems] = useState(() => generateInitialItems(true));
   const [customRestaurantName, setCustomRestaurantName] = useState('');
   const [customCurrency, setCustomCurrency] = useState('€');
-  const [customThemeColor, setCustomThemeColor] = useState('#10b981');
+  const [customTheme, setCustomTheme] = useState('V8 Green');
 
   const [isSaving, setIsSaving] = useState(false);
   const [generatedMenuId, setGeneratedMenuId] = useState(null);
+
+  const [isSavingCustom, setIsSavingCustom] = useState(false);
+  const [generatedCustomMenuId, setGeneratedCustomMenuId] = useState(null);
   
   const [isSavingItalian, setIsSavingItalian] = useState(false);
   const [generatedItalianMenuId, setGeneratedItalianMenuId] = useState(null);
-  const [isItalianPreviewOpen, setIsItalianPreviewOpen] = useState(false);
   
+  const [isSavingGlobal, setIsSavingGlobal] = useState(false);
+  const [generatedGlobalMenuId, setGeneratedGlobalMenuId] = useState(null);
+
+  const [isSavingMexican, setIsSavingMexican] = useState(false);
+  const [generatedMexicanMenuId, setGeneratedMexicanMenuId] = useState(null);
+
   const [uploadingItemId, setUploadingItemId] = useState(null);
   const [activeDropdownId, setActiveDropdownId] = useState(null);
   const [activeCustomDropdownId, setActiveCustomDropdownId] = useState(null);
 
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  const currentTheme = themeStyles[theme] || themeStyles['V8 Orange'];
+  const currentCustomTheme = themeStyles[customTheme] || themeStyles['V8 Green'];
 
   const handleItemChange = (id, field, value) => setItems(items.map(item => item.id === id ? { ...item, [field]: value } : item));
   const handleCustomItemChange = (id, field, value) => setCustomItems(customItems.map(item => item.id === id ? { ...item, [field]: value } : item));
@@ -109,46 +192,70 @@ export default function V8PremiumTestMenu() {
     setActiveCustomDropdownId(null);
   };
 
-  const handleImageUpload = async (id, file) => {
+  const handleImageUpload = async (id, file, isCustom = false) => {
     if (!file) return;
     setUploadingItemId(id);
     const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
     try {
       const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`, { method: 'POST', body: fd });
       const resData = await res.json();
-      if (resData.secure_url) handleItemChange(id, 'img', resData.secure_url);
-    } catch (err) { console.error(err); } finally { setUploadingItemId(null); }
-  };
-
-  const handleCustomImageUpload = async (id, file) => {
-    if (!file) return;
-    setUploadingItemId(id);
-    const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-    try {
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`, { method: 'POST', body: fd });
-      const resData = await res.json();
-      if (resData.secure_url) handleCustomItemChange(id, 'img', resData.secure_url);
+      if (resData.secure_url) {
+        if (isCustom) handleCustomItemChange(id, 'img', resData.secure_url);
+        else handleItemChange(id, 'img', resData.secure_url);
+      }
     } catch (err) { console.error(err); } finally { setUploadingItemId(null); }
   };
 
   const activeItems = items.filter(item => item.name && item.name.trim() !== '');
-  const groupedItems = activeItems.reduce((acc, item) => {
-    if (!acc[item.category]) acc[item.category] = [];
-    acc[item.category].push(item);
-    return acc;
-  }, {});
-  const categoryOrder = CATEGORY_LIMITS.map(c => c.name);
-  const sortedCategories = Object.keys(groupedItems).sort((a, b) => {
-    let indexA = categoryOrder.indexOf(a);
-    let indexB = categoryOrder.indexOf(b);
-    return (indexA === -1 ? 99 : indexA) - (indexB === -1 ? 99 : indexB);
-  });
+  const activeCustomItems = customItems.filter(item => item.name && item.name.trim() !== '');
 
-  // 🔥 PRAVI ITALIAN ID FALLBACK 🔥
+  // 1. AURA QR
+  const handleGenerateQR = async () => {
+    if (!restaurantName.trim() || activeItems.length === 0) {
+      if(typeof v8Toast !== 'undefined') v8Toast.error("Enter a restaurant name and at least one item!");
+      return;
+    }
+    setIsSaving(true);
+    try {
+      const itemsToSave = activeItems.map(item => ({ id: item.id, category: item.category, name: item.name, desc: item.desc, price: item.price, img: item.img || item.demoImg, isSignature: item.isSignature }));
+      const docData = { restaurantName, currency, themeColor: currentTheme.hex, items: itemsToSave, createdAt: serverTimestamp(), status: 'active' };
+      const savePromise = addDoc(collection(db, 'v8_qr_menus'), docData);
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 3000));
+      const docRef = await Promise.race([savePromise, timeoutPromise]);
+      setGeneratedMenuId(docRef.id);
+      if(typeof v8Toast !== 'undefined') v8Toast.success("AURA Menu deployed! QR code ready.");
+    } catch (error) {
+      setGeneratedMenuId("TEST-QR-PREVIEW-123");
+      if(typeof v8Toast !== 'undefined') v8Toast.success("AURA Test QR Generated!");
+    } finally { setIsSaving(false); }
+  };
+
+  // 2. CUSTOM QR
+  const handleGenerateCustomQR = async () => {
+    if (!customRestaurantName.trim() || activeCustomItems.length === 0) {
+      if(typeof v8Toast !== 'undefined') v8Toast.error("Enter a restaurant name and at least one custom item!");
+      return;
+    }
+    setIsSavingCustom(true);
+    try {
+      const itemsToSave = activeCustomItems.map(item => ({ id: item.id, category: item.category, name: item.name, desc: item.desc, price: item.price, img: item.img || item.demoImg, isSignature: item.isSignature }));
+      const docData = { restaurantName: customRestaurantName, currency: customCurrency, themeColor: currentCustomTheme.hex, items: itemsToSave, createdAt: serverTimestamp(), status: 'active' };
+      const savePromise = addDoc(collection(db, 'v8_qr_menus'), docData);
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 3000));
+      const docRef = await Promise.race([savePromise, timeoutPromise]);
+      setGeneratedCustomMenuId(docRef.id);
+      if(typeof v8Toast !== 'undefined') v8Toast.success("Custom Menu deployed! QR code ready.");
+    } catch (error) {
+      setGeneratedCustomMenuId("TEST-QR-CUSTOM-123");
+      if(typeof v8Toast !== 'undefined') v8Toast.success("Custom Test QR Generated!");
+    } finally { setIsSavingCustom(false); }
+  };
+
+  // 3. ITALIAN QR
   const handleGenerateItalianQR = async () => {
     setIsSavingItalian(true);
     try {
-      const docData = { ...ITALIAN_MENU_DATA, createdAt: serverTimestamp(), status: 'active' };
+      const docData = { ...ITALIAN_MASSIVE_MENU, createdAt: serverTimestamp(), status: 'active' };
       const savePromise = addDoc(collection(db, 'v8_qr_menus'), docData);
       const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 3000));
       const docRef = await Promise.race([savePromise, timeoutPromise]);
@@ -160,121 +267,148 @@ export default function V8PremiumTestMenu() {
     } finally { setIsSavingItalian(false); }
   };
 
-  // 🔥 PRAVI AURA ID FALLBACK 🔥
-  const handleGenerateQR = async () => {
-    if (!restaurantName.trim() || activeItems.length === 0) {
-      if(typeof v8Toast !== 'undefined') v8Toast.error("Enter a restaurant name and at least one item!");
-      return;
-    }
-    setIsSaving(true);
+  // 4. GLOBAL QR
+  const handleGenerateGlobalQR = async () => {
+    setIsSavingGlobal(true);
     try {
-      const itemsToSave = activeItems.map(item => ({ id: item.id, category: item.category, name: item.name, desc: item.desc, price: item.price, img: item.img || item.demoImg, isSignature: item.isSignature }));
-      const docData = { restaurantName, currency, themeColor, items: itemsToSave, createdAt: serverTimestamp(), status: 'active' };
+      const docData = { ...GLOBAL_STREET_MENU, createdAt: serverTimestamp(), status: 'active' };
       const savePromise = addDoc(collection(db, 'v8_qr_menus'), docData);
       const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 3000));
       const docRef = await Promise.race([savePromise, timeoutPromise]);
-      setGeneratedMenuId(docRef.id);
-      if(typeof v8Toast !== 'undefined') v8Toast.success("Database deployed! QR code ready.");
+      setGeneratedGlobalMenuId(docRef.id);
+      if(typeof v8Toast !== 'undefined') v8Toast.success("Fast Food Menu deployed!");
     } catch (error) {
-      setGeneratedMenuId("TEST-QR-PREVIEW-123");
-      if(typeof v8Toast !== 'undefined') v8Toast.success("Test QR Generated Successfully!");
-    } finally { setIsSaving(false); }
+      setGeneratedGlobalMenuId("TEST-QR-GLOBAL-123");
+      if(typeof v8Toast !== 'undefined') v8Toast.success("Fast Food Test QR Generated!");
+    } finally { setIsSavingGlobal(false); }
   };
 
-  const publicMenuUrl = generatedMenuId ? `https://aitoolsprosmart.com/m/${generatedMenuId}` : '';
-  const qrCodeImageUrl = generatedMenuId ? `https://quickchart.io/qr?text=${encodeURIComponent(publicMenuUrl)}&margin=1&size=512` : null;
-  const publicItalianMenuUrl = generatedItalianMenuId ? `https://aitoolsprosmart.com/m/${generatedItalianMenuId}` : '';
-  const qrCodeItalianImageUrl = generatedItalianMenuId ? `https://quickchart.io/qr?text=${encodeURIComponent(publicItalianMenuUrl)}&margin=1&size=512` : null;
-  const FALLBACK_IMAGE_URL = "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=600&q=80";
+  // 5. MEXICAN QR
+  const handleGenerateMexicanQR = async () => {
+    setIsSavingMexican(true);
+    try {
+      const docData = { ...MEXICAN_MASSIVE_MENU, createdAt: serverTimestamp(), status: 'active' };
+      const savePromise = addDoc(collection(db, 'v8_qr_menus'), docData);
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 3000));
+      const docRef = await Promise.race([savePromise, timeoutPromise]);
+      setGeneratedMexicanMenuId(docRef.id);
+      if(typeof v8Toast !== 'undefined') v8Toast.success("Mexican Menu deployed!");
+    } catch (error) {
+      setGeneratedMexicanMenuId("TEST-QR-MEXICAN-123");
+      if(typeof v8Toast !== 'undefined') v8Toast.success("Mexican Test QR Generated!");
+    } finally { setIsSavingMexican(false); }
+  };
+
+  const getChartUrl = (id) => `https://quickchart.io/qr?text=${encodeURIComponent(`https://aitoolsprosmart.com/m/${id}`)}&margin=1&size=512`;
 
   return (
-    <div className="bg-[#24272b] p-6 md:p-12 rounded-[2.5rem] border border-white/5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),_0_20px_50px_rgba(0,0,0,0.6)] max-w-[1600px] w-[96%] mx-auto mt-28 relative font-sans selection:bg-[#3b82f6] selection:text-white">
-      
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="relative w-full mx-auto mb-12 rounded-[2.5rem] overflow-hidden shadow-2xl bg-black border border-white/10">
-        <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-40 z-0 pointer-events-none">
-          <source src="/v8-debranding-bg.mp4" type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050505]/60 via-[#050505]/80 to-[#050505]"></div>
-        <div className="relative z-10 py-16 px-6 text-center flex flex-col items-center">
-          <div className="inline-block bg-orange-600/10 border border-orange-500/30 px-5 py-2 rounded-full text-orange-400 font-black uppercase tracking-[0.3em] text-[10px] md:text-xs mb-6 animate-pulse shadow-[0_0_20px_rgba(234,88,12,0.2)] backdrop-blur-sm">
-            V8 CINEMATIC PROTOCOL // QR RESTAURANT SUITE
-          </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black italic uppercase tracking-tighter text-white mb-6 drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)] flex items-center justify-center gap-4 flex-wrap">
-            <Code className="text-orange-500 w-12 h-12 md:w-16 md:h-16 drop-shadow-[0_0_15px_rgba(234,88,12,0.8)]" />
-            QR <span className="text-transparent bg-clip-text bg-gradient-to-b from-orange-500 to-amber-600 drop-shadow-none">MENU BUILDER</span>
-          </h1>
-        </div>
-      </motion.div>
+    <div className="min-h-screen bg-[#0d0d11] text-white font-sans selection:bg-orange-500/30">
+      <Navbar />
 
-      <div className="grid grid-cols-1 lg:grid-cols-10 gap-8 lg:gap-12 relative z-10 mb-12 items-start">
-        <div className="lg:col-span-7 flex flex-col gap-12 w-full">
-          <div className="flex flex-col gap-6 w-full">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
-              <label className="text-blue-400 font-black text-sm md:text-base tracking-widest uppercase flex items-center gap-3 drop-shadow-md">
-                <Store size={22} /> 1. EXPLORE OUR MENU
-              </label>
+      <main className="max-w-[1600px] mx-auto px-4 md:px-12 py-10 space-y-12">
+        
+        {/* HERO SEKCIJA SA SLIKOM */}
+        <div className="relative w-full bg-[#1c1c22] rounded-[2.5rem] p-10 md:p-16 flex flex-col md:flex-row items-center justify-center gap-16 border border-white/5 shadow-2xl overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-orange-600/5 blur-[120px] rounded-full pointer-events-none"></div>
+          
+          <div className="relative w-48 md:w-56 shrink-0 z-10 flex items-center justify-center">
+            <img src="/tel_box_ico.webp" alt="V10 Phone Mockup" className="w-full h-auto object-contain drop-shadow-[0_0_40px_rgba(234,88,12,0.6)]" />
+          </div>
+
+          <div className="flex flex-col items-center md:items-start justify-center z-10">
+            <div className="mb-6 transform origin-left">
+              <div className="px-4 py-1.5 border border-[#ea580c] text-[#ea580c] text-[10px] md:text-xs font-bold tracking-[0.25em] rounded-full uppercase bg-black/60 shadow-[0_0_15px_rgba(234,88,12,0.15)]">
+                Cinematic Protocol // QR Restaurant Suite
+              </div>
             </div>
 
-            <div className="bg-[#2b2e34] border border-[#3e4249] border-t-white/10 rounded-[2rem] p-6 md:p-8 flex flex-col gap-8 shadow-[0_15px_35px_rgba(0,0,0,0.5)] w-full">
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-6 bg-[#1f2226] border border-black p-6 rounded-3xl shadow-[inset_0_4px_10px_rgba(0,0,0,0.5)]">
+            <h1 className="text-4xl md:text-[4.5rem] font-black italic tracking-tighter text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)] flex flex-wrap gap-4 justify-center md:justify-start leading-none">
+              QR <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">MENU BUILDER</span>
+            </h1>
+          </div>
+        </div>
+
+        {/* 🔥 GRID ZA NASLOVE - IZVLAČIMO IH IZNAD KUTIJA DA SE VISINE POKLOPE 🔥 */}
+        <div className="grid grid-cols-1 lg:grid-cols-10 gap-8 lg:gap-12 relative z-10 w-full mb-6">
+          <div className="lg:col-span-7 flex flex-col items-center justify-center w-full gap-4">
+            <label className={`font-black text-2xl md:text-3xl tracking-[0.15em] uppercase flex items-center gap-4 text-center ${currentTheme.text} drop-shadow-md transition-colors duration-300`}>
+              <Store size={36} /> 1. EXPLORE OUR MENU
+            </label>
+            <button 
+              onClick={() => document.getElementById('custom-builder-section').scrollIntoView({ behavior: 'smooth' })}
+              className={`${currentTheme.text} flex items-center gap-2 text-sm md:text-base font-bold uppercase tracking-[0.2em] transition-opacity duration-300 hover:opacity-70`}
+            >
+              OR BUILD YOUR OWN MENU 
+              <ChevronDown size={22} className={`${currentTheme.text} animate-bounce`} />
+            </button>
+          </div>
+          <div className="lg:col-span-3 hidden lg:block"></div>
+        </div>
+
+        {/* 🔥 GLAVNI GRID: 7 KOLONA LEVO (BUILDERI), 3 KOLONE DESNO (KARTICE) 🔥 */}
+        <div className="grid grid-cols-1 lg:grid-cols-10 gap-8 lg:gap-12 relative z-10 items-start">
+          
+          {/* ======================= LEVA STRANA ======================= */}
+          <div className="lg:col-span-7 flex flex-col gap-12 w-full">
+            
+            {/* BLOK 1: AURA (FIKSIRANA VISINA 880px) */}
+            <div className="bg-[#1c1c22] border border-white/5 rounded-[2rem] p-6 md:p-8 flex flex-col shadow-[0_15px_35px_rgba(0,0,0,0.5)] w-full h-[880px]">
+              {/* TOP INPUTS */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-6 bg-[#16161a] border border-white/5 p-6 rounded-3xl shadow-inner shrink-0">
                 <div className="md:col-span-6">
-                  <label className="text-blue-400 font-black uppercase tracking-widest text-xs md:text-sm mb-3 block">Restaurant Name</label>
-                  <input type="text" value={restaurantName} onChange={(e) => setRestaurantName(e.target.value)} className="w-full bg-[#16181b] border border-black rounded-xl px-5 py-4 text-blue-100 text-base md:text-lg font-bold outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-[inset_0_2px_5px_rgba(0,0,0,0.8)]" />
+                  <label className={`text-[10px] font-bold tracking-widest uppercase mb-3 block transition-colors duration-300 ${currentTheme.text}`}>Restaurant Name</label>
+                  <input type="text" value={restaurantName} onChange={(e) => setRestaurantName(e.target.value)} className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 text-base font-bold outline-none transition-all shadow-inner ${currentTheme.text} ${currentTheme.ring} placeholder:currentColor placeholder:opacity-40`} />
                 </div>
                 <div className="md:col-span-3">
-                  <label className="text-blue-400 font-black uppercase tracking-widest text-xs md:text-sm mb-3 block">Currency</label>
-                  <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="w-full bg-[#16181b] border border-black rounded-xl px-5 py-4 text-blue-100 text-base md:text-lg font-bold outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer shadow-[inset_0_2px_5px_rgba(0,0,0,0.8)]">
+                  <label className={`text-[10px] font-bold tracking-widest uppercase mb-3 block transition-colors duration-300 ${currentTheme.text}`}>Currency</label>
+                  <select value={currency} onChange={(e) => setCurrency(e.target.value)} className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 text-base font-bold outline-none cursor-pointer shadow-inner ${currentTheme.text} ${currentTheme.ring}`}>
                     <option value="€">EUR (€)</option>
                     <option value="$">USD ($)</option>
                     <option value="RSD">RSD</option>
                   </select>
                 </div>
                 <div className="md:col-span-3">
-                  <label className="text-blue-400 font-black uppercase tracking-widest text-xs md:text-sm mb-3 block">Theme Color</label>
-                  <select value={themeColor} onChange={(e) => setThemeColor(e.target.value)} className="w-full bg-[#16181b] border border-black rounded-xl px-5 py-4 text-blue-100 text-base md:text-lg font-bold outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer shadow-[inset_0_2px_5px_rgba(0,0,0,0.8)]">
-                    <option value="#FF8C00">V8 Orange</option>
-                    <option value="#3b82f6">V8 Blue</option>
-                    <option value="#10b981">V8 Green</option>
+                  <label className={`text-[10px] font-bold tracking-widest uppercase mb-3 block transition-colors duration-300 ${currentTheme.text}`}>Theme Color</label>
+                  <select value={theme} onChange={(e) => setTheme(e.target.value)} className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 text-base font-bold outline-none cursor-pointer shadow-inner ${currentTheme.text} ${currentTheme.ring}`}>
+                    {Object.keys(themeStyles).map(color => <option key={color} value={color}>{color}</option>)}
                   </select>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-10 overflow-y-auto max-h-[750px] pr-3 custom-scrollbar">
+              {/* SKROL ITEMS KUTIJA (flex-1 PREUZIMA SAV OSTATAK PROSTORA) */}
+              <div className="flex flex-col gap-10 overflow-y-auto mt-8 flex-1 pr-3 custom-scrollbar">
                 {CATEGORY_LIMITS.map((cat, catIndex) => {
                   const catItems = items.filter(i => i.category === cat.name);
-                  const activeCount = catItems.filter(i => i.name.trim() !== '').length;
                   const categorySuggestions = getSuggestionsWithImages(cat.name, catIndex);
 
                   return (
-                    <div key={`demo-${cat.name}`} className="shrink-0 bg-[#30343a] border border-[#434851] border-t-white/10 rounded-3xl p-6 md:p-8 shadow-[0_10px_25px_rgba(0,0,0,0.4)]">
-                      <div className="flex items-center justify-between bg-[#1f2226] p-5 rounded-2xl border border-black shadow-[inset_0_2px_5px_rgba(0,0,0,0.5)] mb-8">
-                        <div className="flex flex-col gap-2">
-                          <h3 className="text-blue-300 font-black uppercase tracking-[0.2em] text-lg md:text-xl flex items-center gap-3 drop-shadow-md">
-                            <span className="w-4 h-4 rounded-full shadow-[0_0_10px_rgba(255,255,255,0.2)]" style={{ backgroundColor: themeColor }}></span>
-                            {cat.name}
-                          </h3>
-                        </div>
-                        <span className="text-blue-200 font-black text-sm bg-[#16181b] border border-black px-5 py-3 rounded-lg">{activeCount} / {cat.limit} SLOTS</span>
+                    <div key={`demo-${cat.name}`} className="shrink-0 bg-[#24242a] border border-white/5 rounded-3xl p-6 md:p-8 shadow-md">
+                      <div className="flex items-center justify-between bg-[#16161a] p-5 rounded-2xl border border-white/5 mb-8">
+                        <h3 className={`${currentTheme.text} font-black uppercase tracking-[0.2em] text-lg md:text-xl flex items-center gap-3 transition-colors duration-300`}>
+                          <span className="w-4 h-4 rounded-full shadow-[0_0_10px_rgba(255,255,255,0.2)]" style={{ backgroundColor: currentTheme.hex }}></span>
+                          {cat.name}
+                        </h3>
+                        <span className={`${currentTheme.text} font-bold text-xs bg-[#0d0d11] border border-white/5 px-4 py-2 rounded-lg transition-colors duration-300`}>{catItems.filter(i => i.name.trim() !== '').length} / {cat.limit} SLOTS</span>
                       </div>
                       
                       <div className="flex flex-col gap-6">
                         {catItems.map((item, index) => (
-                          <div key={item.id} className="shrink-0 bg-[#383d44] border border-[#4e545c] border-t-white/10 border-l-4 border-l-blue-900/50 rounded-2xl p-6 md:p-8 relative group focus-within:border-l-blue-400 transition-all shadow-[0_8px_20px_rgba(0,0,0,0.3)]">
-                            <div className="flex justify-between items-center mb-6 border-b border-[#4e545c] pb-3">
-                              <span className="text-blue-400/80 font-black text-xs uppercase tracking-widest">{item.category} / Slot {index + 1}</span>
+                          <div key={item.id} className={`shrink-0 bg-[#1c1c22] border border-white/5 border-l-4 rounded-2xl p-6 md:p-8 relative group transition-all shadow-sm ${currentTheme.border} focus-within:border-l-opacity-100 border-l-opacity-30`}>
+                            <div className="flex justify-between items-center mb-6 border-b border-white/5 pb-3">
+                              <span className={`${currentTheme.text} font-black text-xs uppercase tracking-widest opacity-80 transition-colors duration-300`}>{item.category} / Slot {index + 1}</span>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-6 pr-10">
                               <div className="md:col-span-8 relative">
-                                <input type="text" value={item.name} onChange={(e) => handleItemChange(item.id, 'name', e.target.value)} onFocus={() => setActiveDropdownId(item.id)} onBlur={() => setTimeout(() => setActiveDropdownId(null), 250)} placeholder="Choose a dish..." className="w-full bg-[#16181b] border border-black rounded-xl px-5 py-4 pr-12 text-blue-100 text-base md:text-lg font-bold outline-none focus:border-blue-500" />
-                                <ChevronDown size={22} className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-500/60 pointer-events-none" />
+                                <input type="text" value={item.name} onChange={(e) => handleItemChange(item.id, 'name', e.target.value)} onFocus={() => setActiveDropdownId(item.id)} onBlur={() => setTimeout(() => setActiveDropdownId(null), 250)} placeholder="Choose a dish..." className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 pr-12 text-base md:text-lg font-bold outline-none transition-colors duration-300 ${currentTheme.text} ${currentTheme.ring} placeholder:currentColor placeholder:opacity-40`} />
+                                <ChevronDown size={22} className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-300 opacity-60 ${currentTheme.text}`} />
                                 <AnimatePresence>
                                   {activeDropdownId === item.id && categorySuggestions.length > 0 && (
-                                    <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="absolute top-full left-0 w-full mt-2 bg-[#2b2e34] border border-[#3e4249] rounded-xl shadow-[0_15px_40px_rgba(0,0,0,0.7)] z-[100] max-h-60 overflow-y-auto custom-scrollbar">
+                                    <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="absolute top-full left-0 w-full mt-2 bg-[#24242a] border border-white/10 rounded-xl shadow-2xl z-[100] max-h-60 overflow-y-auto custom-scrollbar">
                                       {categorySuggestions.map((suggestion, sIdx) => (
-                                        <div key={sIdx} onMouseDown={(e) => { e.preventDefault(); handleSuggestionSelect(item.id, suggestion); }} className="p-4 border-b border-[#3e4249]/50 hover:bg-[#32363d] cursor-pointer">
-                                          <div className="text-blue-100 font-bold text-base mb-1">{suggestion.name}</div>
-                                          <div className="text-blue-400/60 text-xs line-clamp-2">{suggestion.desc}</div>
+                                        <div key={sIdx} onMouseDown={(e) => { e.preventDefault(); handleSuggestionSelect(item.id, suggestion); }} className="p-4 border-b border-white/5 hover:bg-[#2b2e34] cursor-pointer">
+                                          <div className={`${currentTheme.text} font-bold text-base mb-1 transition-colors duration-300`}>{suggestion.name}</div>
+                                          <div className={`${currentTheme.text} opacity-60 text-xs line-clamp-2 transition-colors duration-300`}>{suggestion.desc}</div>
                                         </div>
                                       ))}
                                     </motion.div>
@@ -282,21 +416,21 @@ export default function V8PremiumTestMenu() {
                                 </AnimatePresence>
                               </div>
                               <div className="md:col-span-4 relative">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-500/70 text-base font-black">{currency}</span>
-                                <input type="text" value={item.price} onChange={(e) => handleItemChange(item.id, 'price', e.target.value)} placeholder="0.00" className="w-full bg-[#16181b] border border-black rounded-xl pl-10 pr-5 py-4 text-blue-300 text-base md:text-lg font-black outline-none focus:border-blue-500" />
+                                <span className={`absolute left-4 top-1/2 -translate-y-1/2 text-base font-black transition-colors duration-300 opacity-70 ${currentTheme.text}`}>{currency}</span>
+                                <input type="text" value={item.price} onChange={(e) => handleItemChange(item.id, 'price', e.target.value)} placeholder="0.00" className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl pl-10 pr-5 py-4 text-base md:text-lg font-black outline-none transition-colors duration-300 ${currentTheme.text} ${currentTheme.ring} placeholder:currentColor placeholder:opacity-40`} />
                               </div>
                             </div>
                             <div className="mb-6">
-                              <textarea value={item.desc} onChange={(e) => handleItemChange(item.id, 'desc', e.target.value)} placeholder="Short description..." rows={2} className="w-full bg-[#16181b] border border-black rounded-xl px-5 py-4 text-blue-200 text-base outline-none focus:border-blue-500 resize-none" />
+                              <textarea value={item.desc} onChange={(e) => handleItemChange(item.id, 'desc', e.target.value)} placeholder="Short description..." rows={2} className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 text-base outline-none resize-none transition-colors duration-300 ${currentTheme.text} ${currentTheme.ring} placeholder:currentColor placeholder:opacity-40`} />
                             </div>
-                            <div className="border-t border-[#4e545c] pt-6">
-                              <label className="text-blue-400 font-bold uppercase tracking-widest text-sm mb-4 flex items-center gap-2"><ImageIcon size={18} className="text-blue-400" /> Dish Image</label>
+                            <div className="border-t border-white/5 pt-6">
+                              <label className={`${currentTheme.text} font-bold uppercase tracking-widest text-sm mb-4 flex items-center gap-2 transition-colors duration-300`}><ImageIcon size={18} /> Dish Image</label>
                               {item.img ? (
-                                <div className="relative w-full h-48 rounded-xl overflow-hidden border border-[#16181b] shadow-inner"><img src={item.img} alt="Dish" className="w-full h-full object-cover" /></div>
+                                <div className="relative w-full h-48 rounded-xl overflow-hidden border border-[#0d0d11] shadow-inner"><img src={item.img} alt="Dish" className="w-full h-full object-cover" /></div>
                               ) : (
                                 <div className="relative">
-                                  <input type="file" accept="image/*" id={`file-demo-${item.id}`} className="hidden" onChange={(e) => { if(e.target.files && e.target.files[0]) handleImageUpload(item.id, e.target.files[0]); }} />
-                                  <label htmlFor={`file-demo-${item.id}`} className={`flex items-center justify-center gap-3 w-full bg-[#202327] border-2 border-dashed rounded-xl py-6 text-base font-black uppercase cursor-pointer ${uploadingItemId === item.id ? 'border-blue-400 text-blue-400' : 'border-[#4e545c] text-blue-400/70 hover:border-blue-400'}`}>
+                                  <input type="file" accept="image/*" id={`file-demo-${item.id}`} className="hidden" onChange={(e) => { if(e.target.files && e.target.files[0]) handleImageUpload(item.id, e.target.files[0], false); }} />
+                                  <label htmlFor={`file-demo-${item.id}`} className={`flex items-center justify-center gap-3 w-full bg-[#16161a] border-2 border-dashed border-white/10 rounded-xl py-6 text-base font-black uppercase cursor-pointer opacity-70 hover:opacity-100 transition-all ${currentTheme.text} hover:${currentTheme.border}`}>
                                     {uploadingItemId === item.id ? <><RefreshCcw size={20} className="animate-spin" /> UPLOADING...</> : <><Upload size={20} /> UPLOAD IMAGE</>}
                                   </label>
                                 </div>
@@ -310,54 +444,241 @@ export default function V8PremiumTestMenu() {
                 })}
               </div>
             </div>
-          </div>
-        </div>
 
-        <div className="lg:col-span-3 flex flex-col gap-8 sticky top-[120px] w-full h-max">
-          
-          {/* ======================= 1. AURA DEMO BLOK ======================= */}
-          <div className="bg-gradient-to-b from-[#11151c] to-[#0a0e17] border border-zinc-800/50 rounded-[2rem] p-8 flex flex-col items-center text-center shadow-[0_20px_50px_rgba(0,0,0,0.2)] relative w-full overflow-hidden group">
-            {!generatedMenuId ? (
-              <div className="w-full relative z-10 flex flex-col items-center">
-                <div className="w-full max-w-[220px] mb-6 rounded-2xl overflow-hidden shadow-lg"><img src="/QRMenuPromo.webp" alt="Promo" className="w-full h-auto object-cover" /></div>
-                <h3 className="text-white font-black text-[14px] uppercase tracking-[0.2em] mb-2">SAVE MENU & DEPLOY</h3>
-                <button onClick={handleGenerateQR} disabled={isSaving} className="w-full text-black font-black text-[13px] uppercase tracking-widest py-4 rounded-xl shadow-lg flex items-center justify-center gap-3 mt-4" style={{ background: `linear-gradient(to right, ${themeColor}, ${themeColor}dd)` }}>
-                  {isSaving ? 'GENERATING...' : <><Save size={18} /> GENERATE AURA QR</>}
-                </button>
+            {/* BLOK 2: CUSTOM (FIKSIRANA VISINA 880px) */}
+            <div id="custom-builder-section" className="flex flex-col gap-6 w-full pt-4">
+              <div className="flex flex-col items-center justify-center w-full gap-3 mb-2">
+                <label className={`font-black text-2xl md:text-3xl tracking-[0.15em] uppercase flex items-center gap-4 text-center ${currentCustomTheme.text} drop-shadow-md transition-colors duration-300`}>
+                  <PenTool size={36} /> 2. BUILD YOUR OWN MENU
+                </label>
               </div>
-            ) : (
-              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center text-center w-full relative z-10">
-                <div className="bg-white p-4 rounded-2xl mb-5"><img src={qrCodeImageUrl} alt="QR Code" className="w-40 h-40 object-contain" /></div>
-                <a href={qrCodeImageUrl} download="Aura_QR.png" target="_blank" rel="noreferrer" className="w-full text-black font-black uppercase tracking-widest py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-2 text-[11px] mb-3" style={{ background: themeColor }}><Download size={16} /> DOWNLOAD</a>
-                <button onClick={() => setGeneratedMenuId(null)} className="w-full bg-black/60 border border-white/10 text-zinc-400 px-4 py-3.5 rounded-xl text-[11px] font-black uppercase">RESET</button>
-              </motion.div>
-            )}
+
+              <div className="bg-[#1c1c22] border border-white/5 rounded-[2rem] p-6 md:p-8 flex flex-col shadow-[0_15px_35px_rgba(0,0,0,0.5)] w-full h-[880px]">
+                {/* TOP INPUTS */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-6 bg-[#16161a] border border-white/5 p-6 rounded-3xl shadow-inner shrink-0">
+                  <div className="md:col-span-6">
+                    <label className={`text-[10px] font-bold tracking-widest uppercase mb-3 block transition-colors duration-300 ${currentCustomTheme.text}`}>Your Restaurant Name</label>
+                    <input type="text" value={customRestaurantName} onChange={(e) => setCustomRestaurantName(e.target.value)} placeholder="Type name here..." className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 text-base font-bold outline-none transition-all shadow-inner ${currentCustomTheme.text} ${currentCustomTheme.ring} placeholder:currentColor placeholder:opacity-40`} />
+                  </div>
+                  <div className="md:col-span-3">
+                    <label className={`text-[10px] font-bold tracking-widest uppercase mb-3 block transition-colors duration-300 ${currentCustomTheme.text}`}>Currency</label>
+                    <select value={customCurrency} onChange={(e) => setCustomCurrency(e.target.value)} className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 text-base font-bold outline-none cursor-pointer shadow-inner ${currentCustomTheme.text} ${currentCustomTheme.ring}`}>
+                      <option value="€">EUR (€)</option>
+                      <option value="$">USD ($)</option>
+                      <option value="RSD">RSD</option>
+                    </select>
+                  </div>
+                  <div className="md:col-span-3">
+                    <label className={`text-[10px] font-bold tracking-widest uppercase mb-3 block transition-colors duration-300 ${currentCustomTheme.text}`}>Theme Color</label>
+                    <select value={customTheme} onChange={(e) => setCustomTheme(e.target.value)} className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 text-base font-bold outline-none cursor-pointer shadow-inner ${currentCustomTheme.text} ${currentCustomTheme.ring}`}>
+                      {Object.keys(themeStyles).map(color => <option key={color} value={color}>{color}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                {/* SCROLL ITEMS KUTIJA (flex-1) */}
+                <div className="flex flex-col gap-10 overflow-y-auto mt-8 flex-1 pr-3 custom-scrollbar">
+                  {CATEGORY_LIMITS.map((cat, catIndex) => {
+                    const catItems = customItems.filter(i => i.category === cat.name);
+                    const categorySuggestions = getSuggestionsWithImages(cat.name, catIndex);
+
+                    return (
+                      <div key={`custom-${cat.name}`} className="shrink-0 bg-[#24242a] border border-white/5 rounded-3xl p-6 md:p-8 shadow-md">
+                        <div className="flex items-center justify-between bg-[#16161a] p-5 rounded-2xl border border-white/5 mb-8">
+                          <h3 className={`${currentCustomTheme.text} font-black uppercase tracking-[0.2em] text-lg md:text-xl flex items-center gap-3 transition-colors duration-300`}>
+                            <span className="w-4 h-4 rounded-full shadow-[0_0_10px_rgba(255,255,255,0.2)]" style={{ backgroundColor: currentCustomTheme.hex }}></span>
+                            {cat.name}
+                          </h3>
+                          <span className={`${currentCustomTheme.text} font-bold text-xs bg-[#0d0d11] border border-white/5 px-4 py-2 rounded-lg transition-colors duration-300`}>{catItems.filter(i => i.name.trim() !== '').length} / {cat.limit} SLOTS</span>
+                        </div>
+                        
+                        <div className="flex flex-col gap-6">
+                          {catItems.map((item, index) => (
+                            <div key={item.id} className={`shrink-0 bg-[#1c1c22] border border-white/5 border-l-4 rounded-2xl p-6 md:p-8 relative group transition-all shadow-sm ${currentCustomTheme.border} focus-within:border-l-opacity-100 border-l-opacity-30`}>
+                              <div className="flex justify-between items-center mb-6 border-b border-white/5 pb-3">
+                                <span className={`${currentCustomTheme.text} font-black text-xs uppercase tracking-widest opacity-80 transition-colors duration-300`}>{item.category} / Custom Slot {index + 1}</span>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-6 pr-10">
+                                <div className="md:col-span-8 relative">
+                                  <input type="text" value={item.name} onChange={(e) => handleCustomItemChange(item.id, 'name', e.target.value)} onFocus={() => setActiveCustomDropdownId(item.id)} onBlur={() => setTimeout(() => setActiveCustomDropdownId(null), 250)} placeholder="Type custom dish..." className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 pr-12 text-base md:text-lg font-bold outline-none transition-colors duration-300 ${currentCustomTheme.text} ${currentCustomTheme.ring} placeholder:currentColor placeholder:opacity-40`} />
+                                  <ChevronDown size={22} className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-300 opacity-60 ${currentCustomTheme.text}`} />
+                                  <AnimatePresence>
+                                    {activeCustomDropdownId === item.id && categorySuggestions.length > 0 && (
+                                      <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="absolute top-full left-0 w-full mt-2 bg-[#24242a] border border-white/10 rounded-xl shadow-2xl z-[100] max-h-60 overflow-y-auto custom-scrollbar">
+                                        {categorySuggestions.map((suggestion, sIdx) => (
+                                          <div key={sIdx} onMouseDown={(e) => { e.preventDefault(); handleCustomSuggestionSelect(item.id, suggestion); }} className="p-4 border-b border-white/5 hover:bg-[#2b2e34] cursor-pointer">
+                                            <div className={`${currentCustomTheme.text} font-bold text-base mb-1 transition-colors duration-300`}>{suggestion.name}</div>
+                                            <div className={`${currentCustomTheme.text} opacity-60 text-xs line-clamp-2 transition-colors duration-300`}>{suggestion.desc}</div>
+                                          </div>
+                                        ))}
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
+                                </div>
+                                <div className="md:col-span-4 relative">
+                                  <span className={`absolute left-4 top-1/2 -translate-y-1/2 text-base font-black transition-colors duration-300 opacity-70 ${currentCustomTheme.text}`}>{customCurrency}</span>
+                                  <input type="text" value={item.price} onChange={(e) => handleCustomItemChange(item.id, 'price', e.target.value)} placeholder="0.00" className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl pl-10 pr-5 py-4 text-base md:text-lg font-black outline-none transition-colors duration-300 ${currentCustomTheme.text} ${currentCustomTheme.ring} placeholder:currentColor placeholder:opacity-40`} />
+                                </div>
+                              </div>
+                              <div className="mb-6">
+                                <textarea value={item.desc} onChange={(e) => handleCustomItemChange(item.id, 'desc', e.target.value)} placeholder="Type custom description..." rows={2} className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 text-base outline-none resize-none transition-colors duration-300 ${currentCustomTheme.text} ${currentCustomTheme.ring} placeholder:currentColor placeholder:opacity-40`} />
+                              </div>
+                              <div className="border-t border-white/5 pt-6">
+                                <label className={`${currentCustomTheme.text} font-bold uppercase tracking-widest text-sm mb-4 flex items-center gap-2 transition-colors duration-300`}><ImageIcon size={18} /> Dish Image</label>
+                                {item.img ? (
+                                  <div className="relative w-full h-48 rounded-xl overflow-hidden border border-[#0d0d11] shadow-inner"><img src={item.img} alt="Dish" className="w-full h-full object-cover" /></div>
+                                ) : (
+                                  <div className="relative">
+                                    <input type="file" accept="image/*" id={`file-custom-${item.id}`} className="hidden" onChange={(e) => { if(e.target.files && e.target.files[0]) handleCustomImageUpload(item.id, e.target.files[0], true); }} />
+                                    <label htmlFor={`file-custom-${item.id}`} className={`flex items-center justify-center gap-3 w-full bg-[#16161a] border-2 border-dashed border-white/10 rounded-xl py-6 text-base font-black uppercase cursor-pointer opacity-70 hover:opacity-100 transition-all ${currentCustomTheme.text} hover:${currentCustomTheme.border}`}>
+                                      {uploadingItemId === item.id ? <><RefreshCcw size={20} className="animate-spin" /> UPLOADING...</> : <><Upload size={20} /> UPLOAD IMAGE</>}
+                                    </label>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* 🔥 DEPLOY SEKCIJA CUSTOM BLOKA (OSTAJE UNUTAR 880px) 🔥 */}
+                <div className={`mt-6 p-6 md:p-8 border border-white/5 rounded-3xl flex flex-col items-center justify-center transition-all bg-[#16161a] shrink-0 ${currentCustomTheme.border}`}>
+                  {!generatedCustomMenuId ? (
+                    <>
+                      <h3 className={`font-black text-lg md:text-xl uppercase tracking-widest mb-6 ${currentCustomTheme.text}`}>READY TO LAUNCH YOUR CUSTOM MENU?</h3>
+                      <button onClick={handleGenerateCustomQR} disabled={isSavingCustom} className={`px-10 py-5 rounded-2xl font-black text-base uppercase tracking-widest flex items-center justify-center gap-3 transition-opacity hover:opacity-80 shadow-lg ${currentCustomTheme.bg} ${currentCustomTheme.btnText}`}>
+                        {isSavingCustom ? 'GENERATING...' : <><Save size={24} /> DEPLOY CUSTOM QR CODE</>}
+                      </button>
+                    </>
+                  ) : (
+                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center text-center w-full">
+                      <div className="flex items-center gap-2 text-green-400 mb-5 bg-green-500/10 border border-green-500/20 px-4 py-2 rounded-full text-xs font-black tracking-widest"><CheckCircle size={16} className="animate-pulse" /><span>CUSTOM QR READY</span></div>
+                      <div className="bg-white p-4 rounded-2xl mb-6 shadow-xl"><img src={getChartUrl(generatedCustomMenuId)} alt="Custom QR Code" className="w-48 h-48 md:w-64 md:h-64 object-contain" /></div>
+                      <div className="flex flex-col md:flex-row gap-4 w-full max-w-md">
+                        <a href={getChartUrl(generatedCustomMenuId)} download="Custom_QR.png" target="_blank" rel="noreferrer" className={`flex-1 font-black uppercase tracking-widest py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 text-xs transition-opacity hover:opacity-80 ${currentCustomTheme.bg} ${currentCustomTheme.btnText}`}><Download size={18} /> DOWNLOAD</a>
+                        <button onClick={() => setGeneratedCustomMenuId(null)} className="flex-1 bg-[#0d0d11] border border-white/10 text-zinc-400 py-4 rounded-xl text-xs font-black uppercase hover:text-white transition-colors">RESET</button>
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
+
+              </div>
+            </div>
+
           </div>
 
-          {/* ======================= 2. ITALIAN DEMO BLOK ======================= */}
-          <div className="bg-gradient-to-b from-[#11151c] to-[#0a0e17] border border-zinc-800/50 rounded-[2rem] p-8 flex flex-col items-center text-center shadow-[0_20px_50px_rgba(0,0,0,0.2)] relative w-full overflow-hidden group mt-6">
-            {!generatedItalianMenuId ? (
-              <div className="w-full relative z-10 flex flex-col items-center">
-                <div className="w-full max-w-[220px] mb-6 rounded-2xl overflow-hidden shadow-lg"><img src="/QRMenuPromo.webp" alt="Italian Promo" className="w-full h-auto object-cover" /></div>
-                <h3 className="text-yellow-500 font-black text-[14px] uppercase tracking-[0.2em] mb-2">ITALIAN MENU DEMO</h3>
-                <p className="text-zinc-400 text-[11px] mb-4 leading-relaxed max-w-[220px]">Deploy the massive 146-item Italian showcase menu.</p>
-                <button onClick={handleGenerateItalianQR} disabled={isSavingItalian} className="w-full text-black font-black text-[13px] uppercase tracking-widest py-4 rounded-xl shadow-lg flex items-center justify-center gap-3 bg-gradient-to-r from-yellow-500 to-yellow-600 mt-4">
-                  {isSavingItalian ? 'GENERATING...' : <><Save size={18} /> DEPLOY ITALIAN DEMO</>}
-                </button>
+          {/* ======================= DESNA STRANA (SADA STROGO 4 KARTICE SA MEKSIČKIM MENIJEM) ======================= */}
+          <div className="lg:col-span-3 relative">
+            <div className="flex flex-col gap-8 sticky top-[100px] w-full h-[880px] overflow-y-auto pr-4 pb-4" style={{ scrollbarWidth: 'thin', scrollbarColor: '#4b5563 transparent' }}>
+              
+              {/* KARTICA 1: AURA */}
+              <div className={`shrink-0 bg-[#1c1c22] border rounded-[2rem] p-8 flex flex-col items-center text-center shadow-xl transition-all ${currentTheme.border} min-h-min`}>
+                {!generatedMenuId ? (
+                  <div className="w-full flex flex-col items-center">
+                    <div className="w-full max-w-[220px] mb-6 rounded-2xl overflow-hidden shadow-lg border border-white/5">
+                      <img src="/QRMenuPromo.webp" alt="Promo" className="w-full h-auto object-cover" />
+                    </div>
+                    <Crown size={28} className={`mb-3 drop-shadow-md transition-colors duration-300 ${currentTheme.text}`} />
+                    <h2 className={`font-black text-xl md:text-2xl uppercase tracking-widest mb-1 transition-colors duration-300 ${currentTheme.text}`}>{restaurantName || 'AURA Fine Dining'}</h2>
+                    <h3 className={`font-bold text-[11px] uppercase tracking-[0.2em] mb-6 transition-colors duration-300 ${currentTheme.text}`}>PRE-FILLED DEMO</h3>
+                    <button onClick={handleGenerateQR} disabled={isSaving} className={`w-full font-black text-[13px] uppercase tracking-widest py-4 rounded-xl shadow-lg flex items-center justify-center gap-3 transition-opacity hover:opacity-80 ${currentTheme.bg} ${currentTheme.btnText}`}>
+                      {isSaving ? 'GENERATING...' : <><Save size={18} /> DEPLOY AURA QR</>}
+                    </button>
+                  </div>
+                ) : (
+                  <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center text-center w-full">
+                    <div className="bg-white p-4 rounded-2xl mb-5 shadow-lg"><img src={getChartUrl(generatedMenuId)} alt="QR Code" className="w-40 h-40 object-contain" /></div>
+                    <a href={getChartUrl(generatedMenuId)} download="Aura_QR.png" target="_blank" rel="noreferrer" className={`w-full font-black uppercase tracking-widest py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-2 text-[11px] mb-3 transition-opacity hover:opacity-80 ${currentTheme.bg} ${currentTheme.btnText}`}><Download size={16} /> DOWNLOAD</a>
+                    <button onClick={() => setGeneratedMenuId(null)} className="w-full bg-[#16161a] border border-white/10 text-zinc-400 px-4 py-3.5 rounded-xl text-[11px] font-black uppercase hover:text-white transition-colors">RESET</button>
+                  </motion.div>
+                )}
               </div>
-            ) : (
-              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center text-center w-full relative z-10">
-                <div className="bg-white p-4 rounded-2xl mb-5 shadow-[0_0_40px_rgba(234,179,8,0.2)]"><img src={qrCodeItalianImageUrl} alt="Italian QR Code" className="w-40 h-40 object-contain" /></div>
-                <div className="flex items-center gap-2 text-emerald-400 mb-5 bg-emerald-950/40 border border-emerald-500/20 px-4 py-2 rounded-full text-[10px] font-black tracking-widest"><CheckCircle size={14} className="animate-pulse" /><span>ITALIAN QR READY</span></div>
-                <a href={qrCodeItalianImageUrl} download="Italian_Demo_Menu.png" target="_blank" rel="noreferrer" className="w-full text-black font-black uppercase tracking-widest py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-2 text-[11px] mb-3 bg-gradient-to-r from-yellow-500 to-yellow-600"><Download size={16} /> DOWNLOAD</a>
-                <button onClick={() => setGeneratedItalianMenuId(null)} className="w-full bg-black/60 border border-white/10 text-zinc-400 px-4 py-3.5 rounded-xl text-[11px] font-black uppercase tracking-widest">RESET</button>
-              </motion.div>
-            )}
+
+              {/* KARTICA 2: ITALIAN */}
+              <div className="shrink-0 bg-[#1c1c22] border border-yellow-500/30 rounded-[2rem] p-8 flex flex-col items-center text-center shadow-xl min-h-min">
+                {!generatedItalianMenuId ? (
+                  <div className="w-full flex flex-col items-center">
+                    <div className="w-full max-w-[220px] mb-6 rounded-2xl overflow-hidden shadow-lg border border-white/5">
+                      <img src="/QRMenuPromo.webp" alt="Italian Promo" className="w-full h-auto object-cover" />
+                    </div>
+                    <Pizza size={28} className="text-yellow-500 mb-3 drop-shadow-md" />
+                    <h2 className="text-yellow-500 font-black text-xl md:text-2xl uppercase tracking-widest mb-1">Bella Napoli</h2>
+                    <h3 className="text-yellow-500 font-bold text-[11px] uppercase tracking-[0.2em] mb-4">ITALIAN SHOWCASE (146)</h3>
+                    <p className="text-yellow-500/70 text-[11px] mb-6 leading-relaxed max-w-[220px]">Deploy the premium Italian restaurant demo menu.</p>
+                    <button onClick={handleGenerateItalianQR} disabled={isSavingItalian} className="w-full bg-yellow-500 text-black font-black text-[13px] uppercase tracking-widest py-4 rounded-xl shadow-lg flex items-center justify-center gap-3 hover:opacity-80 transition-opacity">
+                      {isSavingItalian ? 'GENERATING...' : <><Save size={18} /> DEPLOY ITALIAN QR</>}
+                    </button>
+                  </div>
+                ) : (
+                  <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center text-center w-full">
+                    <div className="bg-white p-4 rounded-2xl mb-5 shadow-lg"><img src={getChartUrl(generatedItalianMenuId)} alt="Italian QR Code" className="w-40 h-40 object-contain" /></div>
+                    <div className="flex items-center gap-2 text-green-400 mb-5 bg-green-500/10 border border-green-500/20 px-4 py-2 rounded-full text-[10px] font-black tracking-widest"><CheckCircle size={14} className="animate-pulse" /><span>READY</span></div>
+                    <a href={getChartUrl(generatedItalianMenuId)} download="Italian_QR.png" target="_blank" rel="noreferrer" className="w-full bg-yellow-500 text-black font-black uppercase tracking-widest py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-2 text-[11px] mb-3 hover:opacity-80 transition-opacity"><Download size={16} /> DOWNLOAD</a>
+                    <button onClick={() => setGeneratedItalianMenuId(null)} className="w-full bg-[#16161a] border border-white/10 text-zinc-400 px-4 py-3.5 rounded-xl text-[11px] font-black uppercase hover:text-white transition-colors">RESET</button>
+                  </motion.div>
+                )}
+              </div>
+
+              {/* KARTICA 3: GLOBAL */}
+              <div className="shrink-0 bg-[#1c1c22] border border-red-500/30 rounded-[2rem] p-8 flex flex-col items-center text-center shadow-xl min-h-min">
+                {!generatedGlobalMenuId ? (
+                  <div className="w-full flex flex-col items-center">
+                    <div className="w-full max-w-[220px] mb-6 rounded-2xl overflow-hidden shadow-lg border border-white/5">
+                      <img src="/QRMenuPromo.webp" alt="Global Promo" className="w-full h-auto object-cover" />
+                    </div>
+                    <Globe size={28} className="text-red-500 mb-3 drop-shadow-md" />
+                    <h2 className="text-red-500 font-black text-xl md:text-2xl uppercase tracking-widest mb-1">Supreme Fast Food</h2>
+                    <h3 className="text-red-500 font-bold text-[11px] uppercase tracking-[0.2em] mb-4">GLOBAL STREET FOOD (300+)</h3>
+                    <p className="text-red-500/70 text-[11px] mb-6 leading-relaxed max-w-[220px]">Deploy the ultimate international fast food collection.</p>
+                    <button onClick={handleGenerateGlobalQR} disabled={isSavingGlobal} className="w-full bg-red-600 text-white font-black text-[13px] uppercase tracking-widest py-4 rounded-xl shadow-lg flex items-center justify-center gap-3 hover:opacity-80 transition-opacity">
+                      {isSavingGlobal ? 'GENERATING...' : <><Save size={18} /> DEPLOY FAST FOOD QR</>}
+                    </button>
+                  </div>
+                ) : (
+                  <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center text-center w-full">
+                    <div className="bg-white p-4 rounded-2xl mb-5 shadow-lg"><img src={getChartUrl(generatedGlobalMenuId)} alt="Global QR Code" className="w-40 h-40 object-contain" /></div>
+                    <div className="flex items-center gap-2 text-green-400 mb-5 bg-green-500/10 border border-green-500/20 px-4 py-2 rounded-full text-[10px] font-black tracking-widest"><CheckCircle size={14} className="animate-pulse" /><span>READY</span></div>
+                    <a href={getChartUrl(generatedGlobalMenuId)} download="Global_QR.png" target="_blank" rel="noreferrer" className="w-full bg-red-600 text-white font-black uppercase tracking-widest py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-2 text-[11px] mb-3 hover:opacity-80 transition-opacity"><Download size={16} /> DOWNLOAD</a>
+                    <button onClick={() => setGeneratedGlobalMenuId(null)} className="w-full bg-[#16161a] border border-white/10 text-zinc-400 px-4 py-3.5 rounded-xl text-[11px] font-black uppercase hover:text-white transition-colors">RESET</button>
+                  </motion.div>
+                )}
+              </div>
+
+              {/* KARTICA 4: MEXICAN */}
+              <div className="shrink-0 bg-[#1c1c22] border border-green-500/30 rounded-[2rem] p-8 flex flex-col items-center text-center shadow-xl min-h-min">
+                {!generatedMexicanMenuId ? (
+                  <div className="w-full flex flex-col items-center">
+                    <div className="w-full max-w-[220px] mb-6 rounded-2xl overflow-hidden shadow-lg border border-white/5">
+                      <img src="/QRMenuPromo.webp" alt="Mexican Promo" className="w-full h-auto object-cover" />
+                    </div>
+                    <Flame size={28} className="text-green-500 mb-3 drop-shadow-md" />
+                    <h2 className="text-green-500 font-black text-xl md:text-2xl uppercase tracking-widest mb-1">La Cantina</h2>
+                    <h3 className="text-green-500 font-bold text-[11px] uppercase tracking-[0.2em] mb-4">MEXICAN KITCHEN (100+)</h3>
+                    <p className="text-green-500/70 text-[11px] mb-6 leading-relaxed max-w-[220px]">Deploy the premium Mexican restaurant demo menu.</p>
+                    <button onClick={handleGenerateMexicanQR} disabled={isSavingMexican} className="w-full bg-green-500 text-black font-black text-[13px] uppercase tracking-widest py-4 rounded-xl shadow-lg flex items-center justify-center gap-3 hover:opacity-80 transition-opacity">
+                      {isSavingMexican ? 'GENERATING...' : <><Save size={18} /> DEPLOY MEXICAN QR</>}
+                    </button>
+                  </div>
+                ) : (
+                  <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center text-center w-full">
+                    <div className="bg-white p-4 rounded-2xl mb-5 shadow-lg"><img src={getChartUrl(generatedMexicanMenuId)} alt="Mexican QR Code" className="w-40 h-40 object-contain" /></div>
+                    <div className="flex items-center gap-2 text-green-400 mb-5 bg-green-500/10 border border-green-500/20 px-4 py-2 rounded-full text-[10px] font-black tracking-widest"><CheckCircle size={14} className="animate-pulse" /><span>READY</span></div>
+                    <a href={getChartUrl(generatedMexicanMenuId)} download="Mexican_QR.png" target="_blank" rel="noreferrer" className="w-full bg-green-500 text-black font-black uppercase tracking-widest py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-2 text-[11px] mb-3 hover:opacity-80 transition-opacity"><Download size={16} /> DOWNLOAD</a>
+                    <button onClick={() => setGeneratedMexicanMenuId(null)} className="w-full bg-[#16161a] border border-white/10 text-zinc-400 px-4 py-3.5 rounded-xl text-[11px] font-black uppercase hover:text-white transition-colors">RESET</button>
+                  </motion.div>
+                )}
+              </div>
+
+            </div>
           </div>
-          
+
         </div>
-      </div>
+      </main>
     </div>
   );
 }
-// KRAJ FAJLA: V8PremiumTestMenu.jsx
+// KRAJ FAJLA: src/V8PremiumTestMenu.jsx
