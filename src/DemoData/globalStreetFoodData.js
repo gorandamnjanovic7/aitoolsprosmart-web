@@ -1,114 +1,83 @@
 // POČETAK FAJLA: src/DemoData/globalStreetFoodData.js
 
-// 🔥 SLIKE PO KATEGORIJAMA (Rotiraju se automatski) 🔥
+// 🔥 SLIKE PO KATEGORIJAMA (Unsplash Premium) 🔥
 const burgerImgs = [
   "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1594212699503-b54134be1eb9?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80"
+  "https://images.unsplash.com/photo-1586816001966-79b736744398?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1594212202065-9fa5873e86c7?auto=format&fit=crop&w=600&q=80"
+];
+const hotdogImgs = [
+  "https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=600&q=80"
 ];
 const chickenImgs = [
-  "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1569691899455-88464f6d3ab1?auto=format&fit=crop&w=600&q=80"
+  "https://images.unsplash.com/photo-1527477396000-e27163b481c2?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=600&q=80"
 ];
-const asianImgs = [
-  "https://images.unsplash.com/photo-1552611052-33e04de081de?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1612929633738-8fe44f7ec841?auto=format&fit=crop&w=600&q=80"
-];
-const tacoImgs = [
-  "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=600&q=80"
-];
-const wrapImgs = [
-  "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=600&q=80",
+const sandwichImgs = [
+  "https://images.unsplash.com/photo-1619860860774-1e2e17343432?auto=format&fit=crop&w=600&q=80",
   "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=600&q=80"
 ];
-const sideImgs = [
+const pizzaImgs = [
+  "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=600&q=80"
+];
+const texmexImgs = [
+  "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?auto=format&fit=crop&w=600&q=80"
+];
+const orientalImgs = [
+  "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1561651823-34feb02250e4?auto=format&fit=crop&w=600&q=80"
+];
+const asianImgs = [
+  "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=600&q=80"
+];
+const snacksImgs = [
   "https://images.unsplash.com/photo-1576107232684-1279f390859f?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?auto=format&fit=crop&w=600&q=80"
+  "https://images.unsplash.com/photo-1623653387945-2fd256828551?auto=format&fit=crop&w=600&q=80"
+];
+const breakfastImgs = [
+  "https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=600&q=80"
 ];
 const dessertImgs = [
   "https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=600&q=80"
-];
-const generalImgs = [
-  "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80"
+  "https://images.unsplash.com/photo-1570197781417-0a5237500ae3?auto=format&fit=crop&w=600&q=80"
 ];
 
-// 🔥 AUTOMATSKO GENERISANJE MASIVNE BAZE 🔥
+// 🔥 BAZE JELA PO KATEGORIJAMA 🔥
+const BURGERS = ["Classic Hamburger", "Cheeseburger", "Double Cheeseburger", "Bacon Burger", "BBQ Burger", "Chicken Burger", "Crispy Chicken Burger", "Spicy Chicken Burger", "Fish Burger", "Veggie Burger", "Mushroom Burger", "Jalapeño Burger", "Onion Ring Burger", "Smash Burger", "Double Smash Burger", "Triple Burger", "Sliders", "Brisket Burger", "BBQ Pork Burger", "Pulled Pork Burger", "Chili Burger", "Chili Cheese Burger", "Bacon Cheese Burger", "Mushroom Swiss Burger", "Blue Cheese Burger", "Avocado Burger", "Egg Burger", "Breakfast Cheeseburger", "Double Bacon Burger", "Triple Cheeseburger", "Mini Burgers", "Chicken Mini Burgers", "Steak Burger", "Steakhouse Burger", "BBQ Bacon Burger", "Crispy Onion Burger", "Garlic Burger", "Pepper Burger", "Spicy Jalapeño Burger", "Cheese-Stuffed Burger", "Patty Melt Burger", "Fried Egg Burger", "Chicken and Bacon Burger", "Fish and Cheese Burger", "Shrimp Burger", "Crab Burger", "Salmon Burger", "Pulled Chicken Burger", "Buffalo Chicken Burger", "Hot Honey Chicken Burger", "Chicken Tender Burger", "Chicken Waffle Burger"];
+const HOTDOGS = ["Classic Hot Dog", "Cheese Hot Dog", "Chili Dog", "Chili Cheese Dog", "Bacon Hot Dog", "Corn Dog", "Bratwurst", "Currywurst", "Polish Sausage", "Italian Sausage Sandwich", "Mini Hot Dogs", "Footlong Hot Dog", "Chili Bacon Hot Dog", "BBQ Hot Dog", "Jalapeño Hot Dog", "Onion Hot Dog", "Slaw Dog", "Chicago-Style Hot Dog", "New York-Style Hot Dog", "Detroit-Style Coney Dog", "Cheese Sausage", "Grilled Sausage", "Smoked Sausage Sandwich", "Bratwurst Roll", "Curry Sausage", "Hot Link Sandwich", "Sausage and Cheese Roll", "Breakfast Hot Dog", "Pizza Dog", "Taco Dog", "Bacon-Wrapped Hot Dog", "Loaded Corn Dog", "Cheese Corn Dog", "Potato Corn Dog", "Korean Potato Corn Dog", "Mozzarella Corn Dog", "Sausage Corn Dog", "Battered Sausage", "Sausage Roll"];
+const CHICKEN = ["Fried Chicken", "Crispy Chicken Tenders", "Chicken Nuggets", "Chicken Wings", "Buffalo Wings", "BBQ Wings", "Spicy Wings", "Popcorn Chicken", "Chicken Strips", "Chicken Drumsticks", "Chicken Bites", "Chicken Fingers", "Fried Chicken Sandwich", "Nashville Hot Chicken Sandwich", "Chicken and Waffles", "Buffalo Chicken Sandwich", "Chicken Parmesan Sandwich", "Chicken Bacon Sandwich", "Chicken Wrap", "Crispy Chicken Wrap", "Spicy Chicken Wrap", "Caesar Chicken Wrap", "Chicken Sliders", "Crispy Chicken Sliders", "Chicken Empanadas"];
+const SANDWICHES = ["Club Sandwich", "Chicken Sandwich", "Crispy Chicken Sandwich", "Grilled Chicken Sandwich", "Steak Sandwich", "Philly Cheesesteak", "Roast Beef Sandwich", "Pulled Pork Sandwich", "BBQ Chicken Sandwich", "Meatball Sub", "Italian Sub", "Tuna Sandwich", "Grilled Cheese Sandwich", "BLT Sandwich", "Cuban Sandwich", "Beef Wrap", "Steak Wrap", "Turkey Wrap", "Falafel Burger", "Beef Sliders", "Pulled Pork Sliders", "Meatball Sliders", "Pizza Sliders", "Ham and Cheese Sliders", "Turkey Club Sandwich", "Ham and Cheese Sandwich", "Pastrami Sandwich", "Reuben Sandwich", "French Dip Sandwich", "Roast Pork Sandwich", "Pulled Chicken Sandwich", "BBQ Beef Sandwich", "Beef Dip Sandwich", "Steak and Cheese Sandwich", "Sausage and Pepper Sandwich", "Chicken Parm Sub", "Steak Sub", "Turkey Sub", "Ham Sub", "Veggie Sub", "Buffalo Chicken Sub", "Patty Melt", "Tuna Melt", "Turkey Melt", "Chicken Melt", "Steak Melt", "Cheese Melt", "Beef Melt", "Mushroom Melt", "Bacon Grilled Cheese", "Tomato Grilled Cheese", "Chicken Grilled Cheese", "Mac and Cheese Grilled Cheese", "Fried Bologna Sandwich", "Chicken Salad Sandwich", "Egg Salad Sandwich", "Tuna Salad Sandwich", "Pulled Beef Sandwich", "Brisket Sandwich", "BBQ Brisket Sandwich", "Schnitzel Sandwich", "Leberkäse Sandwich", "Sausage Sandwich", "Croque Monsieur", "Croque Madame", "French Tacos", "Jambon-Beurre", "Panini", "Piadina", "Porchetta Sandwich"];
+const PIZZA = ["Margherita Pizza", "Pepperoni Pizza", "Cheese Pizza", "Mushroom Pizza", "Vegetable Pizza", "BBQ Chicken Pizza", "Meat Lovers Pizza", "Hawaiian Pizza", "Four Cheese Pizza", "Supreme Pizza", "Calzone", "Pizza Slice", "Pizza Rolls", "Mini Pizza", "Deep Dish Pizza", "Stuffed Crust Pizza", "White Pizza", "Buffalo Chicken Pizza", "Sausage Pizza", "Bacon Pizza", "Chicken Bacon Ranch Pizza", "Garlic Mushroom Pizza", "Spicy Salami Pizza", "Flatbread Pizza", "Focaccia Pizza", "Pizza al Taglio", "Panzerotti", "Stromboli", "Pepperoni Rolls", "Garlic Bread", "Cheese Garlic Bread", "Stuffed Garlic Bread", "Breadsticks", "Cheese Breadsticks", "Garlic Knots", "Cheese Knots", "Pizza Bites", "Pizza Pockets", "Pizza Bagels", "Mini Calzones"];
+const TEXMEX = ["Tacos", "Soft Tacos", "Hard Shell Tacos", "Beef Tacos", "Chicken Tacos", "Fish Tacos", "Shrimp Tacos", "Burrito", "Burrito Bowl", "Quesadilla", "Nachos", "Loaded Nachos", "Enchiladas", "Taquitos", "Chimichanga", "Tostada", "Mexican Loaded Fries", "Chicken Quesadilla", "Beef Quesadilla", "Cheese Quesadilla", "Loaded Quesadilla", "Beef Burrito", "Chicken Burrito", "Bean Burrito", "Cheese Burrito", "Breakfast Tacos", "Birria Tacos", "Carnitas Tacos", "Al Pastor Tacos", "Steak Tacos", "Chicken Nachos", "Beef Nachos", "Cheese Nachos", "Loaded Burrito", "Taco Bowl", "Chicken Taco Bowl", "Beef Taco Bowl", "Chicken Fajita Wrap", "Beef Fajita Wrap", "Churros", "Empanadas Mexicanas", "Arepas", "Stuffed Arepas", "Chicken Arepa", "Beef Arepa", "Cheese Arepa", "Taco Fries", "Nacho Fries", "Beef Empanadas", "Cheese Empanadas"];
+const ORIENTAL = ["Döner Kebab", "Chicken Döner", "Beef Döner", "Shawarma", "Chicken Shawarma", "Beef Shawarma", "Falafel Wrap", "Falafel Pita", "Gyros", "Gyros Pita", "Chicken Gyros", "Pork Gyros", "Souvlaki Wrap", "Souvlaki Pita", "Chicken Souvlaki", "Kofta Wrap", "Kebab Plate", "Lahmacun", "Pide", "Greek Burger", "Ćevapi", "Pljeskavica", "Stuffed Pljeskavica", "Gurmanska Pljeskavica", "Burek", "Pita", "Falafel Bowl", "Shawarma Bowl", "Chicken Shawarma Bowl", "Beef Shawarma Bowl", "Gyros Bowl", "Hummus Wrap", "Hummus Bowl", "Kofta Sandwich", "Kebab Sandwich", "Doner Box", "Doner Wrap", "Doner Sandwich", "Chicken Doner Box", "Kebab Box", "Shawarma Fries", "Loaded Kebab Fries", "Loaded Gyros Fries", "Kebab Roll", "Lamb Kebab", "Chicken Kebab", "Beef Kebab", "Seekh Kebab", "Shish Kebab", "Adana Kebab", "Iskender Kebab", "Kofte Sandwich", "Turkish Döner", "Turkish Pide", "Gözleme", "Börek", "Simit", "Turkish Toast", "Manakish", "Za’atar Manakish", "Cheese Manakish", "Meat Manakish", "Fatteh Bowl", "Chicken Falafel Wrap", "Falafel Sandwich", "Sabich", "Arayes", "Kibbeh", "Sambousek", "Cheese Sambousek", "Meat Sambousek", "Chicken Musakhan Wrap", "Shish Tawook Sandwich", "Chicken Tawook Wrap", "Beef Kofta Wrap", "Lamb Kofta Wrap", "Chicken Kebab Wrap", "Meat Shawarma Sandwich", "Shawarma Pita", "Chicken Pita", "Beef Pita", "Steak Pita", "Cheese Pita", "Stuffed Pita"];
+const ASIAN = ["Fried Rice", "Chicken Fried Rice", "Egg Fried Rice", "Kimchi Fried Rice", "Chow Mein", "Lo Mein", "Stir-Fried Noodles", "Pad Thai", "Yakisoba", "Ramen", "Udon", "Teriyaki Chicken", "Orange Chicken", "Sweet and Sour Chicken", "General Tso’s Chicken", "Kung Pao Chicken", "Sesame Chicken", "Beef and Broccoli", "Korean Fried Chicken", "Bibimbap", "Bao Buns", "Dumplings", "Gyoza", "Spring Rolls", "Egg Rolls", "Wonton", "Takoyaki", "Okonomiyaki", "Karaage", "Yakitori", "Katsu Sandwich", "Chicken Katsu", "Curry Rice", "Tempura", "Sushi Rolls", "Onigiri", "Tteokbokki", "Kimbap", "Bulgogi Wrap", "Mandu", "Hotteok", "Chicken Rice Bowl", "Beef Rice Bowl", "Teriyaki Rice Bowl", "Poke Bowl", "Sushi Burrito", "Sushi Bowl", "Tempura Shrimp", "Tempura Vegetables", "Shrimp Fried Rice", "Beef Fried Rice", "Vegetable Fried Rice", "Chicken Chow Mein", "Beef Chow Mein", "Vegetable Chow Mein", "Singapore Noodles", "Dan Dan Noodles", "Beef Noodles", "Chicken Noodles", "Spicy Noodles", "Fried Noodles", "Yakitori Chicken Skewers", "Korean BBQ Chicken", "Korean BBQ Beef", "Bulgogi Bowl", "Chicken Bulgogi", "Korean Rice Bowl", "Kimchi Burger", "Korean Chicken Burger", "Korean Chicken Wings", "Korean Chicken Bites", "Crispy Pork Belly Bao", "Chicken Bao", "Beef Bao", "Vegetable Bao", "Pork Dumplings", "Chicken Dumplings", "Vegetable Dumplings", "Fried Dumplings", "Steamed Dumplings", "Chicken Spring Rolls", "Vegetable Spring Rolls", "Shrimp Spring Rolls", "Chicken Egg Rolls", "Vegetable Egg Rolls", "Fried Wontons", "Wonton Soup", "Miso Soup", "Ramen Burger", "Chicken Ramen", "Beef Ramen", "Spicy Ramen", "Tonkatsu", "Chicken Teriyaki Bowl", "Beef Teriyaki Bowl", "Teriyaki Burger", "Katsu Curry", "Chicken Katsu Curry", "Curry Udon", "Yakisoba Chicken", "Yakisoba Beef", "Yakisoba Vegetables", "Takoyaki Balls", "Tempura Burger", "Samosa", "Samosa Chaat", "Vada Pav", "Pav Bhaji", "Aloo Tikki Burger", "Kathi Roll", "Chicken Kathi Roll", "Paneer Wrap", "Dosa", "Masala Dosa", "Chole Bhature", "Pakora", "Chicken Tikka Wrap", "Chicken Tikka Burger", "Paneer Burger", "Samosa Burger", "Butter Chicken Wrap", "Tandoori Chicken Wrap", "Paneer Tikka Wrap", "Seekh Kebab Wrap", "Chicken Tikka Roll", "Paneer Tikka Roll", "Aloo Tikki", "Onion Bhaji", "Chicken Pakora", "Vegetable Pakora", "Bread Pakora", "Kachori", "Pani Puri", "Bhel Puri", "Sev Puri", "Dahi Puri", "Chaat", "Chicken Samosa", "Lamb Samosa", "Naan Wrap", "Chicken Naan Wrap", "Kebab Naan", "Butter Chicken Bowl", "Chicken Tikka Bowl", "Curry Bowl"];
+const SIDES = ["French Fries", "Loaded Fries", "Cheese Fries", "Chili Cheese Fries", "Curly Fries", "Potato Wedges", "Sweet Potato Fries", "Onion Rings", "Mozzarella Sticks", "Jalapeño Poppers", "Fried Pickles", "Cheese Bites", "Potato Skins", "Hash Browns", "Loaded Potato", "Loaded Hot Dog", "Loaded Burger", "Loaded Chicken Fries", "Loaded Tater Tots", "Bacon Cheese Fries", "Cheese Steak Fries", "Chicken Cheese Fries", "BBQ Pulled Pork Fries", "Garlic Fries", "Parmesan Fries", "Truffle Fries", "Tater Tots", "Cheese Tater Tots", "Chili Cheese Tater Tots", "Mac and Cheese", "Fried Mac and Cheese Bites", "Mac and Cheese Burger", "Mac and Cheese Bowl", "Chili Bowl", "Chili Cheese Bowl", "Loaded Baked Potato", "Cheese Baked Potato", "Bacon Baked Potato", "Chicken Baked Potato", "Jacket Potato", "Grilled Corn", "Mexican Street Corn", "Fried Corn", "Corn Ribs", "Fried Cheese", "Cheese Curds", "Halloumi Fries", "Halloumi Burger", "Pretzel", "Waffle Fries", "Crinkle Cut Fries", "Shoestring Fries", "Steak Fries", "Disco Fries", "Poutine", "Cheese Poutine", "Pulled Pork Poutine", "Chicken Poutine", "Gravy Fries", "Pizza Fries", "Dirty Fries", "Loaded Wedges", "Chili Cheese Wedges", "Cheese Wedges", "Potato Croquettes", "Potato Cakes", "Rösti", "Hash Brown Bites", "Mashed Potato Balls", "Fried Potato Balls", "Stuffed Potato Skins", "Fried Onion Rings", "Beer-Battered Onion Rings", "Fried Mushrooms", "Fried Zucchini", "Fried Cauliflower", "Fried Jalapeños", "Fried Green Tomatoes", "Fried Okra", "Fried Avocado", "Avocado Fries", "Chicken Cheese Balls", "Cheese Balls", "Sausage Bites", "Pretzel Bites", "Cheese Pretzel", "Pretzel Dog", "Stuffed Pretzel", "Hush Puppies", "Pastel", "Coxinha", "Pão de Queijo", "Choripán", "Lomito Sandwich", "Milanesa Sandwich", "Chivito", "Completo Hot Dog", "Salchipapas", "Anticuchos", "Papa Rellena", "Yuca Fries", "Fried Plantains", "Tostones", "Mofongo Bites", "Jamaican Patty", "Beef Patty", "Chicken Patty", "Jerk Chicken Wrap", "Jerk Chicken Sandwich", "Jerk Chicken Wings", "Roti Wrap", "Doubles", "Bake and Shark", "Bunny Chow", "Boerewors Roll", "Vetkoek", "Gatsby Sandwich", "Meat Pie", "Chicken Pie", "Mince Pie", "Fish and Chips", "Fish Sandwich", "Fried Shrimp", "Popcorn Shrimp", "Calamari", "Crab Cake Sandwich", "Fish Finger Sandwich", "Fish Fingers", "Fried Cod", "Fried Haddock", "Fried Fish Bites", "Shrimp Burger", "Crispy Fish Burger", "Seafood Basket", "Fried Seafood Platter", "Fried Squid", "Shrimp Po’ Boy", "Oyster Po’ Boy", "Lobster Roll", "Crab Roll", "Fried Clams", "Clam Strips", "Chicken Po’ Boy", "Beef Po’ Boy"];
+const BREAKFAST = ["Breakfast Burger", "Breakfast Sandwich", "Egg and Cheese Sandwich", "Bacon and Egg Sandwich", "Sausage and Egg Sandwich", "Breakfast Burrito", "Breakfast Wrap", "Pancakes", "Waffles", "French Toast", "Bagel Sandwich", "Breakfast Sliders", "Hot Chicken", "Chicken Biscuit", "Sausage Biscuit", "Breakfast Biscuit", "Biscuit Sandwich", "Breakfast Bagel", "Bacon Bagel", "Egg Bagel", "Sausage Bagel", "Breakfast Croissant", "Ham and Cheese Croissant", "Egg Croissant", "Breakfast Muffin", "English Muffin Sandwich", "Breakfast Quesadilla", "Breakfast Bowl", "Breakfast Hash", "Breakfast Potatoes", "Home Fries", "French Toast Sticks", "Pancake Sandwich", "Waffle Sandwich", "Belgian Waffle", "French Toast Sandwich", "Monte Cristo Sandwich"];
+const DESSERTS = ["Donuts", "Cinnamon Rolls", "Cookies", "Brownies", "Muffins", "Ice Cream Sundae", "Soft Serve Ice Cream", "Milkshake", "Frozen Yogurt", "Cheesecake", "Apple Pie", "Fried Ice Cream", "Crepe Wrap", "Nutella Crepe", "Banana Crepe", "Strawberry Crepe", "Ice Cream Waffle", "Ice Cream Sandwich", "Cookie Ice Cream Sandwich", "Brownie Sundae", "Chocolate Sundae", "Strawberry Sundae", "Caramel Sundae", "Banana Split", "Soft Serve Cone", "Ice Cream Cone", "Ice Cream Cup", "Chocolate Milkshake", "Strawberry Milkshake", "Vanilla Milkshake", "Cookies and Cream Milkshake", "Caramel Milkshake", "Fruit Smoothie", "Frozen Lemonade", "Slush", "Frozen Coffee", "Bubble Tea", "Milk Tea", "Fruit Tea", "Mochi", "Mochi Ice Cream", "Taiyaki", "Dorayaki", "Donut Holes", "Filled Donuts", "Glazed Donuts", "Chocolate Donuts", "Mini Donuts", "Funnel Cake", "Fried Dough", "Beignets", "Crêpe", "Savory Crêpe"];
+
 const RAW_GLOBAL_ITEMS = [
-  
-  // 1. BURGERS & SLIDERS
-  ...["Hamburger", "Cheeseburger", "Double Cheeseburger", "Bacon Burger", "Chicken Burger", "Crispy Chicken Burger", "Grilled Chicken Burger", "Fish Burger", "Veggie Burger", "Mushroom Burger", "BBQ Burger", "Jalapeño Burger", "Smash Burger", "Slider", "Aloo Tikki Burger", "Chapli Kebab Burger", "Bun Kebab", "X-Burger", "X-Salada", "Halloumi Burger"].map((name, idx) => ({ 
-    category: "Burgers & Sliders", name, price: "14.50", desc: `Premium street-style ${name}, crafted with fresh ingredients and our signature V8 sauce.`, img: burgerImgs[idx % burgerImgs.length], isSignature: false 
-  })),
-
-  // 2. WINGS & FRIED CHICKEN
-  ...["Chicken Nuggets", "Chicken Tenders", "Fried Chicken", "Spicy Fried Chicken", "Chicken Wings", "Buffalo Wings", "BBQ Wings", "Popcorn Chicken", "Chicken Strips", "Chicken Bites", "Korean Fried Chicken", "Korean Spicy Chicken", "Karaage Chicken", "Chicken Katsu", "Ayam Goreng", "Peri-Peri Chicken"].map((name, idx) => ({ 
-    category: "Fried Chicken & Wings", name, price: "12.00", desc: `Crispy, golden ${name}, perfectly seasoned and fried to absolute perfection.`, img: chickenImgs[idx % chickenImgs.length], isSignature: false 
-  })),
-
-  // 3. WRAPS, KEBABS & GYROS
-  ...["Chicken Wrap", "Chicken Caesar Wrap", "Buffalo Chicken Wrap", "Shawarma Wrap", "Kebab Wrap", "Falafel Wrap", "Gyro Wrap", "Doner Kebab", "Chicken Doner", "Beef Doner", "Lamb Doner", "Döner Box", "Shawarma", "Chicken Shawarma", "Beef Shawarma", "Lamb Shawarma", "Gyro", "Souvlaki", "Kebab", "Shish Kebab", "Kofta Kebab", "Adana Kebab", "Iskender Kebab", "Falafel", "Falafel Sandwich", "Hummus Wrap", "Chicken Tikka Wrap", "Seekh Kebab Roll", "Butter Chicken Wrap", "Naan Wrap", "Kathi Roll", "Frankie Roll", "Suya Wrap", "Jerk Chicken Wrap"].map((name, idx) => ({ 
-    category: "Wraps & Kebabs", name, price: "11.50", desc: `Authentic ${name} wrapped fresh, packed with robust flavors and premium meats/veggies.`, img: wrapImgs[idx % wrapImgs.length], isSignature: false 
-  })),
-
-  // 4. TACOS, BURRITOS & LATIN STREET FOOD
-  ...["Tacos", "Beef Tacos", "Chicken Tacos", "Fish Tacos", "Shrimp Tacos", "Birria Tacos", "Carnitas Tacos", "Al Pastor Tacos", "Quesadilla", "Chicken Quesadilla", "Beef Quesadilla", "Cheese Quesadilla", "Burrito", "Beef Burrito", "Chicken Burrito", "Bean Burrito", "Breakfast Burrito", "Burrito Bowl", "Nachos", "Loaded Nachos", "Cheese Nachos", "Nachos Supreme", "Enchiladas", "Taquitos", "Flautas", "Tostadas", "Gorditas", "Chalupas", "Empanadas", "Beef Empanadas", "Chicken Empanadas", "Cheese Empanadas", "Arepas", "Stuffed Arepas", "Pupusas", "Tamales", "Ceviche Cup", "Jamaican Patty"].map((name, idx) => ({ 
-    category: "Tacos, Burritos & Latin", name, price: "13.00", desc: `Traditional ${name} bringing the vibrant heat and taste of Latin American street food.`, img: tacoImgs[idx % tacoImgs.length], isSignature: false 
-  })),
-
-  // 5. HOT DOGS & SAUSAGES
-  ...["Hot Dog", "Chili Dog", "Cheese Dog", "Corn Dog", "Sausage Sandwich", "Bratwurst Roll", "Currywurst", "Bratwurst", "Smoked Sausage Roll", "Choripán", "Completo Hot Dog", "Salchipapas", "Boerewors Roll", "Sausage Sizzle", "Kokoreç Sandwich", "Bockwurst"].map((name, idx) => ({ 
-    category: "Hot Dogs & Sausages", name, price: "8.50", desc: `Classic ${name}, grilled over an open flame and served in a freshly baked roll.`, img: generalImgs[0], isSignature: false 
-  })),
-
-  // 6. ASIAN NOODLES, RICE & DIM SUM
-  ...["Fried Rice", "Chicken Fried Rice", "Beef Fried Rice", "Shrimp Fried Rice", "Vegetable Fried Rice", "Egg Fried Rice", "Chow Mein", "Lo Mein", "Stir-Fried Noodles", "Singapore Noodles", "Dan Dan Noodles", "Beef Noodles", "Ramen", "Tonkotsu Ramen", "Shoyu Ramen", "Miso Ramen", "Spicy Ramen", "Udon", "Yakisoba", "Soba Noodles", "Pad Thai", "Pad See Ew", "Drunken Noodles", "Thai Fried Rice", "Green Curry with Rice", "Red Curry with Rice", "Nasi Goreng", "Mie Goreng", "Nasi Lemak", "Dumplings", "Potstickers", "Gyoza", "Bao Buns", "Xiaolongbao", "Dim Sum", "Takoyaki", "Okonomiyaki", "Tempura", "Bulgogi Bowl", "Bibimbap", "Kimchi Fried Rice", "Tteokbokki", "Kimbap"].map((name, idx) => ({ 
-    category: "Asian Noodles, Rice & Dumplings", name, price: "16.00", desc: `Wok-fired ${name} delivering authentic Asian street market flavors.`, img: asianImgs[idx % asianImgs.length], isSignature: false 
-  })),
-
-  // 7. SANDWICHES & PANINIS
-  ...["Panini", "Ham and Cheese Panini", "Chicken Panini", "Caprese Panini", "Grilled Cheese Sandwich", "Club Sandwich", "BLT Sandwich", "Tuna Sandwich", "Roast Beef Sandwich", "Pulled Pork Sandwich", "Philly Cheesesteak", "Steak Sandwich", "Meatball Sub", "Italian Sub", "Po’ Boy", "Lobster Roll", "Fish Sandwich", "Croque Monsieur", "Croque Madame", "Bocadillo de Jamón", "Bocadillo de Calamares", "Prego Sandwich", "Francesinha", "Milanesa Sandwich", "Chacarero", "Lomito Sandwich", "Gatsby Sandwich", "Bunny Chow", "Katsu Sandwich"].map((name, idx) => ({ 
-    category: "Sandwiches & Subs", name, price: "12.50", desc: `Gourmet ${name}, stacked high with premium ingredients and melted cheeses.`, img: generalImgs[0], isSignature: false 
-  })),
-
-  // 8. FRIES, SIDES & SNACKS
-  ...["French Fries", "Curly Fries", "Waffle Fries", "Loaded Fries", "Cheese Fries", "Chili Cheese Fries", "Sweet Potato Fries", "Potato Wedges", "Hash Browns", "Onion Rings", "Mozzarella Sticks", "Mac and Cheese", "Mac and Cheese Bites", "Fried Pickles", "Jalapeño Poppers", "Pretzel", "Soft Pretzel", "Poutine", "Loaded Potato Skins", "Baked Potato", "Belgian Fries", "Mitraillette", "Kroket", "Bitterballen", "Kaassoufflé", "Patatas Bravas", "Croquetas", "Coxinha", "Pão de Queijo", "Plantain Chips"].map((name, idx) => ({ 
-    category: "Fries, Sides & Snacks", name, price: "6.50", desc: `Crispy and delicious ${name}, the ultimate side dish or quick street snack.`, img: sideImgs[idx % sideImgs.length], isSignature: false 
-  })),
-
-  // 9. INDIAN & MIDDLE EASTERN CHAAT
-  ...["Meat Samosa", "Vegetable Samosa", "Pakora", "Onion Bhaji", "Aloo Tikki", "Vada Pav", "Pav Bhaji", "Dabeli", "Chole Bhature", "Pani Puri", "Bhel Puri", "Sev Puri", "Dahi Puri", "Papdi Chaat", "Samosa Chaat", "Masala Dosa", "Uttapam", "Idli", "Medu Vada", "Keema Pav", "Manakish", "Za’atar Manakish", "Lahmacun", "Pide", "Gözleme", "Börek", "Simit", "Kumpir", "Tantuni", "Fatayer", "Sabich"].map((name, idx) => ({ 
-    category: "Indian & Mid-East Street Food", name, price: "9.00", desc: `Richly spiced ${name}, a fragrant and beloved staple of global street food culture.`, img: asianImgs[idx % asianImgs.length], isSignature: false 
-  })),
-
-  // 10. SUSHI & SEAFOOD
-  ...["Sushi Rolls", "California Roll", "Spicy Tuna Roll", "Salmon Roll", "Shrimp Tempura Roll", "Sushi Burrito", "Sushi Bowl", "Poke Bowl", "Salmon Poke", "Tuna Poke", "Fish and Chips", "Fried Fish", "Fried Shrimp", "Popcorn Shrimp", "Calamari", "Crab Cakes", "Seafood Basket", "Balık Ekmek"].map((name, idx) => ({ 
-    category: "Sushi & Seafood", name, price: "18.00", desc: `Freshly prepared ${name}, bringing ocean-fresh flavors straight to your hands.`, img: generalImgs[0], isSignature: false 
-  })),
-
-  // 11. SAVORY PIES, PASTRIES & BREAKFAST
-  ...["Pizza", "Margherita Pizza", "Pepperoni Pizza", "Calzone", "Stromboli", "Pizza Slice", "Garlic Bread", "Bagel Sandwich", "Croissant Sandwich", "Breakfast Sandwich", "Pancakes", "Waffles", "French Toast", "Meat Pie", "Steak Pie", "Chicken Pie", "Scotch Egg", "Cornish Pasty", "Shepherd’s Pie", "Chicken Pot Pie", "Spring Rolls", "Egg Rolls", "Crêpes", "Savory Crêpes", "Galettes", "Tortilla Sandwich", "Spanakopita", "Tiropita", "Australian Meat Pie"].map((name, idx) => ({ 
-    category: "Pies, Pizza & Breakfast", name, price: "10.00", desc: `Warm, hearty ${name} baked fresh daily for the perfect comfort bite.`, img: generalImgs[0], isSignature: false 
-  })),
-
-  // 12. DESSERTS & SWEETS
-  ...["Churros", "Fried Dough", "Funnel Cake", "Donuts", "Glazed Donut", "Chocolate Donut", "Cinnamon Roll", "Cookies", "Brownies", "Cupcakes", "Cheesecake Slice", "Ice Cream Sundae", "Soft Serve Ice Cream", "Milkshake", "Frozen Yogurt", "Ice Cream Sandwich", "Loukoumades"].map((name, idx) => ({ 
-    category: "Desserts & Sweets", name, price: "7.00", desc: `Indulgent ${name} to satisfy your sweet tooth, crafted with premium sugars and creams.`, img: dessertImgs[idx % dessertImgs.length], isSignature: false 
-  }))
+  ...BURGERS.map((name, idx) => ({ category: "Burgers & Sliders", name, price: "12.50", desc: `Premium V8 ${name} made with 100% fresh ingredients and signature sauce.`, img: burgerImgs[idx % burgerImgs.length], isSignature: idx === 0 })),
+  ...HOTDOGS.map((name, idx) => ({ category: "Hot Dogs & Sausages", name, price: "8.00", desc: `Classic street-style ${name}, grilled to perfection.`, img: hotdogImgs[idx % hotdogImgs.length], isSignature: false })),
+  ...CHICKEN.map((name, idx) => ({ category: "Chicken & Wings", name, price: "11.00", desc: `Crispy and juicy ${name}, perfectly seasoned and fried.`, img: chickenImgs[idx % chickenImgs.length], isSignature: false })),
+  ...SANDWICHES.map((name, idx) => ({ category: "Sandwiches & Wraps", name, price: "10.50", desc: `Freshly prepared ${name} with the finest meats and cheeses.`, img: sandwichImgs[idx % sandwichImgs.length], isSignature: false })),
+  ...PIZZA.map((name, idx) => ({ category: "Pizza & Flatbreads", name, price: "14.00", desc: `Hot and cheesy ${name}, baked in a traditional stone oven.`, img: pizzaImgs[idx % pizzaImgs.length], isSignature: false })),
+  ...TEXMEX.map((name, idx) => ({ category: "Tacos & Tex-Mex", name, price: "12.00", desc: `Authentic ${name} packed with bold Mexican street flavors.`, img: texmexImgs[idx % texmexImgs.length], isSignature: false })),
+  ...ORIENTAL.map((name, idx) => ({ category: "Kebab & Mediterranean", name, price: "13.00", desc: `Traditional ${name} with rich spices and fresh yogurt sauce.`, img: orientalImgs[idx % orientalImgs.length], isSignature: false })),
+  ...ASIAN.map((name, idx) => ({ category: "Asian Street Food", name, price: "11.50", desc: `Flavor-packed ${name}, cooked fresh in a fiery wok.`, img: asianImgs[idx % asianImgs.length], isSignature: false })),
+  ...SIDES.map((name, idx) => ({ category: "Fries, Sides & Snacks", name, price: "6.50", desc: `The ultimate side: ${name}, golden, crispy and delicious.`, img: snacksImgs[idx % snacksImgs.length], isSignature: false })),
+  ...BREAKFAST.map((name, idx) => ({ category: "Breakfast Staples", name, price: "9.50", desc: `Start your day right with our hearty and fresh ${name}.`, img: breakfastImgs[idx % breakfastImgs.length], isSignature: false })),
+  ...DESSERTS.map((name, idx) => ({ category: "Desserts & Sweets", name, price: "7.00", desc: `Indulge in our sweet ${name}, the perfect fast food treat.`, img: dessertImgs[idx % dessertImgs.length], isSignature: false }))
 ];
 
-// Obeležavamo signature zvezdice nasumično na par mesta
-RAW_GLOBAL_ITEMS[0].isSignature = true; // Hamburger
-RAW_GLOBAL_ITEMS[100].isSignature = true; // Tacos
-RAW_GLOBAL_ITEMS[200].isSignature = true; // Fries
-RAW_GLOBAL_ITEMS[300].isSignature = true; // Sushi
-
+// Eksprotujemo za ostatak sajta
 export const GLOBAL_STREET_MENU = {
-  restaurantName: "V8 Global Food Court",
-  themeColor: "#ef4444", // V8 Racing Red boja
+  restaurantName: "Supreme Fast Food",
+  themeColor: "#ef4444", // V8 Red
   currency: "$",
   items: RAW_GLOBAL_ITEMS
 };
-// KRAJ FAJLA
+
+// KRAJ FAJLA: src/DemoData/globalStreetFoodData.js
