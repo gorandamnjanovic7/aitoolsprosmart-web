@@ -1,51 +1,5 @@
-// POČETAK FAJLA: src/DemoData/globalStreetFoodData.js
+import { generateAiImage } from './v8AiVision.js';
 
-// 🔥 SLIKE PO KATEGORIJAMA (Unsplash Premium) 🔥
-const burgerImgs = [
-  "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1586816001966-79b736744398?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1594212202065-9fa5873e86c7?auto=format&fit=crop&w=600&q=80"
-];
-const hotdogImgs = [
-  "https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=600&q=80"
-];
-const chickenImgs = [
-  "https://images.unsplash.com/photo-1527477396000-e27163b481c2?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=600&q=80"
-];
-const sandwichImgs = [
-  "https://images.unsplash.com/photo-1619860860774-1e2e17343432?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=600&q=80"
-];
-const pizzaImgs = [
-  "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=600&q=80"
-];
-const texmexImgs = [
-  "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?auto=format&fit=crop&w=600&q=80"
-];
-const orientalImgs = [
-  "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1561651823-34feb02250e4?auto=format&fit=crop&w=600&q=80"
-];
-const asianImgs = [
-  "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=600&q=80"
-];
-const snacksImgs = [
-  "https://images.unsplash.com/photo-1576107232684-1279f390859f?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1623653387945-2fd256828551?auto=format&fit=crop&w=600&q=80"
-];
-const breakfastImgs = [
-  "https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=600&q=80"
-];
-const dessertImgs = [
-  "https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1570197781417-0a5237500ae3?auto=format&fit=crop&w=600&q=80"
-];
-
-// 🔥 BAZE JELA PO KATEGORIJAMA 🔥
 const BURGERS = ["Classic Hamburger", "Cheeseburger", "Double Cheeseburger", "Bacon Burger", "BBQ Burger", "Chicken Burger", "Crispy Chicken Burger", "Spicy Chicken Burger", "Fish Burger", "Veggie Burger", "Mushroom Burger", "Jalapeño Burger", "Onion Ring Burger", "Smash Burger", "Double Smash Burger", "Triple Burger", "Sliders", "Brisket Burger", "BBQ Pork Burger", "Pulled Pork Burger", "Chili Burger", "Chili Cheese Burger", "Bacon Cheese Burger", "Mushroom Swiss Burger", "Blue Cheese Burger", "Avocado Burger", "Egg Burger", "Breakfast Cheeseburger", "Double Bacon Burger", "Triple Cheeseburger", "Mini Burgers", "Chicken Mini Burgers", "Steak Burger", "Steakhouse Burger", "BBQ Bacon Burger", "Crispy Onion Burger", "Garlic Burger", "Pepper Burger", "Spicy Jalapeño Burger", "Cheese-Stuffed Burger", "Patty Melt Burger", "Fried Egg Burger", "Chicken and Bacon Burger", "Fish and Cheese Burger", "Shrimp Burger", "Crab Burger", "Salmon Burger", "Pulled Chicken Burger", "Buffalo Chicken Burger", "Hot Honey Chicken Burger", "Chicken Tender Burger", "Chicken Waffle Burger"];
 const HOTDOGS = ["Classic Hot Dog", "Cheese Hot Dog", "Chili Dog", "Chili Cheese Dog", "Bacon Hot Dog", "Corn Dog", "Bratwurst", "Currywurst", "Polish Sausage", "Italian Sausage Sandwich", "Mini Hot Dogs", "Footlong Hot Dog", "Chili Bacon Hot Dog", "BBQ Hot Dog", "Jalapeño Hot Dog", "Onion Hot Dog", "Slaw Dog", "Chicago-Style Hot Dog", "New York-Style Hot Dog", "Detroit-Style Coney Dog", "Cheese Sausage", "Grilled Sausage", "Smoked Sausage Sandwich", "Bratwurst Roll", "Curry Sausage", "Hot Link Sandwich", "Sausage and Cheese Roll", "Breakfast Hot Dog", "Pizza Dog", "Taco Dog", "Bacon-Wrapped Hot Dog", "Loaded Corn Dog", "Cheese Corn Dog", "Potato Corn Dog", "Korean Potato Corn Dog", "Mozzarella Corn Dog", "Sausage Corn Dog", "Battered Sausage", "Sausage Roll"];
 const CHICKEN = ["Fried Chicken", "Crispy Chicken Tenders", "Chicken Nuggets", "Chicken Wings", "Buffalo Wings", "BBQ Wings", "Spicy Wings", "Popcorn Chicken", "Chicken Strips", "Chicken Drumsticks", "Chicken Bites", "Chicken Fingers", "Fried Chicken Sandwich", "Nashville Hot Chicken Sandwich", "Chicken and Waffles", "Buffalo Chicken Sandwich", "Chicken Parmesan Sandwich", "Chicken Bacon Sandwich", "Chicken Wrap", "Crispy Chicken Wrap", "Spicy Chicken Wrap", "Caesar Chicken Wrap", "Chicken Sliders", "Crispy Chicken Sliders", "Chicken Empanadas"];
@@ -59,25 +13,17 @@ const BREAKFAST = ["Breakfast Burger", "Breakfast Sandwich", "Egg and Cheese San
 const DESSERTS = ["Donuts", "Cinnamon Rolls", "Cookies", "Brownies", "Muffins", "Ice Cream Sundae", "Soft Serve Ice Cream", "Milkshake", "Frozen Yogurt", "Cheesecake", "Apple Pie", "Fried Ice Cream", "Crepe Wrap", "Nutella Crepe", "Banana Crepe", "Strawberry Crepe", "Ice Cream Waffle", "Ice Cream Sandwich", "Cookie Ice Cream Sandwich", "Brownie Sundae", "Chocolate Sundae", "Strawberry Sundae", "Caramel Sundae", "Banana Split", "Soft Serve Cone", "Ice Cream Cone", "Ice Cream Cup", "Chocolate Milkshake", "Strawberry Milkshake", "Vanilla Milkshake", "Cookies and Cream Milkshake", "Caramel Milkshake", "Fruit Smoothie", "Frozen Lemonade", "Slush", "Frozen Coffee", "Bubble Tea", "Milk Tea", "Fruit Tea", "Mochi", "Mochi Ice Cream", "Taiyaki", "Dorayaki", "Donut Holes", "Filled Donuts", "Glazed Donuts", "Chocolate Donuts", "Mini Donuts", "Funnel Cake", "Fried Dough", "Beignets", "Crêpe", "Savory Crêpe"];
 
 const RAW_GLOBAL_ITEMS = [
-  ...BURGERS.map((name, idx) => ({ category: "Burgers & Sliders", name, price: "12.50", desc: `Premium V8 ${name} made with 100% fresh ingredients and signature sauce.`, img: burgerImgs[idx % burgerImgs.length], isSignature: idx === 0 })),
-  ...HOTDOGS.map((name, idx) => ({ category: "Hot Dogs & Sausages", name, price: "8.00", desc: `Classic street-style ${name}, grilled to perfection.`, img: hotdogImgs[idx % hotdogImgs.length], isSignature: false })),
-  ...CHICKEN.map((name, idx) => ({ category: "Chicken & Wings", name, price: "11.00", desc: `Crispy and juicy ${name}, perfectly seasoned and fried.`, img: chickenImgs[idx % chickenImgs.length], isSignature: false })),
-  ...SANDWICHES.map((name, idx) => ({ category: "Sandwiches & Wraps", name, price: "10.50", desc: `Freshly prepared ${name} with the finest meats and cheeses.`, img: sandwichImgs[idx % sandwichImgs.length], isSignature: false })),
-  ...PIZZA.map((name, idx) => ({ category: "Pizza & Flatbreads", name, price: "14.00", desc: `Hot and cheesy ${name}, baked in a traditional stone oven.`, img: pizzaImgs[idx % pizzaImgs.length], isSignature: false })),
-  ...TEXMEX.map((name, idx) => ({ category: "Tacos & Tex-Mex", name, price: "12.00", desc: `Authentic ${name} packed with bold Mexican street flavors.`, img: texmexImgs[idx % texmexImgs.length], isSignature: false })),
-  ...ORIENTAL.map((name, idx) => ({ category: "Kebab & Mediterranean", name, price: "13.00", desc: `Traditional ${name} with rich spices and fresh yogurt sauce.`, img: orientalImgs[idx % orientalImgs.length], isSignature: false })),
-  ...ASIAN.map((name, idx) => ({ category: "Asian Street Food", name, price: "11.50", desc: `Flavor-packed ${name}, cooked fresh in a fiery wok.`, img: asianImgs[idx % asianImgs.length], isSignature: false })),
-  ...SIDES.map((name, idx) => ({ category: "Fries, Sides & Snacks", name, price: "6.50", desc: `The ultimate side: ${name}, golden, crispy and delicious.`, img: snacksImgs[idx % snacksImgs.length], isSignature: false })),
-  ...BREAKFAST.map((name, idx) => ({ category: "Breakfast Staples", name, price: "9.50", desc: `Start your day right with our hearty and fresh ${name}.`, img: breakfastImgs[idx % breakfastImgs.length], isSignature: false })),
-  ...DESSERTS.map((name, idx) => ({ category: "Desserts & Sweets", name, price: "7.00", desc: `Indulge in our sweet ${name}, the perfect fast food treat.`, img: dessertImgs[idx % dessertImgs.length], isSignature: false }))
+  ...BURGERS.map((name, idx) => ({ category: "Burgers & Sliders", name, price: "12.50", desc: `A culinary masterpiece, this ${name} features hand-pressed artisan beef, melted aged cheese, and our house-made signature sauce.`, img: generateAiImage(name, "premium fast food burger"), isSignature: idx === 0 })),
+  ...HOTDOGS.map((name, idx) => ({ category: "Hot Dogs & Sausages", name, price: "8.00", desc: `Gourmet street-style ${name}, fire-grilled to perfection and generously loaded with premium toppings for the ultimate bite.`, img: generateAiImage(name, "premium street food hotdog"), isSignature: false })),
+  ...CHICKEN.map((name, idx) => ({ category: "Chicken & Wings", name, price: "11.00", desc: `Impossibly crispy ${name}, marinated overnight in buttermilk and seasoned with an award-winning blend of savory spices.`, img: generateAiImage(name, "premium fried chicken"), isSignature: false })),
+  ...SANDWICHES.map((name, idx) => ({ category: "Sandwiches & Wraps", name, price: "10.50", desc: `The ultimate ${name}, crafted with freshly baked rustic bread, slow-roasted premium meats, and artisan cheeses.`, img: generateAiImage(name, "premium deli sandwich"), isSignature: false })),
+  ...PIZZA.map((name, idx) => ({ category: "Pizza & Flatbreads", name, price: "14.00", desc: `Authentic, stone-baked ${name} with a perfectly blistered crust, rich San Marzano tomato sauce, and fresh mozzarella.`, img: generateAiImage(name, "premium artisan pizza"), isSignature: false })),
+  ...TEXMEX.map((name, idx) => ({ category: "Tacos & Tex-Mex", name, price: "12.00", desc: `Vibrant and bold ${name}, packed with slow-braised meats, fire-roasted salsa, and handmade soft tortillas.`, img: generateAiImage(name, "premium tex mex food"), isSignature: false })),
+  ...ORIENTAL.map((name, idx) => ({ category: "Kebab & Mediterranean", name, price: "13.00", desc: `Rich and aromatic ${name}, perfectly seasoned and served with warm, pillowy pita and cooling house-made sauces.`, img: generateAiImage(name, "premium Mediterranean street food"), isSignature: false })),
+  ...ASIAN.map((name, idx) => ({ category: "Asian Street Food", name, price: "11.50", desc: `Sizzling, wok-fired ${name} tossed with crisp market vegetables, premium proteins, and a rich umami glaze.`, img: generateAiImage(name, "premium asian street food wok"), isSignature: false })),
+  ...SIDES.map((name, idx) => ({ category: "Fries, Sides & Snacks", name, price: "6.50", desc: `Addictive, double-fried ${name}, perfectly seasoned with sea salt for that ultimate golden crunch.`, img: generateAiImage(name, "premium golden side dish"), isSignature: false })),
+  ...BREAKFAST.map((name, idx) => ({ category: "Breakfast Staples", name, price: "9.50", desc: `A morning classic, our hearty ${name} is made with farm-fresh ingredients to kickstart your day.`, img: generateAiImage(name, "premium delicious breakfast"), isSignature: false })),
+  ...DESSERTS.map((name, idx) => ({ category: "Desserts & Sweets", name, price: "7.00", desc: `A decadent, melt-in-your-mouth ${name}, masterfully crafted to provide the ultimate sweet finale.`, img: generateAiImage(name, "premium bakery dessert"), isSignature: false }))
 ];
 
-// Eksprotujemo za ostatak sajta
-export const GLOBAL_STREET_MENU = {
-  restaurantName: "Supreme Fast Food",
-  themeColor: "#ef4444", // V8 Red
-  currency: "$",
-  items: RAW_GLOBAL_ITEMS
-};
-
-// KRAJ FAJLA: src/DemoData/globalStreetFoodData.js
+export const GLOBAL_STREET_MENU = { restaurantName: "Supreme Fast Food", themeColor: "#ef4444", currency: "$", items: RAW_GLOBAL_ITEMS };

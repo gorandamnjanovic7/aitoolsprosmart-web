@@ -9,7 +9,6 @@ import { Settings, Home, Layout, Zap, Image as ImageIcon, Box, Lock, ChevronDown
 import { CLOUDINARY_UPLOAD_PRESET, CLOUDINARY_CLOUD_NAME } from './data';
 import { CATEGORY_LIMITS, IMG_POOL, RAW_DB } from './v8MenuQRCodeData.js';
 
-// 🔥 ČISTI UVOZ SVIH BAZA 🔥
 import { ITALIAN_MASSIVE_MENU } from './DemoData/italianMassiveData.js';
 import { GLOBAL_STREET_MENU } from './DemoData/globalStreetFoodData.js';
 import { MEXICAN_MASSIVE_MENU } from './DemoData/mexicanMassiveData.js';
@@ -75,19 +74,14 @@ export default function PremiumMenu() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [generatedMenuId, setGeneratedMenuId] = useState(null);
-
   const [isSavingCustom, setIsSavingCustom] = useState(false);
   const [generatedCustomMenuId, setGeneratedCustomMenuId] = useState(null);
-  
   const [isSavingItalian, setIsSavingItalian] = useState(false);
   const [generatedItalianMenuId, setGeneratedItalianMenuId] = useState(null);
-  
   const [isSavingGlobal, setIsSavingGlobal] = useState(false);
   const [generatedGlobalMenuId, setGeneratedGlobalMenuId] = useState(null);
-
   const [isSavingMexican, setIsSavingMexican] = useState(false);
   const [generatedMexicanMenuId, setGeneratedMexicanMenuId] = useState(null);
-
   const [isSavingGreek, setIsSavingGreek] = useState(false);
   const [generatedGreekMenuId, setGeneratedGreekMenuId] = useState(null);
 
@@ -128,7 +122,7 @@ export default function PremiumMenu() {
       const docData = { restaurantName, currency, themeColor: currentTheme.hex, items: itemsToSave, createdAt: serverTimestamp(), status: 'active' };
       const docRef = await Promise.race([addDoc(collection(db, 'v8_qr_menus'), docData), new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 3000))]);
       setGeneratedMenuId(docRef.id); if(typeof v8Toast !== 'undefined') v8Toast.success("AURA Menu deployed!");
-    } catch (error) { setGeneratedMenuId("TEST-QR-PREVIEW-123"); if(typeof v8Toast !== 'undefined') v8Toast.success("AURA Test QR!"); } finally { setIsSaving(false); }
+    } catch (error) { setGeneratedMenuId("TEST-QR-PREVIEW"); if(typeof v8Toast !== 'undefined') v8Toast.success("AURA Test QR!"); } finally { setIsSaving(false); }
   };
 
   const handleGenerateCustomQR = async () => {
@@ -139,7 +133,7 @@ export default function PremiumMenu() {
       const docData = { restaurantName: customRestaurantName, currency: customCurrency, themeColor: currentCustomTheme.hex, items: itemsToSave, createdAt: serverTimestamp(), status: 'active' };
       const docRef = await Promise.race([addDoc(collection(db, 'v8_qr_menus'), docData), new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 3000))]);
       setGeneratedCustomMenuId(docRef.id); if(typeof v8Toast !== 'undefined') v8Toast.success("Custom Menu deployed!");
-    } catch (error) { setGeneratedCustomMenuId("TEST-QR-CUSTOM-123"); if(typeof v8Toast !== 'undefined') v8Toast.success("Custom Test QR!"); } finally { setIsSavingCustom(false); }
+    } catch (error) { setGeneratedCustomMenuId("TEST-QR-CUSTOM"); if(typeof v8Toast !== 'undefined') v8Toast.success("Custom Test QR!"); } finally { setIsSavingCustom(false); }
   };
 
   const handleGenerateItalianQR = async () => {
@@ -148,7 +142,7 @@ export default function PremiumMenu() {
       const docData = { ...ITALIAN_MASSIVE_MENU, createdAt: serverTimestamp(), status: 'active' };
       const docRef = await Promise.race([addDoc(collection(db, 'v8_qr_menus'), docData), new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 3000))]);
       setGeneratedItalianMenuId(docRef.id); if(typeof v8Toast !== 'undefined') v8Toast.success("Italian deployed!");
-    } catch (error) { setGeneratedItalianMenuId("TEST-QR-ITALIAN-123"); if(typeof v8Toast !== 'undefined') v8Toast.success("Italian Test QR!"); } finally { setIsSavingItalian(false); }
+    } catch (error) { setGeneratedItalianMenuId("TEST-QR-ITALIAN"); if(typeof v8Toast !== 'undefined') v8Toast.success("Italian Test QR!"); } finally { setIsSavingItalian(false); }
   };
 
   const handleGenerateGlobalQR = async () => {
@@ -157,7 +151,7 @@ export default function PremiumMenu() {
       const docData = { ...GLOBAL_STREET_MENU, createdAt: serverTimestamp(), status: 'active' };
       const docRef = await Promise.race([addDoc(collection(db, 'v8_qr_menus'), docData), new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 3000))]);
       setGeneratedGlobalMenuId(docRef.id); if(typeof v8Toast !== 'undefined') v8Toast.success("Fast Food deployed!");
-    } catch (error) { setGeneratedGlobalMenuId("TEST-QR-GLOBAL-123"); if(typeof v8Toast !== 'undefined') v8Toast.success("Fast Food Test QR!"); } finally { setIsSavingGlobal(false); }
+    } catch (error) { setGeneratedGlobalMenuId("TEST-QR-GLOBAL"); if(typeof v8Toast !== 'undefined') v8Toast.success("Fast Food Test QR!"); } finally { setIsSavingGlobal(false); }
   };
 
   const handleGenerateMexicanQR = async () => {
@@ -166,7 +160,7 @@ export default function PremiumMenu() {
       const docData = { ...MEXICAN_MASSIVE_MENU, createdAt: serverTimestamp(), status: 'active' };
       const docRef = await Promise.race([addDoc(collection(db, 'v8_qr_menus'), docData), new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 3000))]);
       setGeneratedMexicanMenuId(docRef.id); if(typeof v8Toast !== 'undefined') v8Toast.success("Mexican deployed!");
-    } catch (error) { setGeneratedMexicanMenuId("TEST-QR-MEXICAN-123"); if(typeof v8Toast !== 'undefined') v8Toast.success("Mexican Test QR!"); } finally { setIsSavingMexican(false); }
+    } catch (error) { setGeneratedMexicanMenuId("TEST-QR-MEXICAN"); if(typeof v8Toast !== 'undefined') v8Toast.success("Mexican Test QR!"); } finally { setIsSavingMexican(false); }
   };
 
   const handleGenerateGreekQR = async () => {
@@ -175,47 +169,29 @@ export default function PremiumMenu() {
       const docData = { ...GREEK_MASSIVE_MENU, createdAt: serverTimestamp(), status: 'active' };
       const docRef = await Promise.race([addDoc(collection(db, 'v8_qr_menus'), docData), new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 3000))]);
       setGeneratedGreekMenuId(docRef.id); if(typeof v8Toast !== 'undefined') v8Toast.success("Greek deployed!");
-    } catch (error) { setGeneratedGreekMenuId("TEST-QR-GREEK-123"); if(typeof v8Toast !== 'undefined') v8Toast.success("Greek Test QR!"); } finally { setIsSavingGreek(false); }
+    } catch (error) { setGeneratedGreekMenuId("TEST-QR-GREEK"); if(typeof v8Toast !== 'undefined') v8Toast.success("Greek Test QR!"); } finally { setIsSavingGreek(false); }
   };
 
   const getChartUrl = (id) => `https://quickchart.io/qr?text=${encodeURIComponent(`https://aitoolsprosmart.com/m/${id}`)}&margin=1&size=512`;
 
   return (
     <div className="min-h-screen bg-[#0d0d11] text-white font-sans selection:bg-orange-500/30">
-      
-      {/* 🔥 V8 CUSTOM SCROLLBAR CSS 🔥 */}
       <style>{`
-        .v8-beautiful-scroll::-webkit-scrollbar {
-          width: 8px;
-        }
-        .v8-beautiful-scroll::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.02);
-          border-radius: 10px;
-          margin-block: 10px;
-        }
-        .v8-beautiful-scroll::-webkit-scrollbar-thumb {
-          background: linear-gradient(to bottom, #ea580c, #ca8a04);
-          border-radius: 10px;
-          border: 2px solid #1c1c22;
-        }
-        .v8-beautiful-scroll::-webkit-scrollbar-thumb:hover {
-          background: #f97316;
-        }
+        .v8-beautiful-scroll::-webkit-scrollbar { width: 8px; }
+        .v8-beautiful-scroll::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); border-radius: 10px; margin-block: 10px; }
+        .v8-beautiful-scroll::-webkit-scrollbar-thumb { background: linear-gradient(to bottom, #ea580c, #ca8a04); border-radius: 10px; border: 2px solid #1c1c22; }
+        .v8-beautiful-scroll::-webkit-scrollbar-thumb:hover { background: #f97316; }
       `}</style>
 
       <Navbar />
 
       <main className="max-w-[1600px] mx-auto px-4 md:px-12 py-10 space-y-12">
-        
-        {/* HERO SEKCIJA */}
         <div className="relative w-full bg-[#1c1c22] rounded-[2.5rem] p-10 md:p-16 flex flex-col md:flex-row items-center justify-center gap-16 border border-white/5 shadow-2xl overflow-hidden">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-orange-600/5 blur-[120px] rounded-full pointer-events-none"></div>
           <div className="relative w-48 md:w-56 shrink-0 z-10 flex items-center justify-center"><img src="/tel_box_ico.webp" alt="V10 Mockup" className="w-full h-auto object-contain drop-shadow-[0_0_40px_rgba(234,88,12,0.6)]" /></div>
           <div className="flex flex-col items-center md:items-start justify-center z-10">
             <div className="mb-6 transform origin-left"><div className="px-4 py-1.5 border border-[#ea580c] text-[#ea580c] text-[10px] md:text-xs font-bold tracking-[0.25em] rounded-full uppercase bg-black/60 shadow-[0_0_15px_rgba(234,88,12,0.15)]">Cinematic Protocol // QR Restaurant Suite</div></div>
-            <h1 className="text-4xl md:text-[4.5rem] font-black italic tracking-tighter text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)] flex flex-wrap gap-4 justify-center md:justify-start leading-none">
-              QR <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">MENU BUILDER</span>
-            </h1>
+            <h1 className="text-4xl md:text-[4.5rem] font-black italic tracking-tighter text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)] flex flex-wrap gap-4 justify-center md:justify-start leading-none">QR <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">MENU BUILDER</span></h1>
           </div>
         </div>
 
@@ -227,13 +203,10 @@ export default function PremiumMenu() {
           <div className="lg:col-span-3 hidden lg:block"></div>
         </div>
 
-        {/* GLAVNI GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-10 gap-8 lg:gap-12 relative z-10 items-start">
           
-          {/* ======================= LEVA STRANA (BUILDERI - OSTAJE 880px JER JE FORMA) ======================= */}
+          {/* LEVA STRANA - BUILDERI */}
           <div className="lg:col-span-7 flex flex-col gap-12 w-full">
-            
-            {/* BLOK 1: AURA */}
             <div className="bg-[#1c1c22] border border-white/5 rounded-[2rem] p-6 md:p-8 flex flex-col shadow-[0_15px_35px_rgba(0,0,0,0.5)] w-full h-[880px]">
               <div className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-6 bg-[#16161a] border border-white/5 p-6 rounded-3xl shadow-inner shrink-0">
                 <div className="md:col-span-6"><label className={`text-[10px] font-bold tracking-widest uppercase mb-3 block ${currentTheme.text}`}>Restaurant Name</label><input type="text" value={restaurantName} onChange={(e) => setRestaurantName(e.target.value)} className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 text-base font-bold outline-none ${currentTheme.text} ${currentTheme.ring}`} /></div>
@@ -272,7 +245,6 @@ export default function PremiumMenu() {
               </div>
             </div>
 
-            {/* BLOK 2: CUSTOM */}
             <div id="custom-builder-section" className="flex flex-col gap-6 w-full pt-4">
               <div className="flex flex-col items-center justify-center w-full gap-3 mb-2"><label className={`font-black text-2xl md:text-3xl tracking-[0.15em] uppercase flex items-center gap-4 text-center ${currentCustomTheme.text} drop-shadow-md`}><PenTool size={36} /> 2. BUILD YOUR OWN MENU</label></div>
               <div className="bg-[#1c1c22] border border-white/5 rounded-[2rem] p-6 md:p-8 flex flex-col shadow-[0_15px_35px_rgba(0,0,0,0.5)] w-full h-[880px]">
@@ -333,11 +305,10 @@ export default function PremiumMenu() {
 
           </div>
 
-          {/* ======================= DESNA STRANA (KARTICE - POPRAVLJENO DA PRATI EKRAN, NIKAD SE NE ODSECA) ======================= */}
+          {/* DESNA STRANA - KARTICE SA MAX-HEIGHT (NE ODSECAJU SE) */}
           <div className="lg:col-span-3 relative">
             <div className="flex flex-col gap-8 sticky top-[100px] w-full max-h-[calc(100vh-120px)] overflow-y-auto pr-4 pb-12 v8-beautiful-scroll">
               
-              {/* KARTICA 1: AURA */}
               <div className={`shrink-0 bg-[#1c1c22] border rounded-[2rem] p-8 flex flex-col items-center text-center shadow-xl transition-all ${currentTheme.border}`}>
                 {!generatedMenuId ? (
                   <div className="w-full flex flex-col items-center">
@@ -358,7 +329,6 @@ export default function PremiumMenu() {
                 )}
               </div>
 
-              {/* KARTICA 2: ITALIAN */}
               <div className="shrink-0 bg-[#1c1c22] border border-yellow-500/30 rounded-[2rem] p-8 flex flex-col items-center text-center shadow-xl">
                 {!generatedItalianMenuId ? (
                   <div className="w-full flex flex-col items-center">
@@ -379,7 +349,6 @@ export default function PremiumMenu() {
                 )}
               </div>
 
-              {/* KARTICA 3: GREEK */}
               <div className="shrink-0 bg-[#1c1c22] border border-blue-500/30 rounded-[2rem] p-8 flex flex-col items-center text-center shadow-xl">
                 {!generatedGreekMenuId ? (
                   <div className="w-full flex flex-col items-center">
@@ -400,7 +369,6 @@ export default function PremiumMenu() {
                 )}
               </div>
 
-              {/* KARTICA 4: GLOBAL */}
               <div className="shrink-0 bg-[#1c1c22] border border-red-500/30 rounded-[2rem] p-8 flex flex-col items-center text-center shadow-xl">
                 {!generatedGlobalMenuId ? (
                   <div className="w-full flex flex-col items-center">
@@ -421,7 +389,6 @@ export default function PremiumMenu() {
                 )}
               </div>
 
-              {/* KARTICA 5: MEXICAN */}
               <div className="shrink-0 bg-[#1c1c22] border border-green-500/30 rounded-[2rem] p-8 flex flex-col items-center text-center shadow-xl">
                 {!generatedMexicanMenuId ? (
                   <div className="w-full flex flex-col items-center">
