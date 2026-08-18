@@ -14,7 +14,7 @@ import { GLOBAL_STREET_MENU } from './DemoData/globalStreetFoodData.js';
 import { MEXICAN_MASSIVE_MENU } from './DemoData/mexicanMassiveData.js';
 import { GREEK_MASSIVE_MENU } from './DemoData/greekMassiveData.js';
 import { FRENCH_MASSIVE_MENU } from './DemoData/frenchMassiveData.js';
-import { TURKISH_MASSIVE_MENU } from './DemoData/turkishMassiveData.js'; // UVEZEN TURSKI MENI
+import { TURKISH_MASSIVE_MENU } from './DemoData/turkishMassiveData.js';
 
 const themeStyles = {
   'V8 Orange': { hex: '#ea580c', text: 'text-orange-500', bg: 'bg-orange-500', border: 'border-orange-500/50', ring: 'focus:border-orange-500/50 focus:ring-orange-500/50', btnText: 'text-black' },
@@ -38,24 +38,6 @@ const getCategoryIcon = (catName) => {
   if (lower.includes('drink') || lower.includes('wine') || lower.includes('beverage')) return Wine;
   return ChefHat; 
 };
-
-const Navbar = () => (
-  <nav className="w-full flex items-center justify-between px-6 py-4 bg-black/80 backdrop-blur-md border-b border-white/5 sticky top-0 z-50">
-    <div className="flex items-center gap-3">
-      <div className="w-10 h-10 rounded-full bg-orange-600/20 flex items-center justify-center border border-orange-500/50 shadow-[0_0_15px_rgba(234,88,12,0.3)]"><Zap className="text-orange-500 w-5 h-5" /></div>
-      <div className="flex flex-col"><span className="text-blue-500 font-black text-sm leading-tight tracking-wider">AI TOOLS</span><span className="text-orange-500 font-black text-sm line-height tracking-wider">PRO SMART</span></div>
-    </div>
-    <div className="hidden lg:flex items-center gap-3 text-[11px] font-bold tracking-widest uppercase">
-      <button className="flex items-center gap-2 px-4 py-2 rounded-full border border-green-500/30 text-green-400 hover:bg-green-500/10 transition-colors"><Home className="w-3 h-3" /> HOME <ChevronDown className="w-3 h-3" /></button>
-      <button className="flex items-center gap-2 px-4 py-2 rounded-full border border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10 transition-colors"><Layout className="w-3 h-3" /> MASTER UPSCALERS <ChevronDown className="w-3 h-3" /></button>
-      <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-600/90 text-white hover:bg-red-500 transition-colors shadow-[0_0_15px_rgba(220,38,38,0.4)]"><Zap className="w-3 h-3" /> V8 MASTER TOOLS <ChevronDown className="w-3 h-3" /></button>
-      <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-500 transition-colors"><ImageIcon className="w-3 h-3" /> PREMIUM STOCK <ChevronDown className="w-3 h-3" /></button>
-      <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500 text-black hover:bg-cyan-400 transition-colors"><Box className="w-3 h-3" /> FORGE</button>
-      <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500 text-black hover:bg-orange-400 transition-colors shadow-[0_0_15px_rgba(249,115,22,0.4)]"><Store className="w-3 h-3" /> SAAS MOCKUPS</button>
-    </div>
-    <button className="flex items-center gap-2 px-6 py-2 rounded-full border border-white/20 text-white/70 hover:text-white hover:border-white/50 transition-colors text-xs font-bold tracking-widest"><Lock className="w-3 h-3" /> LOGIN</button>
-  </nav>
-);
 
 const generateInitialItems = (isBlank = false) => {
   let idCounter = 1;
@@ -171,7 +153,6 @@ export default function PremiumMenu() {
     return `https://quickchart.io/qr?text=${encodeURIComponent(`https://aitoolsprosmart.com/m/${id}`)}&margin=2&size=600&dark=${darkColor}&light=000000`;
   };
 
-  // 🔥 DODAT TURSKI MENI U STATIC CARDS 🔥
   const STATIC_CARDS = [
     { key: 'aura', title: restaurantName || 'AURA Fine Dining', sub: 'PRE-FILLED DEMO', icon: Crown, theme: currentTheme, isDynamic: true },
     { key: 'italian', title: 'Bella Napoli', sub: 'ITALIAN SHOWCASE (146)', icon: Pizza, theme: themeStyles['V8 Gold'], data: ITALIAN_MASSIVE_MENU },
@@ -190,8 +171,6 @@ export default function PremiumMenu() {
         .v8-beautiful-scroll::-webkit-scrollbar-thumb { background: linear-gradient(to bottom, #ea580c, #ca8a04); border-radius: 10px; border: 2px solid #1c1c22; }
         .v8-beautiful-scroll::-webkit-scrollbar-thumb:hover { background: #f97316; }
       `}</style>
-
-      <Navbar />
 
       <main className="max-w-[1600px] mx-auto px-4 md:px-12 py-10 space-y-12">
         
@@ -380,8 +359,18 @@ export default function PremiumMenu() {
 
           </div>
 
+          {/* DESNA STRANA - QR KODOVI */}
           <div className="lg:col-span-4 relative w-full">
-            <div className="flex flex-col gap-8 sticky top-[100px] w-full max-h-[calc(100vh-120px)] overflow-y-auto px-4 lg:px-6 pb-12 pt-4 v8-beautiful-scroll">
+            {/* 
+              ========================================================================
+              🔥 TRAJNA ZASTITA OD SECENJA IVICA (PERMANENT ANTI-CLIPPING FIX) 🔥
+              Kontejner sada ima ogroman unutrašnji prostor (p-10) i sakriva
+              horizontalni overflow, dok svaka kartica ima marginu (m-4) i 
+              maksimalnu širinu. Ovo GARANTUJE da senka (shadow-2xl) NIKADA NEĆE 
+              udariti u ivicu skrol bara i biti odsečena! ZAKUCAJ OVO.
+              ========================================================================
+            */}
+            <div className="flex flex-col gap-8 sticky top-[100px] w-full max-h-[calc(100vh-120px)] overflow-y-auto overflow-x-hidden p-6 lg:p-10 v8-beautiful-scroll">
               
               {STATIC_CARDS.map((card) => {
                 const generatedId = card.isDynamic ? generatedMenuId : demoGeneratedIds[card.key];
@@ -390,7 +379,7 @@ export default function PremiumMenu() {
                 const handleRes = card.isDynamic ? () => setGeneratedMenuId(null) : () => resetStaticDemo(card.key);
 
                 return (
-                  <div key={card.key} className={`shrink-0 w-full max-w-[420px] mx-auto bg-[#1c1c22] border rounded-[2rem] p-8 flex flex-col items-center text-center shadow-2xl transition-all ${card.theme.border}`}>
+                  <div key={card.key} className={`m-4 shrink-0 w-[85%] max-w-[360px] mx-auto bg-[#1c1c22] border rounded-[2rem] p-6 lg:p-8 flex flex-col items-center text-center shadow-[0_0_35px_rgba(0,0,0,0.5)] transition-all ${card.theme.border}`}>
                     {!generatedId ? (
                       <div className="w-full flex flex-col items-center">
                         <div className="w-full max-w-[220px] mb-6 rounded-2xl overflow-hidden shadow-lg border border-white/5">
