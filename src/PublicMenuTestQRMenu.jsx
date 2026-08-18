@@ -3,81 +3,85 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
-import { Utensils, AlertTriangle, Loader2, Crown } from 'lucide-react';
+import { Utensils, AlertTriangle, Crown, Coffee, Cake, Fish, Pizza, Leaf, Droplets, Wine, Flame, ChefHat } from 'lucide-react';
 
 import { ITALIAN_MASSIVE_MENU } from './DemoData/italianMassiveData.js';
 import { GLOBAL_STREET_MENU } from './DemoData/globalStreetFoodData.js';
 import { MEXICAN_MASSIVE_MENU } from './DemoData/mexicanMassiveData.js';
 import { GREEK_MASSIVE_MENU } from './DemoData/greekMassiveData.js';
-import { FRENCH_MASSIVE_MENU } from './DemoData/frenchMassiveData.js'; // 🔥 UVOZ FRANCUSKE
+import { FRENCH_MASSIVE_MENU } from './DemoData/frenchMassiveData.js';
+
+// 🔥 SMART ICON MAPPER ZA EKRAN TELEFONA (ZNA I SRPSKI!) 🔥
+const getCategoryIcon = (catName) => {
+  const lower = catName.toLowerCase();
+  if (lower.includes('signature') || lower.includes('specijalitet') || lower.includes('kuće') || lower.includes('house')) return Flame; 
+  if (lower.includes('breakfast') || lower.includes('doručak')) return Utensils; // Premium escajg za doručak na telefonu
+  if (lower.includes('dessert') || lower.includes('dezert') || lower.includes('slatko') || lower.includes('poslastica') || lower.includes('kolač')) return Cake;
+  if (lower.includes('sea') || lower.includes('fish') || lower.includes('riba') || lower.includes('plodovi')) return Fish;
+  if (lower.includes('pizza') || lower.includes('pica')) return Pizza;
+  if (lower.includes('salad') || lower.includes('salata') || lower.includes('prilog') || lower.includes('side')) return Leaf;
+  if (lower.includes('soup') || lower.includes('supa') || lower.includes('čorba') || lower.includes('potaž')) return Droplets;
+  if (lower.includes('drink') || lower.includes('wine') || lower.includes('piće') || lower.includes('karta pića') || lower.includes('vino')) return Wine;
+  return ChefHat; 
+};
 
 export default function PublicMenuTestQRMenu() {
   const params = useParams();
   const activeId = params.menuId || params.id; 
 
   const [menuData, setMenuData] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
 
     const fetchMenu = async () => {
-      if (!activeId) { setError(true); setLoading(false); return; }
+      if (!activeId) { setError(true); return; }
 
       try {
         if (activeId === "TEST-QR-PREVIEW") {
-          setTimeout(() => { 
-            setMenuData({ 
-              restaurantName: "AURA Fine Dining", 
-              themeColor: "#ea580c", 
-              currency: "€", 
-              items: [ 
-                { category: "Breakfast", name: "Royal Eggs Benedict", price: "24.00", desc: "Perfectly poached heritage eggs on toasted artisanal brioche, draped in a velvety hollandaise and paired with wild-caught Norwegian smoked salmon.", img: "https://images.unsplash.com/photo-1608039829572-78524f79c4c7?auto=format&fit=crop&w=800&q=80", isSignature: false },
-                { category: "Main Courses", name: "Wagyu Tomahawk", price: "150.00", desc: "Exquisite A5 grade Wagyu beef, dry-aged for 45 days and masterfully grilled over an open wood fire for an unforgettable experience.", img: "https://images.unsplash.com/photo-1594046243098-0fceea9d451e?auto=format&fit=crop&w=800&q=80", isSignature: true },
-                { category: "Desserts", name: "Gold Leaf Chocolate Tart", price: "35.00", desc: "Decadent Valrhona dark chocolate ganache encased in a crisp buttery pastry, finished with delicate edible 24k gold leaf and sea salt.", img: "https://images.unsplash.com/photo-1571115177098-24ec42ed204d?auto=format&fit=crop&w=800&q=80", isSignature: false }
-              ] 
-            }); 
-            setLoading(false); 
-          }, 800);
+          setMenuData({ 
+            restaurantName: "AURA Fine Dining", 
+            themeColor: "#ea580c", 
+            currency: "€", 
+            items: [ 
+              { category: "Doručak", name: "Kraljevska Jaja Benedikt", price: "24.00", desc: "Savršeno poširana jaja na prepečenom brioš hlebu sa holandez sosom i norveškim lososom.", img: "https://images.unsplash.com/photo-1608039829572-78524f79c4c7?auto=format&fit=crop&w=800&q=80", isSignature: false },
+              { category: "Glavna Jela", name: "Wagyu Tomahawk Odrezak", price: "150.00", desc: "Ekskluzivni A5 Wagyu odrezak, suvo zrenje 45 dana, pečen na otvorenoj vatri za nezaboravno iskustvo.", img: "https://images.unsplash.com/photo-1594046243098-0fceea9d451e?auto=format&fit=crop&w=800&q=80", isSignature: true },
+              { category: "Dezerti", name: "Čokoladni Tart sa Zlatom", price: "35.00", desc: "Dekadentni tart od crne čokolade sa jestivim 24k zlatnim listićima i hrskavom morskom solju.", img: "https://images.unsplash.com/photo-1571115177098-24ec42ed204d?auto=format&fit=crop&w=800&q=80", isSignature: false }
+            ] 
+          });
           return;
         }
 
-        if (activeId === "TEST-QR-ITALIAN") { setTimeout(() => { setMenuData(ITALIAN_MASSIVE_MENU); setLoading(false); }, 800); return; }
-        if (activeId === "TEST-QR-GLOBAL") { setTimeout(() => { setMenuData(GLOBAL_STREET_MENU); setLoading(false); }, 800); return; }
-        if (activeId === "TEST-QR-MEXICAN") { setTimeout(() => { setMenuData(MEXICAN_MASSIVE_MENU); setLoading(false); }, 800); return; }
-        if (activeId === "TEST-QR-GREEK") { setTimeout(() => { setMenuData(GREEK_MASSIVE_MENU); setLoading(false); }, 800); return; }
-        if (activeId === "TEST-QR-FRENCH") { setTimeout(() => { setMenuData(FRENCH_MASSIVE_MENU); setLoading(false); }, 800); return; } // 🔥 TEST RUTA
-        if (activeId === "TEST-QR-CUSTOM") { setTimeout(() => { setMenuData({ restaurantName: "YOUR CUSTOM RESTAURANT", themeColor: "#22c55e", currency: "$", items: [{ category: "Custom Dish", name: "Chef's Signature Creation", price: "0.00", desc: "A meticulously crafted culinary masterpiece, preparing seasonal ingredients to absolute perfection." }] }); setLoading(false); }, 800); return; }
+        if (activeId === "TEST-QR-ITALIAN") { setMenuData(ITALIAN_MASSIVE_MENU); return; }
+        if (activeId === "TEST-QR-GLOBAL") { setMenuData(GLOBAL_STREET_MENU); return; }
+        if (activeId === "TEST-QR-MEXICAN") { setMenuData(MEXICAN_MASSIVE_MENU); return; }
+        if (activeId === "TEST-QR-GREEK") { setMenuData(GREEK_MASSIVE_MENU); return; }
+        if (activeId === "TEST-QR-FRENCH") { setMenuData(FRENCH_MASSIVE_MENU); return; }
+        if (activeId === "TEST-QR-CUSTOM") { setMenuData({ restaurantName: "TVOJ RESTORAN", themeColor: "#22c55e", currency: "RSD", items: [{ category: "Tvoje jelo", name: "Specijalitet Šefa Kuhinje", price: "0.00", desc: "Pažljivo osmišljeno kulinarsko remek-delo sačinjeno od najsvežijih sezonskih sastojaka." }] }); return; }
 
         const docRef = doc(db, 'v8_qr_menus', activeId);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) { setMenuData(docSnap.data()); } else { setError(true); }
-      } catch (err) { setError(true); } finally { setLoading(false); }
+      } catch (err) { setError(true); }
     };
 
     fetchMenu();
   }, [activeId]);
 
-  if (loading) {
+  if (error) {
     return (
-      <div className="min-h-[100dvh] bg-[#050505] flex flex-col items-center justify-center text-white relative z-50">
-        <Loader2 size={48} className="animate-spin mb-4 text-[#ea580c]" />
-        <p className="font-black uppercase tracking-widest text-sm text-zinc-500">Loading Menu...</p>
+      <div className="min-h-[100dvh] bg-[#050505] flex flex-col items-center justify-center p-6 text-center relative z-50">
+        <AlertTriangle size={64} className="text-red-500 mb-6 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]" />
+        <h1 className="text-white font-black text-2xl uppercase tracking-widest mb-2">Meni Nije Pronađen</h1>
+        <p className="text-zinc-500 text-sm mb-8">QR kod koji ste skenirali je nevažeći ili meni više nije aktivan.</p>
       </div>
     );
   }
 
-  if (error || !menuData) {
-    return (
-      <div className="min-h-[100dvh] bg-[#050505] flex flex-col items-center justify-center p-6 text-center relative z-50">
-        <AlertTriangle size={64} className="text-red-500 mb-6 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]" />
-        <h1 className="text-white font-black text-2xl uppercase tracking-widest mb-2">Menu Not Found</h1>
-        <p className="text-zinc-500 text-sm mb-8">The QR code you scanned might be invalid or the menu is no longer active.</p>
-        <div className="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-xs font-mono text-zinc-500">DEBUG ID: {activeId || "UNDEFINED"}</div>
-      </div>
-    );
+  if (!menuData) {
+    return <div className="min-h-[100dvh] bg-[#050505] relative z-50" />;
   }
 
   const groupedItems = menuData.items.reduce((acc, item) => {
@@ -100,49 +104,57 @@ export default function PublicMenuTestQRMenu() {
         <div className="relative z-10 flex flex-col items-center">
           <Utensils size={32} style={{ color: themeColor }} className="mb-4 drop-shadow-md" />
           <h1 className="text-2xl md:text-4xl font-black uppercase tracking-[0.15em] text-white mb-2" style={{ textShadow: `0 0 20px ${themeColor}40` }}>{menuData.restaurantName}</h1>
-          <p className="text-zinc-500 text-[10px] md:text-xs font-bold uppercase tracking-widest">Official Digital Menu</p>
+          <p className="text-zinc-500 text-[10px] md:text-xs font-bold uppercase tracking-widest">Zvanični Digitalni Meni</p>
         </div>
       </div>
 
       <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 flex flex-col">
-        {categories.map((category) => (
-          <div key={category} className="mb-12">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="h-px bg-white/10 flex-1"></div>
-              <h2 className="text-white font-black text-[15px] md:text-lg uppercase tracking-[0.2em] text-center" style={{ color: themeColor }}>{category}</h2>
-              <div className="h-px bg-white/10 flex-1"></div>
-            </div>
+        {categories.map((category) => {
+          
+          const CatIcon = getCategoryIcon(category);
+          
+          return (
+            <div key={category} className="mb-12">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="h-px bg-white/10 flex-1"></div>
+                <h2 className="text-white font-black text-[15px] md:text-lg uppercase tracking-[0.2em] text-center flex items-center justify-center gap-2" style={{ color: themeColor }}>
+                  <CatIcon size={20} />
+                  {category}
+                </h2>
+                <div className="h-px bg-white/10 flex-1"></div>
+              </div>
 
-            <div className="flex flex-col gap-6">
-              {groupedItems[category].map((item, idx) => (
-                <div key={idx} className="bg-[#0a0e17] rounded-3xl border border-white/5 overflow-hidden flex flex-col shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
-                  {item.img && (
-                    <div className="w-full h-56 relative bg-zinc-900">
-                      <img src={item.img} alt={item.name} loading="lazy" className="w-full h-full object-cover transition-opacity duration-700 ease-in-out" onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_IMAGE_URL; }} />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e17] via-[#0a0e17]/20 to-transparent"></div>
+              <div className="flex flex-col gap-6">
+                {groupedItems[category].map((item, idx) => (
+                  <div key={idx} className="bg-[#0a0e17] rounded-3xl border border-white/5 overflow-hidden flex flex-col shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+                    {item.img && (
+                      <div className="w-full h-56 relative bg-zinc-900">
+                        <img src={item.img} alt={item.name} loading="lazy" className="w-full h-full object-cover transition-opacity duration-700 ease-in-out" onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_IMAGE_URL; }} />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e17] via-[#0a0e17]/20 to-transparent"></div>
+                      </div>
+                    )}
+                    <div className="p-5 flex flex-col gap-2 relative z-10">
+                      <div className="flex justify-between items-start gap-4">
+                        <h3 className="text-white font-black text-[15px] md:text-base uppercase leading-tight flex items-start gap-1.5">
+                          {item.isSignature && <span className="text-[10px] mt-0.5" style={{ color: themeColor }}>★</span>}
+                          {item.name}
+                        </h3>
+                        <span className="font-black text-[15px] md:text-base shrink-0" style={{ color: themeColor }}>{currency} {item.price}</span>
+                      </div>
+                      {item.desc && <p className="text-zinc-400 text-xs leading-relaxed mt-1">{item.desc}</p>}
                     </div>
-                  )}
-                  <div className="p-5 flex flex-col gap-2 relative z-10">
-                    <div className="flex justify-between items-start gap-4">
-                      <h3 className="text-white font-black text-[15px] md:text-base uppercase leading-tight flex items-start gap-1.5">
-                        {item.isSignature && <span className="text-[10px] mt-0.5" style={{ color: themeColor }}>★</span>}
-                        {item.name}
-                      </h3>
-                      <span className="font-black text-[15px] md:text-base shrink-0" style={{ color: themeColor }}>{currency} {item.price}</span>
-                    </div>
-                    {item.desc && <p className="text-zinc-400 text-xs leading-relaxed mt-1">{item.desc}</p>}
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       <div className="mt-8 w-full flex flex-col items-center justify-center opacity-40">
         <Crown size={16} className="text-zinc-500 mb-2" />
-        <span className="text-[9px] font-black tracking-[0.2em] text-zinc-500 uppercase">Powered by Smart Engine</span>
+        <span className="text-[9px] font-black tracking-[0.2em] text-zinc-500 uppercase">Pokreće Smart Engine</span>
       </div>
     </div>
   );
 }
-// KRAJ FAJLA
+// KRAJ FAJLA: src/PublicMenuTestQRMenu.jsx
