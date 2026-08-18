@@ -1,5 +1,5 @@
 // POČETAK FAJLA: src/DemoData/turkishMassiveData.js
-import { generateAiImage } from '../v8AiVision.js';
+import { generateAiImage } from './v8AiVision.js';
 
 const RAW_TURKISH_ITEMS = [
   ...["Adana Kebab", "Urfa Kebab", "İskender Kebab", "Şiş Kebab", "Patlıcan Kebabı", "Beyti Kebab", "Testi Kebabı", "Cağ Kebabı", "Çöp Şiş", "Tavuk Şiş", "Kuzu Şiş", "Ali Nazik Kebabı", "Orman Kebabı", "Tas Kebabı", "Tepsi Kebabı", "Kağıt Kebabı"].map((name, idx) => ({ 
@@ -103,7 +103,7 @@ const RAW_TURKISH_ITEMS = [
 
 export const TURKISH_MASSIVE_MENU = { 
     restaurantName: "Topkapı Sarayı Sofrası", 
-    themeColor: "#b91c1c", // Turska crvena
+    themeColor: "#b91c1c",
     currency: "₺", 
     items: RAW_TURKISH_ITEMS 
 };
