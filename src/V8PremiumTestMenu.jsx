@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { v8Toast } from './v8Utils';
 import { db } from './firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { Settings, Home, Layout, Zap, Image as ImageIcon, Box, Lock, ChevronDown, Store, FileText, PenTool, Crown, Upload, RefreshCcw, CheckCircle, Globe, Pizza, Save, Download, Flame, Anchor, Wine, Coffee, Utensils, Cake, Fish, Leaf, Droplets, ChefHat } from 'lucide-react';
+import { Settings, Home, Layout, Zap, Image as ImageIcon, Box, Lock, ChevronDown, Store, FileText, PenTool, Crown, Upload, RefreshCcw, CheckCircle, Globe, Pizza, Save, Download, Flame, Anchor, Wine, Coffee, Utensils, Cake, Fish, Leaf, Droplets, ChefHat, Moon } from 'lucide-react';
 
 import { CLOUDINARY_UPLOAD_PRESET, CLOUDINARY_CLOUD_NAME } from './data';
 import { CATEGORY_LIMITS, IMG_POOL, RAW_DB } from './v8MenuQRCodeData.js';
@@ -14,6 +14,7 @@ import { GLOBAL_STREET_MENU } from './DemoData/globalStreetFoodData.js';
 import { MEXICAN_MASSIVE_MENU } from './DemoData/mexicanMassiveData.js';
 import { GREEK_MASSIVE_MENU } from './DemoData/greekMassiveData.js';
 import { FRENCH_MASSIVE_MENU } from './DemoData/frenchMassiveData.js';
+import { TURKISH_MASSIVE_MENU } from './DemoData/turkishMassiveData.js'; // UVEZEN TURSKI MENI
 
 const themeStyles = {
   'V8 Orange': { hex: '#ea580c', text: 'text-orange-500', bg: 'bg-orange-500', border: 'border-orange-500/50', ring: 'focus:border-orange-500/50 focus:ring-orange-500/50', btnText: 'text-black' },
@@ -170,11 +171,13 @@ export default function PremiumMenu() {
     return `https://quickchart.io/qr?text=${encodeURIComponent(`https://aitoolsprosmart.com/m/${id}`)}&margin=2&size=600&dark=${darkColor}&light=000000`;
   };
 
+  // 🔥 DODAT TURSKI MENI U STATIC CARDS 🔥
   const STATIC_CARDS = [
     { key: 'aura', title: restaurantName || 'AURA Fine Dining', sub: 'PRE-FILLED DEMO', icon: Crown, theme: currentTheme, isDynamic: true },
     { key: 'italian', title: 'Bella Napoli', sub: 'ITALIAN SHOWCASE (146)', icon: Pizza, theme: themeStyles['V8 Gold'], data: ITALIAN_MASSIVE_MENU },
     { key: 'greek', title: 'Η Χρυσή Ελιά', sub: 'GREEK TAVERNA (300+)', icon: Anchor, theme: themeStyles['V8 Blue'], data: GREEK_MASSIVE_MENU },
     { key: 'global', title: 'Supreme Fast Food', sub: 'GLOBAL STREET FOOD (400+)', icon: Globe, theme: themeStyles['V8 Red'], data: GLOBAL_STREET_MENU },
+    { key: 'turkish', title: 'Topkapı Sarayı', sub: 'TURKISH SOFRA (160+)', icon: Moon, theme: themeStyles['V8 Red'], data: TURKISH_MASSIVE_MENU },
     { key: 'mexican', title: 'La Cantina', sub: 'MEXICAN KITCHEN (100+)', icon: Flame, theme: themeStyles['V8 Green'], data: MEXICAN_MASSIVE_MENU },
     { key: 'french', title: 'La Maison', sub: 'FRENCH CUISINE (200+)', icon: Wine, theme: themeStyles['V8 Purple'], data: FRENCH_MASSIVE_MENU }
   ];
@@ -201,17 +204,17 @@ export default function PremiumMenu() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-10 gap-8 lg:gap-12 relative z-10 w-full mb-6">
-          <div className="lg:col-span-7 flex flex-col items-center justify-center w-full gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 relative z-10 w-full mb-6">
+          <div className="lg:col-span-8 flex flex-col items-center justify-center w-full gap-4">
             <label className={`font-black text-2xl md:text-3xl tracking-[0.15em] uppercase flex items-center gap-4 text-center ${currentTheme.text} drop-shadow-md transition-colors duration-300`}><Store size={36} /> 1. EXPLORE OUR MENU</label>
             <button onClick={() => document.getElementById('custom-builder-section').scrollIntoView({ behavior: 'smooth' })} className={`${currentTheme.text} flex items-center gap-2 text-sm md:text-base font-bold uppercase tracking-[0.2em] transition-opacity duration-300 hover:opacity-70`}>OR BUILD YOUR OWN MENU <ChevronDown size={22} className={`${currentTheme.text} animate-bounce`} /></button>
           </div>
-          <div className="lg:col-span-3 hidden lg:block"></div>
+          <div className="lg:col-span-4 hidden lg:block"></div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-10 gap-8 lg:gap-12 relative z-10 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 relative z-10 items-start">
           
-          <div className="lg:col-span-7 flex flex-col gap-8 w-full">
+          <div className="lg:col-span-8 flex flex-col gap-8 w-full max-w-full">
             
             <div className="bg-[#1c1c22] border border-white/5 rounded-[2rem] p-6 md:p-8 flex flex-col shadow-[0_15px_35px_rgba(0,0,0,0.5)] w-full h-[880px]">
               <div className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-6 bg-[#16161a] border border-white/5 p-6 rounded-3xl shadow-inner shrink-0">
@@ -260,7 +263,6 @@ export default function PremiumMenu() {
               </div>
             </div>
 
-            {/* MASIVNO "SVE" DUGME I QR BOX ISPOD PRVOG DELA */}
             <div className={`p-8 md:p-10 border rounded-[2rem] flex flex-col items-center justify-between gap-8 transition-all bg-[#101014] shadow-2xl ${currentTheme.border}`}>
               {!generatedMenuId ? (
                 <div className="flex flex-col md:flex-row items-center justify-between w-full gap-8">
@@ -378,8 +380,8 @@ export default function PremiumMenu() {
 
           </div>
 
-          <div className="lg:col-span-3 relative">
-            <div className="flex flex-col gap-8 sticky top-[100px] w-full max-h-[calc(100vh-120px)] overflow-y-auto pr-4 pb-12 v8-beautiful-scroll">
+          <div className="lg:col-span-4 relative w-full">
+            <div className="flex flex-col gap-8 sticky top-[100px] w-full max-h-[calc(100vh-120px)] overflow-y-auto px-4 lg:px-6 pb-12 pt-4 v8-beautiful-scroll">
               
               {STATIC_CARDS.map((card) => {
                 const generatedId = card.isDynamic ? generatedMenuId : demoGeneratedIds[card.key];
@@ -388,7 +390,7 @@ export default function PremiumMenu() {
                 const handleRes = card.isDynamic ? () => setGeneratedMenuId(null) : () => resetStaticDemo(card.key);
 
                 return (
-                  <div key={card.key} className={`shrink-0 bg-[#1c1c22] border rounded-[2rem] p-8 flex flex-col items-center text-center shadow-2xl transition-all ${card.theme.border}`}>
+                  <div key={card.key} className={`shrink-0 w-full max-w-[420px] mx-auto bg-[#1c1c22] border rounded-[2rem] p-8 flex flex-col items-center text-center shadow-2xl transition-all ${card.theme.border}`}>
                     {!generatedId ? (
                       <div className="w-full flex flex-col items-center">
                         <div className="w-full max-w-[220px] mb-6 rounded-2xl overflow-hidden shadow-lg border border-white/5">

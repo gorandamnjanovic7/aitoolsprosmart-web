@@ -3,25 +3,30 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
-import { Utensils, AlertTriangle, Crown, Coffee, Cake, Fish, Pizza, Leaf, Droplets, Wine, Flame, ChefHat } from 'lucide-react';
+import { Utensils, AlertTriangle, Crown, Coffee, Cake, Fish, Pizza, Leaf, Droplets, Wine, Flame, ChefHat, Moon } from 'lucide-react';
 
 import { ITALIAN_MASSIVE_MENU } from './DemoData/italianMassiveData.js';
 import { GLOBAL_STREET_MENU } from './DemoData/globalStreetFoodData.js';
 import { MEXICAN_MASSIVE_MENU } from './DemoData/mexicanMassiveData.js';
 import { GREEK_MASSIVE_MENU } from './DemoData/greekMassiveData.js';
 import { FRENCH_MASSIVE_MENU } from './DemoData/frenchMassiveData.js';
+import { TURKISH_MASSIVE_MENU } from './DemoData/turkishMassiveData.js'; // 🔥 UVEZEN TURSKI MENI 🔥
 
-// 🔥 SMART ICON MAPPER ZA EKRAN TELEFONA (ZNA I SRPSKI!) 🔥
+// 🔥 SMART ICON MAPPER ZA EKRAN TELEFONA (ZNA SRPSKI I TURSKI!) 🔥
 const getCategoryIcon = (catName) => {
   const lower = catName.toLowerCase();
-  if (lower.includes('signature') || lower.includes('specijalitet') || lower.includes('kuće') || lower.includes('house')) return Flame; 
-  if (lower.includes('breakfast') || lower.includes('doručak')) return Utensils; // Premium escajg za doručak na telefonu
-  if (lower.includes('dessert') || lower.includes('dezert') || lower.includes('slatko') || lower.includes('poslastica') || lower.includes('kolač')) return Cake;
+  
+  if (lower.includes('signature') || lower.includes('specijalitet') || lower.includes('kuće') || lower.includes('house') || lower.includes('kebab')) return Flame; 
+  if (lower.includes('breakfast') || lower.includes('doručak')) return Utensils;
+  if (lower.includes('dessert') || lower.includes('dezert') || lower.includes('slatko') || lower.includes('poslastica') || lower.includes('kolač') || lower.includes('baklava')) return Cake;
   if (lower.includes('sea') || lower.includes('fish') || lower.includes('riba') || lower.includes('plodovi')) return Fish;
-  if (lower.includes('pizza') || lower.includes('pica')) return Pizza;
-  if (lower.includes('salad') || lower.includes('salata') || lower.includes('prilog') || lower.includes('side')) return Leaf;
+  if (lower.includes('pizza') || lower.includes('pica') || lower.includes('pide') || lower.includes('lahmacun')) return Pizza;
+  if (lower.includes('salad') || lower.includes('salata') || lower.includes('prilog') || lower.includes('side') || lower.includes('meze') || lower.includes('appetizers')) return Leaf;
   if (lower.includes('soup') || lower.includes('supa') || lower.includes('čorba') || lower.includes('potaž')) return Droplets;
-  if (lower.includes('drink') || lower.includes('wine') || lower.includes('piće') || lower.includes('karta pića') || lower.includes('vino')) return Wine;
+  if (lower.includes('drink') || lower.includes('wine') || lower.includes('piće') || lower.includes('karta pića') || lower.includes('vino') || lower.includes('beverages')) return Wine;
+  if (lower.includes('döner') || lower.includes('street')) return Utensils;
+  if (lower.includes('stew') || lower.includes('traditional')) return ChefHat;
+
   return ChefHat; 
 };
 
@@ -53,11 +58,14 @@ export default function PublicMenuTestQRMenu() {
           return;
         }
 
+        // 🔥 POVEZANI SVI STATIČKI MENIJI (UKLJUČUJUĆI TURSKI) 🔥
         if (activeId === "TEST-QR-ITALIAN") { setMenuData(ITALIAN_MASSIVE_MENU); return; }
         if (activeId === "TEST-QR-GLOBAL") { setMenuData(GLOBAL_STREET_MENU); return; }
         if (activeId === "TEST-QR-MEXICAN") { setMenuData(MEXICAN_MASSIVE_MENU); return; }
         if (activeId === "TEST-QR-GREEK") { setMenuData(GREEK_MASSIVE_MENU); return; }
         if (activeId === "TEST-QR-FRENCH") { setMenuData(FRENCH_MASSIVE_MENU); return; }
+        if (activeId === "TEST-QR-TURKISH") { setMenuData(TURKISH_MASSIVE_MENU); return; } // Dodat uslov za turski
+        
         if (activeId === "TEST-QR-CUSTOM") { setMenuData({ restaurantName: "TVOJ RESTORAN", themeColor: "#22c55e", currency: "RSD", items: [{ category: "Tvoje jelo", name: "Specijalitet Šefa Kuhinje", price: "0.00", desc: "Pažljivo osmišljeno kulinarsko remek-delo sačinjeno od najsvežijih sezonskih sastojaka." }] }); return; }
 
         const docRef = doc(db, 'v8_qr_menus', activeId);
