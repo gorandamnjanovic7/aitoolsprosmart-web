@@ -61,9 +61,9 @@ import { NotificationListener, NotificationModal } from './NotificationSystem';
 // 🔥 NOVI IMPORT: Portfolio 🔥
 import Portfolio from './Portfolio';
 
-// 🔥 AŽURIRANI IMPORTI ZA PREMIUM QR MENI 🔥
-import V8PremiumTestMenu from './V8PremiumTestMenu';
-import PublicMenuTestQRMenu from './PublicMenuTestQRMenu';
+// 🔥 AŽURIRANI IMPORTI ZA PREMIUM QR MENI IZ NOVOG FOLDERA 🔥
+import V8PremiumTestMenu from './qrcode/V8PremiumTestMenu';
+import PublicMenuTestQRMenu from './qrcode/PublicMenuTestQRMenu';
 
 if (typeof window !== 'undefined') {
   if ('scrollRestoration' in window.history) { window.history.scrollRestoration = 'manual'; }
@@ -675,7 +675,7 @@ function AppContent({ appsData, refreshData }) {
 
               <Route path="/portfolio" element={<V8PageWrapper><Portfolio /></V8PageWrapper>} />
               
-              {/* 🔥 NOVE RUTE ZA QR MENI 🔥 */}
+              {/* 🔥 NOVE RUTE ZA QR MENI IZ FOLDERA qrcode 🔥 */}
               <Route path="/premium-menu" element={<V8PageWrapper><V8PremiumTestMenu /></V8PageWrapper>} />
               <Route path="/m/:menuId" element={<PublicMenuTestQRMenu />} />
             </Routes>
