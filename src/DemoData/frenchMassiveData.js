@@ -1,312 +1,230 @@
 // POČETAK FAJLA: src/DemoData/frenchMassiveData.js
-
-// 🔥 BAZA SIGURNIH HD SLIKA (BEZ AI HALUCINACIJA I GREŠAKA) 🔥
-const SAFE_IMAGE_POOLS = {
-  starters: [
-    "https://images.unsplash.com/photo-1541529086526-db283c563270?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1600803907087-f56d462fd26b?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1598514982205-f36b96d1e8d4?auto=format&fit=crop&w=800&q=80"
-  ],
-  mains: [
-    "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1559742811-822873691fc8?auto=format&fit=crop&w=800&q=80"
-  ],
-  bakery: [
-    "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1493770348161-369560ae357d?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1608198093002-ad4e005484ec?auto=format&fit=crop&w=800&q=80"
-  ],
-  cheese: [
-    "https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1608667508764-33cf0726b13a?auto=format&fit=crop&w=800&q=80"
-  ],
-  desserts: [
-    "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1587314168485-3236d6710814?auto=format&fit=crop&w=800&q=80"
-  ],
-  coffee: [
-    "https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=800&q=80"
-  ],
-  soups: [
-    "https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1604152135912-04a022e23696?auto=format&fit=crop&w=800&q=80"
-  ],
-  seafood: [
-    "https://images.unsplash.com/photo-1599084990807-360e1d4b0433?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?auto=format&fit=crop&w=800&q=80"
-  ]
-};
-
-const getSafeImage = (poolName, index) => {
-  const pool = SAFE_IMAGE_POOLS[poolName] || SAFE_IMAGE_POOLS.mains;
-  return pool[index % pool.length];
-};
+import { getImageForDish } from '../qrcode/v8ImageBank.js';
 
 export const FRENCH_MASSIVE_MENU = { 
   restaurantName: "La Maison", 
   themeColor: "#a855f7", 
   currency: "€", 
   items: [
-    // --- MEAT & POULTRY MAINS (Viandes et Volailles) ---
-    { category: "Plats Principaux - Viandes", name: "Coq au Vin", price: "28.00", desc: "Classic rustic dish: chicken braised in red Burgundy wine with mushrooms, lardons, and pearl onions.", img: getSafeImage("mains", 0), isSignature: true },
-    { category: "Plats Principaux - Viandes", name: "Boeuf Bourguignon", price: "32.00", desc: "The ultimate French comfort food: slow-simmered beef stew in red wine with carrots and onions.", img: getSafeImage("mains", 1), isSignature: true },
-    { category: "Plats Principaux - Viandes", name: "Blanquette de Veau", price: "29.00", desc: "A delicate, creamy white stew of tender veal, mushrooms, and pearl onions.", img: getSafeImage("mains", 2), isSignature: false },
-    { category: "Plats Principaux - Viandes", name: "Pot-au-Feu", price: "27.00", desc: "Traditional French beef pot roast, slowly simmered with root vegetables in a clear broth.", img: getSafeImage("mains", 3), isSignature: false },
-    { category: "Plats Principaux - Viandes", name: "Cassoulet", price: "34.00", desc: "A rich, slow-baked casserole originating from Southern France containing white beans, pork, and duck.", img: getSafeImage("mains", 4), isSignature: true },
-    { category: "Plats Principaux - Viandes", name: "Confit de Canard", price: "35.00", desc: "Duck leg slowly cured in salt and slow-cooked in its own fat until meltingly tender.", img: getSafeImage("mains", 5), isSignature: true },
-    { category: "Plats Principaux - Viandes", name: "Magret de Canard", price: "36.00", desc: "Pan-seared duck breast, served pink in the middle, often with a sweet fruit reduction.", img: getSafeImage("mains", 6), isSignature: false },
-    { category: "Plats Principaux - Viandes", name: "Canard à l’Orange", price: "38.00", desc: "A spectacular classic roast duck bathed in a sweet and sour bitter orange sauce.", img: getSafeImage("mains", 7), isSignature: true },
-    { category: "Plats Principaux - Viandes", name: "Duck Confit", price: "35.00", desc: "Classic slow-rendered duck leg, crispy on the outside, tender inside.", img: getSafeImage("mains", 8), isSignature: false },
-    { category: "Plats Principaux - Viandes", name: "Steak au Poivre", price: "42.00", desc: "A thick beef steak crusted with cracked black peppercorns and flambéed in cognac.", img: getSafeImage("mains", 9), isSignature: true },
-    { category: "Plats Principaux - Viandes", name: "Steak Frites", price: "26.00", desc: "A perfect pan-seared steak accompanied by a mountain of golden, crispy French fries.", img: getSafeImage("mains", 10), isSignature: false },
-    { category: "Plats Principaux - Viandes", name: "Entrecôte Bordelaise", price: "45.00", desc: "Premium ribeye steak served with a rich, marrow-infused red wine and shallot sauce.", img: getSafeImage("mains", 11), isSignature: true },
-    { category: "Plats Principaux - Viandes", name: "Chateaubriand", price: "85.00", desc: "A magnificent thick cut from the tenderloin, roasted and served for two with Béarnaise sauce.", img: getSafeImage("mains", 12), isSignature: true },
-    { category: "Plats Principaux - Viandes", name: "Tournedos Rossini", price: "55.00", desc: "A decadent pan-fried beef fillet crouton, crowned with pan-seared foie gras and black truffles.", img: getSafeImage("mains", 13), isSignature: true },
-    { category: "Plats Principaux - Viandes", name: "Filet de Boeuf", price: "48.00", desc: "A prime cut of incredibly tender beef fillet, cooked to your preference.", img: getSafeImage("mains", 14), isSignature: false },
-    { category: "Plats Principaux - Viandes", name: "Boeuf à la Mode", price: "30.00", desc: "A traditional braised beef pot roast, slowly cooked with wine, carrots, and herbs.", img: getSafeImage("mains", 15), isSignature: false },
-    { category: "Plats Principaux - Viandes", name: "Daube Provençale", price: "31.00", desc: "A rich Provençal stew of beef braised in wine, vegetables, garlic, and herbes de Provence.", img: getSafeImage("mains", 16), isSignature: false },
-    { category: "Plats Principaux - Viandes", name: "Navarin d’Agneau", price: "33.00", desc: "A delicate spring lamb stew cooked with young turnips, carrots, and peas.", img: getSafeImage("mains", 17), isSignature: true },
-    { category: "Plats Principaux - Viandes", name: "Gigot d’Agneau", price: "40.00", desc: "A classic Sunday roast: a whole leg of lamb studded with garlic and rosemary.", img: getSafeImage("mains", 18), isSignature: false },
-    { category: "Plats Principaux - Viandes", name: "Carré d’Agneau", price: "45.00", desc: "An elegant rack of lamb, oven-roasted and often encrusted with Dijon and herbs.", img: getSafeImage("mains", 19), isSignature: true },
-    { category: "Plats Principaux - Viandes", name: "Lapin à la Moutarde", price: "29.00", desc: "Tender rabbit pieces braised in a luxurious, creamy Dijon mustard sauce.", img: getSafeImage("mains", 20), isSignature: true },
-    { category: "Plats Principaux - Viandes", name: "Lapin Chasseur", price: "28.00", desc: "'Hunter's style' rabbit braised with mushrooms, shallots, and white wine.", img: getSafeImage("mains", 21), isSignature: false },
-    { category: "Plats Principaux - Viandes", name: "Poulet Basquaise", price: "25.00", desc: "Basque-style chicken simmered in a colorful sauce of tomatoes and sweet peppers (piperade).", img: getSafeImage("mains", 22), isSignature: true },
-    { category: "Plats Principaux - Viandes", name: "Poulet à la Normande", price: "26.00", desc: "Chicken cooked in a rich, creamy sauce of apples, cider, and Normandy Calvados.", img: getSafeImage("mains", 23), isSignature: true },
-    { category: "Plats Principaux - Viandes", name: "Poulet Rôti", price: "22.00", desc: "A perfectly simple, herb-scented roast chicken.", img: getSafeImage("mains", 24), isSignature: false },
-    { category: "Plats Principaux - Viandes", name: "Poulet Gaston Gérard", price: "27.00", desc: "A Dijon specialty: chicken browned in butter, then baked in a sauce of wine, mustard, and cheese.", img: getSafeImage("mains", 25), isSignature: false },
-    { category: "Plats Principaux - Viandes", name: "Escalope de Veau", price: "26.00", desc: "A thin, tender veal cutlet, typically pan-fried with a light sauce.", img: getSafeImage("mains", 26), isSignature: false },
-    { category: "Plats Principaux - Viandes", name: "Veau Marengo", price: "28.00", desc: "A historic dish created for Napoleon: veal stewed with tomatoes, garlic, mushrooms, and wine.", img: getSafeImage("mains", 27), isSignature: false },
-    { category: "Plats Principaux - Viandes", name: "Paupiettes de Veau", price: "29.00", desc: "Thin slices of veal rolled around a savory stuffing, then braised.", img: getSafeImage("mains", 28), isSignature: false },
-    { category: "Plats Principaux - Viandes", name: "Andouillette", price: "24.00", desc: "A coarse-grained, strongly flavored traditional French sausage made from pork intestines.", img: getSafeImage("mains", 29), isSignature: true },
-    { category: "Plats Principaux - Viandes", name: "Boudin Noir", price: "22.00", desc: "Classic French blood sausage, typically pan-fried and served with caramelized apples.", img: getSafeImage("mains", 30), isSignature: false },
-    { category: "Plats Principaux - Viandes", name: "Boudin Blanc", price: "23.00", desc: "A delicate white sausage made of pork, milk, and eggs, completely bloodless.", img: getSafeImage("mains", 31), isSignature: false },
-    { category: "Plats Principaux - Viandes", name: "Saucisse de Toulouse", price: "21.00", desc: "A thick, meaty, and simple pork sausage from southwestern France.", img: getSafeImage("mains", 32), isSignature: false },
-    { category: "Plats Principaux - Viandes", name: "Choucroute Garnie", price: "32.00", desc: "Alsatian masterpiece: a massive platter of sauerkraut topped with various sausages, pork cuts, and potatoes.", img: getSafeImage("mains", 33), isSignature: true },
-    { category: "Plats Principaux - Viandes", name: "Petit Salé aux Lentilles", price: "24.00", desc: "A comforting rustic dish of salt-cured pork slowly cooked with earthy green lentils.", img: getSafeImage("mains", 34), isSignature: false },
-    { category: "Plats Principaux - Viandes", name: "Hachis Parmentier", price: "20.00", desc: "The French shepherd's pie: minced meat layered under a thick, baked crust of mashed potatoes.", img: getSafeImage("mains", 35), isSignature: false },
-    { category: "Plats Principaux - Viandes", name: "Parmentier de Canard", price: "26.00", desc: "An elevated Hachis Parmentier made with shredded, rich duck confit.", img: getSafeImage("mains", 36), isSignature: true },
-    { category: "Plats Principaux - Viandes", name: "Tripes à la Mode de Caen", price: "25.00", desc: "A slow-cooked tripe stew flavored with cider, Calvados, and root vegetables.", img: getSafeImage("mains", 37), isSignature: false },
-    { category: "Plats Principaux - Viandes", name: "Pieds de Cochon", price: "22.00", desc: "Pigs' trotters, slowly braised until the meat falls off the bone, often breaded and fried.", img: getSafeImage("mains", 38), isSignature: false },
-    { category: "Plats Principaux - Viandes", name: "Foie de Veau", price: "26.00", desc: "Calf's liver, pan-seared quickly and served with a balsamic or wine deglaze.", img: getSafeImage("mains", 39), isSignature: false },
-    { category: "Plats Principaux - Viandes", name: "Rognons de Veau", price: "28.00", desc: "Veal kidneys prepared in a rich mustard and cream or Madeira wine sauce.", img: getSafeImage("mains", 40), isSignature: true },
-    { category: "Plats Principaux - Viandes", name: "Ris de Veau", price: "38.00", desc: "Veal sweetbreads, considered a high delicacy, crispy pan-fried in butter.", img: getSafeImage("mains", 41), isSignature: true },
+    // --- PLATS PRINCIPAUX (Glavna Jela) ---
+    { 
+      category: "Plats Principaux", 
+      name: "Coq au Vin", 
+      price: "28.00", 
+      desc: "A legendary rustic masterpiece of French gastronomy. A whole, farm-raised rooster is slowly braised for hours in a robust red Burgundy wine, along with earthy wild mushrooms, savory smoked pork lardons, and sweet pearl onions until the meat literally falls off the bone.", 
+      img: getImageForDish("Coq au Vin"), 
+      isSignature: true 
+    },
+    { 
+      category: "Plats Principaux", 
+      name: "Boeuf Bourguignon", 
+      price: "32.00", 
+      desc: "The ultimate French comfort food. Prime cuts of Charolais beef are marinated and slow-simmered in a rich, velvety Pinot Noir reduction, complemented by tender carrots, bouquet garni, and caramelized pearl onions. Served with buttery potato purée.", 
+      img: getImageForDish("Boeuf Bourguignon"), 
+      isSignature: true 
+    },
+    { 
+      category: "Plats Principaux", 
+      name: "Chateaubriand", 
+      price: "85.00", 
+      desc: "An extravagant cut from the center of the beef tenderloin, roasted to an absolute perfect medium-rare. Carved tableside and served with a classic, tarragon-infused sauce Béarnaise and crispy pommes soufflées. Designed to be shared.", 
+      img: getImageForDish("Chateaubriand"), 
+      isSignature: true 
+    },
+    { 
+      category: "Plats Principaux", 
+      name: "Confit de Canard", 
+      price: "35.00", 
+      desc: "A triumph of preservation and patience from Gascony. A plump duck leg is cured in coarse sea salt and herbs, then slowly poached in its own rendered fat until meltingly tender. Flash-roasted before serving for a shatteringly crisp skin. Accompanied by garlic-roasted potatoes.", 
+      img: getImageForDish("Confit de Canard"), 
+      isSignature: false 
+    },
+    { 
+      category: "Plats Principaux", 
+      name: "Steak au Poivre", 
+      price: "42.00", 
+      desc: "A thick, prime filet mignon heavily crusted with cracked black peppercorns, pan-seared to lock in the juices, and spectacularly flambéed in Cognac. Finished with a lush, heavy cream reduction that perfectly balances the peppery heat.", 
+      img: getImageForDish("Steak au Poivre"), 
+      isSignature: true 
+    },
+    { 
+      category: "Plats Principaux", 
+      name: "Navarin d’Agneau", 
+      price: "33.00", 
+      desc: "A delicate and vibrant spring lamb stew. Tender morsels of lamb shoulder are braised in a light, white wine and tomato broth, featuring sweet baby carrots, fresh spring peas, and young turnips. A celebration of seasonal French agriculture.", 
+      img: getImageForDish("Navarin d’Agneau"), 
+      isSignature: false 
+    },
 
-    // --- SEAFOOD (Fruits de Mer & Poissons) ---
-    { category: "Poissons et Fruits de Mer", name: "Quenelles de Brochet", price: "26.00", desc: "Delicate, light pike fish dumplings bathed in a rich crayfish Nantua sauce.", img: getSafeImage("seafood", 0), isSignature: true },
-    { category: "Poissons et Fruits de Mer", name: "Quenelles Lyonnaises", price: "25.00", desc: "The famous Lyonnais soufflé-like dumplings, baked until puffy and golden.", img: getSafeImage("seafood", 1), isSignature: false },
-    { category: "Poissons et Fruits de Mer", name: "Moules Marinières", price: "19.00", desc: "A mountain of mussels steamed open in a fragrant broth of white wine, shallots, and parsley.", img: getSafeImage("seafood", 2), isSignature: true },
-    { category: "Poissons et Fruits de Mer", name: "Moules Frites", price: "21.00", desc: "The iconic pairing of steaming mussels in white wine served with crispy French fries.", img: getSafeImage("seafood", 3), isSignature: true },
-    { category: "Poissons et Fruits de Mer", name: "Bouillabaisse", price: "45.00", desc: "The legendary Provençal fish stew originating from Marseille, served with rouille and croutons.", img: getSafeImage("seafood", 4), isSignature: true },
-    { category: "Poissons et Fruits de Mer", name: "Bourride", price: "38.00", desc: "A refined white fish stew from Provence, thickened with aioli.", img: getSafeImage("seafood", 5), isSignature: false },
-    { category: "Poissons et Fruits de Mer", name: "Matelote", price: "32.00", desc: "A rich freshwater fish stew cooked with red or white wine.", img: getSafeImage("seafood", 6), isSignature: false },
-    { category: "Poissons et Fruits de Mer", name: "Sole Meunière", price: "42.00", desc: "A whole Dover sole, dusted in flour and pan-fried in brown butter, lemon, and parsley.", img: getSafeImage("seafood", 7), isSignature: true },
-    { category: "Poissons et Fruits de Mer", name: "Sole Véronique", price: "44.00", desc: "Elegant Dover sole fillets poached in white wine and garnished with peeled green grapes.", img: getSafeImage("seafood", 8), isSignature: false },
-    { category: "Poissons et Fruits de Mer", name: "Trout Amandine", price: "28.00", desc: "Pan-fried trout topped with toasted, sliced almonds in browned butter.", img: getSafeImage("seafood", 9), isSignature: false },
-    { category: "Poissons et Fruits de Mer", name: "Truite aux Amandes", price: "28.00", desc: "The classic French presentation of trout with a buttery almond crust.", img: getSafeImage("seafood", 10), isSignature: false },
-    { category: "Poissons et Fruits de Mer", name: "Saumon à l’Oseille", price: "32.00", desc: "A famous dish of lightly cooked salmon draped in a tart, creamy sorrel sauce.", img: getSafeImage("seafood", 11), isSignature: true },
-    { category: "Poissons et Fruits de Mer", name: "Salmon en Papillote", price: "29.00", desc: "Salmon fillet baked gently inside a parchment paper pouch with vegetables.", img: getSafeImage("seafood", 12), isSignature: false },
-    { category: "Poissons et Fruits de Mer", name: "Coquilles Saint-Jacques", price: "36.00", desc: "Plump, sweet sea scallops seared or baked, often served in their own shell.", img: getSafeImage("seafood", 13), isSignature: true },
-    { category: "Poissons et Fruits de Mer", name: "Saint-Jacques au Beurre", price: "35.00", desc: "Scallops quickly pan-seared to perfection in foaming butter.", img: getSafeImage("seafood", 14), isSignature: false },
-    { category: "Poissons et Fruits de Mer", name: "Homard Thermidor", price: "65.00", desc: "An extravagant classic: lobster meat cooked in a rich wine and mustard sauce, stuffed back in the shell and browned with Gruyère.", img: getSafeImage("seafood", 15), isSignature: true },
-    { category: "Poissons et Fruits de Mer", name: "Homard à l’Armoricaine", price: "60.00", desc: "Lobster flambéed in cognac and simmered in a complex tomato and herb sauce.", img: getSafeImage("seafood", 16), isSignature: true },
-    { category: "Poissons et Fruits de Mer", name: "Langoustines Grillées", price: "48.00", desc: "Sweet, delicate langoustines grilled whole with garlic butter.", img: getSafeImage("seafood", 17), isSignature: false },
-    { category: "Poissons et Fruits de Mer", name: "Crevettes à l’Ail", price: "24.00", desc: "Large prawns sautéed vigorously in olive oil, garlic, and parsley.", img: getSafeImage("seafood", 18), isSignature: false },
-    { category: "Poissons et Fruits de Mer", name: "Huîtres", price: "22.00", desc: "A half-dozen of the finest freshly shucked French oysters, served on ice with mignonette.", img: getSafeImage("seafood", 19), isSignature: true },
-    { category: "Poissons et Fruits de Mer", name: "Plateau de Fruits de Mer", price: "85.00", desc: "A breathtaking iced seafood tower featuring raw and cooked shellfish, oysters, and crustaceans.", img: getSafeImage("seafood", 20), isSignature: true },
-    { category: "Poissons et Fruits de Mer", name: "Brandade de Morue", price: "25.00", desc: "A warm, comforting emulsion of salt cod, olive oil, milk, and garlic.", img: getSafeImage("seafood", 21), isSignature: false },
-    { category: "Poissons et Fruits de Mer", name: "Mouclade", price: "23.00", desc: "A rich mussel dish from Charentes, cooked in a creamy saffron and curry sauce.", img: getSafeImage("seafood", 22), isSignature: true },
-    { category: "Poissons et Fruits de Mer", name: "Cotriade Bretonne", price: "35.00", desc: "The hearty, rustic fish stew of Brittany, layered with potatoes and herbs.", img: getSafeImage("seafood", 23), isSignature: false },
-    { category: "Poissons et Fruits de Mer", name: "Sardines Grillées", price: "18.00", desc: "Fresh sardines simply grilled with olive oil and coarse sea salt.", img: getSafeImage("seafood", 24), isSignature: false },
-    { category: "Poissons et Fruits de Mer", name: "Thon à la Provençale", price: "28.00", desc: "Tuna steak cooked with tomatoes, garlic, olives, and herbes de Provence.", img: getSafeImage("seafood", 25), isSignature: false },
+    // --- POISSONS ET FRUITS DE MER (Riba i Plodovi mora) ---
+    { 
+      category: "Poissons et Fruits de Mer", 
+      name: "Bouillabaisse", 
+      price: "45.00", 
+      desc: "The legendary, aromatic fish stew originating from the port of Marseille. A complex saffron and fennel-infused broth overflowing with scorpion fish, monkfish, mussels, and clams. Served traditionally with toasted baguette slices and a spicy, garlic-heavy rouille.", 
+      img: getImageForDish("Bouillabaisse"), 
+      isSignature: true 
+    },
+    { 
+      category: "Poissons et Fruits de Mer", 
+      name: "Sole Meunière", 
+      price: "42.00", 
+      desc: "A classic of refined simplicity. A whole, fresh Dover sole is lightly dusted in seasoned flour and pan-fried in foaming butter until golden. Finished with a squeeze of fresh lemon, chopped parsley, and a drizzle of nutty brown butter (beurre noisette).", 
+      img: getImageForDish("Sole Meunière"), 
+      isSignature: true 
+    },
+    { 
+      category: "Poissons et Fruits de Mer", 
+      name: "Coquilles Saint-Jacques", 
+      price: "36.00", 
+      desc: "Giant, sweet sea scallops pan-seared to a perfect caramelization on the outside while remaining translucent inside. Served over a velvety puree of cauliflower and drizzled with a sophisticated white wine and shallot beurre blanc.", 
+      img: getImageForDish("Coquilles Saint-Jacques"), 
+      isSignature: false 
+    },
+    { 
+      category: "Poissons et Fruits de Mer", 
+      name: "Moules Marinières", 
+      price: "24.00", 
+      desc: "A colossal bowl of fresh, jet-black mussels steamed rapidly in a fragrant broth of dry white wine, melted butter, minced shallots, and fresh parsley. Served with endless slices of crusty baguette to soak up the oceanic juices.", 
+      img: getImageForDish("Moules Marinières"), 
+      isSignature: false 
+    },
 
-    // --- VEGETABLES & SIDES (Légumes et Garnitures) ---
-    { category: "Garnitures et Légumes", name: "Ratatouille", price: "18.00", desc: "The iconic Provençal summer vegetable stew of eggplant, zucchini, peppers, and tomatoes.", img: getSafeImage("starters", 0), isSignature: true },
-    { category: "Garnitures et Légumes", name: "Tian Provençal", price: "19.00", desc: "An elegant, layered gratin of thinly sliced Mediterranean vegetables baked until tender.", img: getSafeImage("starters", 1), isSignature: false },
-    { category: "Garnitures et Légumes", name: "Gratin Dauphinois", price: "14.00", desc: "A luxurious bake of thinly sliced potatoes, slow-cooked in rich cream and garlic.", img: getSafeImage("starters", 2), isSignature: true },
-    { category: "Garnitures et Légumes", name: "Gratin Savoyard", price: "15.00", desc: "A variation of Dauphinois, cooked with beef broth and generous amounts of Gruyère cheese.", img: getSafeImage("starters", 3), isSignature: false },
-    { category: "Garnitures et Légumes", name: "Tartiflette", price: "22.00", desc: "An indulgent Alpine dish of potatoes, lardons, onions, and half a melted Reblochon cheese.", img: getSafeImage("starters", 4), isSignature: true },
-    { category: "Garnitures et Légumes", name: "Croziflette", price: "21.00", desc: "Similar to Tartiflette, but utilizing tiny buckwheat pasta squares (crozets) instead of potatoes.", img: getSafeImage("starters", 5), isSignature: false },
-    { category: "Garnitures et Légumes", name: "Raclette", price: "25.00", desc: "A convivial Alpine meal of melting Raclette cheese scraped over boiled potatoes and charcuterie.", img: getSafeImage("starters", 6), isSignature: true },
-    { category: "Garnitures et Légumes", name: "Aligot", price: "16.00", desc: "An elastic, incredibly cheesy mashed potato dish from Aubrac, heavily blended with Tomme cheese.", img: getSafeImage("starters", 7), isSignature: true },
-    { category: "Garnitures et Légumes", name: "Truffade", price: "17.00", desc: "A thick, hearty pancake of sliced potatoes fried in duck fat and mixed with fresh Cantal cheese.", img: getSafeImage("starters", 8), isSignature: false },
-    { category: "Garnitures et Légumes", name: "Pommes Anna", price: "14.00", desc: "A classic cake of very thinly sliced potatoes baked in vast amounts of clarified butter.", img: getSafeImage("starters", 9), isSignature: false },
-    { category: "Garnitures et Légumes", name: "Pommes Dauphine", price: "12.00", desc: "Crisp, airy deep-fried puffs made from a mixture of mashed potatoes and choux pastry.", img: getSafeImage("starters", 10), isSignature: false },
-    { category: "Garnitures et Légumes", name: "Pommes Duchesse", price: "11.00", desc: "Elegant rosettes of pureed potatoes mixed with egg yolk and baked until golden.", img: getSafeImage("starters", 11), isSignature: false },
-    { category: "Garnitures et Légumes", name: "Pommes Lyonnaise", price: "12.00", desc: "Sliced potatoes pan-fried with heaps of caramelized sweet onions.", img: getSafeImage("starters", 12), isSignature: false },
-    { category: "Garnitures et Légumes", name: "Pommes Sarladaises", price: "15.00", desc: "Rich potato slices fried in duck or goose fat with garlic and parsley.", img: getSafeImage("starters", 13), isSignature: true },
-    { category: "Garnitures et Légumes", name: "Pommes Boulangère", price: "13.00", desc: "The 'baker's potatoes', sliced and baked in chicken stock rather than cream.", img: getSafeImage("starters", 14), isSignature: false },
-    { category: "Garnitures et Légumes", name: "Pommes Soufflées", price: "14.00", desc: "A culinary magic trick: potato slices twice-fried until they puff up like little balloons.", img: getSafeImage("starters", 15), isSignature: true },
-    { category: "Garnitures et Légumes", name: "Pommes de Terre Fondantes", price: "13.00", desc: "Potatoes browned in butter, then slowly braised in stock until meltingly soft inside.", img: getSafeImage("starters", 16), isSignature: false },
-    { category: "Garnitures et Légumes", name: "French Fries", price: "8.00", desc: "Classic crisp, golden French fries, perfectly salted.", img: getSafeImage("starters", 17), isSignature: false },
-    { category: "Garnitures et Légumes", name: "Frites", price: "8.00", desc: "The original double-fried potato batons, crispy outside and fluffy inside.", img: getSafeImage("starters", 18), isSignature: false },
-    { category: "Garnitures et Légumes", name: "Purée de Pommes de Terre", price: "10.00", desc: "Silky smooth, extremely buttery French mashed potatoes.", img: getSafeImage("starters", 19), isSignature: true },
-    { category: "Garnitures et Légumes", name: "Pommes Persillade", price: "11.00", desc: "Diced potatoes pan-fried and tossed with a sharp garlic and parsley mixture.", img: getSafeImage("starters", 20), isSignature: false },
-    { category: "Garnitures et Légumes", name: "Dauphinoise Potatoes", price: "14.00", desc: "The classic creamy, garlicky potato gratin bake.", img: getSafeImage("starters", 21), isSignature: false },
-    { category: "Garnitures et Légumes", name: "Galette de Pommes de Terre", price: "12.00", desc: "A pan-fried, crispy potato pancake.", img: getSafeImage("starters", 22), isSignature: false },
-    { category: "Garnitures et Légumes", name: "Rösti à la Française", price: "12.50", desc: "Grated potato cakes pan-fried in butter until deep golden brown.", img: getSafeImage("starters", 23), isSignature: false },
+    // --- ENTRÉES CHAUDES ET FROIDES (Topla i hladna predjela) ---
+    { 
+      category: "Entrées (Predjela)", 
+      name: "Soupe à l’Oignon Gratinée", 
+      price: "14.00", 
+      desc: "The world-famous French onion soup. Sweet onions are caramelized for hours until deeply mahogany in color, deglazed with cognac, and simmered in an intense beef broth. Crowned with a massive crouton and a bubbling, golden crust of melted Gruyère cheese.", 
+      img: getImageForDish("Soupe à l’Oignon Gratinée"), 
+      isSignature: true 
+    },
+    { 
+      category: "Entrées (Predjela)", 
+      name: "Escargots de Bourgogne", 
+      price: "18.00", 
+      desc: "A half-dozen plump, tender Burgundy snails served traditionally in their shells. They are baked in an outrageously flavorful, foaming butter heavily compounded with fresh garlic, shallots, and parsley. A true staple of Parisian bistros.", 
+      img: getImageForDish("Escargots de Bourgogne"), 
+      isSignature: true 
+    },
+    { 
+      category: "Entrées (Predjela)", 
+      name: "Foie Gras Poêlé", 
+      price: "35.00", 
+      desc: "A decadent, luxurious appetizer. Thick slices of the highest grade fresh duck liver are rapidly pan-seared in a dry, smoking-hot skillet to create a caramelized crust around a liquid, melting center. Served with a tart fig compote and toasted brioche.", 
+      img: getImageForDish("Foie Gras Poêlé"), 
+      isSignature: true 
+    },
+    { 
+      category: "Entrées (Predjela)", 
+      name: "Quiche Lorraine", 
+      price: "15.00", 
+      desc: "The quintessential French savory tart. A buttery, flaky shortcrust pastry shell is filled with a rich, quivering custard of heavy cream and fresh eggs, studded generously with smoked bacon lardons and a hint of nutmeg.", 
+      img: getImageForDish("Quiche Lorraine"), 
+      isSignature: false 
+    },
+    { 
+      category: "Entrées (Predjela)", 
+      name: "Croque Monsieur", 
+      price: "14.00", 
+      desc: "The ultimate Parisian café sandwich. High-quality artisanal ham and Gruyère cheese are layered between thick slices of pain de mie, smothered entirely in a rich, nutmeg-scented béchamel sauce, and baked until bubbling and browned.", 
+      img: getImageForDish("Croque Monsieur"), 
+      isSignature: false 
+    },
+    { 
+      category: "Entrées (Predjela)", 
+      name: "Salade Niçoise", 
+      price: "17.00", 
+      desc: "A vibrant, composed salad hailing from the French Riviera. Crisp mixed greens topped with oil-cured tuna, blanched haricots verts, boiled baby potatoes, hard-boiled eggs, Niçoise olives, and anchovies, dressed in a sharp Dijon vinaigrette.", 
+      img: getImageForDish("Salade Niçoise"), 
+      isSignature: false 
+    },
 
-    // --- SOUFFLÉS, QUICHES & TARTS ---
-    { category: "Entrées Chaudes & Tartes", name: "Soufflé au Fromage", price: "18.00", desc: "A masterful, towering cheese soufflé, impossibly light and airy.", img: getSafeImage("starters", 24), isSignature: true },
-    { category: "Entrées Chaudes & Tartes", name: "Soufflé aux Épinards", price: "17.00", desc: "A delicate savory soufflé incorporating finely pureed spinach.", img: getSafeImage("starters", 25), isSignature: false },
-    { category: "Entrées Chaudes & Tartes", name: "Soufflé au Roquefort", price: "19.00", desc: "A pungent, bold soufflé flavored with intense blue Roquefort cheese.", img: getSafeImage("starters", 26), isSignature: true },
-    { category: "Entrées Chaudes & Tartes", name: "Soufflé aux Champignons", price: "18.00", desc: "An earthy, mushroom-scented savory soufflé.", img: getSafeImage("starters", 27), isSignature: false },
-    { category: "Entrées Chaudes & Tartes", name: "Quiche Lorraine", price: "15.00", desc: "The quintessential French tart filled with a rich savory custard and smoked bacon lardons.", img: getSafeImage("starters", 28), isSignature: true },
-    { category: "Entrées Chaudes & Tartes", name: "Quiche Alsacienne", price: "16.00", desc: "A variation of the Lorraine, adding sautéed onions to the creamy bacon filling.", img: getSafeImage("starters", 29), isSignature: false },
-    { category: "Entrées Chaudes & Tartes", name: "Quiche aux Poireaux", price: "14.50", desc: "A comforting savory tart filled with sweet, slow-cooked leeks.", img: getSafeImage("starters", 30), isSignature: false },
-    { category: "Entrées Chaudes & Tartes", name: "Quiche au Saumon", price: "17.00", desc: "An elegant quiche featuring smoked or fresh salmon and dill.", img: getSafeImage("starters", 31), isSignature: false },
-    { category: "Entrées Chaudes & Tartes", name: "Quiche aux Épinards", price: "14.00", desc: "A vegetarian classic tart filled with spinach and Gruyère cheese.", img: getSafeImage("starters", 32), isSignature: false },
-    { category: "Entrées Chaudes & Tartes", name: "Tarte Flambée", price: "15.00", desc: "Also known as Flammekueche: a thin, crisp Alsatian dough topped with crème fraîche, onions, and bacon.", img: getSafeImage("starters", 33), isSignature: true },
-    { category: "Entrées Chaudes & Tartes", name: "Flammekueche", price: "15.00", desc: "The traditional Alsatian 'pizza' with fromage blanc, lardons, and onions.", img: getSafeImage("starters", 34), isSignature: false },
-    { category: "Entrées Chaudes & Tartes", name: "Pissaladière", price: "14.00", desc: "A thick dough from Nice topped with a dense layer of caramelized onions, anchovies, and olives.", img: getSafeImage("starters", 35), isSignature: true },
-    { category: "Entrées Chaudes & Tartes", name: "Socca", price: "9.00", desc: "A large, incredibly thin unleavened chickpea pancake from Nice, baked in a wood oven.", img: getSafeImage("starters", 36), isSignature: true },
+    // --- GARNITURES ET LÉGUMES (Prilozi i povrće) ---
+    { 
+      category: "Garnitures (Prilozi)", 
+      name: "Ratatouille", 
+      price: "12.00", 
+      desc: "A sun-drenched Provençal vegetable stew. Zucchini, eggplant, bell peppers, and tomatoes are slowly simmered together with garlic, thyme, and high-quality olive oil until they melt into a profoundly flavorful, silky medley.", 
+      img: getImageForDish("Ratatouille"), 
+      isSignature: false 
+    },
+    { 
+      category: "Garnitures (Prilozi)", 
+      name: "Gratin Dauphinois", 
+      price: "14.00", 
+      desc: "A luxurious and deeply comforting side dish from the Dauphiné region. Microscopically thin slices of potato are layered in a baking dish, submerged in rich, garlic-infused heavy cream, and baked slowly until the top forms a savory, golden-brown crust.", 
+      img: getImageForDish("Gratin Dauphinois"), 
+      isSignature: true 
+    },
 
-    // --- SANDWICHES & CROQUES ---
-    { category: "Snacks & Sandwiches", name: "Pan Bagnat", price: "12.00", desc: "A hearty Niçoise salad constructed inside a round bun and drenched in olive oil.", img: getSafeImage("starters", 37), isSignature: true },
-    { category: "Snacks & Sandwiches", name: "Croque Monsieur", price: "11.00", desc: "A hot, toasted ham and cheese sandwich generously coated in rich béchamel sauce.", img: getSafeImage("starters", 38), isSignature: true },
-    { category: "Snacks & Sandwiches", name: "Croque Madame", price: "12.50", desc: "A Croque Monsieur crowned with a perfectly fried sunny-side-up egg.", img: getSafeImage("starters", 39), isSignature: true },
-    { category: "Snacks & Sandwiches", name: "Croque Provençal", price: "11.50", desc: "A grilled sandwich incorporating tomatoes and herbes de Provence.", img: getSafeImage("starters", 40), isSignature: false },
-    { category: "Snacks & Sandwiches", name: "Croque au Saumon", price: "13.50", desc: "An elegant twist using smoked salmon and cream cheese instead of ham.", img: getSafeImage("starters", 41), isSignature: false },
-    { category: "Snacks & Sandwiches", name: "Jambon-Beurre", price: "8.50", desc: "The simple perfection of a fresh crusty baguette, high-quality butter, and Parisian ham.", img: getSafeImage("starters", 42), isSignature: true },
-    { category: "Snacks & Sandwiches", name: "Sandwich Parisien", price: "8.50", desc: "Another name for the classic, indispensable Jambon-Beurre.", img: getSafeImage("starters", 43), isSignature: false },
-    { category: "Snacks & Sandwiches", name: "Baguette Sandwich", price: "9.00", desc: "A rustic baguette filled with fresh, seasonal French ingredients.", img: getSafeImage("starters", 44), isSignature: false },
-    { category: "Snacks & Sandwiches", name: "Tartine", price: "7.00", desc: "An open-faced sandwich spread with butter and jam, or savory toppings.", img: getSafeImage("starters", 45), isSignature: false },
-    { category: "Snacks & Sandwiches", name: "Tartine de Chèvre Chaud", price: "12.00", desc: "Toasted country bread topped with warm, melting goat cheese, often served over salad.", img: getSafeImage("starters", 46), isSignature: true },
-    { category: "Snacks & Sandwiches", name: "Tartine aux Champignons", price: "11.00", desc: "A warm, open sandwich topped with sautéed wild mushrooms and garlic.", img: getSafeImage("starters", 47), isSignature: false },
-    { category: "Snacks & Sandwiches", name: "Tartine au Saumon Fumé", price: "13.00", desc: "An open sandwich generously layered with smoked salmon, dill, and crème fraîche.", img: getSafeImage("starters", 48), isSignature: false },
-    { category: "Snacks & Sandwiches", name: "Galette Bretonne", price: "11.50", desc: "A savory buckwheat crepe from Brittany, crispy on the edges.", img: getSafeImage("starters", 49), isSignature: true },
-    { category: "Snacks & Sandwiches", name: "Galette Complète", price: "13.00", desc: "The most famous savory crepe, folded over ham, melted cheese, and a runny egg.", img: getSafeImage("starters", 50), isSignature: true },
-    { category: "Snacks & Sandwiches", name: "Crêpe Salée", price: "10.00", desc: "A thin wheat pancake filled with a variety of savory ingredients.", img: getSafeImage("starters", 51), isSignature: false },
-    { category: "Snacks & Sandwiches", name: "Ficelle Picarde", price: "14.00", desc: "A savory crepe from Picardy rolled with ham and mushroom duxelles, baked in cream.", img: getSafeImage("starters", 52), isSignature: false },
+    // --- LES DESSERTS (Poslastice) ---
+    { 
+      category: "Desserts", 
+      name: "Crème Brûlée", 
+      price: "11.00", 
+      desc: "A study in contrasting textures. A cool, impossibly rich and silky custard intensely flavored with real Madagascar vanilla beans, concealed beneath a brittle, glass-like layer of hard caramel that must be shattered with your spoon.", 
+      img: getImageForDish("Crème Brûlée"), 
+      isSignature: true 
+    },
+    { 
+      category: "Desserts", 
+      name: "Tarte Tatin", 
+      price: "12.00", 
+      desc: "An accidental masterpiece of the French culinary repertoire. Apples are slowly cooked in a skillet with butter and sugar until deeply caramelized, then covered in puff pastry and baked. Inverted upon serving to reveal a glorious, sticky, glistening fruit tart.", 
+      img: getImageForDish("Tarte Tatin"), 
+      isSignature: true 
+    },
+    { 
+      category: "Desserts", 
+      name: "Mille-Feuille", 
+      price: "11.50", 
+      desc: "The 'thousand leaves' pastry. Three layers of extraordinarily flaky, buttery puff pastry sandwiching two thick layers of smooth, vanilla-flecked crème pâtissière (pastry cream). Topped with a delicate fondant and chocolate chevron glaze.", 
+      img: getImageForDish("Mille-Feuille"), 
+      isSignature: true 
+    },
+    { 
+      category: "Desserts", 
+      name: "Soufflé au Chocolat", 
+      price: "16.00", 
+      desc: "An ephemeral, towering testament to French technique. This incredibly airy, deeply intense dark chocolate dessert is baked to order, rising dramatically above its ramekin with a slight crust on the outside and a molten, cloud-like interior.", 
+      img: getImageForDish("Soufflé au Chocolat"), 
+      isSignature: true 
+    },
+    { 
+      category: "Desserts", 
+      name: "Macarons Assortis", 
+      price: "14.00", 
+      desc: "A jewelry box of Parisian elegance. Five delicate, almond-meringue cookies with a shattered crisp shell and a chewy interior, sandwiching an array of exquisite fillings including pistachio ganache, raspberry jam, and salted caramel buttercream.", 
+      img: getImageForDish("Macarons Assortis"), 
+      isSignature: false 
+    },
+    { 
+      category: "Desserts", 
+      name: "Croissant au Beurre", 
+      price: "4.50", 
+      desc: "The gold standard of French viennoiserie. A crescent of dough laminated with premium Normandy butter, resulting in a pastry that is simultaneously shatteringly crisp on the outside and wonderfully soft, elastic, and airy on the inside.", 
+      img: getImageForDish("Croissant au Beurre"), 
+      isSignature: false 
+    },
 
-    // --- HORS D'OEUVRES & EGGS (Entrées Froides et Oeufs) ---
-    { category: "Hors d'Oeuvres & Oeufs", name: "Gougères", price: "9.00", desc: "Airy, bite-sized savory choux pastry puffs mixed with Gruyère cheese.", img: getSafeImage("starters", 53), isSignature: true },
-    { category: "Hors d'Oeuvres & Oeufs", name: "Cheese Gougères", price: "9.00", desc: "Classic French cheese puffs, served warm right out of the oven.", img: getSafeImage("starters", 54), isSignature: false },
-    { category: "Hors d'Oeuvres & Oeufs", name: "Vol-au-Vent", price: "16.00", desc: "A tall, hollow case of puff pastry filled with a savory mixture, often chicken or mushrooms in cream.", img: getSafeImage("starters", 55), isSignature: true },
-    { category: "Hors d'Oeuvres & Oeufs", name: "Bouchée à la Reine", price: "17.00", desc: "A classic vol-au-vent filled with a rich ragout of chicken, sweetbreads, and mushrooms.", img: getSafeImage("starters", 56), isSignature: true },
-    { category: "Hors d'Oeuvres & Oeufs", name: "Feuilleté au Fromage", price: "10.00", desc: "Flaky puff pastry wrapped around a melting core of cheese.", img: getSafeImage("starters", 57), isSignature: false },
-    { category: "Hors d'Oeuvres & Oeufs", name: "Feuilleté aux Champignons", price: "11.00", desc: "Puff pastry parcels filled with creamy, earthy mushrooms.", img: getSafeImage("starters", 58), isSignature: false },
-    { category: "Hors d'Oeuvres & Oeufs", name: "Feuilleté au Saumon", price: "13.00", desc: "Elegant puff pastry squares encasing salmon and dill.", img: getSafeImage("starters", 59), isSignature: false },
-    { category: "Hors d'Oeuvres & Oeufs", name: "Escargots de Bourgogne", price: "18.00", desc: "Tender Burgundy snails baked in their shells with a phenomenal garlic and parsley butter.", img: getSafeImage("starters", 60), isSignature: true },
-    { category: "Hors d'Oeuvres & Oeufs", name: "Cuisses de Grenouille", price: "24.00", desc: "Delicate frog legs pan-fried until golden with butter, garlic, and fresh parsley.", img: getSafeImage("starters", 61), isSignature: true },
-    { category: "Hors d'Oeuvres & Oeufs", name: "Œufs en Cocotte", price: "12.00", desc: "Eggs baked gently in ramekins with a splash of cream and fresh herbs.", img: getSafeImage("starters", 62), isSignature: false },
-    { category: "Hors d'Oeuvres & Oeufs", name: "Œufs Mimosa", price: "8.50", desc: "Classic French deviled eggs, topped with finely grated egg yolk.", img: getSafeImage("starters", 63), isSignature: false },
-    { category: "Hors d'Oeuvres & Oeufs", name: "Œufs Meurette", price: "14.00", desc: "Eggs poached directly in a rich, red wine Burgundy sauce, served over garlic toast.", img: getSafeImage("starters", 64), isSignature: true },
-    { category: "Hors d'Oeuvres & Oeufs", name: "Omelette Française", price: "11.00", desc: "A flawless, pale yellow French omelet, soft and slightly runny (baveuse) inside.", img: getSafeImage("starters", 65), isSignature: true },
-    { category: "Hors d'Oeuvres & Oeufs", name: "Omelette aux Fines Herbes", price: "12.00", desc: "A delicate omelet expertly folded with fresh parsley, chives, tarragon, and chervil.", img: getSafeImage("starters", 66), isSignature: false },
-    { category: "Hors d'Oeuvres & Oeufs", name: "Omelette aux Champignons", price: "13.50", desc: "A classic omelet generously stuffed with sautéed mushrooms.", img: getSafeImage("starters", 67), isSignature: false },
-    { category: "Hors d'Oeuvres & Oeufs", name: "Omelette au Fromage", price: "13.00", desc: "A rich omelet oozing with melting Gruyère or Comté cheese.", img: getSafeImage("starters", 68), isSignature: false },
-    { category: "Hors d'Oeuvres & Oeufs", name: "Omelette de la Mère Poulard", price: "19.00", desc: "A legendary, incredibly thick and airy souffléd omelet from Mont Saint-Michel.", img: getSafeImage("starters", 69), isSignature: true },
-
-    // --- SALADES & SOUPS (Salades et Potages) ---
-    { category: "Salades et Soupes", name: "Salade Niçoise", price: "17.00", desc: "A composed salad from Nice with tuna, green beans, hard-boiled eggs, tomatoes, and olives.", img: getSafeImage("soups", 18), isSignature: true },
-    { category: "Salades et Soupes", name: "Salade Lyonnaise", price: "16.00", desc: "Frisée lettuce tossed with warm bacon lardons, croutons, and crowned with a poached egg.", img: getSafeImage("soups", 19), isSignature: true },
-    { category: "Salades et Soupes", name: "Salade Parisienne", price: "15.00", desc: "A hearty bistro salad usually including ham, cheese, potatoes, and hard-boiled eggs.", img: getSafeImage("soups", 20), isSignature: false },
-    { category: "Salades et Soupes", name: "Salade de Chèvre Chaud", price: "16.50", desc: "Mixed greens topped with warm, toasted goat cheese on baguette slices.", img: getSafeImage("soups", 21), isSignature: true },
-    { category: "Salades et Soupes", name: "Salade Frisée aux Lardons", price: "15.50", desc: "Bitter frisée greens wilted slightly by a hot bacon vinaigrette.", img: getSafeImage("soups", 22), isSignature: false },
-    { category: "Salades et Soupes", name: "Salade de Lentilles", price: "13.00", desc: "Earthy green Puy lentils dressed in a sharp Dijon vinaigrette.", img: getSafeImage("soups", 23), isSignature: false },
-    { category: "Salades et Soupes", name: "Salade de Haricots Verts", price: "12.00", desc: "A crisp salad of blanched French green beans and shallots.", img: getSafeImage("soups", 24), isSignature: false },
-    { category: "Salades et Soupes", name: "Salade de Pommes de Terre", price: "11.00", desc: "A classic French potato salad dressed with oil, vinegar, and fresh herbs (no mayo).", img: getSafeImage("soups", 25), isSignature: false },
-    { category: "Salades et Soupes", name: "Céleri Rémoulade", price: "9.00", desc: "Julienned celery root coated in a tangy, mustard-heavy mayonnaise dressing.", img: getSafeImage("soups", 26), isSignature: true },
-    { category: "Salades et Soupes", name: "Carottes Râpées", price: "8.00", desc: "A simple, refreshing salad of grated carrots with lemon juice and olive oil.", img: getSafeImage("soups", 27), isSignature: false },
-    { category: "Salades et Soupes", name: "Betteraves Vinaigrette", price: "8.50", desc: "Sweet roasted beets tossed in a sharp vinaigrette.", img: getSafeImage("soups", 28), isSignature: false },
-    { category: "Salades et Soupes", name: "Poireaux Vinaigrette", price: "10.00", desc: "Tender, boiled leeks served chilled and bathed in a mustard vinaigrette.", img: getSafeImage("soups", 29), isSignature: true },
-    { category: "Salades et Soupes", name: "Asperges Vinaigrette", price: "14.00", desc: "Perfectly cooked spring asparagus spears with a classic dressing.", img: getSafeImage("soups", 30), isSignature: false },
-    { category: "Salades et Soupes", name: "Artichauts Vinaigrette", price: "12.00", desc: "Whole boiled artichoke served with a tangy dressing for dipping the leaves.", img: getSafeImage("soups", 31), isSignature: false },
-    { category: "Salades et Soupes", name: "Soupe à l’Oignon", price: "14.00", desc: "Classic French onion soup, characterized by deeply caramelized onions and a huge cheesy crouton.", img: getSafeImage("soups", 32), isSignature: true },
-    { category: "Salades et Soupes", name: "French Onion Soup", price: "14.00", desc: "The world-famous rich beef broth and onion soup topped with molten Gruyère.", img: getSafeImage("soups", 33), isSignature: true },
-    { category: "Salades et Soupes", name: "Soupe au Pistou", price: "15.00", desc: "A Provençal vegetable and bean soup swirled with a garlicky basil paste.", img: getSafeImage("soups", 34), isSignature: true },
-    { category: "Salades et Soupes", name: "Soupe de Poireaux", price: "11.00", desc: "A delicate, simple pureed soup of leeks and potatoes.", img: getSafeImage("soups", 35), isSignature: false },
-    { category: "Salades et Soupes", name: "Vichyssoise", price: "13.00", desc: "A velvety, chilled puree of leeks, onions, potatoes, and cream.", img: getSafeImage("soups", 36), isSignature: true },
-    { category: "Salades et Soupes", name: "Potage Parmentier", price: "12.00", desc: "The hot, comforting, classic French leek and potato soup.", img: getSafeImage("soups", 37), isSignature: false },
-    { category: "Salades et Soupes", name: "Velouté de Champignons", price: "13.50", desc: "A silky, luxurious cream of mushroom soup.", img: getSafeImage("soups", 38), isSignature: false },
-    { category: "Salades et Soupes", name: "Velouté d’Asperges", price: "15.00", desc: "An elegant, pale green asparagus cream soup.", img: getSafeImage("soups", 39), isSignature: false },
-    { category: "Salades et Soupes", name: "Velouté de Potiron", price: "12.50", desc: "A warming, autumnal pumpkin or squash soup enriched with cream.", img: getSafeImage("soups", 40), isSignature: false },
-    { category: "Salades et Soupes", name: "Bisque de Homard", price: "24.00", desc: "An intensely flavored, highly refined soup made from lobster shells and cream.", img: getSafeImage("soups", 41), isSignature: true },
-    { category: "Salades et Soupes", name: "Bisque de Crevettes", price: "19.00", desc: "A rich, creamy, reddish-orange soup made from shrimp stock.", img: getSafeImage("soups", 42), isSignature: false },
-    { category: "Salades et Soupes", name: "Consommé", price: "12.00", desc: "A perfectly clarified, deeply flavorful meat or poultry broth.", img: getSafeImage("soups", 43), isSignature: false },
-    { category: "Salades et Soupes", name: "Garbure", price: "16.00", desc: "A thick, rustic cabbage, bean, and meat stew from southwestern France.", img: getSafeImage("soups", 44), isSignature: true },
-    { category: "Salades et Soupes", name: "Tourin à l’Ail", price: "11.00", desc: "A robust garlic and egg drop soup originating from the Dordogne.", img: getSafeImage("soups", 45), isSignature: false },
-    { category: "Salades et Soupes", name: "Soupe au Chou", price: "10.00", desc: "A hearty, country-style cabbage soup.", img: getSafeImage("soups", 46), isSignature: false },
-    { category: "Salades et Soupes", name: "Soupe de Lentilles", price: "11.50", desc: "A thick, restorative lentil soup, often flavored with bacon.", img: getSafeImage("soups", 47), isSignature: false },
-
-    // --- PÂTÉS, CHARCUTERIE & FROMAGE ---
-    { category: "Charcuterie & Fromage", name: "Foie Gras", price: "32.00", desc: "The ultimate French luxury: fattened duck or goose liver, impossibly smooth and rich.", img: getSafeImage("cheese", 0), isSignature: true },
-    { category: "Charcuterie & Fromage", name: "Foie Gras Poêlé", price: "35.00", desc: "Slices of fresh foie gras, rapidly pan-seared to create a crust over a melting center.", img: getSafeImage("cheese", 1), isSignature: true },
-    { category: "Charcuterie & Fromage", name: "Terrine de Foie Gras", price: "34.00", desc: "A molded loaf of pressed, cooked foie gras, served chilled.", img: getSafeImage("cheese", 2), isSignature: false },
-    { category: "Charcuterie & Fromage", name: "Pâté de Campagne", price: "14.00", desc: "A coarse, rustic country-style pork pâté flavored with garlic and herbs.", img: getSafeImage("cheese", 3), isSignature: true },
-    { category: "Charcuterie & Fromage", name: "Pâté en Croûte", price: "18.00", desc: "A highly technical dish of meat pâté baked inside a decorative pastry crust.", img: getSafeImage("cheese", 4), isSignature: true },
-    { category: "Charcuterie & Fromage", name: "Pâté de Foie", price: "15.00", desc: "A smooth, spreadable liver pâté.", img: getSafeImage("cheese", 5), isSignature: false },
-    { category: "Charcuterie & Fromage", name: "Terrine de Canard", price: "17.00", desc: "A hearty duck terrine, often studded with pistachios or peppercorns.", img: getSafeImage("cheese", 6), isSignature: false },
-    { category: "Charcuterie & Fromage", name: "Terrine de Lapin", price: "16.00", desc: "A delicate rabbit meat terrine.", img: getSafeImage("cheese", 7), isSignature: false },
-    { category: "Charcuterie & Fromage", name: "Rillettes de Porc", price: "14.00", desc: "Slow-cooked, shredded pork preserved in its own fat, incredibly spreadable.", img: getSafeImage("cheese", 8), isSignature: true },
-    { category: "Charcuterie & Fromage", name: "Rillettes de Canard", price: "16.00", desc: "Rich shredded duck meat whipped with duck fat.", img: getSafeImage("cheese", 9), isSignature: false },
-    { category: "Charcuterie & Fromage", name: "Rillettes de Saumon", price: "15.00", desc: "A lighter seafood spread made of fresh and smoked salmon mixed with butter.", img: getSafeImage("cheese", 10), isSignature: false },
-    { category: "Charcuterie & Fromage", name: "Jambon de Bayonne", price: "16.00", desc: "A slightly sweet, delicate air-cured ham from southwestern France.", img: getSafeImage("cheese", 11), isSignature: true },
-    { category: "Charcuterie & Fromage", name: "Jambon de Paris", price: "12.00", desc: "Classic, high-quality cooked white French ham.", img: getSafeImage("cheese", 12), isSignature: false },
-    { category: "Charcuterie & Fromage", name: "Jambon Persillé", price: "15.00", desc: "A Burgundian specialty of ham chunks set in a vibrant parsley jelly.", img: getSafeImage("cheese", 13), isSignature: true },
-    { category: "Charcuterie & Fromage", name: "Saucisson Sec", price: "13.00", desc: "Traditional French thick, dry-cured pork sausage.", img: getSafeImage("cheese", 14), isSignature: true },
-    { category: "Charcuterie & Fromage", name: "Rosette de Lyon", price: "14.50", desc: "A famous large, cured sausage from Lyon, known for its distinct, sweet flavor.", img: getSafeImage("cheese", 15), isSignature: true },
-    { category: "Charcuterie & Fromage", name: "Andouille de Guémené", price: "17.00", desc: "A visually striking smoked sausage made from concentric circles of pork chitterlings.", img: getSafeImage("cheese", 16), isSignature: false },
-    { category: "Charcuterie & Fromage", name: "Charcuterie Board", price: "24.00", desc: "An extensive wooden board laden with France's finest cured meats and terrines.", img: getSafeImage("cheese", 17), isSignature: true },
-    { category: "Charcuterie & Fromage", name: "Camembert", price: "11.00", desc: "The iconic soft, creamy cow's milk cheese from Normandy with a bloomy rind.", img: getSafeImage("cheese", 18), isSignature: true },
-    { category: "Charcuterie & Fromage", name: "Brie de Meaux", price: "12.00", desc: "The 'King of Cheeses', a raw cow's milk cheese boasting complex mushroom notes.", img: getSafeImage("cheese", 19), isSignature: true },
-    { category: "Charcuterie & Fromage", name: "Roquefort", price: "13.00", desc: "A powerful, tangy, and crumbly blue sheep's milk cheese aged in caves.", img: getSafeImage("cheese", 20), isSignature: true },
-    { category: "Charcuterie & Fromage", name: "Comté", price: "12.50", desc: "A superb, complex hard cheese from the Alps with notes of brown butter and roasted nuts.", img: getSafeImage("cheese", 21), isSignature: true },
-    { category: "Charcuterie & Fromage", name: "Reblochon", price: "13.00", desc: "A soft, washed-rind smear-ripened cheese, essential for tartiflette.", img: getSafeImage("cheese", 22), isSignature: false },
-    { category: "Charcuterie & Fromage", name: "Munster", price: "11.50", desc: "A highly pungent, soft washed-rind cheese from Alsace.", img: getSafeImage("cheese", 23), isSignature: false },
-    { category: "Charcuterie & Fromage", name: "Époisses", price: "14.00", desc: "A famously smelly, sticky cheese washed in Marc de Bourgogne brandy.", img: getSafeImage("cheese", 24), isSignature: true },
-    { category: "Charcuterie & Fromage", name: "Saint-Nectaire", price: "12.00", desc: "A semi-soft cheese with a distinctively earthy, cellar-like aroma.", img: getSafeImage("cheese", 25), isSignature: false },
-    { category: "Charcuterie & Fromage", name: "Cantal", price: "11.00", desc: "One of the oldest French cheeses, firm and slightly crumbly with a milky flavor.", img: getSafeImage("cheese", 26), isSignature: false },
-
-    // --- BAKERY & PASTRIES (Boulangerie et Pâtisserie) ---
-    { category: "Boulangerie & Pâtisserie", name: "Croissant", price: "3.50", desc: "The flawless crescent-shaped pastry, shatteringly crisp on the outside and airy within.", img: getSafeImage("bakery", 0), isSignature: true },
-    { category: "Boulangerie & Pâtisserie", name: "Croissant au Beurre", price: "4.00", desc: "The premium croissant made exclusively with pure butter, recognizable by its straight shape.", img: getSafeImage("bakery", 1), isSignature: true },
-    { category: "Boulangerie & Pâtisserie", name: "Pain au Chocolat", price: "4.50", desc: "A rectangular, flaky viennoiserie encasing two sticks of dark chocolate.", img: getSafeImage("bakery", 2), isSignature: true },
-    { category: "Boulangerie & Pâtisserie", name: "Pain aux Raisins", price: "4.50", desc: "A spiral pastry filled with pastry cream and plump raisins.", img: getSafeImage("bakery", 3), isSignature: false },
-    { category: "Boulangerie & Pâtisserie", name: "Chausson aux Pommes", price: "4.50", desc: "A classic French apple turnover with incredibly flaky puff pastry.", img: getSafeImage("bakery", 4), isSignature: false },
-    { category: "Boulangerie & Pâtisserie", name: "Brioche", price: "5.00", desc: "A highly enriched, soft, and slightly sweet yeast bread full of eggs and butter.", img: getSafeImage("bakery", 5), isSignature: true },
-    { category: "Boulangerie & Pâtisserie", name: "Kouign-Amann", price: "6.50", desc: "A Breton cake made of bread dough folded with excessive amounts of butter and sugar until caramelized.", img: getSafeImage("bakery", 6), isSignature: true },
-    { category: "Boulangerie & Pâtisserie", name: "Canelé de Bordeaux", price: "4.00", desc: "A small pastry with a thick, dark caramelized crust and a soft rum-vanilla heart.", img: getSafeImage("bakery", 7), isSignature: true },
-    { category: "Boulangerie & Pâtisserie", name: "Madeleines", price: "4.00", desc: "Small, shell-shaped sponge cakes, often lightly flavored with lemon zest.", img: getSafeImage("bakery", 8), isSignature: true },
-    { category: "Boulangerie & Pâtisserie", name: "Financiers", price: "4.50", desc: "Small, dense almond cakes baked with brown butter, traditionally shaped like gold bars.", img: getSafeImage("bakery", 9), isSignature: false },
-    { category: "Boulangerie & Pâtisserie", name: "Palmiers", price: "4.00", desc: "Crispy, sugar-crusted puff pastry cookies shaped like palm leaves or elephant ears.", img: getSafeImage("bakery", 10), isSignature: false },
-    { category: "Boulangerie & Pâtisserie", name: "Baguette", price: "2.50", desc: "The iconic long, thin loaf of French bread with a crisp crust.", img: getSafeImage("bakery", 11), isSignature: true },
-    { category: "Boulangerie & Pâtisserie", name: "Baguette Tradition", price: "3.50", desc: "An artisanal baguette made following strict traditional fermentation methods.", img: getSafeImage("bakery", 12), isSignature: true },
-    { category: "Boulangerie & Pâtisserie", name: "Pain de Campagne", price: "5.00", desc: "A large, rustic, thick-crusted country bread with a slight sourdough tang.", img: getSafeImage("bakery", 13), isSignature: false },
-    { category: "Boulangerie & Pâtisserie", name: "Fougasse", price: "6.00", desc: "A Provençal flatbread, often sculpted into a leaf pattern and baked with olives or herbs.", img: getSafeImage("bakery", 14), isSignature: false },
-    { category: "Boulangerie & Pâtisserie", name: "Pain Perdu", price: "9.00", desc: "'Lost bread': French toast made from stale brioche soaked in custard and pan-fried.", img: getSafeImage("bakery", 15), isSignature: true },
-
-    // --- DESSERTS (Les Desserts) ---
-    { category: "Desserts (Les Desserts)", name: "Crème Brûlée", price: "11.00", desc: "A rich vanilla bean custard topped with a contrasting layer of hard, burnt caramel.", img: getSafeImage("desserts", 0), isSignature: true },
-    { category: "Desserts (Les Desserts)", name: "Tarte Tatin", price: "12.00", desc: "An upside-down pastry in which apples are deeply caramelized in butter and sugar before baking.", img: getSafeImage("desserts", 1), isSignature: true },
-    { category: "Desserts (Les Desserts)", name: "Macarons Assortis", price: "14.00", desc: "A colorful selection of delicate, almond-meringue sandwich cookies with various fillings.", img: getSafeImage("desserts", 2), isSignature: true },
-    { category: "Desserts (Les Desserts)", name: "Mille-Feuille", price: "11.50", desc: "A 'thousand leaves' of puff pastry layered with rich vanilla pastry cream.", img: getSafeImage("desserts", 3), isSignature: true },
-    { category: "Desserts (Les Desserts)", name: "Éclair au Chocolat", price: "8.00", desc: "An elongated choux pastry filled with chocolate cream and topped with chocolate icing.", img: getSafeImage("desserts", 4), isSignature: true },
-    { category: "Desserts (Les Desserts)", name: "Profiteroles", price: "12.50", desc: "Choux pastry puffs filled with vanilla ice cream and drowned in warm chocolate sauce.", img: getSafeImage("desserts", 5), isSignature: true },
-    { category: "Desserts (Les Desserts)", name: "Soufflé au Chocolat", price: "16.00", desc: "An impossibly airy and intensely chocolatey baked dessert that rises straight up from the ramekin.", img: getSafeImage("desserts", 6), isSignature: true },
-    { category: "Desserts (Les Desserts)", name: "Crêpes Suzette", price: "15.00", desc: "Delicate crepes bathed in a sauce of caramelized sugar, butter, orange juice, and flambéed with Grand Marnier.", img: getSafeImage("desserts", 7), isSignature: true },
-    { category: "Desserts (Les Desserts)", name: "Paris-Brest", price: "13.00", desc: "A ring of choux pastry filled with an incredibly rich praline mousseline cream.", img: getSafeImage("desserts", 8), isSignature: true },
-    { category: "Desserts (Les Desserts)", name: "Saint-Honoré", price: "14.00", desc: "A complex pastry featuring a puff pastry base, caramel-dipped cream puffs, and Chiboust cream.", img: getSafeImage("desserts", 9), isSignature: true },
-    { category: "Desserts (Les Desserts)", name: "Opéra", price: "13.50", desc: "An elegant, multi-layered cake of almond sponge soaked in coffee syrup, ganache, and coffee buttercream.", img: getSafeImage("desserts", 10), isSignature: true },
-    { category: "Desserts (Les Desserts)", name: "Fraisier", price: "12.00", desc: "A stunning cake composed of sponge layers, mousseline cream, and a ring of fresh strawberries.", img: getSafeImage("desserts", 11), isSignature: false },
-    { category: "Desserts (Les Desserts)", name: "Moelleux au Chocolat", price: "11.00", desc: "A warm chocolate cake with a melting, gooey, liquid chocolate center.", img: getSafeImage("desserts", 12), isSignature: true },
-    { category: "Desserts (Les Desserts)", name: "Mousse au Chocolat", price: "9.50", desc: "A deeply dark, airy, and rich classic French chocolate mousse.", img: getSafeImage("desserts", 13), isSignature: false },
-    { category: "Desserts (Les Desserts)", name: "Île Flottante", price: "10.00", desc: "A 'floating island' of poached meringue resting on a sea of vanilla custard (crème anglaise).", img: getSafeImage("desserts", 14), isSignature: true },
-    { category: "Desserts (Les Desserts)", name: "Tarte au Citron Meringuée", price: "11.00", desc: "A sharp, tangy lemon tart topped with a towering cloud of toasted meringue.", img: getSafeImage("desserts", 15), isSignature: true },
-    { category: "Desserts (Les Desserts)", name: "Bûche de Noël", price: "15.00", desc: "The traditional Yule log cake, rolled with buttercream and textured to look like tree bark.", img: getSafeImage("desserts", 16), isSignature: false },
-    { category: "Desserts (Les Desserts)", name: "Poire Belle Hélène", price: "11.50", desc: "A classic dessert of pears poached in sugar syrup, served with vanilla ice cream and chocolate syrup.", img: getSafeImage("desserts", 17), isSignature: false },
-
-    // --- COFFEE & DRINKS (Cafés et Boissons) ---
-    { category: "Café & Boissons", name: "Café Noir", price: "3.00", desc: "A classic, strong black French espresso.", img: getSafeImage("coffee", 0), isSignature: false },
-    { category: "Café & Boissons", name: "Café au Lait", price: "5.00", desc: "Strong coffee mixed with a generous amount of hot milk, typically served in a large bowl at breakfast.", img: getSafeImage("coffee", 1), isSignature: true },
-    { category: "Café & Boissons", name: "Café Crème", price: "4.50", desc: "A large cup of espresso topped with hot foamed milk.", img: getSafeImage("coffee", 2), isSignature: false },
-    { category: "Café & Boissons", name: "Café Noisette", price: "3.50", desc: "An espresso 'cut' with a dash of hot milk, resembling the color of a hazelnut.", img: getSafeImage("coffee", 3), isSignature: true },
-    { category: "Café & Boissons", name: "Chocolat Chaud", price: "6.00", desc: "A mug of deeply rich, thick, and luxurious hot chocolate.", img: getSafeImage("coffee", 4), isSignature: true },
-    { category: "Café & Boissons", name: "Citron Pressé", price: "5.50", desc: "A refreshing DIY lemonade served as freshly squeezed lemon juice, water, and sugar on the side.", img: getSafeImage("coffee", 5), isSignature: true }
+    // --- CAFÉ ET BOISSONS (Kafa i Pića) ---
+    { 
+      category: "Café et Boissons", 
+      name: "Espresso Noir", 
+      price: "3.50", 
+      desc: "A profoundly intense, short shot of darkly roasted Arabica beans, extracted under high pressure to produce a thick, hazelnut-colored crema. The quintessential conclusion to a rich French meal.", 
+      img: getImageForDish("Espresso Noir"), 
+      isSignature: false 
+    },
+    { 
+      category: "Café et Boissons", 
+      name: "Café au Lait", 
+      price: "5.50", 
+      desc: "A Parisian breakfast necessity. A double shot of strong espresso mixed generously with steaming hot milk, creating a comforting, creamy beverage.", 
+      img: getImageForDish("Café au Lait"), 
+      isSignature: false 
+    }
   ]
 };
 // KRAJ FAJLA: src/DemoData/frenchMassiveData.js

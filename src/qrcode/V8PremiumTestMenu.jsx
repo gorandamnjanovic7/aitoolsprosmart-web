@@ -25,6 +25,7 @@ const themeStyles = {
   'V8 Gold': { hex: '#eab308', text: 'text-yellow-500', bg: 'bg-yellow-500', border: 'border-yellow-500/50', ring: 'focus:border-yellow-500/50 focus:ring-yellow-500/50', btnText: 'text-black' }
 };
 
+// POČETAK FUNKCIJE: getCategoryIcon
 const getCategoryIcon = (catName) => {
   const lower = catName.toLowerCase();
   if (lower.includes('signature') || lower.includes('house') || lower.includes('special')) return Flame; 
@@ -37,7 +38,9 @@ const getCategoryIcon = (catName) => {
   if (lower.includes('drink') || lower.includes('wine') || lower.includes('beverage')) return Wine;
   return ChefHat; 
 };
+// KRAJ FUNKCIJE: getCategoryIcon
 
+// POČETAK FUNKCIJE: generateInitialItems
 const generateInitialItems = (isBlank = false) => {
   let idCounter = 1;
   const finalItems = [];
@@ -52,12 +55,16 @@ const generateInitialItems = (isBlank = false) => {
   });
   return finalItems;
 };
+// KRAJ FUNKCIJE: generateInitialItems
 
+// POČETAK FUNKCIJE: getSuggestionsWithImages
 const getSuggestionsWithImages = (categoryName, catIndex) => {
   const catDemo = RAW_DB[categoryName] && RAW_DB[categoryName].length > 0 ? RAW_DB[categoryName] : [];
   return catDemo.map((item, idx) => ({ name: item[0] || "", desc: item[1] || "", price: item[2] || "0.00", demoImg: IMG_POOL[(catIndex + idx) % IMG_POOL.length] }));
 };
+// KRAJ FUNKCIJE: getSuggestionsWithImages
 
+// POČETAK FUNKCIJE: PremiumMenu
 export default function PremiumMenu() {
   const [items, setItems] = useState(() => generateInitialItems(false));
   const [restaurantName, setRestaurantName] = useState('AURA Fine Dining');
@@ -87,12 +94,23 @@ export default function PremiumMenu() {
   const currentTheme = themeStyles[theme] || themeStyles['V8 Orange'];
   const currentCustomTheme = themeStyles[customTheme] || themeStyles['V8 Green'];
 
+  // POČETAK FUNKCIJE: handleItemChange
   const handleItemChange = (id, field, value) => setItems(items.map(item => item.id === id ? { ...item, [field]: value } : item));
+  // KRAJ FUNKCIJE: handleItemChange
+
+  // POČETAK FUNKCIJE: handleCustomItemChange
   const handleCustomItemChange = (id, field, value) => setCustomItems(customItems.map(item => item.id === id ? { ...item, [field]: value } : item));
+  // KRAJ FUNKCIJE: handleCustomItemChange
 
+  // POČETAK FUNKCIJE: handleSuggestionSelect
   const handleSuggestionSelect = (id, suggestion) => { setItems(items.map(item => item.id === id ? { ...item, name: suggestion.name, desc: suggestion.desc, price: suggestion.price || item.price, demoImg: suggestion.demoImg || item.demoImg } : item)); setActiveDropdownId(null); };
-  const handleCustomSuggestionSelect = (id, suggestion) => { setCustomItems(customItems.map(item => item.id === id ? { ...item, name: suggestion.name, desc: suggestion.desc, price: suggestion.price || item.price, demoImg: suggestion.demoImg || item.demoImg } : item)); setActiveCustomDropdownId(null); };
+  // KRAJ FUNKCIJE: handleSuggestionSelect
 
+  // POČETAK FUNKCIJE: handleCustomSuggestionSelect
+  const handleCustomSuggestionSelect = (id, suggestion) => { setCustomItems(customItems.map(item => item.id === id ? { ...item, name: suggestion.name, desc: suggestion.desc, price: suggestion.price || item.price, demoImg: suggestion.demoImg || item.demoImg } : item)); setActiveCustomDropdownId(null); };
+  // KRAJ FUNKCIJE: handleCustomSuggestionSelect
+
+  // POČETAK FUNKCIJE: handleImageUpload
   const handleImageUpload = async (id, file, isCustom = false) => {
     if (!file) return;
     setUploadingItemId(id);
@@ -103,7 +121,9 @@ export default function PremiumMenu() {
       if (resData.secure_url) { isCustom ? handleCustomItemChange(id, 'img', resData.secure_url) : handleItemChange(id, 'img', resData.secure_url); }
     } catch (err) { console.error(err); } finally { setUploadingItemId(null); }
   };
+  // KRAJ FUNKCIJE: handleImageUpload
 
+  // POČETAK FUNKCIJE: handleGenerateQR
   const handleGenerateQR = async () => {
     const activeItems = items.filter(item => item.name && item.name.trim() !== '');
     if (!restaurantName.trim() || activeItems.length === 0) { if(typeof v8Toast !== 'undefined') v8Toast.error("Enter a name and at least one item!"); return; }
@@ -115,7 +135,9 @@ export default function PremiumMenu() {
       setGeneratedMenuId(docRef.id); if(typeof v8Toast !== 'undefined') v8Toast.success("Layout deployed!");
     } catch (error) { setGeneratedMenuId("TEST-QR-PREVIEW"); if(typeof v8Toast !== 'undefined') v8Toast.success("Test QR deployed!"); } finally { setIsSaving(false); }
   };
+  // KRAJ FUNKCIJE: handleGenerateQR
 
+  // POČETAK FUNKCIJE: handleGenerateCustomQR
   const handleGenerateCustomQR = async () => {
     const activeCustomItems = customItems.filter(item => item.name && item.name.trim() !== '');
     if (!customRestaurantName.trim() || activeCustomItems.length === 0) { if(typeof v8Toast !== 'undefined') v8Toast.error("Enter a restaurant name and at least one item!"); return; }
@@ -127,7 +149,9 @@ export default function PremiumMenu() {
       setGeneratedCustomMenuId(docRef.id); if(typeof v8Toast !== 'undefined') v8Toast.success("Custom Menu deployed!");
     } catch (error) { setGeneratedCustomMenuId("TEST-QR-CUSTOM"); if(typeof v8Toast !== 'undefined') v8Toast.success("Custom Test QR deployed!"); } finally { setIsSavingCustom(false); }
   };
+  // KRAJ FUNKCIJE: handleGenerateCustomQR
 
+  // POČETAK FUNKCIJE: deployStaticDemo
   const deployStaticDemo = async (demoKey, staticData) => {
     setDemoSaveStates(prev => ({ ...prev, [demoKey]: true }));
     try {
@@ -142,15 +166,40 @@ export default function PremiumMenu() {
       setDemoSaveStates(prev => ({ ...prev, [demoKey]: false })); 
     }
   };
+  // KRAJ FUNKCIJE: deployStaticDemo
 
+  // POČETAK FUNKCIJE: resetStaticDemo
   const resetStaticDemo = (demoKey) => {
     setDemoGeneratedIds(prev => { const next = { ...prev }; delete next[demoKey]; return next; });
   };
+  // KRAJ FUNKCIJE: resetStaticDemo
 
+  // POČETAK FUNKCIJE: getChartUrl (Smanjena veličina na 200px)
   const getChartUrl = (id, themeHex = '#ea580c') => {
     const darkColor = themeHex.replace('#', '');
-    return `https://quickchart.io/qr?text=${encodeURIComponent(`https://aitoolsprosmart.com/m/${id}`)}&margin=2&size=600&dark=${darkColor}&light=ffffff`;
+    return `https://quickchart.io/qr?text=${encodeURIComponent(`https://aitoolsprosmart.com/m/${id}`)}&margin=2&size=200&dark=${darkColor}&light=ffffff`;
   };
+  // KRAJ FUNKCIJE: getChartUrl
+
+  // POČETAK FUNKCIJE: forceDownload (Forsira preuzimanje direktno u Downloads folder)
+  const forceDownload = async (url, filename) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error("Greška pri preuzimanju:", error);
+      window.open(url, '_blank');
+    }
+  };
+  // KRAJ FUNKCIJE: forceDownload
 
   const STATIC_CARDS = [
     { key: 'aura', title: restaurantName || 'AURA Fine Dining', sub: 'PRE-FILLED DEMO', icon: Crown, theme: currentTheme, isDynamic: true },
@@ -259,13 +308,16 @@ export default function PremiumMenu() {
                     <span>CUSTOM MENU SUCCESSFULLY DEPLOYED</span>
                   </div>
                   <div className="flex flex-col md:flex-row items-center gap-10 w-full justify-center">
-                    <div className="bg-black p-6 md:p-8 rounded-[2rem] shadow-[0_0_40px_rgba(0,0,0,0.8)] border shrink-0" style={{ borderColor: currentTheme.hex }}>
-                      <img src={getChartUrl(generatedMenuId, currentTheme.hex)} alt="Customized QR" className="w-48 h-48 md:w-64 md:h-64 object-contain" />
+                    <div className="bg-black p-5 rounded-[2rem] shadow-[0_0_40px_rgba(0,0,0,0.8)] border shrink-0" style={{ borderColor: currentTheme.hex }}>
+                      <img src={getChartUrl(generatedMenuId, currentTheme.hex)} alt="Customized QR" className="w-36 h-36 md:w-44 md:h-44 object-contain" />
                     </div>
                     <div className="flex flex-col gap-4 w-full md:w-72">
-                      <a href={getChartUrl(generatedMenuId, currentTheme.hex)} download="Customized_All_QR.png" target="_blank" rel="noreferrer" className={`w-full py-5 text-center rounded-xl font-black text-sm uppercase tracking-widest transition-opacity hover:opacity-80 shadow-lg ${currentTheme.bg} ${currentTheme.btnText}`}>
+                      <button 
+                        onClick={() => forceDownload(getChartUrl(generatedMenuId, currentTheme.hex), "Master_QR_Menu.png")}
+                        className={`w-full py-5 text-center rounded-xl font-black text-sm uppercase tracking-widest transition-opacity hover:opacity-80 shadow-lg ${currentTheme.bg} ${currentTheme.btnText}`}
+                      >
                         <Download size={18} className="inline mb-1 mr-2" /> DOWNLOAD HIGH-RES
-                      </a>
+                      </button>
                       <button onClick={() => setGeneratedMenuId(null)} className="w-full py-5 bg-zinc-900 border border-white/10 text-zinc-400 rounded-xl text-sm font-black uppercase hover:text-white transition-colors">
                         RESET LAYOUT
                       </button>
@@ -337,13 +389,16 @@ export default function PremiumMenu() {
                         <span>CUSTOM QR CODE SUCCESSFULLY GENERATED</span>
                       </div>
                       <div className="flex flex-col md:flex-row items-center gap-10 w-full justify-center">
-                        <div className="bg-black p-6 md:p-8 rounded-[2rem] shadow-[0_0_40px_rgba(0,0,0,0.8)] border shrink-0" style={{ borderColor: currentCustomTheme.hex }}>
-                          <img src={getChartUrl(generatedCustomMenuId, currentCustomTheme.hex)} alt="Custom QR Code" className="w-48 h-48 md:w-64 md:h-64 object-contain" />
+                        <div className="bg-black p-5 rounded-[2rem] shadow-[0_0_40px_rgba(0,0,0,0.8)] border shrink-0" style={{ borderColor: currentCustomTheme.hex }}>
+                          <img src={getChartUrl(generatedCustomMenuId, currentCustomTheme.hex)} alt="Custom QR Code" className="w-36 h-36 md:w-44 md:h-44 object-contain" />
                         </div>
                         <div className="flex flex-col gap-4 w-full md:w-72">
-                          <a href={getChartUrl(generatedCustomMenuId, currentCustomTheme.hex)} download="Custom_QR.png" target="_blank" rel="noreferrer" className={`w-full py-5 text-center rounded-xl font-black text-sm uppercase tracking-widest transition-opacity hover:opacity-80 shadow-lg ${currentCustomTheme.bg} ${currentCustomTheme.btnText}`}>
+                          <button 
+                            onClick={() => forceDownload(getChartUrl(generatedCustomMenuId, currentCustomTheme.hex), "Custom_QR_Menu.png")}
+                            className={`w-full py-5 text-center rounded-xl font-black text-sm uppercase tracking-widest transition-opacity hover:opacity-80 shadow-lg ${currentCustomTheme.bg} ${currentCustomTheme.btnText}`}
+                          >
                             <Download size={18} className="inline mb-1 mr-2" /> DOWNLOAD HIGH-RES
-                          </a>
+                          </button>
                           <button onClick={() => setGeneratedCustomMenuId(null)} className="w-full py-5 bg-zinc-900 border border-white/10 text-zinc-400 rounded-xl text-sm font-black uppercase hover:text-white transition-colors">
                             RESET LAYOUT
                           </button>
@@ -358,14 +413,8 @@ export default function PremiumMenu() {
 
           </div>
 
-          {/* DESNA STRANA - QR KODOVI (TRAJNO REŠENJE SENKI) */}
+          {/* DESNA STRANA - QR KODOVI */}
           <div className="lg:col-span-4 relative w-full">
-            {/* 
-              Rešenje: 
-              1. overflow-x-visible
-              2. pr-12 stvara džinovski zid između senke i scrollbara
-              3. Kartice su smanjene na max-w-[280px] da imaju dovoljno vazduha oko sebe
-            */}
             <div className="flex flex-col gap-12 sticky top-[100px] w-full max-h-[calc(100vh-120px)] overflow-y-auto overflow-x-visible pl-4 pr-12 py-10 v8-beautiful-scroll">
               
               {STATIC_CARDS.map((card) => {
@@ -391,11 +440,14 @@ export default function PremiumMenu() {
                     ) : (
                       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center text-center w-full">
                         <div className="bg-black p-4 rounded-2xl mb-5 shadow-[0_0_20px_rgba(0,0,0,0.8)] border" style={{ borderColor: card.theme.hex }}>
-                          <img src={getChartUrl(generatedId, card.theme.hex)} alt="QR Code" className="w-40 h-40 object-contain" />
+                          <img src={getChartUrl(generatedId, card.theme.hex)} alt="QR Code" className="w-32 h-32 object-contain" />
                         </div>
-                        <a href={getChartUrl(generatedId, card.theme.hex)} download={`${card.key}_QR.png`} target="_blank" rel="noreferrer" className={`w-full font-black uppercase tracking-widest py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-2 text-[11px] mb-3 ${card.theme.bg} ${card.theme.btnText}`}>
+                        <button 
+                          onClick={() => forceDownload(getChartUrl(generatedId, card.theme.hex), `${card.key}_QR_Menu.png`)}
+                          className={`w-full font-black uppercase tracking-widest py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-2 text-[11px] mb-3 ${card.theme.bg} ${card.theme.btnText}`}
+                        >
                           <Download size={16} /> DOWNLOAD
-                        </a>
+                        </button>
                         <button onClick={handleRes} className="w-full bg-[#16161a] border border-white/10 text-zinc-400 px-4 py-3.5 rounded-xl text-[11px] font-black uppercase hover:text-white transition-colors">RESET</button>
                       </motion.div>
                     )}
@@ -411,4 +463,5 @@ export default function PremiumMenu() {
     </div>
   );
 }
+// KRAJ FUNKCIJE: PremiumMenu
 // KRAJ FAJLA: src/qrcode/V8PremiumTestMenu.jsx

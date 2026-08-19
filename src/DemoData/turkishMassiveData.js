@@ -1,350 +1,219 @@
 // POČETAK FAJLA: src/DemoData/turkishMassiveData.js
-
-// 🔥 BAZA SIGURNIH HD SLIKA (BEZ AI HALUCINACIJA I GREŠAKA) 🔥
-const SAFE_IMAGE_POOLS = {
-  kebabs: [
-    "https://images.unsplash.com/photo-1603360946369-dc9bb6258143?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1615937657715-bc7b4b7962c1?auto=format&fit=crop&w=800&q=80"
-  ],
-  streetFood: [
-    "https://images.unsplash.com/photo-1561651823-34feb02250e4?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1633321702518-7feccafb94d5?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1606755962773-d324e0a13086?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1565299507177-b0ac66763828?auto=format&fit=crop&w=800&q=80"
-  ],
-  pideBorek: [
-    "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&w=800&q=80"
-  ],
-  breakfast: [
-    "https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1525385133512-2f3bdd039054?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1493770348161-369560ae357d?auto=format&fit=crop&w=800&q=80"
-  ],
-  soups: [
-    "https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1604152135912-04a022e23696?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1548943487-a2e4e43b4850?auto=format&fit=crop&w=800&q=80"
-  ],
-  mainDishes: [
-    "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1514326640560-7d063ef2aed5?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1564834724105-918b73d1b9e0?auto=format&fit=crop&w=800&q=80"
-  ],
-  mezeSalads: [
-    "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1606850780554-b55ea4ebfa67?auto=format&fit=crop&w=800&q=80"
-  ],
-  seafood: [
-    "https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1599084990807-360e1d4b0433?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1559742811-822873691fc8?auto=format&fit=crop&w=800&q=80"
-  ],
-  desserts: [
-    "https://images.unsplash.com/photo-1587314168485-3236d6710814?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1579372786545-d24232daf58c?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1605333393963-71822cb61271?auto=format&fit=crop&w=800&q=80"
-  ],
-  drinks: [
-    "https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1561395049-69684aacf8de?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1576092762791-dd9e2220afa1?auto=format&fit=crop&w=800&q=80"
-  ]
-};
-
-const getSafeImage = (poolName, index) => {
-  const pool = SAFE_IMAGE_POOLS[poolName] || SAFE_IMAGE_POOLS.mainDishes;
-  return pool[index % pool.length];
-};
+import { getImageForDish } from '../qrcode/v8ImageBank.js';
 
 export const TURKISH_MASSIVE_MENU = { 
   restaurantName: "Topkapı Sarayı Sofrası", 
-  themeColor: "#b91c1c", // Turska crvena
+  themeColor: "#b91c1c", 
   currency: "₺", 
   items: [
-    // --- KEBABS ---
-    { category: "Kebab Specijaliteti", name: "Adana Kebab", price: "320.00", desc: "Autentični ljuti kebab od ručno seckanog jagnjećeg mesa, grilovan na ćumuru.", img: getSafeImage("kebabs", 1), isSignature: true },
-    { category: "Kebab Specijaliteti", name: "Urfa Kebab", price: "310.00", desc: "Blaga verzija kebaba sa bogatim ukusom mesa i pažljivo biranim začinima, bez ljutine.", img: getSafeImage("kebabs", 2), isSignature: false },
-    { category: "Kebab Specijaliteti", name: "İskender Kebab", price: "380.00", desc: "Tanki listići döner mesa preko pita hleba, obilno preliveni vrelim puterom i paradajz sosom, uz jogurt.", img: getSafeImage("kebabs", 3), isSignature: true },
-    { category: "Kebab Specijaliteti", name: "Şiş Kebab", price: "290.00", desc: "Krupni, sočni komadi marinirane jagnjetine pečeni na ražnjiću.", img: getSafeImage("kebabs", 4), isSignature: false },
-    { category: "Kebab Specijaliteti", name: "Patlıcan Kebabı", price: "330.00", desc: "Kebab sa naizmenično ređanim mesom i patlidžanom, preliven sopstvenim sokovima tokom pečenja.", img: getSafeImage("kebabs", 5), isSignature: false },
-    { category: "Kebab Specijaliteti", name: "Beyti Kebab", price: "340.00", desc: "Pečeno mleveno meso čvrsto umotano u lavaš hleb, isečeno i preliveno paradajz sosom i jogurtom.", img: getSafeImage("kebabs", 6), isSignature: true },
-    { category: "Kebab Specijaliteti", name: "Testi Kebabı", price: "450.00", desc: "Ekskluzivni kebab od mesa i povrća, sporo kuvan u zapečaćenom glinenom ćupu koji se lomi pred vama.", img: getSafeImage("kebabs", 7), isSignature: true },
-    { category: "Kebab Specijaliteti", name: "Cağ Kebabı", price: "360.00", desc: "Čuveni Erzurum specijalitet: marinirano jagnjeće meso pečeno na horizontalnom drvenom ražnju.", img: getSafeImage("kebabs", 8), isSignature: true },
-    { category: "Kebab Specijaliteti", name: "Çöp Şiş", price: "260.00", desc: "Mali, zalogajni komadići jagnjetine i masnoće pečeni na tankim drvenim štapićima.", img: getSafeImage("kebabs", 9), isSignature: false },
-    { category: "Kebab Specijaliteti", name: "Tavuk Şiş", price: "240.00", desc: "Mekani pileći ražnjići marinirani u jogurtu i turskim začinima.", img: getSafeImage("kebabs", 10), isSignature: false },
-    { category: "Kebab Specijaliteti", name: "Kuzu Şiş", price: "320.00", desc: "Najkvalitetnija jagnjetina na ražnjiću, sočna i grilovana do savršenstva.", img: getSafeImage("kebabs", 11), isSignature: false },
-    { category: "Kebab Specijaliteti", name: "Ali Nazik Kebabı", price: "340.00", desc: "Komadi sočne jagnjetine položeni preko pirea od pečenog patlidžana i belog luka sa jogurtom.", img: getSafeImage("kebabs", 12), isSignature: true },
-    { category: "Kebab Specijaliteti", name: "Orman Kebabı", price: "290.00", desc: "'Šumski' kebab pun komadića mesa, graška, šargarepe i krompira, dinstan u bogatom sosu.", img: getSafeImage("kebabs", 13), isSignature: false },
-    { category: "Kebab Specijaliteti", name: "Tas Kebabı", price: "280.00", desc: "Tradicionalni gusti goveđi gulaš (paprikaš) poslužen uz pirinač.", img: getSafeImage("kebabs", 14), isSignature: false },
-    { category: "Kebab Specijaliteti", name: "Tepsi Kebabı", price: "310.00", desc: "Zapečeno mleveno meso u tepsiji sa debelim slojem paradajza, paprika i luka.", img: getSafeImage("kebabs", 15), isSignature: false },
-    { category: "Kebab Specijaliteti", name: "Kağıt Kebabı", price: "320.00", desc: "Meso i začinsko bilje hermetički zatvoreno i pečeno u pergament papiru kako bi zadržalo sve sokove.", img: getSafeImage("kebabs", 16), isSignature: true },
-
-    // --- DÖNER & STREET FOOD ---
-    { category: "Döner & Street Food", name: "Döner Kebab", price: "220.00", desc: "Klasičan porcijski döner sa najkvalitetnijim listićima mesa, poslužen uz salatu i krompir.", img: getSafeImage("streetFood", 1), isSignature: false },
-    { category: "Döner & Street Food", name: "Et Döner", price: "200.00", desc: "Premium goveđi döner poslužen u somunu sa svežim prilozima.", img: getSafeImage("streetFood", 2), isSignature: true },
-    { category: "Döner & Street Food", name: "Tavuk Döner", price: "160.00", desc: "Pileći döner bogatog ukusa, lagan i sočan.", img: getSafeImage("streetFood", 3), isSignature: false },
-    { category: "Döner & Street Food", name: "Tantuni", price: "210.00", desc: "Sitno seckano meso iz Mersina, prženo na posebnom tiganju i umotano u tanak lavaš.", img: getSafeImage("streetFood", 4), isSignature: true },
-    { category: "Döner & Street Food", name: "Kokoreç", price: "240.00", desc: "Vrhunski ulični specijalitet: grilovana začinjena jagnjeća crevca usitnjena u hrskavom hlebu.", img: getSafeImage("streetFood", 5), isSignature: true },
-    
-    // --- KÖFTE (ĆUFTE) ---
-    { category: "Köfte (Turske Ćufte)", name: "Köfte", price: "210.00", desc: "Klasične turske roštilj ćufte od mešanog mesa, poslužene uz luk i sumak.", img: getSafeImage("mainDishes", 1), isSignature: false },
-    { category: "Köfte (Turske Ćufte)", name: "İnegöl Köfte", price: "230.00", desc: "Duguljaste ćufte bez previše začina, poznate po svojoj specifičnoj elastičnoj teksturi.", img: getSafeImage("mainDishes", 2), isSignature: true },
-    { category: "Köfte (Turske Ćufte)", name: "İzmir Köfte", price: "240.00", desc: "Ćufte ukrčkane u rerni sa obiljem paradajz sosa, paprikama i krompirom.", img: getSafeImage("mainDishes", 3), isSignature: false },
-    { category: "Köfte (Turske Ćufte)", name: "Tekirdağ Köftesi", price: "230.00", desc: "Mekane ćufte poslužene uz tradicionalni ljuti sos od paprika.", img: getSafeImage("mainDishes", 4), isSignature: true },
-    { category: "Köfte (Turske Ćufte)", name: "Akçaabat Köftesi", price: "250.00", desc: "Krupne ćufte iz Trabzona, prepune belog luka i specifičnog šmeka.", img: getSafeImage("mainDishes", 5), isSignature: false },
-    { category: "Köfte (Turske Ćufte)", name: "Kasap Köfte", price: "220.00", desc: "Domaće 'mesarske' ćufte napravljene po starinskom receptu.", img: getSafeImage("mainDishes", 6), isSignature: false },
-    { category: "Köfte (Turske Ćufte)", name: "Çiğ Köfte", price: "120.00", desc: "Pikantna, ručno mešena smesa od finog bulgura, oraha i paste od nara (vegansko).", img: getSafeImage("streetFood", 7), isSignature: false },
-    { category: "Köfte (Turske Ćufte)", name: "İçli Köfte", price: "70.00", desc: "Pržene kuglice od bulgura izdašno punjene mlevenim mesom i začinima.", img: getSafeImage("streetFood", 8), isSignature: true },
-    { category: "Köfte (Turske Ćufte)", name: "Kadınbudu Köfte", price: "220.00", desc: "Pohovane ćufte pomešane sa pirinčem, prepoznatljive po sočnosti i mekoći.", img: getSafeImage("mainDishes", 9), isSignature: false },
-    { category: "Köfte (Turske Ćufte)", name: "Hasanpaşa Köfte", price: "260.00", desc: "Raskošne ćufte u obliku gnezda, zapečene sa pire krompirom i kačkavaljem na vrhu.", img: getSafeImage("mainDishes", 10), isSignature: true },
-    { category: "Köfte (Turske Ćufte)", name: "Sulu Köfte", price: "200.00", desc: "Kuvane ćufte u bogatoj paradajz čorbi sa povrćem.", img: getSafeImage("mainDishes", 11), isSignature: false },
-    { category: "Köfte (Turske Ćufte)", name: "Mercimek Köftesi", price: "100.00", desc: "Hladne veganske ćuftice od crvenog sočiva, bulgura i mladog luka.", img: getSafeImage("mezeSalads", 12), isSignature: false },
-
-    // --- PIDE, LAHMACUN & BÖREK ---
-    { category: "Pide, Lahmacun & Börek", name: "Pide", price: "100.00", desc: "Osnovni turski somun pečen u kamenoj peći, savršen uz meze.", img: getSafeImage("pideBorek", 1), isSignature: false },
-    { category: "Pide, Lahmacun & Börek", name: "Kıymalı Pide", price: "190.00", desc: "Turska pica u obliku čamca punjena začinjenim mlevenim mesom.", img: getSafeImage("pideBorek", 2), isSignature: false },
-    { category: "Pide, Lahmacun & Börek", name: "Kuşbaşılı Pide", price: "220.00", desc: "Premium pide sa seckanim kockicama kvalitetnog mesa i povrćem.", img: getSafeImage("pideBorek", 3), isSignature: true },
-    { category: "Pide, Lahmacun & Börek", name: "Kaşarlı Pide", price: "170.00", desc: "Topli pide ispunjen rastopljenim turskim kačkavaljem.", img: getSafeImage("pideBorek", 4), isSignature: false },
-    { category: "Pide, Lahmacun & Börek", name: "Sucuklu Pide", price: "200.00", desc: "Pikantni pide bogat turskom sudžuk kobasicom i sirom.", img: getSafeImage("pideBorek", 5), isSignature: false },
-    { category: "Pide, Lahmacun & Börek", name: "Karışık Pide", price: "240.00", desc: "Mešani pide sa mesom, sudžukom, povrćem i otopljenim sirom.", img: getSafeImage("pideBorek", 6), isSignature: true },
-    { category: "Pide, Lahmacun & Börek", name: "Lahmacun", price: "110.00", desc: "Tanka, izuzetno hrskava pogača premazana mesom i začinima, jede se urolana sa limunom.", img: getSafeImage("pideBorek", 7), isSignature: true },
-    { category: "Pide, Lahmacun & Börek", name: "Etli Ekmek", price: "210.00", desc: "Specijalitet Konye: Dugačko i tanko testo bogato obloženo mesom i pečeno na drva.", img: getSafeImage("pideBorek", 8), isSignature: true },
-    { category: "Pide, Lahmacun & Börek", name: "Gözleme", price: "150.00", desc: "Ručno razvučeno tanko testo (yufka) pečeno na plotni sa mešanim punjenjem.", img: getSafeImage("pideBorek", 9), isSignature: false },
-    { category: "Pide, Lahmacun & Börek", name: "Börek", price: "130.00", desc: "Klasičan turski burek sa hrskavim korama.", img: getSafeImage("pideBorek", 10), isSignature: false },
-    { category: "Pide, Lahmacun & Börek", name: "Su Böreği", price: "160.00", desc: "Vodeni burek: kore se kuvaju pre pečenja, prepun je belog sira i peršuna. Veoma mekan.", img: getSafeImage("pideBorek", 11), isSignature: true },
-    { category: "Pide, Lahmacun & Börek", name: "Sigara Böreği", price: "130.00", desc: "Pržene hrskave rolnice od testa punjene sirom, u obliku cigarete.", img: getSafeImage("pideBorek", 12), isSignature: false },
-    { category: "Pide, Lahmacun & Börek", name: "Paçanga Böreği", price: "180.00", desc: "Bogato punjen burek pastirmom (suvim mesom) i kačkavaljem, pržen do zlatne boje.", img: getSafeImage("pideBorek", 13), isSignature: true },
-    { category: "Pide, Lahmacun & Börek", name: "Kol Böreği", price: "150.00", desc: "Burek smotan u duge valjke (ruke), tradicionalno punjen mesom ili sirom.", img: getSafeImage("pideBorek", 14), isSignature: false },
-    { category: "Pide, Lahmacun & Börek", name: "Çi Börek", price: "170.00", desc: "Tatarsko nasleđe: duboko prženo polukružno testo sa punjenjem od presnog mesa koje se unutra skuva.", img: getSafeImage("pideBorek", 15), isSignature: false },
-    { category: "Pide, Lahmacun & Börek", name: "Talaş Böreği", price: "160.00", desc: "Kockasto lisnato testo punjeno usitnjenim mesom, graškom i šargarepom.", img: getSafeImage("pideBorek", 16), isSignature: false },
-    { category: "Pide, Lahmacun & Börek", name: "Tepsi Böreği", price: "150.00", desc: "Slojeviti domaći burek pečen u okrugloj tepsiji.", img: getSafeImage("pideBorek", 17), isSignature: false },
-
-    // --- BREAKFAST (KAHVALTI) ---
-    { category: "Kahvaltı (Turski Doručak)", name: "Menemen", price: "130.00", desc: "Bogata kajgana dinstana u sočnom paradajzu, zelenim paprikama i luku.", img: getSafeImage("breakfast", 1), isSignature: true },
-    { category: "Kahvaltı (Turski Doručak)", name: "Sucuklu Yumurta", price: "140.00", desc: "Kajgana ili pečena jaja sa aromatičnim kolutovima turskog sudžuka.", img: getSafeImage("breakfast", 2), isSignature: false },
-    { category: "Kahvaltı (Turski Doručak)", name: "Kavurmalı Yumurta", price: "160.00", desc: "Jaka i zasitna pečena jaja sa komadićima konfidirane junetine.", img: getSafeImage("breakfast", 3), isSignature: true },
-    { category: "Kahvaltı (Turski Doručak)", name: "Çılbır", price: "150.00", desc: "Poširana jaja servirana u posteljici od gustog jogurta sa belim lukom i vrelim prelivom od putera i paprike.", img: getSafeImage("breakfast", 4), isSignature: true },
-    { category: "Kahvaltı (Turski Doručak)", name: "Kaygana", price: "120.00", desc: "Turski omlet/palačinka sa peršunom i mladim lukom.", img: getSafeImage("breakfast", 5), isSignature: false },
-    { category: "Kahvaltı (Turski Doručak)", name: "Kuymak", price: "170.00", desc: "Kukuruzno brašno kuvano u obilju autentičnog crnomorskog putera sa masnim sirom koji se rasteže.", img: getSafeImage("breakfast", 6), isSignature: true },
-    { category: "Kahvaltı (Turski Doručak)", name: "Muhlama", price: "170.00", desc: "Sličan kuymaku, izuzetan sirno-puterasti dorucak koji budi sva čula.", img: getSafeImage("breakfast", 7), isSignature: false },
-    { category: "Kahvaltı (Turski Doručak)", name: "Katmer", price: "260.00", desc: "Lisnato, slatko jutarnje testo iz Gaziantepa ispunjeno pistaćima i turskim kajmakom.", img: getSafeImage("breakfast", 8), isSignature: true },
-    { category: "Kahvaltı (Turski Doručak)", name: "Simit", price: "30.00", desc: "Turski đevrek izdašno uvaljan u melasu i susam, hrskav spolja, mekan unutra.", img: getSafeImage("breakfast", 9), isSignature: true },
-    { category: "Kahvaltı (Turski Doručak)", name: "Bazlama", price: "35.00", desc: "Debeo i mekan somun pečen na plotni.", img: getSafeImage("breakfast", 10), isSignature: false },
-    { category: "Kahvaltı (Turski Doručak)", name: "Ramazan Pidesi", price: "45.00", desc: "Pufnasti okrugli hleb sa karakterističnom mrežastom šarom posut crnim kimom.", img: getSafeImage("breakfast", 11), isSignature: false },
-    { category: "Kahvaltı (Turski Doručak)", name: "Yufka", price: "25.00", desc: "Izuzetno tanke, gotovo prozirne kore.", img: getSafeImage("breakfast", 12), isSignature: false },
-    { category: "Kahvaltı (Turski Doručak)", name: "Lavaş", price: "30.00", desc: "Mekan tanki hleb, idealan za kebabe.", img: getSafeImage("breakfast", 13), isSignature: false },
-    { category: "Kahvaltı (Turski Doručak)", name: "Açma", price: "35.00", desc: "Okruglo pecivo slično simitu, ali mnogo mekše i masnije (bez susama).", img: getSafeImage("breakfast", 14), isSignature: false },
-    { category: "Kahvaltı (Turski Doručak)", name: "Poğaça", price: "40.00", desc: "Prhko i puterasto pecivo punjeno sirom, maslinama ili mesom.", img: getSafeImage("breakfast", 15), isSignature: false },
-    { category: "Kahvaltı (Turski Doručak)", name: "Boyoz", price: "45.00", desc: "Specijalitet Izmira: hrskavo i lisnato okruglo pecivo koje se obično jede uz kuvano jaje.", img: getSafeImage("breakfast", 16), isSignature: true },
-    { category: "Kahvaltı (Turski Doručak)", name: "Gözleme sa sirom", price: "150.00", desc: "Tanka turska pogača punjena belim sirom.", img: getSafeImage("breakfast", 17), isSignature: false },
-    { category: "Kahvaltı (Turski Doručak)", name: "Gözleme sa spanaćem", price: "150.00", desc: "Tanka turska pogača punjena svežim spanaćem.", img: getSafeImage("breakfast", 18), isSignature: false },
-    { category: "Kahvaltı (Turski Doručak)", name: "Gözleme sa krompirom", price: "150.00", desc: "Tanka turska pogača punjena blago pikantnim krompirom.", img: getSafeImage("breakfast", 19), isSignature: false },
-
-    // --- SOUPS (ÇORBALAR) ---
-    { category: "Çorbalar (Supe i Čorbe)", name: "Mercimek Çorbası", price: "85.00", desc: "Glatka i kremasta čorba od crvenog sočiva, zaštitni znak turske kuhinje.", img: getSafeImage("soups", 1), isSignature: true },
-    { category: "Çorbalar (Supe i Čorbe)", name: "Ezogelin Çorbası", price: "90.00", desc: "'Čorba neveste Ezo' sa bulgurom, sočivom, paradajzom i osvežavajućom nanom.", img: getSafeImage("soups", 2), isSignature: true },
-    { category: "Çorbalar (Supe i Čorbe)", name: "Tarhana Çorbası", price: "95.00", desc: "Priprema se od sušene i fermentisane mešavine povrća, jogurta i brašna. Jedinstven kiseli ukus.", img: getSafeImage("soups", 3), isSignature: true },
-    { category: "Çorbalar (Supe i Čorbe)", name: "Yayla Çorbası", price: "90.00", desc: "'Planinska čorba' na bazi jogurta sa pirinčem, zagrejana prelivom od otopljenog putera i nane.", img: getSafeImage("soups", 4), isSignature: false },
-    { category: "Çorbalar (Supe i Čorbe)", name: "İşkembe Çorbası", price: "140.00", desc: "Turska verzija čorbe od škembića, služi se sa prelivom od sirćeta i belog luka.", img: getSafeImage("soups", 5), isSignature: true },
-    { category: "Çorbalar (Supe i Čorbe)", name: "Kelle Paça Çorbası", price: "160.00", desc: "Gusta, jaka i izuzetno zdrava čorba od ovčije glave i trotters-a (nogica).", img: getSafeImage("soups", 6), isSignature: true },
-    { category: "Çorbalar (Supe i Čorbe)", name: "Düğün Çorbası", price: "120.00", desc: "'Svadbena čorba' sa rascepkanim mesom i bogatom teksturom umućenih žumanaca i limuna.", img: getSafeImage("soups", 7), isSignature: false },
-    { category: "Çorbalar (Supe i Čorbe)", name: "Tavuk Çorbası", price: "90.00", desc: "Krepka pileća čorba sa rezancima ili povrćem.", img: getSafeImage("soups", 8), isSignature: false },
-    { category: "Çorbalar (Supe i Čorbe)", name: "Domates Çorbası", price: "85.00", desc: "Gusta čorba od paradajza, često posuta rendanim kačkavaljem.", img: getSafeImage("soups", 9), isSignature: false },
-    { category: "Çorbalar (Supe i Čorbe)", name: "Sebze Çorbası", price: "80.00", desc: "Lagana čorba od mešanog pasiranog ili seckanog povrća.", img: getSafeImage("soups", 10), isSignature: false },
-    { category: "Çorbalar (Supe i Čorbe)", name: "Bamya Çorbası", price: "110.00", desc: "Specijalitet iz Konye: kisela i mesnata čorba sa bamijom i limunom.", img: getSafeImage("soups", 11), isSignature: false },
-    { category: "Çorbalar (Supe i Čorbe)", name: "Ayran Aşı Çorbası", price: "95.00", desc: "Osvežavajuća hladna čorba sa jogurtom, pšenicom i leblebijama.", img: getSafeImage("soups", 12), isSignature: true },
-
-    // --- MAIN DISHES (TRADITIONAL) ---
-    { category: "Tradicionalna Glavna Jela", name: "İmam Bayıldı", price: "170.00", desc: "'Imam je pao u nesvest': Patlidžan punjen bogatim nadevom od crnog luka, belog luka i paradajza (bez mesa), utopljen u maslinovo ulje.", img: getSafeImage("mainDishes", 1), isSignature: true },
-    { category: "Tradicionalna Glavna Jela", name: "Karnıyarık", price: "260.00", desc: "Slično Imamu, ali je patlidžan punjen sočnim mlevenim mesom i pečen u rerni.", img: getSafeImage("mainDishes", 2), isSignature: true },
-    { category: "Tradicionalna Glavna Jela", name: "Hünkar Beğendi", price: "350.00", desc: "'Sultanovo oduševljenje': Jagnjeći gulaš serviran preko bogatog pirea od dimljenog patlidžana i sira.", img: getSafeImage("mainDishes", 3), isSignature: true },
-    { category: "Tradicionalna Glavna Jela", name: "Patlıcan Musakka", price: "250.00", desc: "Turska musaka bez krompira - slojevi prženog patlidžana i mesa ukrčkani u sosu.", img: getSafeImage("mainDishes", 4), isSignature: false },
-    { category: "Tradicionalna Glavna Jela", name: "Patlıcan Oturtma", price: "240.00", desc: "Okrugli komadi patlidžana preliveni mlevenim mesom i zapečeni.", img: getSafeImage("mainDishes", 5), isSignature: false },
-    { category: "Tradicionalna Glavna Jela", name: "Zeytinyağlı Fasulye", price: "150.00", desc: "Boranija sporo dinstana u maslinovom ulju sa paradajzom, služi se na sobnoj temperaturi.", img: getSafeImage("mainDishes", 6), isSignature: false },
-    { category: "Tradicionalna Glavna Jela", name: "Kuru Fasulye", price: "170.00", desc: "Srce turske domaće kuhinje: bogat, gust kuvani pasulj.", img: getSafeImage("mainDishes", 7), isSignature: false },
-    { category: "Tradicionalna Glavna Jela", name: "Barbunya Pilaki", price: "160.00", desc: "Šareni pasulj dinstan sa šargarepom, maslinovim uljem i belim lukom.", img: getSafeImage("mainDishes", 8), isSignature: false },
-    { category: "Tradicionalna Glavna Jela", name: "Nohut Yemeği", price: "170.00", desc: "Kuvane leblebije u pikantnom paradajz sosu.", img: getSafeImage("mainDishes", 9), isSignature: false },
-    { category: "Tradicionalna Glavna Jela", name: "Türlü", price: "230.00", desc: "Gusti povrtni paprikaš (mućkalica) obogaćen kockicama mesa.", img: getSafeImage("mainDishes", 10), isSignature: false },
-    { category: "Tradicionalna Glavna Jela", name: "Güveç", price: "290.00", desc: "Jelo krčkano satima u glinenom ćupu.", img: getSafeImage("mainDishes", 11), isSignature: true },
-    { category: "Tradicionalna Glavna Jela", name: "Etli Güveç", price: "330.00", desc: "Đuveč iz gline krcat komadima najmekšeg mesa.", img: getSafeImage("mainDishes", 12), isSignature: false },
-    { category: "Tradicionalna Glavna Jela", name: "Sebzeli Güveç", price: "210.00", desc: "Vegetarijanski đuveč sa patlidžanom, paprikama i paradajzom.", img: getSafeImage("mainDishes", 13), isSignature: false },
-    { category: "Tradicionalna Glavna Jela", name: "Kuzu Tandır", price: "390.00", desc: "Jagnjetina pečena polako u podzemnoj pećnici dok ne počne da se raspada na dodir viljuške.", img: getSafeImage("mainDishes", 14), isSignature: true },
-    { category: "Tradicionalna Glavna Jela", name: "Kuzu İncik", price: "410.00", desc: "Sočna jagnjeća kolenica spremana u gustom sosu.", img: getSafeImage("mainDishes", 15), isSignature: true },
-    { category: "Tradicionalna Glavna Jela", name: "Kavurma", price: "310.00", desc: "Komadići mesa dinstani u sopstvenoj masti, izuzetno bogatog ukusa.", img: getSafeImage("mainDishes", 16), isSignature: false },
-    { category: "Tradicionalna Glavna Jela", name: "Sac Kavurma", price: "330.00", desc: "Sitno seckano meso sa paprikama i paradajzom dinstano u plitkom turskom wok-u (Sac).", img: getSafeImage("mainDishes", 17), isSignature: true },
-    { category: "Tradicionalna Glavna Jela", name: "Et Sote", price: "290.00", desc: "Brzo dinstani (sote) goveđi komadići sa lukom i biberom.", img: getSafeImage("mainDishes", 18), isSignature: false },
-    { category: "Tradicionalna Glavna Jela", name: "Tavuk Sote", price: "230.00", desc: "Pileći komadići u paradajz sosu.", img: getSafeImage("mainDishes", 19), isSignature: false },
-    { category: "Tradicionalna Glavna Jela", name: "Etli Nohut", price: "220.00", desc: "Domaće leblebije ukrčkane sa kockicama sočnog mesa.", img: getSafeImage("mainDishes", 20), isSignature: false },
-    { category: "Tradicionalna Glavna Jela", name: "Etli Kuru Fasulye", price: "210.00", desc: "Vrhunski kuvani pasulj prepun komadića junetine ili jagnjetine.", img: getSafeImage("mainDishes", 21), isSignature: true },
-    { category: "Tradicionalna Glavna Jela", name: "Etli Bamya", price: "230.00", desc: "Bamija sa mesom u kiselkastom soku od paradajza i limuna.", img: getSafeImage("mainDishes", 22), isSignature: false },
-    { category: "Tradicionalna Glavna Jela", name: "Etli Patlıcan", price: "250.00", desc: "Patlidžan spremljen sa izdašnom porcijom mesa.", img: getSafeImage("mainDishes", 23), isSignature: false },
-    { category: "Tradicionalna Glavna Jela", name: "Etli Bezelye", price: "200.00", desc: "Gusti grašak dinstan sa junetinom, šargarepom i krompirom.", img: getSafeImage("mainDishes", 24), isSignature: false },
-    { category: "Tradicionalna Glavna Jela", name: "Kapama", price: "280.00", desc: "Meso i pirinač pokriveni i pečeni zajedno, dozvoljavajući pirinču da upije sve sokove.", img: getSafeImage("mainDishes", 25), isSignature: true },
-    { category: "Tradicionalna Glavna Jela", name: "Ankara Tava", price: "340.00", desc: "Jagnjetina poslužena preko turske sitne testenine (arpa şehriye) krčkane u bujonu.", img: getSafeImage("mainDishes", 26), isSignature: true },
-    { category: "Tradicionalna Glavna Jela", name: "Elbasan Tava", price: "350.00", desc: "Jagnjetina zapečena u rerni pod gustim pokrivačem od jogurta, jaja i brašna.", img: getSafeImage("mainDishes", 27), isSignature: true },
-    { category: "Tradicionalna Glavna Jela", name: "Kilis Tava", price: "320.00", desc: "Pikantna mešavina usitnjenog mesa ravnomerno utisnuta u tepsiju i ispečena.", img: getSafeImage("mainDishes", 28), isSignature: false },
-    { category: "Tradicionalna Glavna Jela", name: "Arnavut Ciğeri", price: "250.00", desc: "Albanska džigerica: pržene kockice jagnjeće jetre poslužene sa svežim lukom i sumakom.", img: getSafeImage("mainDishes", 29), isSignature: true },
-    { category: "Tradicionalna Glavna Jela", name: "Edirne Tava Ciğeri", price: "260.00", desc: "Izuzetno tanko sečena jetra, uvaljana u brašno i pržena do neverovatne hrskavosti.", img: getSafeImage("mainDishes", 30), isSignature: true },
-    { category: "Tradicionalna Glavna Jela", name: "Ciğer Şiş", price: "270.00", desc: "Jetra i komadići repne masnoće grilovani na ražnjiću.", img: getSafeImage("mainDishes", 31), isSignature: false },
-    { category: "Tradicionalna Glavna Jela", name: "Mumbar Dolması", price: "240.00", desc: "Ovčija creva punjena začinjenim pirinčem i mesom.", img: getSafeImage("mainDishes", 32), isSignature: true },
-    { category: "Tradicionalna Glavna Jela", name: "Şırdan", price: "260.00", desc: "Deo ovčijeg želuca, ušiven i ispunjen izuzetno ljutim pirinčem (specijalitet Adane).", img: getSafeImage("mainDishes", 33), isSignature: true },
-    { category: "Tradicionalna Glavna Jela", name: "İşkembe Dolması", price: "250.00", desc: "Punjeni škembić bogat pikantnim pirinčem, kuvan u sopstvenom bujonu.", img: getSafeImage("mainDishes", 34), isSignature: false },
-    { category: "Tradicionalna Glavna Jela", name: "Kuzu Dolması", price: "850.00", desc: "Delikates: Celo jagnje punjeno mirisnim pirinčem, suvim grožđem i orasima, polako pečeno.", img: getSafeImage("mainDishes", 35), isSignature: true },
-
-    // --- PILAF & PASTA (PİLAV & MAKARNA) ---
-    { category: "Pilav i Testenine", name: "Perde Pilavı", price: "230.00", desc: "Svečani pirinač bogat piletinom i bademima, pečen unutar tanke kape od prhkog testa.", img: getSafeImage("mainDishes", 36), isSignature: true },
-    { category: "Pilav i Testenine", name: "İç Pilav", price: "170.00", desc: "Pilav obogaćen sitno seckanom džigericom, pinjolima, suvim grožđem i cimetom.", img: getSafeImage("mainDishes", 37), isSignature: true },
-    { category: "Pilav i Testenine", name: "Pilav", price: "80.00", desc: "Klasični rastresiti beli pirinač pravljen sa puterom.", img: getSafeImage("mainDishes", 38), isSignature: false },
-    { category: "Pilav i Testenine", name: "Bulgur Pilavı", price: "85.00", desc: "Krupni bulgur kuvan sa puterom i malo soka od paradajza.", img: getSafeImage("mainDishes", 39), isSignature: false },
-    { category: "Pilav i Testenine", name: "Şehriyeli Pilav", price: "90.00", desc: "Pirinač pomešan sa hrskavo prženim komadićima testenine (şehriye).", img: getSafeImage("mainDishes", 40), isSignature: false },
-    { category: "Pilav i Testenine", name: "Domatesli Bulgur Pilavı", price: "95.00", desc: "Bulgur ukrčkan sa svežim komadima paradajza.", img: getSafeImage("mainDishes", 41), isSignature: false },
-    { category: "Pilav i Testenine", name: "Meyhane Pilavı", price: "100.00", desc: "Kafanski (meyhane) bulgur sa crnim i belim lukom i dosta povrća.", img: getSafeImage("mainDishes", 42), isSignature: false },
-    { category: "Pilav i Testenine", name: "Keşkek", price: "190.00", desc: "Pšenica i meso dugotrajno raskuvani i tučeni dok ne postanu bogata, lepljiva pasta. Ceremonijalno jelo.", img: getSafeImage("mainDishes", 43), isSignature: true },
-    { category: "Pilav i Testenine", name: "Mantı", price: "220.00", desc: "Ručno pravljeni jastučići od testa punjeni mesom, natopljeni jogurtom sa belim lukom i puterom.", img: getSafeImage("mainDishes", 44), isSignature: true },
-    { category: "Pilav i Testenine", name: "Kayseri Mantısı", price: "250.00", desc: "Najpoznatiji turski manti iz Kajserija – izuzetno sitni, kuvani u vodi sa malo sosa.", img: getSafeImage("mainDishes", 45), isSignature: true },
-    { category: "Pilav i Testenine", name: "Sinop Mantısı", price: "240.00", desc: "Krupniji manti posuti mlevenim orasima.", img: getSafeImage("mainDishes", 46), isSignature: false },
-    { category: "Pilav i Testenine", name: "Hingel", price: "230.00", desc: "Veće knedle (manti) koje vuku korene sa Istoka, prepune mesa i sokova.", img: getSafeImage("mainDishes", 47), isSignature: false },
-    { category: "Pilav i Testenine", name: "Erişte", price: "170.00", desc: "Turska domaća pasta, najčešće ručno sečena, pomešana sa maslacem, kozjim sirom i orasima.", img: getSafeImage("mainDishes", 48), isSignature: true },
-    { category: "Pilav i Testenine", name: "Makarna", price: "130.00", desc: "Jednostavna testenina na turski način.", img: getSafeImage("mainDishes", 49), isSignature: false },
-
-    // --- DOLMA & SARMA ---
-    { category: "Dolma & Sarma", name: "Yaprak Sarma", price: "140.00", desc: "Klasične turske sarmice od listova vinove loze.", img: getSafeImage("mezeSalads", 1), isSignature: false },
-    { category: "Dolma & Sarma", name: "Etli Yaprak Sarma", price: "190.00", desc: "Topla sarma sa vinovom lozom izdašno punjena začinjenim mesom.", img: getSafeImage("mezeSalads", 2), isSignature: true },
-    { category: "Dolma & Sarma", name: "Zeytinyağlı Yaprak Sarma", price: "160.00", desc: "Hladna, maslinovim uljem bogata sarma punjena pirinčem, pinjolima i ribizlama.", img: getSafeImage("mezeSalads", 3), isSignature: true },
-    { category: "Dolma & Sarma", name: "Biber Dolması", price: "150.00", desc: "Slatke zelene paprike punjene pirinčem, prelivene blagim sosom.", img: getSafeImage("mezeSalads", 4), isSignature: false },
-    { category: "Dolma & Sarma", name: "Patlıcan Dolması", price: "160.00", desc: "Manji patlidžani idubljeni i punjeni mesnim i pirinčanim filom.", img: getSafeImage("mezeSalads", 5), isSignature: false },
-    { category: "Dolma & Sarma", name: "Kabak Dolması", price: "150.00", desc: "Punjene tikvice.", img: getSafeImage("mezeSalads", 6), isSignature: false },
-    { category: "Dolma & Sarma", name: "Soğan Dolması", price: "170.00", desc: "Izdubljene glavice luka krčkane dok se fil od mesa ne otopi u slatkoći karamelizovanog luka.", img: getSafeImage("mezeSalads", 7), isSignature: true },
-    { category: "Dolma & Sarma", name: "Domates Dolması", price: "140.00", desc: "Sveži paradajz punjen začinjenim turskim pirinčem.", img: getSafeImage("mezeSalads", 8), isSignature: false },
-    { category: "Dolma & Sarma", name: "Lahana Sarması", price: "180.00", desc: "Klasična turska sarma od kupusa sa mesom i crnim biberom.", img: getSafeImage("mezeSalads", 9), isSignature: false },
-    { category: "Dolma & Sarma", name: "Pazı Sarması", price: "160.00", desc: "Lagana i nežna sarma od listova blitve.", img: getSafeImage("mezeSalads", 10), isSignature: false },
-    { category: "Dolma & Sarma", name: "Kuru Patlıcan Dolması", price: "200.00", desc: "Specijalitet juga: sušeni listovi patlidžana punjeni ljutim i začinjenim pirinčem, neverovatan dimljeni ukus.", img: getSafeImage("mezeSalads", 11), isSignature: true },
-    { category: "Dolma & Sarma", name: "Kuru Biber Dolması", price: "190.00", desc: "Suve slatko-ljute paprike na isti Gaziantep način.", img: getSafeImage("mezeSalads", 12), isSignature: true },
-    { category: "Dolma & Sarma", name: "Midye Dolma", price: "25.00", desc: "Ulična ikona: Očišćene dagnje punjene pikantnim pirinčem (prodaju se na komad, obavezno uz limun).", img: getSafeImage("streetFood", 13), isSignature: true },
-
-    // --- SEAFOOD (DENİZ ÜRÜNLERİ) ---
-    { category: "Morski Specijaliteti", name: "Midye Tava", price: "160.00", desc: "Pohovane dagnje pržene na štapiću, poslužene sa gustim sosom od belog luka.", img: getSafeImage("seafood", 1), isSignature: false },
-    { category: "Morski Specijaliteti", name: "Balık Ekmek", price: "170.00", desc: "Čuveni sendvič iz Eminönü-a: Grilovana skuša ili palamida u hlebu sa puno crnog luka.", img: getSafeImage("streetFood", 2), isSignature: true },
-    { category: "Morski Specijaliteti", name: "Hamsi Tava", price: "210.00", desc: "Tiganj pun crnomorskih inćuna uvaljanih u kukuruzno brašno i prženih kao cvet.", img: getSafeImage("seafood", 3), isSignature: true },
-    { category: "Morski Specijaliteti", name: "Hamsili Pilav", price: "250.00", desc: "Spektakl na tanjiru: pirinač pečen unutar korice od gusto ređanih inćuna.", img: getSafeImage("seafood", 4), isSignature: true },
-    { category: "Morski Specijaliteti", name: "Palamut Tava", price: "290.00", desc: "Debele kriške tune/palamide ispržene do savršenstva (jesenji specijalitet).", img: getSafeImage("seafood", 5), isSignature: false },
-    { category: "Morski Specijaliteti", name: "Levrek Izgara", price: "330.00", desc: "Brancin ispečen na savršenom uglju sa prelivom od maslinovog ulja.", img: getSafeImage("seafood", 6), isSignature: false },
-    { category: "Morski Specijaliteti", name: "Çipura Izgara", price: "310.00", desc: "Orada na roštilju, sočna i bogata ukusom mora.", img: getSafeImage("seafood", 7), isSignature: false },
-    { category: "Morski Specijaliteti", name: "Kalamar Tava", price: "260.00", desc: "Zlatni i hrskavi prženi kolutići liganja sa tarator sosom.", img: getSafeImage("seafood", 8), isSignature: false },
-    { category: "Morski Specijaliteti", name: "Karides Güveç", price: "360.00", desc: "Kozice krčkane u gustom sosu od paradajza unutar glinenog ćupa, zapečene sirom na vrhu.", img: getSafeImage("seafood", 9), isSignature: true },
-    { category: "Morski Specijaliteti", name: "Ahtapot Salatası", price: "290.00", desc: "Hladna, delikatna salata od nežno skuvanog oktopoda, prelivena limunom.", img: getSafeImage("seafood", 10), isSignature: false },
-
-    // --- MEZE & COLD APPETIZERS (ZEYTİNYAĞLILAR & MEZELER) ---
-    { category: "Meze, Salate i Hladna Jela", name: "Zeytinyağlı Enginar", price: "140.00", desc: "Srca artičoke polako dinstana u maslinovom ulju, seringirana hladna.", img: getSafeImage("mezeSalads", 1), isSignature: true },
-    { category: "Meze, Salate i Hladna Jela", name: "Zeytinyağlı Pırasa", price: "120.00", desc: "Praziluk i pirinač u ulju i limunu.", img: getSafeImage("mezeSalads", 2), isSignature: false },
-    { category: "Meze, Salate i Hladna Jela", name: "Zeytinyağlı Kereviz", price: "130.00", desc: "Celer pripremljen na klasičan hladni meze način.", img: getSafeImage("mezeSalads", 3), isSignature: false },
-    { category: "Meze, Salate i Hladna Jela", name: "Zeytinyağlı Taze Fasulye", price: "140.00", desc: "Hladna, dinstana boranija izvanredne svežine.", img: getSafeImage("mezeSalads", 4), isSignature: false },
-    { category: "Meze, Salate i Hladna Jela", name: "Zeytinyağlı Barbunya", price: "150.00", desc: "Šareni zrnasti pasulj, savršeno začinjen, poslužen ohlađen.", img: getSafeImage("mezeSalads", 5), isSignature: false },
-    { category: "Meze, Salate i Hladna Jela", name: "Şakşuka", price: "130.00", desc: "Prženi patlidžan i mešano povrće potopljeni u snažan sos od paradajza i belog luka.", img: getSafeImage("mezeSalads", 6), isSignature: true },
-    { category: "Meze, Salate i Hladna Jela", name: "Mücver", price: "140.00", desc: "Zlatni uštipci od tikvica izdašno začinjeni koprom i lukom.", img: getSafeImage("mezeSalads", 7), isSignature: false },
-    { category: "Meze, Salate i Hladna Jela", name: "Patlıcan Salatası", price: "120.00", desc: "Čisti pire od patlidžana ispečenog na vatri, sa neverovatnim dimljenim šmekom.", img: getSafeImage("mezeSalads", 8), isSignature: false },
-    { category: "Meze, Salate i Hladna Jela", name: "Acılı Ezme", price: "95.00", desc: "Jako pikantna salata/namaz od sitno, gotovo mikroskopski iseckanog povrća i paprike.", img: getSafeImage("mezeSalads", 9), isSignature: true },
-    { category: "Meze, Salate i Hladna Jela", name: "Haydari", price: "100.00", desc: "Moćan, gust i mastan jogurt sa nanom, belim lukom i otopljenim puterom.", img: getSafeImage("mezeSalads", 10), isSignature: true },
-    { category: "Meze, Salate i Hladna Jela", name: "Cacık", price: "80.00", desc: "Turska verzija 'tzatziki' sosa - osvežavajući jogurt sa krastavcem.", img: getSafeImage("mezeSalads", 11), isSignature: false },
-    { category: "Meze, Salate i Hladna Jela", name: "Humus", price: "110.00", desc: "Kremasti namaz od leblebija i tahinija.", img: getSafeImage("mezeSalads", 12), isSignature: false },
-    { category: "Meze, Salate i Hladna Jela", name: "Babagannuş", price: "120.00", desc: "Namaz od dimljenog patlidžana pomešanog sa tahini pastom.", img: getSafeImage("mezeSalads", 13), isSignature: true },
-    { category: "Meze, Salate i Hladna Jela", name: "Atom", price: "105.00", desc: "Izuzetno ljuto meze: pekuće suve paprike uronjene u obilan jogurt.", img: getSafeImage("mezeSalads", 14), isSignature: false },
-    { category: "Meze, Salate i Hladna Jela", name: "Muhammara", price: "130.00", desc: "Arapsko/Tursko meze od crvenih paprika i oraha ujedinjenih pastom od nara.", img: getSafeImage("mezeSalads", 15), isSignature: true },
-    { category: "Meze, Salate i Hladna Jela", name: "Piyaz", price: "100.00", desc: "Salata od pasulja sa puno luka i sirćetom.", img: getSafeImage("mezeSalads", 16), isSignature: false },
-    { category: "Meze, Salate i Hladna Jela", name: "Gavurdağı Salatası", price: "140.00", desc: "Bogata, sitno seckana salata od paradajza krunisana orasima i pastom od nara.", img: getSafeImage("mezeSalads", 17), isSignature: true },
-    { category: "Meze, Salate i Hladna Jela", name: "Çoban Salatası", price: "110.00", desc: "Čobanska salata, klasik uz svako jelo.", img: getSafeImage("mezeSalads", 18), isSignature: false },
-    { category: "Meze, Salate i Hladna Jela", name: "Kısır", price: "90.00", desc: "Turski tabbouleh: bulgur salata puna začina i peršuna.", img: getSafeImage("mezeSalads", 19), isSignature: false },
-    { category: "Meze, Salate i Hladna Jela", name: "Patates Salatası", price: "85.00", desc: "Tradicionalna krompir salata.", img: getSafeImage("mezeSalads", 20), isSignature: false },
-    { category: "Meze, Salate i Hladna Jela", name: "Semizotu Salatası", price: "95.00", desc: "Sveža salata od tušta prelivena jogurtom.", img: getSafeImage("mezeSalads", 21), isSignature: false },
-    { category: "Meze, Salate i Hladna Jela", name: "Yoğurtlu Patlıcan", price: "105.00", desc: "Pržene kockice patlidžana utonule u gusti beli sos.", img: getSafeImage("mezeSalads", 22), isSignature: false },
-    { category: "Meze, Salate i Hladna Jela", name: "Yoğurtlu Havuç", price: "90.00", desc: "Dinstana i rendana šargarepa umotana u jogurt od belog luka.", img: getSafeImage("mezeSalads", 23), isSignature: false },
-    { category: "Meze, Salate i Hladna Jela", name: "Tarator", price: "80.00", desc: "Beli preliv na bazi hleba i oraha, idealan uz lignje.", img: getSafeImage("mezeSalads", 24), isSignature: false },
-    { category: "Meze, Salate i Hladna Jela", name: "Fava", price: "120.00", desc: "Snažan pire od pasiranog žutog boba i maslinovog ulja.", img: getSafeImage("mezeSalads", 25), isSignature: true },
-    { category: "Meze, Salate i Hladna Jela", name: "Topik", price: "150.00", desc: "Jermensko remek-delo: leblebije i krompir prepunjeni lukom, pinjolima i tahinijem.", img: getSafeImage("mezeSalads", 26), isSignature: true },
-    { category: "Meze, Salate i Hladna Jela", name: "Lakerda", price: "190.00", desc: "Delikatesna usoljena palamida meke teksture koja se topi u ustima.", img: getSafeImage("mezeSalads", 27), isSignature: true },
-    { category: "Meze, Salate i Hladna Jela", name: "Turşu", price: "70.00", desc: "Mešovita turska turšija, savršen balans kiseline i hrskavosti.", img: getSafeImage("mezeSalads", 28), isSignature: false },
-
-    // --- CHEESE & DELI (PEYNİR & ŞARKÜTERİ) ---
-    { category: "Peynir & Šarkuteri (Sirevi i Delikates)", name: "Beyaz Peynir", price: "100.00", desc: "Klasičan slani beli sir u salamuri, nezaobilazan za doručak.", img: getSafeImage("mezeSalads", 29), isSignature: false },
-    { category: "Peynir & Šarkuteri (Sirevi i Delikates)", name: "Tulum Peyniri", price: "140.00", desc: "Intenzivan, mrvičast sir stario u životinjskoj mešini.", img: getSafeImage("mezeSalads", 30), isSignature: true },
-    { category: "Peynir & Šarkuteri (Sirevi i Delikates)", name: "Ezine Peyniri", price: "130.00", desc: "Punomasni beli sir iz oblasti Ezine, najvišeg kvaliteta.", img: getSafeImage("mezeSalads", 31), isSignature: true },
-    { category: "Peynir & Šarkuteri (Sirevi i Delikates)", name: "Kaşar Peyniri", price: "110.00", desc: "Turski žuti kačkavalj (stari ili mladi).", img: getSafeImage("mezeSalads", 32), isSignature: false },
-    { category: "Peynir & Šarkuteri (Sirevi i Delikates)", name: "Lor Peyniri", price: "80.00", desc: "Lagani, neslani mrvljeni sir idealan za pite i poslastice.", img: getSafeImage("mezeSalads", 33), isSignature: false },
-    { category: "Peynir & Šarkuteri (Sirevi i Delikates)", name: "Kaymak", price: "160.00", desc: "Izuzetno gust turski skorup napravljen od bivoljeg mleka.", img: getSafeImage("mezeSalads", 34), isSignature: true },
-    { category: "Peynir & Šarkuteri (Sirevi i Delikates)", name: "Pastırma", price: "270.00", desc: "Preteča pastrame: tanko sušeno goveđe meso prekriveno vatrenom korom od čemena.", img: getSafeImage("mezeSalads", 35), isSignature: true },
-    { category: "Peynir & Šarkuteri (Sirevi i Delikates)", name: "Sucuk", price: "190.00", desc: "Oštro začinjena turska kobasica od govedine.", img: getSafeImage("mezeSalads", 36), isSignature: false },
-    { category: "Peynir & Šarkuteri (Sirevi i Delikates)", name: "Kavurma", price: "270.00", desc: "Konfidirani komadići mesa čuvani za kasniju upotrebu (često se jedu uz doručak).", img: getSafeImage("mezeSalads", 37), isSignature: false },
-    { category: "Peynir & Šarkuteri (Sirevi i Delikates)", name: "Bal Kaymak", price: "170.00", desc: "Vrhunski kombo: domaći saće med preliven preko gustog kajmaka.", img: getSafeImage("mezeSalads", 38), isSignature: true },
-    { category: "Peynir & Šarkuteri (Sirevi i Delikates)", name: "Tahin Pekmez", price: "100.00", desc: "Slatka mešavina melase od grožđa i paste od susama.", img: getSafeImage("mezeSalads", 39), isSignature: false },
-    { category: "Peynir & Šarkuteri (Sirevi i Delikates)", name: "Reçel", price: "80.00", desc: "Turski voćni džem (višnja, ruža, smokva).", img: getSafeImage("mezeSalads", 40), isSignature: false },
-
-    // --- DESSERTS (TATLILAR) ---
-    { category: "Tatlılar (Turski Dezerti)", name: "Baklava", price: "190.00", desc: "Apsolutni klasik turske kuhinje sa desetinom kora natopljenih sirupom.", img: getSafeImage("desserts", 1), isSignature: true },
-    { category: "Tatlılar (Turski Dezerti)", name: "Fıstıklı Baklava", price: "250.00", desc: "Luksuzna baklava punjena najčistijim zelenim pistaćima iz Antepa.", img: getSafeImage("desserts", 2), isSignature: true },
-    { category: "Tatlılar (Turski Dezerti)", name: "Cevizli Baklava", price: "200.00", desc: "Domaća baklava bogato ispunjena seckanim orasima.", img: getSafeImage("desserts", 3), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "Şöbiyet", price: "260.00", desc: "Trouglasta baklava napunjena raskošnim slojem kajmaka ispod pistaća.", img: getSafeImage("desserts", 4), isSignature: true },
-    { category: "Tatlılar (Turski Dezerti)", name: "Bülbül Yuvası", price: "270.00", desc: "'Gnezdo slavuja': kružna poslastica sa udubljenjem ispunjenim orašastim plodovima.", img: getSafeImage("desserts", 5), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "Saray Sarması", price: "190.00", desc: "Mlečna dvorska rolnica posuta mrvicama i kokosom.", img: getSafeImage("desserts", 6), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "Burma Kadayıf", price: "220.00", desc: "Vlaknasto kadayif testo urolano u opruge oko oraha i dobro ispečeno.", img: getSafeImage("desserts", 7), isSignature: true },
-    { category: "Tatlılar (Turski Dezerti)", name: "Tel Kadayıf", price: "200.00", desc: "Ravno vlaknasto testo pečeno i preliveno sirupom.", img: getSafeImage("desserts", 8), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "Künefe", price: "250.00", desc: "Kralj toplih dezerta: vlaknasto kadayif testo zapečeno preko specijalnog neslanog sira koji se rasteže.", img: getSafeImage("desserts", 9), isSignature: true },
-    { category: "Tatlılar (Turski Dezerti)", name: "Katmer", price: "270.00", desc: "Vruće i lisnato testo napunjeno pistaćima i kajmakom (isti kao doručak, samo sladak).", img: getSafeImage("desserts", 10), isSignature: true },
-    { category: "Tatlılar (Turski Dezerti)", name: "Lokma", price: "90.00", desc: "Mekane loptice od testa pržene u ulju i potopljene u hladan sirup.", img: getSafeImage("desserts", 11), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "Tulumba Tatlısı", price: "100.00", desc: "Rebraste, duguljaste poslastice izuzetne slatkoće.", img: getSafeImage("desserts", 12), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "Revani", price: "120.00", desc: "Snažno natopljen, mekani sunđerasti kolač od griza sa primesom limuna.", img: getSafeImage("desserts", 13), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "Şekerpare", price: "130.00", desc: "Kolačići od griza i badema koji se tope u ustima zahvaljujući izdašnom sirupu.", img: getSafeImage("desserts", 14), isSignature: true },
-    { category: "Tatlılar (Turski Dezerti)", name: "Kalburabastı", price: "140.00", desc: "Sirupasti orah-kolač utisnut uz sito kako bi dobio prepoznatljivu rešetkastu šaru.", img: getSafeImage("desserts", 15), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "Kemalpaşa Tatlısı", price: "135.00", desc: "Specijalni okrugli sirni kolačići omekšani kuvanjem u sirupu.", img: getSafeImage("desserts", 16), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "Hanım Göbeği", price: "120.00", desc: "Slatke krofne u obliku pupka.", img: getSafeImage("desserts", 17), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "Dilber Dudağı", price: "150.00", desc: "Poslastica oblika ženskih usana posuta pistaćima.", img: getSafeImage("desserts", 18), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "Vezir Parmağı", price: "125.00", desc: "'Vezirov prst' – oblikovano prhko testo preliveno gustom agdom.", img: getSafeImage("desserts", 19), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "Halka Tatlısı", price: "60.00", desc: "Dugački i hrskavi ulični prženi kolač.", img: getSafeImage("desserts", 20), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "Güllaç", price: "180.00", desc: "Ramazanska poslastica od mleka sa ukusom ružine vodice, puna oraha i soka od nara.", img: getSafeImage("desserts", 21), isSignature: true },
-    { category: "Tatlılar (Turski Dezerti)", name: "Sütlaç", price: "110.00", desc: "Kremasti mlečni puding (sutlijaš) blago zapečen odozgo.", img: getSafeImage("desserts", 22), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "Kazandibi", price: "140.00", desc: "Puding s ukusom vanile i mastike kome je dno snažno karamelizovano do crnila.", img: getSafeImage("desserts", 23), isSignature: true },
-    { category: "Tatlılar (Turski Dezerti)", name: "Tavuk Göğsü", price: "150.00", desc: "Fantastični slatkiš čija neverovatna žilavost dolazi od rascepkanih pilećih prsa (bez ukusa mesa).", img: getSafeImage("desserts", 24), isSignature: true },
-    { category: "Tatlılar (Turski Dezerti)", name: "Keşkül", price: "145.00", desc: "Osmanski badem-puding obogaćen mrvicama kokosa.", img: getSafeImage("desserts", 25), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "Muhallebi", price: "120.00", desc: "Klasičan osvežavajući beli turski puding.", img: getSafeImage("desserts", 26), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "Supangle", price: "130.00", desc: "Bogat i gust čokoladni puding ispod kog se kriju natopljeni komadići torte.", img: getSafeImage("desserts", 27), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "Aşure", price: "140.00", desc: "'Nuhova (Nojeva) čorba': Gust slatkiš pun sušenog voća, leblebija, pšenice i nara.", img: getSafeImage("desserts", 28), isSignature: true },
-    { category: "Tatlılar (Turski Dezerti)", name: "Zerde", price: "135.00", desc: "Puding od pirinča neverovatne žute boje, aromatizovan šafranom.", img: getSafeImage("desserts", 29), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "İrmik Helvası", price: "110.00", desc: "Alva pržena od pšeničnog griza i pinjola uz dodatak sirupa.", img: getSafeImage("desserts", 30), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "Un Helvası", price: "100.00", desc: "Brašnasta i jaka turska alva izuzetno bogatog ukusa.", img: getSafeImage("desserts", 31), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "Tahin Helvası", price: "120.00", desc: "Suva i čvrsta alva od paste od susama.", img: getSafeImage("desserts", 32), isSignature: true },
-    { category: "Tatlılar (Turski Dezerti)", name: "Pişmaniye", price: "110.00", desc: "Turska šećerna vuna prepuna ukusa putera, tanka kao nit.", img: getSafeImage("desserts", 33), isSignature: true },
-    { category: "Tatlılar (Turski Dezerti)", name: "Lokum", price: "105.00", desc: "Izbor originalnog turskog ratluka sa pistaćima i ružom.", img: getSafeImage("desserts", 34), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "Akide Şekeri", price: "60.00", desc: "Tvrde, tradicionalno ukrašene turske bombone.", img: getSafeImage("desserts", 35), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "Cezerye", price: "150.00", desc: "Gumeni specijalitet nastao izvanrednim dugotrajnim kuvanjem šargarepe i oraha.", img: getSafeImage("desserts", 36), isSignature: true },
-    { category: "Tatlılar (Turski Dezerti)", name: "Pestil", price: "130.00", desc: "Osušeni listovi voćne paste, slatki i elastični.", img: getSafeImage("desserts", 37), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "Köme", price: "160.00", desc: "Orasi umotani u duguljasti cilindar i prekriveni stvrdnutim sirupom (tzv. crkvena sveća).", img: getSafeImage("desserts", 38), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "Maraş Dondurması", price: "120.00", desc: "Čuveni turski rastegljivi sladoled sa orhidejom.", img: getSafeImage("desserts", 39), isSignature: true },
-    { category: "Tatlılar (Turski Dezerti)", name: "Ayva Tatlısı", price: "170.00", desc: "Raskošna polovina pečene dunje obojena karanfilićem i prekrivena brdom kajmaka.", img: getSafeImage("desserts", 40), isSignature: true },
-    { category: "Tatlılar (Turski Dezerti)", name: "Kabak Tatlısı", price: "160.00", desc: "Zimska poslastica od kandirane bundeve uz obilje sosa i usitnjenih oraha.", img: getSafeImage("desserts", 41), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "İncir Tatlısı", price: "175.00", desc: "Suve smokve izdašno punjene orasima i okupane gustom agdom.", img: getSafeImage("desserts", 42), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "Ekmek Kadayıfı", price: "160.00", desc: "Pufnast, prenatopljen somun preobražen u slatkiš, jede se s kajmakom.", img: getSafeImage("desserts", 43), isSignature: true },
-    { category: "Tatlılar (Turski Dezerti)", name: "Höşmerim", price: "150.00", desc: "Jedinstveni balikesirski slatkiš baziran na savršenom siru i grizu.", img: getSafeImage("desserts", 44), isSignature: true },
-    { category: "Tatlılar (Turski Dezerti)", name: "Nevzine Tatlısı", price: "170.00", desc: "Poslastica prepuna tahinija karakteristična po svojoj sočnosti.", img: getSafeImage("desserts", 45), isSignature: false },
-    { category: "Tatlılar (Turski Dezerti)", name: "Laz Böreği", price: "190.00", desc: "Burek koji glumi slatkiš: lisnate kore prelivene bogatim slatkim pudingom i sirupom.", img: getSafeImage("desserts", 46), isSignature: true },
-    { category: "Tatlılar (Turski Dezerti)", name: "Trileçe", price: "140.00", desc: "Balkansko-Turski hit: izuzetno lagani mlečni kolač preliven karamelom.", img: getSafeImage("desserts", 47), isSignature: true },
-
-    // --- DRINKS (İÇECEKLER) ---
-    { category: "İçecekler (Pića i Napici)", name: "Türk Kahvesi", price: "70.00", desc: "Najmoćnija tradicionalno skuvana nefiltrirana turska kafa u džezvi.", img: getSafeImage("drinks", 1), isSignature: true },
-    { category: "İçecekler (Pića i Napici)", name: "Çay", price: "40.00", desc: "Jaki turski crni čaj serviran u autentičnim staklenim 'tulipan' čašicama.", img: getSafeImage("drinks", 2), isSignature: true },
-    { category: "İçecekler (Pića i Napici)", name: "Ayran", price: "50.00", desc: "Neizostavni slani napitak od mućenog jogurta, vode i soli.", img: getSafeImage("drinks", 3), isSignature: true },
-    { category: "İçecekler (Pića i Napici)", name: "Şalgam Suyu", price: "55.00", desc: "Pikantni slano-kiseli tamni sok od crne šargarepe. Idealno uz kebab.", img: getSafeImage("drinks", 4), isSignature: true },
-    { category: "İçecekler (Pića i Napici)", name: "Salep", price: "100.00", desc: "Topli, gusti i utešni zimski puding-napitak zasut ljutim cimetom.", img: getSafeImage("drinks", 5), isSignature: true },
-    { category: "İçecekler (Pića i Napici)", name: "Boza", price: "80.00", desc: "Gusti fermentisani osvežavajući sok ukrašen pečenim leblebijama.", img: getSafeImage("drinks", 6), isSignature: true },
-    { category: "İçecekler (Pića i Napici)", name: "Limonata", price: "60.00", desc: "Domaća turska slatka limunada, bistri čistač nepca uz masnu hranu.", img: getSafeImage("drinks", 7), isSignature: false },
-    { category: "İçecekler (Pića i Napici)", name: "Komposto", price: "55.00", desc: "Sveži domaći kompot, najčešće od višanja, služi se kao led.", img: getSafeImage("drinks", 8), isSignature: false },
-    { category: "İçecekler (Pića i Napici)", name: "Hoşaf", price: "65.00", desc: "Kuvano suvo voće u šećernoj vodici, izvanredno rashlađenje nakon jakih jela.", img: getSafeImage("drinks", 9), isSignature: false }
+    { 
+      category: "Kebab Specialties", 
+      name: "Adana Kebab", 
+      price: "320.00", 
+      desc: "The fiery pride of southern Turkey. Hand-minced, highly spiced lamb kneaded with tail fat and red bell peppers, molded onto a wide iron skewer, and char-grilled over white-hot coals. Served over fire-roasted flatbread with sumac-dusted onions and charred tomatoes.", 
+      img: getImageForDish("Adana Kebab"), 
+      isSignature: true 
+    },
+    { 
+      category: "Kebab Specialties", 
+      name: "İskender Kebab", 
+      price: "380.00", 
+      desc: "A decadent masterpiece from Bursa. Paper-thin, crispy shavings of roasted döner meat layered heavily over cubed, toasted pita bread. It is violently drenched in a boiling, rich tomato sauce and bubbling browned sheep's butter, served alongside a thick dollop of strained yogurt.", 
+      img: getImageForDish("İskender Kebab"), 
+      isSignature: true 
+    },
+    { 
+      category: "Kebab Specialties", 
+      name: "Testi Kebabı", 
+      price: "450.00", 
+      desc: "A spectacular Cappadocian clay pot kebab. Tender cubes of beef and lamb, tomatoes, garlic, and green peppers are sealed shut inside an authentic terracotta jug and slow-baked for hours in embers. The pot is dramatically cracked open with a sword directly at your table.", 
+      img: getImageForDish("Testi Kebabı"), 
+      isSignature: true 
+    },
+    { 
+      category: "Kebab Specialties", 
+      name: "Şiş Kebab", 
+      price: "290.00", 
+      desc: "Prime cuts of incredibly tender, milk-fed lamb, marinated overnight in an emulsion of olive oil, yogurt, garlic, and wild thyme. Threaded onto skewers and grilled to a perfect medium-rare pink center, locking in the smoky juices.", 
+      img: getImageForDish("Şiş Kebab"), 
+      isSignature: false 
+    },
+    { 
+      category: "Kebab Specialties", 
+      name: "Ali Nazik Kebabı", 
+      price: "340.00", 
+      desc: "An elegant, smoky Ottoman palace dish. Succulent, spiced chunks of pan-seared lamb rest on a bed of silky, fire-roasted eggplant puree that has been heavily folded with garlic-infused strained yogurt.", 
+      img: getImageForDish("Ali Nazik Kebabı"), 
+      isSignature: true 
+    },
+    { 
+      category: "Döner & Street Food", 
+      name: "Et Döner", 
+      price: "220.00", 
+      desc: "Premium, 100% beef and lamb leaf-thin cuts, stacked and slow-roasted on a vertical rotisserie until the edges are dark and crispy. Shaved to order and served plain on a plate with buttery rice, grilled peppers, and blistered tomatoes.", 
+      img: getImageForDish("Et Döner"), 
+      isSignature: false 
+    },
+    { 
+      category: "Döner & Street Food", 
+      name: "Kokoreç", 
+      price: "240.00", 
+      desc: "The ultimate late-night Istanbul street food. Heavily spiced, herb-marinated sheep's intestines, wrapped around sweetbreads and horizontally spit-roasted over charcoal. Chopped violently on a wooden block and served inside a crusty, fat-soaked bread roll.", 
+      img: getImageForDish("Kokoreç"), 
+      isSignature: true 
+    },
+    { 
+      category: "Döner & Street Food", 
+      name: "Balık Ekmek", 
+      price: "170.00", 
+      desc: "The iconic fish sandwich from the shores of the Bosphorus. A thick fillet of fresh mackerel, perfectly grilled and stuffed into a fluffy white loaf with crisp lettuce, raw white onions, and a generous squeeze of fresh lemon juice.", 
+      img: getImageForDish("Balık Ekmek"), 
+      isSignature: false 
+    },
+    { 
+      category: "Döner & Street Food", 
+      name: "Midye Dolma", 
+      price: "120.00", 
+      desc: "A street food delicacy: half a dozen plump, coastal mussels meticulously stuffed with a sweet and heavily spiced mixture of aromatic rice, pine nuts, cinnamon, and black currants. Eaten cold with a heavy squeeze of lemon.", 
+      img: getImageForDish("Midye Dolma"), 
+      isSignature: true 
+    },
+    { 
+      category: "Pide & Börek", 
+      name: "Lahmacun", 
+      price: "110.00", 
+      desc: "Often called Turkish Pizza. An impossibly thin, round flatbread smeared with a highly seasoned, spicy paste of minced lamb, tomatoes, red pepper, and parsley. Baked rapidly in a wood-fired oven. Eaten rolled up with fresh parsley and lemon.", 
+      img: getImageForDish("Lahmacun"), 
+      isSignature: true 
+    },
+    { 
+      category: "Pide & Börek", 
+      name: "Karışık Pide", 
+      price: "240.00", 
+      desc: "A massive, boat-shaped flatbread with exceptionally crispy edges. Generously loaded with a mixed filling of spicy Turkish sucuk (sausage), tender beef cubes (kuşbaşı), and a thick, bubbling layer of melting kaşar cheese.", 
+      img: getImageForDish("Karışık Pide"), 
+      isSignature: false 
+    },
+    { 
+      category: "Pide & Börek", 
+      name: "Su Böreği", 
+      price: "160.00", 
+      desc: "The 'water börek', a notoriously difficult pastry to master. Sheets of handmade dough are boiled like pasta before being layered with bubbling butter, fresh parsley, and crumbly white cheese. Baked until the top is golden while the inside remains soft and incredibly moist.", 
+      img: getImageForDish("Su Böreği"), 
+      isSignature: true 
+    },
+    { 
+      category: "Traditional Mains", 
+      name: "Mantı", 
+      price: "220.00", 
+      desc: "Exquisite, handmade miniature Turkish dumplings. Dozens of tiny pasta bundles are stuffed with spiced ground meat, boiled, and served drowning in a sauce of garlic-infused yogurt, drizzled heavily with a fiery, mint-and-chili infused brown butter.", 
+      img: getImageForDish("Mantı"), 
+      isSignature: true 
+    },
+    { 
+      category: "Traditional Mains", 
+      name: "Kuzu Tandır", 
+      price: "390.00", 
+      desc: "An ancient Anatolian cooking method. Whole pieces of lamb are suspended over a pit oven (tandır) and slow-roasted for hours until the meat becomes so tender it shreds under the fork. Served with buttery rice pilaf and rich pan drippings.", 
+      img: getImageForDish("Kuzu Tandır"), 
+      isSignature: true 
+    },
+    { 
+      category: "Traditional Mains", 
+      name: "Karnıyarık", 
+      price: "260.00", 
+      desc: "A rich, hearty, homestyle classic. Whole eggplants are fried, split open down the middle, and generously stuffed with a heavily seasoned filling of ground beef, onions, garlic, and fresh tomatoes. Baked slowly in a savory tomato sauce.", 
+      img: getImageForDish("Karnıyarık"), 
+      isSignature: false 
+    },
+    { 
+      category: "Traditional Mains", 
+      name: "İmam Bayıldı", 
+      price: "170.00", 
+      desc: "Translating to 'The Imam Fainted'—presumably from its incredible taste. A vegan variation of Karnıyarık where the eggplant is stuffed to the brim with sweet caramelized onions, garlic, and tomatoes, drowned in high-quality olive oil, and served at room temperature.", 
+      img: getImageForDish("İmam Bayıldı"), 
+      isSignature: true 
+    },
+    { 
+      category: "Breakfast & Soups", 
+      name: "Mercimek Çorbası", 
+      price: "85.00", 
+      desc: "The soul of Turkish soup culture. A velvety, golden-yellow puree of red lentils, onions, and carrots, deeply flavored with a subtle hint of cumin. Served piping hot with a drizzle of chili-infused melted butter and a wedge of fresh lemon.", 
+      img: getImageForDish("Mercimek Çorbası"), 
+      isSignature: false 
+    },
+    { 
+      category: "Breakfast & Soups", 
+      name: "Menemen", 
+      price: "130.00", 
+      desc: "The ultimate Turkish breakfast skillet. Farm-fresh eggs are softly scrambled directly into a vigorously simmering, juicy base of sweet tomatoes, green peppers, and onions. Cooked in butter until just set, perfect for dipping crusty bread.", 
+      img: getImageForDish("Menemen"), 
+      isSignature: true 
+    },
+    { 
+      category: "Breakfast & Soups", 
+      name: "Simit & Kahvaltı Plate", 
+      price: "190.00", 
+      desc: "A rich morning spread featuring freshly baked Simit (a circular bread heavily encrusted with sesame seeds and molasses). Accompanied by feta cheese, olives, sliced tomatoes, cucumbers, honey, clotted cream (kaymak), and a boiled egg.", 
+      img: getImageForDish("Simit & Kahvaltı Plate"), 
+      isSignature: false 
+    },
+    { 
+      category: "Breakfast & Soups", 
+      name: "Haydari Meze", 
+      price: "100.00", 
+      desc: "A powerful, thick, and refreshing cold appetizer. Incredibly dense strained yogurt vigorously whisked with pungent raw garlic, fresh dill, mint, and a touch of olive oil. Served as the perfect cooling dip for warm pita bread.", 
+      img: getImageForDish("Haydari Meze"), 
+      isSignature: false 
+    },
+    { 
+      category: "Desserts", 
+      name: "Gaziantep Baklava", 
+      price: "190.00", 
+      desc: "The absolute pinnacle of Turkish sweets. 40 transparent, microscopic layers of hand-rolled phyllo dough, aggressively stuffed with the finest, vibrant green pistachios from Gaziantep. Baked in clarified butter until shattering and soaked in a warm sugar syrup.", 
+      img: getImageForDish("Gaziantep Baklava"), 
+      isSignature: true 
+    },
+    { 
+      category: "Desserts", 
+      name: "Künefe", 
+      price: "250.00", 
+      desc: "The king of hot desserts. A disc of shredded, wiry kadayıf pastry encapsulating a thick layer of unsalted, incredibly stretchy melting cheese. Baked in a copper dish until deeply golden, drenched in hot syrup, and topped with crushed pistachios.", 
+      img: getImageForDish("Künefe"), 
+      isSignature: true 
+    },
+    { 
+      category: "Desserts", 
+      name: "Sütlaç (Oven-Baked Rice Pudding)", 
+      price: "110.00", 
+      desc: "A comforting, creamy milk and rice pudding, lightly sweetened and flavored with vanilla. It is baked in individual clay bowls in a scorching hot oven until the top forms a dark, blistered, caramelized skin.", 
+      img: getImageForDish("Sütlaç (Oven-Baked Rice Pudding)"), 
+      isSignature: false 
+    },
+    { 
+      category: "Desserts", 
+      name: "Lokum (Turkish Delight)", 
+      price: "105.00", 
+      desc: "A premium selection of authentic, chewy gelatinous cubes. Flavored naturally with pure rosewater, mastic, and pomegranate, packed heavily with roasted pistachios, and dusted generously in powdered sugar.", 
+      img: getImageForDish("Lokum (Turkish Delight)"), 
+      isSignature: false 
+    },
+    { 
+      category: "Beverages", 
+      name: "Türk Kahvesi (Turkish Coffee)", 
+      price: "70.00", 
+      desc: "The most powerful coffee tradition in the world. Extremely fine, unfiltered coffee grounds are slowly boiled with sugar in a copper cezve over hot embers until a thick, dark foam forms. Served in an espresso-sized cup with a glass of water.", 
+      img: getImageForDish("Türk Kahvesi (Turkish Coffee)"), 
+      isSignature: true 
+    },
+    { 
+      category: "Beverages", 
+      name: "Turkish Çay", 
+      price: "40.00", 
+      desc: "The heartbeat of Turkish hospitality. Robust, dark, and highly steeped black tea from the Rize region, served boiling hot in a delicate, traditional tulip-shaped glass on a small saucer, with sugar cubes on the side.", 
+      img: getImageForDish("Turkish Çay"), 
+      isSignature: true 
+    }
   ]
 };
 // KRAJ FAJLA: src/DemoData/turkishMassiveData.js
