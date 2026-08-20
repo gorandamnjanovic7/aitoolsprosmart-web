@@ -1,5 +1,5 @@
 // POČETAK FAJLA: src/DemoData/globalStreetFoodData.js
-import { getImageForDish } from '../qrcode/v8ImageBank.js';
+import { getImageForDish } from '../data/v8ImageBank.js';
 
 export const GLOBAL_STREET_MENU = { 
   restaurantName: "Supreme Street Food", 

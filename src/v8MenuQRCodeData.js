@@ -762,5 +762,3 @@ export const RAW_DB = {
     ["Saint-Julien Grand Cru", "An incredibly complex, highly acidic, and deeply aromatic Italian red wine, boasting incredibly intense, lingering, and rustic notes of tart cherries, dried wild herbs, and worn leather.", "305.00"]
   ]
 };
-
-// KRAJ FAJLA: v8MenuQRCodeData.js

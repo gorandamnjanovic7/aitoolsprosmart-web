@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Utensils, AlertTriangle, Crown, Coffee, Cake, Fish, Pizza, Leaf, Droplets, Wine, Flame, ChefHat, Moon } from 'lucide-react';
+import { Utensils, AlertTriangle, Crown, Coffee, Cake, Fish, Pizza, Leaf, Droplets, Wine, Flame, ChefHat } from 'lucide-react';
 
 import { ITALIAN_MASSIVE_MENU } from '../DemoData/italianMassiveData.js';
 import { GLOBAL_STREET_MENU } from '../DemoData/globalStreetFoodData.js';
@@ -11,21 +11,22 @@ import { MEXICAN_MASSIVE_MENU } from '../DemoData/mexicanMassiveData.js';
 import { GREEK_MASSIVE_MENU } from '../DemoData/greekMassiveData.js';
 import { FRENCH_MASSIVE_MENU } from '../DemoData/frenchMassiveData.js';
 import { TURKISH_MASSIVE_MENU } from '../DemoData/turkishMassiveData.js'; 
+import { RUSSIAN_MASSIVE_MENU } from '../DemoData/russianMassiveData.js';
+
+// --- ZAMENJENO: Sada vuče čistu logiku iz Helper fajla ---
+import { getImageForDish } from '../data/v8SmartImageHelper.js';
 
 const getCategoryIcon = (catName) => {
   const lower = catName.toLowerCase();
-  
-  if (lower.includes('signature') || lower.includes('specijalitet') || lower.includes('kuće') || lower.includes('house') || lower.includes('kebab')) return Flame; 
-  if (lower.includes('breakfast') || lower.includes('doručak')) return Utensils;
-  if (lower.includes('dessert') || lower.includes('dezert') || lower.includes('slatko') || lower.includes('poslastica') || lower.includes('kolač') || lower.includes('baklava')) return Cake;
-  if (lower.includes('sea') || lower.includes('fish') || lower.includes('riba') || lower.includes('plodovi')) return Fish;
-  if (lower.includes('pizza') || lower.includes('pica') || lower.includes('pide') || lower.includes('lahmacun')) return Pizza;
-  if (lower.includes('salad') || lower.includes('salata') || lower.includes('prilog') || lower.includes('side') || lower.includes('meze') || lower.includes('appetizers')) return Leaf;
+  if (lower.includes('signature') || lower.includes('specijalitet') || lower.includes('house') || lower.includes('kebab')) return Flame; 
+  if (lower.includes('breakfast') || lower.includes('doručak') || lower.includes('porridges') || lower.includes('grains')) return Coffee;
+  if (lower.includes('dessert') || lower.includes('dezert') || lower.includes('slatko') || lower.includes('kolač') || lower.includes('baklava')) return Cake;
+  if (lower.includes('sea') || lower.includes('fish') || lower.includes('riba') || lower.includes('plodovi') || lower.includes('caviar')) return Fish;
+  if (lower.includes('pizza') || lower.includes('pica') || lower.includes('pide') || lower.includes('pies') || lower.includes('pastries') || lower.includes('blini')) return Pizza;
+  if (lower.includes('salad') || lower.includes('salata') || lower.includes('prilog') || lower.includes('side') || lower.includes('meze') || lower.includes('zakuski') || lower.includes('potato')) return Leaf;
   if (lower.includes('soup') || lower.includes('supa') || lower.includes('čorba') || lower.includes('potaž')) return Droplets;
-  if (lower.includes('drink') || lower.includes('wine') || lower.includes('piće') || lower.includes('karta pića') || lower.includes('vino') || lower.includes('beverages')) return Wine;
-  if (lower.includes('döner') || lower.includes('street')) return Utensils;
-  if (lower.includes('stew') || lower.includes('traditional')) return ChefHat;
-
+  if (lower.includes('drink') || lower.includes('wine') || lower.includes('piće') || lower.includes('vino')) return Wine;
+  if (lower.includes('döner') || lower.includes('street') || lower.includes('dumplings') || lower.includes('tacos') || lower.includes('burgers')) return Utensils;
   return ChefHat; 
 };
 
@@ -45,16 +46,12 @@ export default function PublicMenuTestQRMenu() {
       try {
         if (activeId === "TEST-QR-PREVIEW") {
           setMenuData({ 
-            restaurantName: "AURA Fine Dining", 
-            themeColor: "#ea580c", 
-            currency: "€", 
+            restaurantName: "AURA Fine Dining", themeColor: "#ea580c", currency: "€", 
             items: [ 
-              { category: "Doručak", name: "Kraljevska Jaja Benedikt", price: "24.00", desc: "Savršeno poširana jaja na prepečenom brioš hlebu sa holandez sosom i norveškim lososom.", img: "https://images.unsplash.com/photo-1608039829572-78524f79c4c7?auto=format&fit=crop&w=800&q=80", isSignature: false },
-              { category: "Glavna Jela", name: "Wagyu Tomahawk Odrezak", price: "150.00", desc: "Ekskluzivni A5 Wagyu odrezak, suvo zrenje 45 dana, pečen na otvorenoj vatri za nezaboravno iskustvo.", img: "https://images.unsplash.com/photo-1594046243098-0fceea9d451e?auto=format&fit=crop&w=800&q=80", isSignature: true },
-              { category: "Dezerti", name: "Čokoladni Tart sa Zlatom", price: "35.00", desc: "Dekadentni tart od crne čokolade sa jestivim 24k zlatnim listićima i hrskavom morskom solju.", img: "https://images.unsplash.com/photo-1571115177098-24ec42ed204d?auto=format&fit=crop&w=800&q=80", isSignature: false }
+              { category: "Doručak", name: "Kraljevska Jaja Benedikt", price: "24.00", desc: "Savršeno poširana jaja na prepečenom brioš hlebu.", img: "", isSignature: false },
+              { category: "Glavna Jela", name: "Wagyu Tomahawk Odrezak", price: "150.00", desc: "Ekskluzivni A5 Wagyu odrezak pečen na otvorenoj vatri.", img: "", isSignature: true }
             ] 
-          });
-          return;
+          }); return;
         }
 
         if (activeId === "TEST-QR-ITALIAN") { setMenuData(ITALIAN_MASSIVE_MENU); return; }
@@ -63,16 +60,13 @@ export default function PublicMenuTestQRMenu() {
         if (activeId === "TEST-QR-GREEK") { setMenuData(GREEK_MASSIVE_MENU); return; }
         if (activeId === "TEST-QR-FRENCH") { setMenuData(FRENCH_MASSIVE_MENU); return; }
         if (activeId === "TEST-QR-TURKISH") { setMenuData(TURKISH_MASSIVE_MENU); return; }
+        if (activeId === "TEST-QR-RUSSIAN") { setMenuData(RUSSIAN_MASSIVE_MENU); return; }
         
-        if (activeId === "TEST-QR-CUSTOM") { setMenuData({ restaurantName: "TVOJ RESTORAN", themeColor: "#22c55e", currency: "RSD", items: [{ category: "Tvoje jelo", name: "Specijalitet Šefa Kuhinje", price: "0.00", desc: "Pažljivo osmišljeno kulinarsko remek-delo sačinjeno od najsvežijih sezonskih sastojaka." }] }); return; }
-
         const docRef = doc(db, 'v8_qr_menus', activeId);
         const docSnap = await getDoc(docRef);
-
         if (docSnap.exists()) { setMenuData(docSnap.data()); } else { setError(true); }
       } catch (err) { setError(true); }
     };
-
     fetchMenu();
   }, [activeId]);
 
@@ -87,7 +81,9 @@ export default function PublicMenuTestQRMenu() {
   }
 
   if (!menuData) {
-    return <div className="min-h-[100dvh] bg-[#050505] relative z-50" />;
+    return <div className="min-h-[100dvh] bg-[#050505] relative z-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-zinc-800 border-t-orange-500 rounded-full animate-spin"></div>
+    </div>;
   }
 
   const groupedItems = menuData.items.reduce((acc, item) => {
@@ -102,63 +98,85 @@ export default function PublicMenuTestQRMenu() {
   const FALLBACK_IMAGE_URL = "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=600&q=80";
 
   return (
-    <div className="min-h-[100dvh] bg-[#050505] font-sans pb-16 relative z-50">
-      <style>{`::selection { background-color: ${themeColor}40; color: white; }`}</style>
+    <div className="min-h-[100dvh] bg-[#050505] font-sans pb-16 relative z-50 selection:bg-white/20">
+      <style>{`
+        ::selection { background-color: ${themeColor}40; color: white; }
+        .v8-elegant-italic { font-family: 'Playfair Display', 'Georgia', serif; font-style: italic; letter-spacing: 0.05em; }
+      `}</style>
       
-      <div className="relative pt-12 pb-8 px-6 text-center overflow-hidden bg-[#0a0a0a] shadow-2xl mb-8">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-32 blur-[80px] opacity-20 pointer-events-none" style={{ backgroundColor: themeColor }}></div>
+      {/* GLAVNI HEADER MENIJA */}
+      <div className="relative pt-12 pb-8 px-6 text-center overflow-hidden bg-[#0a0a0a] shadow-[0_15px_40px_rgba(0,0,0,0.8)] mb-10 border-b border-white/5">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-40 blur-[100px] opacity-20 pointer-events-none" style={{ backgroundColor: themeColor }}></div>
         <div className="relative z-10 flex flex-col items-center">
-          <Utensils size={32} style={{ color: themeColor }} className="mb-4 drop-shadow-md" />
-          <h1 className="text-2xl md:text-4xl font-black uppercase tracking-[0.15em] text-white mb-2" style={{ textShadow: `0 0 20px ${themeColor}40` }}>{menuData.restaurantName}</h1>
-          <p className="text-zinc-500 text-[10px] md:text-xs font-bold uppercase tracking-widest">Zvanični Digitalni Meni</p>
+          <Utensils size={36} style={{ color: themeColor }} className="mb-4 drop-shadow-lg" />
+          <h1 className="text-3xl md:text-5xl font-black uppercase tracking-[0.15em] text-white mb-2" style={{ textShadow: `0 0 25px ${themeColor}50` }}>{menuData.restaurantName}</h1>
+          <p className="text-zinc-400 text-[10px] md:text-xs font-bold uppercase tracking-[0.25em]">Zvanični Digitalni Meni</p>
         </div>
       </div>
 
       <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 flex flex-col">
         {categories.map((category) => {
-          
           const CatIcon = getCategoryIcon(category);
           
           return (
-            <div key={category} className="mb-12">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="h-px bg-white/10 flex-1"></div>
-                <h2 className="text-white font-black text-[15px] md:text-lg uppercase tracking-[0.2em] text-center flex items-center justify-center gap-2" style={{ color: themeColor }}>
-                  <CatIcon size={20} />
+            <div key={category} className="mb-14">
+              {/* ZAGLAVLJE KATEGORIJE */}
+              <div className="flex items-center gap-4 mb-8">
+                <div className="h-px bg-gradient-to-r from-transparent to-white/20 flex-1"></div>
+                <h2 className="text-white font-black text-[16px] md:text-xl uppercase tracking-[0.2em] text-center flex items-center justify-center gap-3" style={{ color: themeColor }}>
+                  <CatIcon size={24} className="drop-shadow-md" />
                   {category}
                 </h2>
-                <div className="h-px bg-white/10 flex-1"></div>
+                <div className="h-px bg-gradient-to-l from-transparent to-white/20 flex-1"></div>
               </div>
 
-              <div className="flex flex-col gap-6">
-                {groupedItems[category].map((item, idx) => (
-                  <div key={idx} className="bg-[#0a0e17] rounded-3xl border border-white/5 overflow-hidden flex flex-col shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
-                    {item.img && (
-                      <div className="w-full h-56 relative bg-zinc-900">
-                        <img src={item.img} alt={item.name} loading="lazy" className="w-full h-full object-cover transition-opacity duration-700 ease-in-out" onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_IMAGE_URL; }} />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e17] via-[#0a0e17]/20 to-transparent"></div>
+              {/* LISTA JELA - LUKSUZNI HORIZONTALNI LAYOUT (Slika levo, Tekst desno) */}
+              <div className="flex flex-col gap-5 md:gap-6">
+                {groupedItems[category].map((item, idx) => {
+                  
+                  const isUploadedCustom = item.img && !item.img.includes('unsplash');
+                  const finalImage = isUploadedCustom ? item.img : getImageForDish(item.name);
+
+                  return (
+                    <div key={idx} className="bg-[#0d1117] rounded-[2rem] border border-white/5 overflow-hidden p-5 flex flex-row items-stretch justify-start gap-5 shadow-[0_15px_35px_rgba(0,0,0,0.6)]">
+                      
+                      {/* LEVA STRANA - SLIKA */}
+                      <div className="w-28 h-28 md:w-36 md:h-36 shrink-0 rounded-2xl overflow-hidden bg-[#0a0a0a] shadow-inner border border-white/5">
+                        <img 
+                            src={finalImage} 
+                            alt={item.name} 
+                            loading="lazy" 
+                            className="w-full h-full object-cover transition-opacity duration-700 ease-in-out"
+                            onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_IMAGE_URL; }} 
+                        />
                       </div>
-                    )}
-                    <div className="p-5 flex flex-col gap-2 relative z-10">
-                      <div className="flex justify-between items-start gap-4">
-                        <h3 className="text-white font-black text-[15px] md:text-base uppercase leading-tight flex items-start gap-1.5">
-                          {item.isSignature && <span className="text-[10px] mt-0.5" style={{ color: themeColor }}>★</span>}
-                          {item.name}
-                        </h3>
-                        <span className="font-black text-[15px] md:text-base shrink-0" style={{ color: themeColor }}>{currency} {item.price}</span>
+
+                      {/* DESNA STRANA - INFO (Ime vrhu, Opis ispod, Cena dole) */}
+                      <div className="flex flex-col flex-1 justify-between py-1">
+                        <div>
+                          <h3 className="text-white font-bold text-[17px] md:text-xl leading-tight mb-2 flex items-start gap-2 v8-elegant-italic">
+                            {item.isSignature && <span className="text-[12px] mt-1.5 animate-pulse" style={{ color: themeColor }}>★</span>}
+                            {item.name}
+                          </h3>
+                          {item.desc && <p className="text-zinc-400 text-[13px] md:text-sm leading-relaxed mb-2 line-clamp-3 v8-elegant-italic">{item.desc}</p>}
+                        </div>
+                        
+                        <span className="font-black text-[16px] md:text-lg self-end mt-2 v8-elegant-italic" style={{ color: themeColor }}>{currency} {item.price}</span>
                       </div>
-                      {item.desc && <p className="text-zinc-400 text-xs leading-relaxed mt-1">{item.desc}</p>}
+
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           );
         })}
       </div>
-      <div className="mt-8 w-full flex flex-col items-center justify-center opacity-40">
-        <Crown size={16} className="text-zinc-500 mb-2" />
-        <span className="text-[9px] font-black tracking-[0.2em] text-zinc-500 uppercase">Pokreće Smart Engine</span>
+      
+      {/* FOOTER */}
+      <div className="mt-12 w-full flex flex-col items-center justify-center opacity-40">
+        <Crown size={18} className="text-zinc-500 mb-3" />
+        <span className="text-[10px] font-black tracking-[0.25em] text-zinc-500 uppercase">Pokreće Smart Engine</span>
       </div>
     </div>
   );

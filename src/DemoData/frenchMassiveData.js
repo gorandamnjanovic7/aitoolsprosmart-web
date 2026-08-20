@@ -1,5 +1,5 @@
 // POČETAK FAJLA: src/DemoData/frenchMassiveData.js
-import { getImageForDish } from '../qrcode/v8ImageBank.js';
+import { getImageForDish } from '../data/v8ImageBank.js';
 
 export const FRENCH_MASSIVE_MENU = { 
   restaurantName: "La Maison", 

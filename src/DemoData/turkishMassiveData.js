@@ -1,5 +1,5 @@
 // POČETAK FAJLA: src/DemoData/turkishMassiveData.js
-import { getImageForDish } from '../qrcode/v8ImageBank.js';
+import { getImageForDish } from '../data/v8ImageBank.js';
 
 export const TURKISH_MASSIVE_MENU = { 
   restaurantName: "Topkapı Sarayı Sofrası", 

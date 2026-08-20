@@ -1,7 +1,7 @@
 // POČETAK FAJLA: V8Navbar.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-// 🔥 DODATE NOVE IKONICE: Sparkles, Aperture, Clapperboard 🔥
+// 🔥 DODATA ScanLine IKONICA ZA QR MENI 🔥
 import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay, FileText, Code, ShieldCheck, LayoutGrid, Cpu, Maximize, Gift, Menu, X, Terminal, ScanLine, Briefcase, Sparkles, Aperture, Clapperboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -215,7 +215,7 @@ const V8Navbar = ({ handleHomeClick }) => {
           {/* Desktop navigacija */}
           <div className="hidden xl:flex items-center justify-end gap-2 xl:gap-3 font-black uppercase tracking-widest shrink-0">
             
-            {/* 🔥 HOME DUGME SA PORTFOLIO DROPDOWN-OM 🔥 */}
+            {/* HOME DUGME SA PORTFOLIO DROPDOWN-OM */}
             <div className="relative group">
               <MagneticButton>
                  <Link to="/" onClick={handleHomeClick} className="flex items-center gap-1 xl:gap-2 px-3 xl:px-5 py-2.5 rounded-full bg-emerald-900/30 border border-emerald-500/40 text-emerald-400 text-[9px] xl:text-[11px] hover:text-white hover:bg-emerald-800/50 hover:border-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] cursor-pointer whitespace-nowrap">
@@ -316,7 +316,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                 <div className="bg-black/90 backdrop-blur-2xl border border-white/10 border-t-orange-500 border-b-orange-500/30 rounded-2xl p-2 w-72 shadow-[0_30px_60px_rgba(0,0,0,0.9)] flex flex-col gap-1 relative overflow-hidden">
                   <div className="absolute -top-12 -right-12 w-32 h-32 bg-orange-600/30 rounded-full blur-[40px] pointer-events-none z-0"></div>
 
-                  {/* 🔥 AŽURIRANO: 10X VIZION 🔥 */}
                   <Link to="/enxance" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-orange-500/30">
                     <div className="bg-orange-500/20 p-2 rounded-lg group-hover/item:bg-orange-500/40 transition-colors shadow-[0_0_10px_rgba(249,115,22,0.3)] shrink-0">
                       <Sparkles className="w-5 h-5 text-orange-400 transition-transform group-hover/item:scale-110" />
@@ -337,6 +336,7 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   </Link>
 
+                  {/* 🔥 VRAĆEN NEURAL FORGE U DROPDOWN UMESTO QR MENIJA 🔥 */}
                   <Link to="/neural-forge" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-cyan-500/30 mt-1">
                     <div className="bg-cyan-500/20 p-2 rounded-lg group-hover/item:bg-cyan-500/40 transition-colors shadow-[0_0_10px_rgba(6,182,212,0.3)] shrink-0">
                       <Terminal className="w-5 h-5 text-cyan-400 transition-transform group-hover/item:scale-110" />
@@ -347,7 +347,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   </Link>
 
-                  {/* 🔥 AŽURIRANO: RAW REALITY ENGINE 🔥 */}
                   <Link to="/raw-reality" className="flex items-center justify-between gap-2 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-orange-500/30 mt-1">
                     <div className="flex items-center gap-4 overflow-hidden">
                       <div className="bg-orange-500/20 p-2 rounded-lg group-hover/item:bg-orange-500/40 transition-colors shadow-[0_0_10px_rgba(249,115,22,0.3)] shrink-0">
@@ -361,7 +360,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                     <span className="text-[8px] bg-orange-600 text-white px-2 py-0.5 rounded font-black tracking-widest shadow-[0_0_8px_rgba(234,88,12,0.5)] shrink-0">HOT</span>
                   </Link>
 
-                  {/* 🔥 AŽURIRANO: V8 CINEMATIK SYSTEM 🔥 */}
                   <Link to="/grid-system" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-yellow-500/30 mt-1">
                     <div className="bg-yellow-500/20 p-2 rounded-lg group-hover/item:bg-yellow-500/40 transition-colors shadow-[0_0_10px_rgba(234,179,8,0.3)] shrink-0">
                       <Clapperboard className="w-5 h-5 text-yellow-400 transition-transform group-hover/item:scale-110" />
@@ -391,20 +389,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                       </div>
                     </div>
                     <span className="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded font-black tracking-widest shadow-[0_0_8px_rgba(16,185,129,0.5)] shrink-0">NEW</span>
-                  </Link>
-
-                  {/* 🔥 DODATO: PREMIUM QR MENU 🔥 */}
-                  <Link to="/premium-menu" className="flex items-center justify-between gap-2 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-purple-500/30 mt-1">
-                    <div className="flex items-center gap-4 overflow-hidden">
-                      <div className="bg-purple-500/20 p-2 rounded-lg group-hover/item:bg-purple-500/40 transition-colors shadow-[0_0_10px_rgba(168,85,247,0.3)] shrink-0">
-                        <ScanLine className="w-5 h-5 text-purple-400 transition-transform group-hover/item:scale-110" />
-                      </div>
-                      <div className="flex flex-col text-left overflow-hidden">
-                        <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-purple-400 transition-all drop-shadow-md truncate">PREMIUM QR MENU</span>
-                        <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Smart Hospitality</span>
-                      </div>
-                    </div>
-                    <span className="text-[8px] bg-purple-600 text-white px-2 py-0.5 rounded font-black tracking-widest shadow-[0_0_8px_rgba(168,85,247,0.5)] shrink-0">B2B</span>
                   </Link>
 
                   <div className="mt-1 grid w-full min-w-0 grid-cols-2 gap-2 sm:gap-3">
@@ -466,13 +450,14 @@ const V8Navbar = ({ handleHomeClick }) => {
             </div>
           </div>
 
-          {/* 🔥 NEURAL FORGE & SAAS MOCKUPS (ISTAKNUTA DUGMAD JEDNO DO DRUGOG) 🔥 */}
+          {/* 🔥 QR BUILDER & SAAS MOCKUPS (ISTAKNUTA DUGMAD JEDNO DO DRUGOG) 🔥 */}
           <div className="hidden xl:flex items-center gap-2 2xl:gap-3 ml-2 border-l border-white/10 pl-3 xl:pl-4 shrink-0">
             
+            {/* 🔥 NOVO: ISTAKNUT QR BUILDER (Menja Forge) 🔥 */}
             <MagneticButton>
-              <Link to="/neural-forge" onClick={() => window.scrollTo(0,0)} className="flex items-center gap-1.5 xl:gap-2 px-4 xl:px-5 py-2.5 xl:py-3 rounded-full bg-cyan-600 border-2 border-cyan-400 text-white font-black hover:bg-cyan-500 hover:scale-105 transition-all shadow-[0_0_20px_rgba(6,182,212,0.6)] whitespace-nowrap cursor-pointer">
-                <Terminal className="w-3 h-3 xl:w-4 xl:h-4 shrink-0 drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
-                <span className="text-[9px] xl:text-[11px] 2xl:text-[12px] uppercase tracking-widest">FORGE</span>
+              <Link to="/premium-menu" onClick={() => window.scrollTo(0,0)} className="flex items-center gap-1.5 xl:gap-2 px-4 xl:px-5 py-2.5 xl:py-3 rounded-full bg-purple-600 border-2 border-purple-400 text-white font-black hover:bg-purple-500 hover:scale-105 transition-all shadow-[0_0_20px_rgba(168,85,247,0.6)] whitespace-nowrap cursor-pointer">
+                <ScanLine className="w-3 h-3 xl:w-4 xl:h-4 shrink-0 drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
+                <span className="text-[9px] xl:text-[11px] 2xl:text-[12px] uppercase tracking-widest">QR BUILDER</span>
               </Link>
             </MagneticButton>
 
@@ -515,7 +500,7 @@ const V8Navbar = ({ handleHomeClick }) => {
                         <div className="mb-2 border-b border-white/10 pb-3">
                            <p className="text-zinc-400 text-[10px] font-bold mb-2">Unlock the Master Engines for free.</p>
                            <button type="button" onClick={handleClaimTrial} className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-black uppercase text-[11px] py-3 rounded-xl hover:scale-[1.02] transition-all shadow-[0_0_15px_rgba(168,85,247,0.5)]">
-                              CLAIM 11 CREDITS NOW
+                             CLAIM 11 CREDITS NOW
                            </button>
                         </div>
                      )}
@@ -716,7 +701,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                     <span className="text-[13px] sm:text-[14px] font-black uppercase tracking-widest text-white truncate w-full">Početna Strana</span>
                   </Link>
 
-                  {/* 🔥 PORTFOLIO (NOVO U MOBILNOM) 🔥 */}
                   <Link to="/portfolio" onClick={handleMobileLinkClick} className="flex items-center gap-3 sm:gap-4 bg-black border border-white/5 p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
                     <div className="bg-emerald-500/10 p-3 rounded-xl shrink-0"><Briefcase className="w-6 h-6 text-emerald-500" /></div>
                     <div className="flex flex-col min-w-0">
@@ -725,19 +709,19 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   </Link>
 
-                  {/* 🔥 NEURAL FORGE (ISTAKNUT U MOBILNOM) 🔥 */}
-                  <Link to="/neural-forge" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-cyan-600 border-2 border-cyan-500 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0 shadow-[0_0_20px_rgba(6,182,212,0.4)]">
+                  {/* 🔥 AŽURIRANO: QR BUILDER U MOBILNOM MENIJU (Menja Forge) 🔥 */}
+                  <Link to="/premium-menu" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-purple-600 border-2 border-purple-500 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0 shadow-[0_0_20px_rgba(168,85,247,0.4)]">
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0 w-full">
-                      <div className="bg-white/20 p-2.5 sm:p-3 rounded-xl shrink-0"><Terminal className="w-5 h-5 sm:w-6 sm:h-6 text-white" /></div>
+                      <div className="bg-white/20 p-2.5 sm:p-3 rounded-xl shrink-0"><ScanLine className="w-5 h-5 sm:w-6 sm:h-6 text-white" /></div>
                       <div className="flex flex-col min-w-0">
-                        <span className="text-[12px] sm:text-[14px] font-black uppercase tracking-widest text-white truncate w-full drop-shadow-md">Neural Forge</span>
-                        <span className="text-[9px] sm:text-[10px] text-cyan-200 font-bold uppercase truncate w-full">Google Nano Banana 2</span>
+                        <span className="text-[12px] sm:text-[14px] font-black uppercase tracking-widest text-white truncate w-full drop-shadow-md">QR Builder</span>
+                        <span className="text-[9px] sm:text-[10px] text-purple-200 font-bold uppercase truncate w-full">Premium Menu System</span>
                       </div>
                     </div>
-                    <span className="text-[7px] bg-white text-cyan-600 px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 ml-2 shadow-md">NEW</span>
+                    <span className="text-[7px] bg-white text-purple-600 px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 ml-2 shadow-md">B2B</span>
                   </Link>
 
-                  {/* 🔥 SAAS MOCKUPS (ISTAKNUT U MOBILNOM) 🔥 */}
+                  {/* 🔥 SAAS MOCKUPS 🔥 */}
                   <Link to="/saas-protocol" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-orange-600 border-2 border-orange-500 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0 shadow-[0_0_20px_rgba(249,115,22,0.4)]">
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0 w-full">
                       <div className="bg-white/20 p-2.5 sm:p-3 rounded-xl shrink-0"><MonitorPlay className="w-5 h-5 sm:w-6 sm:h-6 text-white" /></div>
@@ -776,7 +760,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                 <div className="flex flex-col gap-3 w-full">
                   <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2 truncate w-full">V8 Premium Tools</h4>
                   
-                  {/* 🔥 AŽURIRANO: 10X VIZION 🔥 */}
                   <Link to="/enxance" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border border-white/5 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0 w-full">
                       <div className="bg-orange-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" /></div>
@@ -797,7 +780,18 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   </Link>
 
-                  {/* 🔥 AŽURIRANO: RAW REALITY ENGINE 🔥 */}
+                  {/* 🔥 AŽURIRANO: VRAĆEN NEURAL FORGE U MOBILNI V8 TOOLS MENI 🔥 */}
+                  <Link to="/neural-forge" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border border-cyan-500/30 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                      <div className="bg-cyan-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><Terminal className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-500" /></div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full">NEURAL FORGE</span>
+                        <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">Visual Synthesizer</span>
+                      </div>
+                    </div>
+                    <span className="text-[7px] bg-cyan-600 text-white px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 ml-2">NEW</span>
+                  </Link>
+
                   <Link to="/raw-reality" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border border-orange-500/30 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                       <div className="bg-orange-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><Aperture className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" /></div>
@@ -809,7 +803,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                     <span className="text-[7px] bg-orange-600 text-white px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 ml-2">HOT</span>
                   </Link>
 
-                  {/* 🔥 AŽURIRANO: V8 CINEMATIK SYSTEM 🔥 */}
                   <Link to="/grid-system" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border border-white/5 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0 w-full">
                       <div className="bg-yellow-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><Clapperboard className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" /></div>
@@ -838,21 +831,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                         <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">White-Label Engine</span>
                       </div>
                     </div>
-                    <span className="text-[7px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 ml-2">NEW</span>
-                  </Link>
-
-                  {/* 🔥 DODATO: PREMIUM QR MENU (MOBILNI) 🔥 */}
-                  <Link to="/premium-menu" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border border-purple-500/30 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
-                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                      <div className="bg-purple-500/10 p-2.5 sm:p-3 rounded-xl shrink-0">
-                        <ScanLine className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500" />
-                      </div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full">Premium QR Menu</span>
-                        <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">Smart Hospitality</span>
-                      </div>
-                    </div>
-                    <span className="text-[7px] bg-purple-600 text-white px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 ml-2 shadow-[0_0_8px_rgba(168,85,247,0.5)]">B2B</span>
                   </Link>
 
                   <div className="mt-1 grid w-full min-w-0 grid-cols-2 gap-2 sm:gap-3">
@@ -873,7 +851,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                     Premium Visuals
                   </h4>
                   
-                  {/* 🔥 PREMIUM STOCK (ISTAKNUT U MOBILNOM) 🔥 */}
                   <Link to="/stock" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-blue-600 border-2 border-blue-500 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0 shadow-[0_0_20px_rgba(37,99,235,0.4)]">
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0 w-full">
                       <div className="bg-white/20 p-2.5 sm:p-3 rounded-xl shrink-0"><Layers className="w-5 h-5 sm:w-6 sm:h-6 text-white" /></div>

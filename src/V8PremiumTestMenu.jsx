@@ -25,7 +25,7 @@ const themeStyles = {
   'V8 Gold': { hex: '#eab308', text: 'text-yellow-500', bg: 'bg-yellow-500', border: 'border-yellow-500/50', ring: 'focus:border-yellow-500/50 focus:ring-yellow-500/50', btnText: 'text-black' }
 };
 
-// Početak funkcije getCategoryIcon
+// 🔥 V8 SMART ENGLISH ICON MAPPER 🔥
 const getCategoryIcon = (catName) => {
   const lower = catName.toLowerCase();
   if (lower.includes('signature') || lower.includes('house') || lower.includes('special')) return Flame; 
@@ -38,9 +38,7 @@ const getCategoryIcon = (catName) => {
   if (lower.includes('drink') || lower.includes('wine') || lower.includes('beverage')) return Wine;
   return ChefHat; 
 };
-// Kraj funkcije getCategoryIcon
 
-// Početak funkcije generateInitialItems
 const generateInitialItems = (isBlank = false) => {
   let idCounter = 1;
   const finalItems = [];
@@ -55,16 +53,12 @@ const generateInitialItems = (isBlank = false) => {
   });
   return finalItems;
 };
-// Kraj funkcije generateInitialItems
 
-// Početak funkcije getSuggestionsWithImages
 const getSuggestionsWithImages = (categoryName, catIndex) => {
   const catDemo = RAW_DB[categoryName] && RAW_DB[categoryName].length > 0 ? RAW_DB[categoryName] : [];
   return catDemo.map((item, idx) => ({ name: item[0] || "", desc: item[1] || "", price: item[2] || "0.00", demoImg: IMG_POOL[(catIndex + idx) % IMG_POOL.length] }));
 };
-// Kraj funkcije getSuggestionsWithImages
 
-// Početak glavne komponente PremiumMenu
 export default function PremiumMenu() {
   const [items, setItems] = useState(() => generateInitialItems(false));
   const [restaurantName, setRestaurantName] = useState('AURA Fine Dining');
@@ -94,100 +88,47 @@ export default function PremiumMenu() {
   const currentTheme = themeStyles[theme] || themeStyles['V8 Orange'];
   const currentCustomTheme = themeStyles[customTheme] || themeStyles['V8 Green'];
 
-  // Početak funkcije handleItemChange
-  const handleItemChange = (id, field, value) => {
-    setItems(items.map(item => item.id === id ? { ...item, [field]: value } : item));
-  };
-  // Kraj funkcije handleItemChange
+  const handleItemChange = (id, field, value) => setItems(items.map(item => item.id === id ? { ...item, [field]: value } : item));
+  const handleCustomItemChange = (id, field, value) => setCustomItems(customItems.map(item => item.id === id ? { ...item, [field]: value } : item));
 
-  // Početak funkcije handleCustomItemChange
-  const handleCustomItemChange = (id, field, value) => {
-    setCustomItems(customItems.map(item => item.id === id ? { ...item, [field]: value } : item));
-  };
-  // Kraj funkcije handleCustomItemChange
+  const handleSuggestionSelect = (id, suggestion) => { setItems(items.map(item => item.id === id ? { ...item, name: suggestion.name, desc: suggestion.desc, price: suggestion.price || item.price, demoImg: suggestion.demoImg || item.demoImg } : item)); setActiveDropdownId(null); };
+  const handleCustomSuggestionSelect = (id, suggestion) => { setCustomItems(customItems.map(item => item.id === id ? { ...item, name: suggestion.name, desc: suggestion.desc, price: suggestion.price || item.price, demoImg: suggestion.demoImg || item.demoImg } : item)); setActiveCustomDropdownId(null); };
 
-  // Početak funkcije handleSuggestionSelect
-  const handleSuggestionSelect = (id, suggestion) => {
-    setItems(items.map(item => item.id === id ? { ...item, name: suggestion.name, desc: suggestion.desc, price: suggestion.price || item.price, demoImg: suggestion.demoImg || item.demoImg } : item)); 
-    setActiveDropdownId(null); 
-  };
-  // Kraj funkcije handleSuggestionSelect
-
-  // Početak funkcije handleCustomSuggestionSelect
-  const handleCustomSuggestionSelect = (id, suggestion) => {
-    setCustomItems(customItems.map(item => item.id === id ? { ...item, name: suggestion.name, desc: suggestion.desc, price: suggestion.price || item.price, demoImg: suggestion.demoImg || item.demoImg } : item)); 
-    setActiveCustomDropdownId(null); 
-  };
-  // Kraj funkcije handleCustomSuggestionSelect
-
-  // Početak funkcije handleImageUpload
   const handleImageUpload = async (id, file, isCustom = false) => {
     if (!file) return;
     setUploadingItemId(id);
-    const fd = new FormData(); 
-    fd.append('file', file); 
-    fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
     try {
       const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`, { method: 'POST', body: fd });
       const resData = await res.json();
-      if (resData.secure_url) { 
-        isCustom ? handleCustomItemChange(id, 'img', resData.secure_url) : handleItemChange(id, 'img', resData.secure_url); 
-      }
-    } catch (err) { 
-      console.error(err); 
-    } finally { 
-      setUploadingItemId(null); 
-    }
+      if (resData.secure_url) { isCustom ? handleCustomItemChange(id, 'img', resData.secure_url) : handleItemChange(id, 'img', resData.secure_url); }
+    } catch (err) { console.error(err); } finally { setUploadingItemId(null); }
   };
-  // Kraj funkcije handleImageUpload
 
-  // Početak funkcije handleGenerateQR
   const handleGenerateQR = async () => {
     const activeItems = items.filter(item => item.name && item.name.trim() !== '');
-    if (!restaurantName.trim() || activeItems.length === 0) { 
-      if(typeof v8Toast !== 'undefined') v8Toast.error("Enter a name and at least one item!"); 
-      return; 
-    }
+    if (!restaurantName.trim() || activeItems.length === 0) { if(typeof v8Toast !== 'undefined') v8Toast.error("Enter a name and at least one item!"); return; }
     setIsSaving(true);
     try {
       const itemsToSave = activeItems.map(item => ({ id: item.id, category: item.category, name: item.name, desc: item.desc, price: item.price, img: item.img || item.demoImg, isSignature: item.isSignature }));
       const docData = { restaurantName, currency, themeColor: currentTheme.hex, items: itemsToSave, createdAt: serverTimestamp(), status: 'active' };
       const docRef = await Promise.race([addDoc(collection(db, 'v8_qr_menus'), docData), new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 3000))]);
-      setGeneratedMenuId(docRef.id); 
-      if(typeof v8Toast !== 'undefined') v8Toast.success("Layout deployed!");
-    } catch (error) { 
-      setGeneratedMenuId("TEST-QR-PREVIEW"); 
-      if(typeof v8Toast !== 'undefined') v8Toast.success("Test QR deployed!"); 
-    } finally { 
-      setIsSaving(false); 
-    }
+      setGeneratedMenuId(docRef.id); if(typeof v8Toast !== 'undefined') v8Toast.success("Layout deployed!");
+    } catch (error) { setGeneratedMenuId("TEST-QR-PREVIEW"); if(typeof v8Toast !== 'undefined') v8Toast.success("Test QR deployed!"); } finally { setIsSaving(false); }
   };
-  // Kraj funkcije handleGenerateQR
 
-  // Početak funkcije handleGenerateCustomQR
   const handleGenerateCustomQR = async () => {
     const activeCustomItems = customItems.filter(item => item.name && item.name.trim() !== '');
-    if (!customRestaurantName.trim() || activeCustomItems.length === 0) { 
-      if(typeof v8Toast !== 'undefined') v8Toast.error("Enter a restaurant name and at least one item!"); 
-      return; 
-    }
+    if (!customRestaurantName.trim() || activeCustomItems.length === 0) { if(typeof v8Toast !== 'undefined') v8Toast.error("Enter a restaurant name and at least one item!"); return; }
     setIsSavingCustom(true);
     try {
       const itemsToSave = activeCustomItems.map(item => ({ id: item.id, category: item.category, name: item.name, desc: item.desc, price: item.price, img: item.img || item.demoImg, isSignature: item.isSignature }));
       const docData = { restaurantName: customRestaurantName, currency: customCurrency, themeColor: currentCustomTheme.hex, items: itemsToSave, createdAt: serverTimestamp(), status: 'active' };
       const docRef = await Promise.race([addDoc(collection(db, 'v8_qr_menus'), docData), new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 3000))]);
-      setGeneratedCustomMenuId(docRef.id); 
-      if(typeof v8Toast !== 'undefined') v8Toast.success("Custom Menu deployed!");
-    } catch (error) { 
-      setGeneratedCustomMenuId("TEST-QR-CUSTOM"); 
-      if(typeof v8Toast !== 'undefined') v8Toast.success("Custom Test QR deployed!"); 
-    } finally { 
-      setIsSavingCustom(false); 
-    }
+      setGeneratedCustomMenuId(docRef.id); if(typeof v8Toast !== 'undefined') v8Toast.success("Custom Menu deployed!");
+    } catch (error) { setGeneratedCustomMenuId("TEST-QR-CUSTOM"); if(typeof v8Toast !== 'undefined') v8Toast.success("Custom Test QR deployed!"); } finally { setIsSavingCustom(false); }
   };
-  // Kraj funkcije handleGenerateCustomQR
 
-  // Početak funkcije deployStaticDemo
   const deployStaticDemo = async (demoKey, staticData) => {
     setDemoSaveStates(prev => ({ ...prev, [demoKey]: true }));
     try {
@@ -202,29 +143,24 @@ export default function PremiumMenu() {
       setDemoSaveStates(prev => ({ ...prev, [demoKey]: false })); 
     }
   };
-  // Kraj funkcije deployStaticDemo
 
-  // Početak funkcije resetStaticDemo
   const resetStaticDemo = (demoKey) => {
     setDemoGeneratedIds(prev => { const next = { ...prev }; delete next[demoKey]; return next; });
   };
-  // Kraj funkcije resetStaticDemo
 
-  // Početak funkcije getChartUrl (Podešen svetli kontrast za lakše skeniranje telefonom)
   const getChartUrl = (id, themeHex = '#ea580c') => {
     const darkColor = themeHex.replace('#', '');
     return `https://quickchart.io/qr?text=${encodeURIComponent(`https://aitoolsprosmart.com/m/${id}`)}&margin=2&size=600&dark=${darkColor}&light=ffffff`;
   };
-  // Kraj funkcije getChartUrl
 
   const STATIC_CARDS = [
     { key: 'aura', title: restaurantName || 'AURA Fine Dining', sub: 'PRE-FILLED DEMO', icon: Crown, theme: currentTheme, isDynamic: true },
     { key: 'italian', title: 'Bella Napoli', sub: 'ITALIAN SHOWCASE (146)', icon: Pizza, theme: themeStyles['V8 Gold'], data: ITALIAN_MASSIVE_MENU },
     { key: 'greek', title: 'Η Χρυσή Ελιά', sub: 'GREEK TAVERNA (300+)', icon: Anchor, theme: themeStyles['V8 Blue'], data: GREEK_MASSIVE_MENU },
     { key: 'global', title: 'Supreme Fast Food', sub: 'GLOBAL STREET FOOD (400+)', icon: Globe, theme: themeStyles['V8 Red'], data: GLOBAL_STREET_MENU },
-    { key: 'turkish', title: 'Topkapı Sarayı', sub: 'TURKISH SOFRA (160+)', icon: Moon, theme: themeStyles['V8 Red'], data: TURKISH_MASSIVE_MENU },
-    { key: 'mexican', title: 'La Cantina', sub: 'MEXICAN KITCHEN (100+)', icon: Flame, theme: themeStyles['V8 Green'], data: MEXICAN_MASSIVE_MENU },
-    { key: 'french', title: 'La Maison', sub: 'FRENCH CUISINE (200+)', icon: Wine, theme: themeStyles['V8 Purple'], data: FRENCH_MASSIVE_MENU }
+    { key: 'turkish', title: 'Topkapı Sarayı', sub: 'TURKISH SOFRA (240+)', icon: Moon, theme: themeStyles['V8 Red'], data: TURKISH_MASSIVE_MENU },
+    { key: 'mexican', title: 'La Cantina', sub: 'MEXICAN KITCHEN (230+)', icon: Flame, theme: themeStyles['V8 Green'], data: MEXICAN_MASSIVE_MENU },
+    { key: 'french', title: 'La Maison', sub: 'FRENCH CUISINE (360+)', icon: Wine, theme: themeStyles['V8 Purple'], data: FRENCH_MASSIVE_MENU }
   ];
 
   return (
@@ -240,32 +176,17 @@ export default function PremiumMenu() {
         
         <div className="relative w-full bg-[#1c1c22] rounded-[2.5rem] p-10 md:p-16 flex flex-col md:flex-row items-center justify-center gap-16 border border-white/5 shadow-2xl overflow-hidden">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-orange-600/5 blur-[120px] rounded-full pointer-events-none"></div>
-          <div className="relative w-48 md:w-56 shrink-0 z-10 flex items-center justify-center">
-            <img src="/tel_box_ico.webp" alt="V10 Mockup" className="w-full h-auto object-contain drop-shadow-[0_0_40px_rgba(234,88,12,0.6)]" />
-          </div>
+          <div className="relative w-48 md:w-56 shrink-0 z-10 flex items-center justify-center"><img src="/tel_box_ico.webp" alt="V10 Mockup" className="w-full h-auto object-contain drop-shadow-[0_0_40px_rgba(234,88,12,0.6)]" /></div>
           <div className="flex flex-col items-center md:items-start justify-center z-10">
-            <div className="mb-6 transform origin-left">
-              <div className="px-4 py-1.5 border border-[#ea580c] text-[#ea580c] text-[10px] md:text-xs font-bold tracking-[0.25em] rounded-full uppercase bg-black/60 shadow-[0_0_15px_rgba(234,88,12,0.15)]">
-                Cinematic Protocol // QR Restaurant Suite
-              </div>
-            </div>
-            <h1 className="text-4xl md:text-[4.5rem] font-black italic tracking-tighter text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)] flex flex-wrap gap-4 justify-center md:justify-start leading-none">
-              QR <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">MENU BUILDER</span>
-            </h1>
+            <div className="mb-6 transform origin-left"><div className="px-4 py-1.5 border border-[#ea580c] text-[#ea580c] text-[10px] md:text-xs font-bold tracking-[0.25em] rounded-full uppercase bg-black/60 shadow-[0_0_15px_rgba(234,88,12,0.15)]">Cinematic Protocol // QR Restaurant Suite</div></div>
+            <h1 className="text-4xl md:text-[4.5rem] font-black italic tracking-tighter text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)] flex flex-wrap gap-4 justify-center md:justify-start leading-none">QR <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">MENU BUILDER</span></h1>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 relative z-10 w-full mb-6">
           <div className="lg:col-span-8 flex flex-col items-center justify-center w-full gap-4">
-            <label className={`font-black text-2xl md:text-3xl tracking-[0.15em] uppercase flex items-center gap-4 text-center ${currentTheme.text} drop-shadow-md transition-colors duration-300`}>
-              <Store size={36} /> 1. EXPLORE OUR MENU
-            </label>
-            <button 
-              onClick={() => document.getElementById('custom-builder-section').scrollIntoView({ behavior: 'smooth' })} 
-              className={`${currentTheme.text} flex items-center gap-2 text-sm md:text-base font-bold uppercase tracking-[0.2em] transition-opacity duration-300 hover:opacity-70`}
-            >
-              OR BUILD YOUR OWN MENU <ChevronDown size={22} className={`${currentTheme.text} animate-bounce`} />
-            </button>
+            <label className={`font-black text-2xl md:text-3xl tracking-[0.15em] uppercase flex items-center gap-4 text-center ${currentTheme.text} drop-shadow-md transition-colors duration-300`}><Store size={36} /> 1. EXPLORE OUR MENU</label>
+            <button onClick={() => document.getElementById('custom-builder-section').scrollIntoView({ behavior: 'smooth' })} className={`${currentTheme.text} flex items-center gap-2 text-sm md:text-base font-bold uppercase tracking-[0.2em] transition-opacity duration-300 hover:opacity-70`}>OR BUILD YOUR OWN MENU <ChevronDown size={22} className={`${currentTheme.text} animate-bounce`} /></button>
           </div>
           <div className="lg:col-span-4 hidden lg:block"></div>
         </div>
@@ -276,24 +197,9 @@ export default function PremiumMenu() {
             
             <div className="bg-[#1c1c22] border border-white/5 rounded-[2rem] p-6 md:p-8 flex flex-col shadow-[0_15px_35px_rgba(0,0,0,0.5)] w-full h-[880px]">
               <div className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-6 bg-[#16161a] border border-white/5 p-6 rounded-3xl shadow-inner shrink-0">
-                <div className="md:col-span-6">
-                  <label className={`text-[10px] font-bold tracking-widest uppercase mb-3 block ${currentTheme.text}`}>Restaurant Name</label>
-                  <input type="text" value={restaurantName} onChange={(e) => setRestaurantName(e.target.value)} className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 text-base font-bold outline-none ${currentTheme.text} ${currentTheme.ring}`} />
-                </div>
-                <div className="md:col-span-3">
-                  <label className={`text-[10px] font-bold tracking-widest uppercase mb-3 block ${currentTheme.text}`}>Currency</label>
-                  <select value={currency} onChange={(e) => setCurrency(e.target.value)} className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 text-base font-bold outline-none cursor-pointer ${currentTheme.text} ${currentTheme.ring}`}>
-                    <option value="€">EUR (€)</option>
-                    <option value="$">USD ($)</option>
-                    <option value="RSD">RSD</option>
-                  </select>
-                </div>
-                <div className="md:col-span-3">
-                  <label className={`text-[10px] font-bold tracking-widest uppercase mb-3 block ${currentTheme.text}`}>Theme Color</label>
-                  <select value={theme} onChange={(e) => setTheme(e.target.value)} className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 text-base font-bold outline-none cursor-pointer ${currentTheme.text} ${currentTheme.ring}`}>
-                    {Object.keys(themeStyles).map(color => <option key={color} value={color}>{color}</option>)}
-                  </select>
-                </div>
+                <div className="md:col-span-6"><label className={`text-[10px] font-bold tracking-widest uppercase mb-3 block ${currentTheme.text}`}>Restaurant Name</label><input type="text" value={restaurantName} onChange={(e) => setRestaurantName(e.target.value)} className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 text-base font-bold outline-none ${currentTheme.text} ${currentTheme.ring}`} /></div>
+                <div className="md:col-span-3"><label className={`text-[10px] font-bold tracking-widest uppercase mb-3 block ${currentTheme.text}`}>Currency</label><select value={currency} onChange={(e) => setCurrency(e.target.value)} className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 text-base font-bold outline-none cursor-pointer ${currentTheme.text} ${currentTheme.ring}`}><option value="€">EUR (€)</option><option value="$">USD ($)</option><option value="RSD">RSD</option></select></div>
+                <div className="md:col-span-3"><label className={`text-[10px] font-bold tracking-widest uppercase mb-3 block ${currentTheme.text}`}>Theme Color</label><select value={theme} onChange={(e) => setTheme(e.target.value)} className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 text-base font-bold outline-none cursor-pointer ${currentTheme.text} ${currentTheme.ring}`}>{Object.keys(themeStyles).map(color => <option key={color} value={color}>{color}</option>)}</select></div>
               </div>
               
               <div className="flex flex-col gap-10 overflow-y-auto mt-8 flex-1 pr-3 v8-beautiful-scroll">
@@ -314,47 +220,18 @@ export default function PremiumMenu() {
                       <div className="flex flex-col gap-6">
                         {catItems.map((item, index) => (
                           <div key={item.id} className={`shrink-0 bg-[#1c1c22] border border-white/5 border-l-4 rounded-2xl p-6 md:p-8 relative group ${currentTheme.border}`}>
-                            <div className="flex justify-between items-center mb-6 border-b border-white/5 pb-3">
-                              <span className={`${currentTheme.text} font-black text-xs uppercase tracking-widest opacity-80`}>{item.category} / Slot {index + 1}</span>
-                            </div>
+                            <div className="flex justify-between items-center mb-6 border-b border-white/5 pb-3"><span className={`${currentTheme.text} font-black text-xs uppercase tracking-widest opacity-80`}>{item.category} / Slot {index + 1}</span></div>
                             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-6 pr-10">
                               <div className="md:col-span-8 relative">
                                 <input type="text" value={item.name} onChange={(e) => handleItemChange(item.id, 'name', e.target.value)} onFocus={() => setActiveDropdownId(item.id)} onBlur={() => setTimeout(() => setActiveDropdownId(null), 250)} placeholder="Choose a dish..." className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 pr-12 text-base md:text-lg font-bold outline-none ${currentTheme.text} ${currentTheme.ring}`} />
-                                <AnimatePresence>
-                                  {activeDropdownId === item.id && categorySuggestions.length > 0 && (
-                                    <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="absolute top-full left-0 w-full mt-2 bg-[#24242a] border border-white/10 rounded-xl shadow-2xl z-[100] max-h-60 overflow-y-auto v8-beautiful-scroll">
-                                      {categorySuggestions.map((suggestion, sIdx) => (
-                                        <div key={sIdx} onMouseDown={(e) => { e.preventDefault(); handleSuggestionSelect(item.id, suggestion); }} className="p-4 border-b border-white/5 hover:bg-[#2b2e34] cursor-pointer">
-                                          <div className={`${currentTheme.text} font-bold text-base mb-1`}>{suggestion.name}</div>
-                                          <div className={`${currentTheme.text} opacity-60 text-xs`}>{suggestion.desc}</div>
-                                        </div>
-                                      ))}
-                                    </motion.div>
-                                  )}
-                                </AnimatePresence>
+                                <AnimatePresence>{activeDropdownId === item.id && categorySuggestions.length > 0 && (<motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="absolute top-full left-0 w-full mt-2 bg-[#24242a] border border-white/10 rounded-xl shadow-2xl z-[100] max-h-60 overflow-y-auto v8-beautiful-scroll">{categorySuggestions.map((suggestion, sIdx) => (<div key={sIdx} onMouseDown={(e) => { e.preventDefault(); handleSuggestionSelect(item.id, suggestion); }} className="p-4 border-b border-white/5 hover:bg-[#2b2e34] cursor-pointer"><div className={`${currentTheme.text} font-bold text-base mb-1`}>{suggestion.name}</div><div className={`${currentTheme.text} opacity-60 text-xs`}>{suggestion.desc}</div></div>))}</motion.div>)}</AnimatePresence>
                               </div>
-                              <div className="md:col-span-4 relative">
-                                <span className={`absolute left-4 top-1/2 -translate-y-1/2 text-base font-black opacity-70 ${currentTheme.text}`}>{currency}</span>
-                                <input type="text" value={item.price} onChange={(e) => handleItemChange(item.id, 'price', e.target.value)} placeholder="0.00" className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl pl-10 pr-5 py-4 text-base md:text-lg font-black outline-none ${currentTheme.text} ${currentTheme.ring}`} />
-                              </div>
+                              <div className="md:col-span-4 relative"><span className={`absolute left-4 top-1/2 -translate-y-1/2 text-base font-black opacity-70 ${currentTheme.text}`}>{currency}</span><input type="text" value={item.price} onChange={(e) => handleItemChange(item.id, 'price', e.target.value)} placeholder="0.00" className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl pl-10 pr-5 py-4 text-base md:text-lg font-black outline-none ${currentTheme.text} ${currentTheme.ring}`} /></div>
                             </div>
-                            <div className="mb-6">
-                              <textarea value={item.desc} onChange={(e) => handleItemChange(item.id, 'desc', e.target.value)} placeholder="Short description..." rows={2} className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 text-base outline-none resize-none ${currentTheme.text} ${currentTheme.ring}`} />
-                            </div>
+                            <div className="mb-6"><textarea value={item.desc} onChange={(e) => handleItemChange(item.id, 'desc', e.target.value)} placeholder="Short description..." rows={2} className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 text-base outline-none resize-none ${currentTheme.text} ${currentTheme.ring}`} /></div>
                             <div className="border-t border-white/5 pt-6">
                               <label className={`${currentTheme.text} font-bold uppercase tracking-widest text-sm mb-4 flex items-center gap-2`}><ImageIcon size={18} /> Dish Image</label>
-                              {item.img ? (
-                                <div className="relative w-full h-48 rounded-xl overflow-hidden border border-[#0d0d11] shadow-inner">
-                                  <img src={item.img} alt="Dish" className="w-full h-full object-cover" />
-                                </div>
-                              ) : (
-                                <div className="relative">
-                                  <input type="file" accept="image/*" id={`file-demo-${item.id}`} className="hidden" onChange={(e) => { if(e.target.files && e.target.files[0]) handleImageUpload(item.id, e.target.files[0], false); }} />
-                                  <label htmlFor={`file-demo-${item.id}`} className={`flex items-center justify-center gap-3 w-full bg-[#16161a] border-2 border-dashed border-white/10 rounded-xl py-6 text-base font-black uppercase cursor-pointer opacity-70 hover:opacity-100 ${currentTheme.text}`}>
-                                    {uploadingItemId === item.id ? <><RefreshCcw size={20} className="animate-spin" /> UPLOADING...</> : <><Upload size={20} /> UPLOAD IMAGE</>}
-                                  </label>
-                                </div>
-                              )}
+                              {item.img ? (<div className="relative w-full h-48 rounded-xl overflow-hidden border border-[#0d0d11] shadow-inner"><img src={item.img} alt="Dish" className="w-full h-full object-cover" /></div>) : (<div className="relative"><input type="file" accept="image/*" id={`file-demo-${item.id}`} className="hidden" onChange={(e) => { if(e.target.files && e.target.files[0]) handleImageUpload(item.id, e.target.files[0], false); }} /><label htmlFor={`file-demo-${item.id}`} className={`flex items-center justify-center gap-3 w-full bg-[#16161a] border-2 border-dashed border-white/10 rounded-xl py-6 text-base font-black uppercase cursor-pointer opacity-70 hover:opacity-100 ${currentTheme.text}`}>{uploadingItemId === item.id ? <><RefreshCcw size={20} className="animate-spin" /> UPLOADING...</> : <><Upload size={20} /> UPLOAD IMAGE</>}</label></div>)}
                             </div>
                           </div>
                         ))}
@@ -365,7 +242,6 @@ export default function PremiumMenu() {
               </div>
             </div>
 
-            {/* MASIVNO DUGME I QR BOX ISPOD PRVOG DELA */}
             <div className={`p-8 md:p-10 border rounded-[2rem] flex flex-col items-center justify-between gap-8 transition-all bg-[#101014] shadow-2xl ${currentTheme.border}`}>
               {!generatedMenuId ? (
                 <div className="flex flex-col md:flex-row items-center justify-between w-full gap-8">
@@ -402,31 +278,12 @@ export default function PremiumMenu() {
 
             {/* BLOK 2: BUILD YOUR OWN MENU */}
             <div id="custom-builder-section" className="flex flex-col gap-6 w-full pt-8">
-              <div className="flex flex-col items-center justify-center w-full gap-3 mb-2">
-                <label className={`font-black text-2xl md:text-3xl tracking-[0.15em] uppercase flex items-center gap-4 text-center ${currentCustomTheme.text} drop-shadow-md`}>
-                  <PenTool size={36} /> 2. BUILD YOUR OWN MENU
-                </label>
-              </div>
+              <div className="flex flex-col items-center justify-center w-full gap-3 mb-2"><label className={`font-black text-2xl md:text-3xl tracking-[0.15em] uppercase flex items-center gap-4 text-center ${currentCustomTheme.text} drop-shadow-md`}><PenTool size={36} /> 2. BUILD YOUR OWN MENU</label></div>
               <div className="bg-[#1c1c22] border border-white/5 rounded-[2rem] p-6 md:p-8 flex flex-col shadow-[0_15px_35px_rgba(0,0,0,0.5)] w-full h-[880px]">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-6 bg-[#16161a] border border-white/5 p-6 rounded-3xl shadow-inner shrink-0">
-                  <div className="md:col-span-6">
-                    <label className={`text-[10px] font-bold tracking-widest uppercase mb-3 block ${currentCustomTheme.text}`}>Your Restaurant Name</label>
-                    <input type="text" value={customRestaurantName} onChange={(e) => setCustomRestaurantName(e.target.value)} placeholder="Type name here..." className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 text-base font-bold outline-none ${currentCustomTheme.text} ${currentCustomTheme.ring}`} />
-                  </div>
-                  <div className="md:col-span-3">
-                    <label className={`text-[10px] font-bold tracking-widest uppercase mb-3 block ${currentCustomTheme.text}`}>Currency</label>
-                    <select value={customCurrency} onChange={(e) => setCustomCurrency(e.target.value)} className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 text-base font-bold outline-none cursor-pointer ${currentCustomTheme.text} ${currentCustomTheme.ring}`}>
-                      <option value="€">EUR (€)</option>
-                      <option value="$">USD ($)</option>
-                      <option value="RSD">RSD</option>
-                    </select>
-                  </div>
-                  <div className="md:col-span-3">
-                    <label className={`text-[10px] font-bold tracking-widest uppercase mb-3 block ${currentCustomTheme.text}`}>Theme Color</label>
-                    <select value={customTheme} onChange={(e) => setCustomTheme(e.target.value)} className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 text-base font-bold outline-none cursor-pointer ${currentCustomTheme.text} ${currentCustomTheme.ring}`}>
-                      {Object.keys(themeStyles).map(color => <option key={color} value={color}>{color}</option>)}
-                    </select>
-                  </div>
+                  <div className="md:col-span-6"><label className={`text-[10px] font-bold tracking-widest uppercase mb-3 block ${currentCustomTheme.text}`}>Your Restaurant Name</label><input type="text" value={customRestaurantName} onChange={(e) => setCustomRestaurantName(e.target.value)} placeholder="Type name here..." className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 text-base font-bold outline-none ${currentCustomTheme.text} ${currentCustomTheme.ring}`} /></div>
+                  <div className="md:col-span-3"><label className={`text-[10px] font-bold tracking-widest uppercase mb-3 block ${currentCustomTheme.text}`}>Currency</label><select value={customCurrency} onChange={(e) => setCustomCurrency(e.target.value)} className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 text-base font-bold outline-none cursor-pointer ${currentCustomTheme.text} ${currentCustomTheme.ring}`}><option value="€">EUR (€)</option><option value="$">USD ($)</option><option value="RSD">RSD</option></select></div>
+                  <div className="md:col-span-3"><label className={`text-[10px] font-bold tracking-widest uppercase mb-3 block ${currentCustomTheme.text}`}>Theme Color</label><select value={customTheme} onChange={(e) => setCustomTheme(e.target.value)} className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 text-base font-bold outline-none cursor-pointer ${currentCustomTheme.text} ${currentCustomTheme.ring}`}>{Object.keys(themeStyles).map(color => <option key={color} value={color}>{color}</option>)}</select></div>
                 </div>
                 <div className="flex flex-col gap-10 overflow-y-auto mt-8 flex-1 pr-3 v8-beautiful-scroll">
                   {CATEGORY_LIMITS.map((cat, catIndex) => {
@@ -444,34 +301,16 @@ export default function PremiumMenu() {
                         <div className="flex flex-col gap-6">
                           {catItems.map((item, index) => (
                             <div key={item.id} className={`shrink-0 bg-[#1c1c22] border border-white/5 border-l-4 rounded-2xl p-6 md:p-8 relative group ${currentCustomTheme.border}`}>
-                              <div className="flex justify-between items-center mb-6 border-b border-white/5 pb-3">
-                                <span className={`${currentCustomTheme.text} font-black text-xs uppercase tracking-widest opacity-80`}>{item.category} / Custom Slot {index + 1}</span>
-                              </div>
+                              <div className="flex justify-between items-center mb-6 border-b border-white/5 pb-3"><span className={`${currentCustomTheme.text} font-black text-xs uppercase tracking-widest opacity-80`}>{item.category} / Custom Slot {index + 1}</span></div>
                               <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-6 pr-10">
                                 <div className="md:col-span-8 relative">
                                   <input type="text" value={item.name} onChange={(e) => handleCustomItemChange(item.id, 'name', e.target.value)} placeholder="Type custom dish..." className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 pr-12 text-base md:text-lg font-bold outline-none ${currentCustomTheme.text} ${currentCustomTheme.ring}`} />
                                 </div>
-                                <div className="md:col-span-4 relative">
-                                  <span className={`absolute left-4 top-1/2 -translate-y-1/2 text-base font-black opacity-70 ${currentCustomTheme.text}`}>{customCurrency}</span>
-                                  <input type="text" value={item.price} onChange={(e) => handleCustomItemChange(item.id, 'price', e.target.value)} placeholder="0.00" className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl pl-10 pr-5 py-4 text-base md:text-lg font-black outline-none ${currentCustomTheme.text} ${currentCustomTheme.ring}`} />
-                                </div>
+                                <div className="md:col-span-4 relative"><span className={`absolute left-4 top-1/2 -translate-y-1/2 text-base font-black opacity-70 ${currentCustomTheme.text}`}>{customCurrency}</span><input type="text" value={item.price} onChange={(e) => handleCustomItemChange(item.id, 'price', e.target.value)} placeholder="0.00" className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl pl-10 pr-5 py-4 text-base md:text-lg font-black outline-none ${currentCustomTheme.text} ${currentCustomTheme.ring}`} /></div>
                               </div>
-                              <div className="mb-6">
-                                <textarea value={item.desc} onChange={(e) => handleCustomItemChange(item.id, 'desc', e.target.value)} placeholder="Type custom description..." rows={2} className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 text-base outline-none resize-none ${currentCustomTheme.text} ${currentCustomTheme.ring}`} />
-                              </div>
+                              <div className="mb-6"><textarea value={item.desc} onChange={(e) => handleCustomItemChange(item.id, 'desc', e.target.value)} placeholder="Type custom description..." rows={2} className={`w-full bg-[#0d0d11] border border-white/10 rounded-xl px-5 py-4 text-base outline-none resize-none ${currentCustomTheme.text} ${currentCustomTheme.ring}`} /></div>
                               <div className="border-t border-white/5 pt-6">
-                                {item.img ? (
-                                  <div className="relative w-full h-48 rounded-xl overflow-hidden border border-[#0d0d11]">
-                                    <img src={item.img} alt="Dish" className="w-full h-full object-cover" />
-                                  </div>
-                                ) : (
-                                  <div className="relative">
-                                    <input type="file" accept="image/*" id={`file-custom-${item.id}`} className="hidden" onChange={(e) => { if(e.target.files && e.target.files[0]) handleImageUpload(item.id, e.target.files[0], true); }} />
-                                    <label htmlFor={`file-custom-${item.id}`} className={`flex items-center justify-center gap-3 w-full bg-[#16161a] border-2 border-dashed border-white/10 rounded-xl py-6 text-base font-black uppercase cursor-pointer opacity-70 hover:opacity-100 ${currentCustomTheme.text}`}>
-                                      {uploadingItemId === item.id ? 'UPLOADING...' : 'UPLOAD IMAGE'}
-                                    </label>
-                                  </div>
-                                )}
+                                {item.img ? (<div className="relative w-full h-48 rounded-xl overflow-hidden border border-[#0d0d11]"><img src={item.img} alt="Dish" className="w-full h-full object-cover" /></div>) : (<div className="relative"><input type="file" accept="image/*" id={`file-custom-${item.id}`} className="hidden" onChange={(e) => { if(e.target.files && e.target.files[0]) handleImageUpload(item.id, e.target.files[0], true); }} /><label htmlFor={`file-custom-${item.id}`} className={`flex items-center justify-center gap-3 w-full bg-[#16161a] border-2 border-dashed border-white/10 rounded-xl py-6 text-base font-black uppercase cursor-pointer opacity-70 hover:opacity-100 ${currentCustomTheme.text}`}>{uploadingItemId === item.id ? 'UPLOADING...' : 'UPLOAD IMAGE'}</label></div>)}
                               </div>
                             </div>
                           ))}
@@ -524,13 +363,14 @@ export default function PremiumMenu() {
           <div className="lg:col-span-4 relative w-full">
             {/* 
               ========================================================================
-              🔥 TRAJNA ZASTITA OD SECENJA IVICA (PERMANENT ANTI-CLIPPING FIX) 🔥
-              Kontejner sada ima ogroman unutrašnji prostor (p-6 lg:p-10) i sakriva
-              horizontalni overflow, dok svaka kartica ima marginu (m-4) i 
-              kontrolisanu širinu (w-[85%]). 
+              🔥 TRAJNA ZASTITA OD SECENJA IVICA (ASYMMETRIC PADDING FIX) 🔥
+              Kontejner sada ima asimetričan padding. Leva strana ima normalan 
+              padding (pl-4 lg:pl-8), a DESNA strana ka scrollbaru ima masivan 
+              prostor (pr-10 lg:pr-16). Ovo znači da je kartica odmaknuta najmanje 
+              64 piksela od ivice kontejnera i senka fizički NEMA GDE da se iseče.
               ========================================================================
             */}
-            <div className="flex flex-col gap-8 sticky top-[100px] w-full max-h-[calc(100vh-120px)] overflow-y-auto overflow-x-hidden p-6 lg:p-10 v8-beautiful-scroll">
+            <div className="flex flex-col gap-12 sticky top-[100px] w-full max-h-[calc(100vh-120px)] overflow-y-auto pl-4 pr-10 lg:pl-8 lg:pr-16 pb-16 pt-8 v8-beautiful-scroll">
               
               {STATIC_CARDS.map((card) => {
                 const generatedId = card.isDynamic ? generatedMenuId : demoGeneratedIds[card.key];
@@ -539,7 +379,7 @@ export default function PremiumMenu() {
                 const handleRes = card.isDynamic ? () => setGeneratedMenuId(null) : () => resetStaticDemo(card.key);
 
                 return (
-                  <div key={card.key} className={`m-4 shrink-0 w-[85%] max-w-[360px] mx-auto bg-[#1c1c22] border rounded-[2rem] p-6 lg:p-8 flex flex-col items-center text-center shadow-[0_0_35px_rgba(0,0,0,0.5)] transition-all ${card.theme.border}`}>
+                  <div key={card.key} className={`shrink-0 w-full max-w-[300px] mx-auto bg-[#1c1c22] border rounded-[2rem] p-6 lg:p-8 flex flex-col items-center text-center shadow-[0_0_30px_rgba(0,0,0,0.6)] transition-all ${card.theme.border}`}>
                     {!generatedId ? (
                       <div className="w-full flex flex-col items-center">
                         <div className="w-full max-w-[220px] mb-6 rounded-2xl overflow-hidden shadow-lg border border-white/5">
@@ -575,5 +415,4 @@ export default function PremiumMenu() {
     </div>
   );
 }
-// Kraj glavne komponente PremiumMenu
 // KRAJ FAJLA: src/V8PremiumTestMenu.jsx
