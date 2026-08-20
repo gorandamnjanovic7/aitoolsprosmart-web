@@ -1,42 +1,72 @@
 // POČETAK FAJLA: src/data/v8SmartImageHelper.js
 import { V8_IMAGE_BANK } from './v8ImageBank.js';
 
-// Masivni rezervni pool vrhunskih slika
-const FALLBACK_POOL = [
-  "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1505253758473-96b7015fcd40?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1551782450-a2132b4ba21d?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1580476262798-bddd9f4b7369?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1534080564583-6be75777b70a?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1587314168485-3236d6710814?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1484723091791-0fee59ca0b26?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1563379926898-05f4575a45d8?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1496116218417-1a781b0c400c?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1626200419188-f80e556e8284?auto=format&fit=crop&w=800&q=80"
-];
+// Tematski razdvojene slike kako se meso i dezerti više nikad ne bi pomešali
+const FALLBACK_CATEGORIES = {
+  meat: [
+    "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1559742811-822873691fc8?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&w=800&q=80"
+  ],
+  dessert: [
+    "https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1579372786545-d24232daf58c?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1587314168485-3236d6710814?auto=format&fit=crop&w=800&q=80"
+  ],
+  pasta: [
+    "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1516685018646-549198525c1b?auto=format&fit=crop&w=800&q=80"
+  ],
+  salad: [
+    "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80"
+  ],
+  general: [
+    "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80"
+  ]
+};
 
-// OVO JE BILO KLJUČNO: `export const`
+// Pomoćna funkcija koja prepoznaje o kakvoj se hrani radi na osnovu imena
+const detectCategory = (dishName) => {
+  const lowerName = dishName.toLowerCase();
+  
+  if (lowerName.includes('beef') || lowerName.includes('steak') || lowerName.includes('pork') || lowerName.includes('lamb') || lowerName.includes('meat') || lowerName.includes('kebab') || lowerName.includes('chicken') || lowerName.includes('duck')) {
+    return 'meat';
+  }
+  if (lowerName.includes('cake') || lowerName.includes('sweet') || lowerName.includes('dessert') || lowerName.includes('chocolate') || lowerName.includes('cream') || lowerName.includes('tart') || lowerName.includes('blini')) {
+    return 'dessert';
+  }
+  if (lowerName.includes('pasta') || lowerName.includes('spaghetti') || lowerName.includes('ravioli') || lowerName.includes('macaroni') || lowerName.includes('noodles')) {
+    return 'pasta';
+  }
+  if (lowerName.includes('salad') || lowerName.includes('greens')) {
+    return 'salad';
+  }
+  
+  return 'general';
+};
+
 export const getImageForDish = (dishName) => {
+  // 1. Ako slika postoji tačno za to jelo u Image Banci, vrati je.
   if (V8_IMAGE_BANK && V8_IMAGE_BANK[dishName]) {
     return V8_IMAGE_BANK[dishName];
   }
   
+  // 2. Ako ne postoji, otkrij kategoriju na osnovu imena (da ne meša meso i kolače)
+  const category = detectCategory(dishName);
+  const pool = FALLBACK_CATEGORIES[category] || FALLBACK_CATEGORIES.general;
+  
+  // 3. Dosledno izvuci sliku iz tačnog bazena
   let hash = 0;
   for (let i = 0; i < dishName.length; i++) {
     hash = dishName.charCodeAt(i) + ((hash << 5) - hash);
   }
   
-  const index = Math.abs(hash) % FALLBACK_POOL.length;
+  const index = Math.abs(hash) % pool.length;
   
-  return FALLBACK_POOL[index];
+  return pool[index];
 };
-// KRAJ FAJLA: src/data/v8SmartImageHelper.js
+// KRAJ FAJLA: src/data/v8SmartImageHelper.jss
