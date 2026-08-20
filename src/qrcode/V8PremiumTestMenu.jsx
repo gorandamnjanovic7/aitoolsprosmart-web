@@ -155,9 +155,9 @@ export default function PremiumMenu() {
     setDemoGeneratedIds(prev => { const next = { ...prev }; delete next[demoKey]; return next; });
   };
 
-  const getChartUrl = (id, themeHex = '#ea580c') => {
-    const darkColor = themeHex.replace('#', '');
-    return `https://quickchart.io/qr?text=${encodeURIComponent(`https://aitoolsprosmart.com/m/${id}`)}&margin=2&size=180&dark=${darkColor}&light=ffffff`;
+  // OVO GARANTUJE OČITAVANJE: Generiše uvek visokokontrastni crno-beli QR kod da ga svaka kamera uhvati
+  const getChartUrl = (id) => {
+    return `https://quickchart.io/qr?text=${encodeURIComponent(`https://aitoolsprosmart.com/m/${id}`)}&margin=2&size=200&dark=000000&light=ffffff`;
   };
 
   const forceDownload = async (url, filename) => {
@@ -226,7 +226,6 @@ export default function PremiumMenu() {
           background: linear-gradient(135deg, rgba(20, 45, 105, 0.2) 0%, rgba(8, 18, 45, 0.3) 100%);
         }
 
-        /* --- LEPA KURZIVNA, ALI ČITLJIVA SLOVA --- */
         .v8-elegant-italic {
           font-family: 'Playfair Display', 'Georgia', serif;
           font-style: italic;
@@ -327,7 +326,6 @@ export default function PremiumMenu() {
                       <div className="flex flex-col gap-6">
                         {catItems.map((item, index) => (
                           
-                          /* --- NOVI RASPORED KARTICE U BLOKU 1 --- */
                           <div key={item.id} className={`shrink-0 v8-item-blue backdrop-blur-sm border border-blue-400/20 border-l-4 rounded-2xl p-5 relative group shadow-lg flex flex-col md:flex-row gap-6 items-stretch ${currentTheme.border}`}>
                             
                             {/* LEVA STRANA: SLIKA */}
@@ -411,7 +409,6 @@ export default function PremiumMenu() {
                                 </div>
                             </div>
                           </div>
-                          /* --- KRAJ KARTICE U BLOKU 1 --- */
                         ))}
                       </div>
                     </div>
@@ -439,12 +436,12 @@ export default function PremiumMenu() {
                     <span>CUSTOM MENU SUCCESSFULLY DEPLOYED</span>
                   </div>
                   <div className="flex flex-col md:flex-row items-center gap-8 w-full justify-center">
-                    <div className="bg-[#0d0d11] p-4 rounded-[1.5rem] shadow-[0_0_30px_rgba(0,0,0,0.8)] border border-blue-500/30 shrink-0">
-                      <img src={getChartUrl(generatedMenuId, currentTheme.hex)} alt="Customized QR" className="w-32 h-32 md:w-40 md:h-40 object-contain" />
+                    <div className="bg-[#ffffff] p-4 rounded-[1.5rem] shadow-[0_0_30px_rgba(0,0,0,0.8)] border border-blue-500/30 shrink-0">
+                      <img src={getChartUrl(generatedMenuId)} alt="Customized QR" className="w-32 h-32 md:w-40 md:h-40 object-contain" />
                     </div>
                     <div className="flex flex-col gap-3 w-full md:w-64">
                       <button 
-                        onClick={() => forceDownload(getChartUrl(generatedMenuId, currentTheme.hex), "Master_QR_Menu.png")}
+                        onClick={() => forceDownload(getChartUrl(generatedMenuId), "Master_QR_Menu.png")}
                         className={`w-full py-4 text-center rounded-xl font-black text-xs uppercase tracking-widest transition-opacity hover:opacity-80 shadow-[0_0_20px_rgba(0,0,0,0.5)] ${currentTheme.bg} ${currentTheme.btnText}`}
                       >
                         <Download size={16} className="inline mb-0.5 mr-2" /> DOWNLOAD HIGH-RES
@@ -508,7 +505,6 @@ export default function PremiumMenu() {
                         <div className="flex flex-col gap-6">
                           {catItems.map((item, index) => (
                             
-                            /* --- NOVI RASPORED KARTICE U BLOKU 2 (CUSTOM) --- */
                             <div key={item.id} className={`shrink-0 v8-item-blue backdrop-blur-sm border border-blue-400/20 border-l-4 rounded-2xl p-5 relative group shadow-lg flex flex-col md:flex-row gap-6 items-stretch ${currentCustomTheme.border}`}>
                               
                               {/* LEVA STRANA: SLIKA */}
@@ -576,7 +572,6 @@ export default function PremiumMenu() {
                                   </div>
                               </div>
                             </div>
-                            /* --- KRAJ KARTICE U BLOKU 2 --- */
                           ))}
                         </div>
                       </div>
@@ -603,12 +598,12 @@ export default function PremiumMenu() {
                       <span>CUSTOM QR CODE SUCCESSFULLY GENERATED</span>
                     </div>
                     <div className="flex flex-col md:flex-row items-center gap-8 w-full justify-center">
-                      <div className="bg-[#0d0d11] p-4 rounded-[1.5rem] shadow-[0_0_30px_rgba(0,0,0,0.8)] border border-blue-500/30 shrink-0">
-                        <img src={getChartUrl(generatedCustomMenuId, currentCustomTheme.hex)} alt="Custom QR Code" className="w-32 h-32 md:w-40 md:h-40 object-contain" />
+                      <div className="bg-[#ffffff] p-4 rounded-[1.5rem] shadow-[0_0_30px_rgba(0,0,0,0.8)] border border-blue-500/30 shrink-0">
+                        <img src={getChartUrl(generatedCustomMenuId)} alt="Custom QR Code" className="w-32 h-32 md:w-40 md:h-40 object-contain" />
                       </div>
                       <div className="flex flex-col gap-3 w-full md:w-64">
                         <button 
-                          onClick={() => forceDownload(getChartUrl(generatedCustomMenuId, currentCustomTheme.hex), "Custom_QR_Menu.png")}
+                          onClick={() => forceDownload(getChartUrl(generatedCustomMenuId), "Custom_QR_Menu.png")}
                           className={`w-full py-4 text-center rounded-xl font-black text-xs uppercase tracking-widest transition-opacity hover:opacity-80 shadow-[0_0_20px_rgba(0,0,0,0.5)] ${currentCustomTheme.bg} ${currentCustomTheme.btnText}`}
                         >
                           <Download size={16} className="inline mb-0.5 mr-2" /> DOWNLOAD HIGH-RES
@@ -651,11 +646,11 @@ export default function PremiumMenu() {
                       </div>
                     ) : (
                       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center text-center w-full">
-                        <div className="bg-[#0d0d11] p-3.5 rounded-2xl mb-4 shadow-[0_0_20px_rgba(0,0,0,0.8)] border border-blue-500/30">
-                          <img src={getChartUrl(generatedId, card.theme.hex)} alt="QR Code" className="w-28 h-28 object-contain" />
+                        <div className="bg-[#ffffff] p-3.5 rounded-2xl mb-4 shadow-[0_0_20px_rgba(0,0,0,0.8)] border border-blue-500/30">
+                          <img src={getChartUrl(generatedId)} alt="QR Code" className="w-28 h-28 object-contain" />
                         </div>
                         <button 
-                          onClick={() => forceDownload(getChartUrl(generatedId, card.theme.hex), `${card.key}_QR_Menu.png`)}
+                          onClick={() => forceDownload(getChartUrl(generatedId), `${card.key}_QR_Menu.png`)}
                           className={`w-full font-black uppercase tracking-widest py-3 rounded-xl shadow-lg flex items-center justify-center gap-2 text-[11px] mb-2.5 ${card.theme.bg} ${card.theme.btnText}`}
                         >
                           <Download size={15} /> DOWNLOAD
@@ -675,5 +670,4 @@ export default function PremiumMenu() {
     </div>
   );
 }
-// KRAJ FUNKCIJE: PremiumMenu
 // KRAJ FAJLA: src/qrcode/V8PremiumTestMenu.jsx
