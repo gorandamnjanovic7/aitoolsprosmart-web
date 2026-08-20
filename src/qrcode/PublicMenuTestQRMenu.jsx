@@ -13,7 +13,6 @@ import { FRENCH_MASSIVE_MENU } from '../DemoData/frenchMassiveData.js';
 import { TURKISH_MASSIVE_MENU } from '../DemoData/turkishMassiveData.js'; 
 import { RUSSIAN_MASSIVE_MENU } from '../DemoData/russianMassiveData.js';
 
-// --- ZAMENJENO: Sada vuče čistu logiku iz Helper fajla ---
 import { getImageForDish } from '../data/v8SmartImageHelper.js';
 
 const getCategoryIcon = (catName) => {
@@ -130,7 +129,7 @@ export default function PublicMenuTestQRMenu() {
                 <div className="h-px bg-gradient-to-l from-transparent to-white/20 flex-1"></div>
               </div>
 
-              {/* LISTA JELA - LUKSUZNI HORIZONTALNI LAYOUT (Slika levo, Tekst desno) */}
+              {/* LISTA JELA - NOVI STROGI LAYOUT (SLIKA LEVO, TEKST DESNO U 3 REDA) */}
               <div className="flex flex-col gap-5 md:gap-6">
                 {groupedItems[category].map((item, idx) => {
                   
@@ -138,30 +137,46 @@ export default function PublicMenuTestQRMenu() {
                   const finalImage = isUploadedCustom ? item.img : getImageForDish(item.name);
 
                   return (
-                    <div key={idx} className="bg-[#0d1117] rounded-[2rem] border border-white/5 overflow-hidden p-5 flex flex-row items-stretch justify-start gap-5 shadow-[0_15px_35px_rgba(0,0,0,0.6)]">
+                    <div key={idx} className="bg-[#0d1117] rounded-[1.5rem] border border-white/5 overflow-hidden p-4 md:p-5 flex flex-row items-stretch justify-start gap-4 md:gap-5 shadow-[0_15px_35px_rgba(0,0,0,0.6)] h-[140px] md:h-[160px]">
                       
-                      {/* LEVA STRANA - SLIKA */}
-                      <div className="w-28 h-28 md:w-36 md:h-36 shrink-0 rounded-2xl overflow-hidden bg-[#0a0a0a] shadow-inner border border-white/5">
+                      {/* LEVA STRANA - SAMO SLIKA (FIKSNA, STROGI KVADRAT) */}
+                      <div className="w-[108px] h-[108px] md:w-[120px] md:h-[120px] shrink-0 rounded-xl overflow-hidden bg-[#0a0a0a] shadow-inner border border-white/5 self-center">
                         <img 
                             src={finalImage} 
                             alt={item.name} 
                             loading="lazy" 
-                            className="w-full h-full object-cover transition-opacity duration-700 ease-in-out"
+                            className="w-full h-full object-cover"
                             onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_IMAGE_URL; }} 
                         />
                       </div>
 
-                      {/* DESNA STRANA - INFO (Ime vrhu, Opis ispod, Cena dole) */}
-                      <div className="flex flex-col flex-1 justify-between py-1">
-                        <div>
-                          <h3 className="text-white font-bold text-[17px] md:text-xl leading-tight mb-2 flex items-start gap-2 v8-elegant-italic">
-                            {item.isSignature && <span className="text-[12px] mt-1.5 animate-pulse" style={{ color: themeColor }}>★</span>}
+                      {/* DESNA STRANA - TAČNO 3 REDA */}
+                      <div className="flex flex-col flex-1 justify-between py-0.5 overflow-hidden">
+                        
+                        {/* RED 1: IME HRANE (NA VRHU) */}
+                        <div className="mb-1">
+                          <h3 className="text-white font-bold text-[16px] md:text-lg leading-tight flex items-start gap-2 v8-elegant-italic truncate w-full">
+                            {item.isSignature && <span className="text-[12px] mt-1 animate-pulse" style={{ color: themeColor }}>★</span>}
                             {item.name}
                           </h3>
-                          {item.desc && <p className="text-zinc-400 text-[13px] md:text-sm leading-relaxed mb-2 line-clamp-3 v8-elegant-italic">{item.desc}</p>}
+                        </div>
+
+                        {/* RED 2: OPIS HRANE (U SREDINI) */}
+                        <div className="flex-1 overflow-hidden">
+                          {item.desc && (
+                            <p className="text-zinc-400 text-[12px] md:text-[13px] leading-snug v8-elegant-italic line-clamp-3">
+                              {item.desc}
+                            </p>
+                          )}
                         </div>
                         
-                        <span className="font-black text-[16px] md:text-lg self-end mt-2 v8-elegant-italic" style={{ color: themeColor }}>{currency} {item.price}</span>
+                        {/* RED 3: CENA (ZAKUCANA ZA DNO) */}
+                        <div className="mt-auto">
+                          <span className="font-black text-[15px] md:text-[17px] v8-elegant-italic" style={{ color: themeColor }}>
+                            {currency} {item.price}
+                          </span>
+                        </div>
+
                       </div>
 
                     </div>

@@ -1,5 +1,5 @@
 // POČETAK FAJLA: src/DemoData/greekMassiveData.js
-import { getImageForDish } from '../data/v8ImageBank.js';
+import { getImageForDish } from '../data/v8SmartImageHelper.js';
 
 export const GREEK_MASSIVE_MENU = { 
   restaurantName: "Η Χρυσή Ελιά (The Golden Olive)", 

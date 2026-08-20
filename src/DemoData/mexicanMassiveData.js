@@ -1,5 +1,5 @@
 // POČETAK FAJLA: src/DemoData/mexicanMassiveData.js
-import { getImageForDish } from '../data/v8ImageBank.js';
+import { getImageForDish } from '../data/v8SmartImageHelper.js';
 
 export const MEXICAN_MASSIVE_MENU = { 
   restaurantName: "La Cantina del Fuego", 

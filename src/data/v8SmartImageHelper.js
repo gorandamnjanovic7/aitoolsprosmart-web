@@ -1,8 +1,7 @@
 // POČETAK FAJLA: src/data/v8SmartImageHelper.js
 import { V8_IMAGE_BANK } from './v8ImageBank.js';
 
-// Masivni rezervni pool vrhunskih "Fine Dining" slika 
-// Koristi se SAMO ako jelo nije ručno upisano u v8ImageBank.js
+// Masivni rezervni pool vrhunskih slika
 const FALLBACK_POOL = [
   "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80",
   "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80",
@@ -25,24 +24,17 @@ const FALLBACK_POOL = [
   "https://images.unsplash.com/photo-1626200419188-f80e556e8284?auto=format&fit=crop&w=800&q=80"
 ];
 
-// Glavna, nepogrešiva funkcija
+// OVO JE BILO KLJUČNO: `export const`
 export const getImageForDish = (dishName) => {
-  // 1. PRIMARNI POKUŠAJ: Traži tačno jelo u tvojoj bazi (npr. "Tacos al Pastor")
-  // Ako je uneto u v8ImageBank.js, vratiće TU SPECIFIČNU sliku! Nema promašaja.
   if (V8_IMAGE_BANK && V8_IMAGE_BANK[dishName]) {
     return V8_IMAGE_BANK[dishName];
   }
   
-  // 2. SEKUNDARNI POKUŠAJ (Fallback): Ako si zaboravio da uneseš jelo u bazu
-  // Koristimo Hash matematiku da bismo Ime Jela vezali za tačno JEDAN broj
-  // Na taj način izbegavamo duplikate (različita jela dobijaju različite slike iz FALLBACK_POOL)
-  // I garantujemo da će jedno isto jelo uvek dobijati ISTE slike svaki put kada se otvori meni.
   let hash = 0;
   for (let i = 0; i < dishName.length; i++) {
     hash = dishName.charCodeAt(i) + ((hash << 5) - hash);
   }
   
-  // Pretvaramo taj hash broj u indeks unutar naseg FALLBACK niza
   const index = Math.abs(hash) % FALLBACK_POOL.length;
   
   return FALLBACK_POOL[index];
