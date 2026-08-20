@@ -17,14 +17,14 @@ import { getImageForDish } from '../data/v8SmartImageHelper.js';
 
 const getCategoryIcon = (catName) => {
   const lower = catName.toLowerCase();
-  if (lower.includes('signature') || lower.includes('specijalitet') || lower.includes('house') || lower.includes('kebab')) return Flame; 
-  if (lower.includes('breakfast') || lower.includes('doručak') || lower.includes('porridges') || lower.includes('grains')) return Coffee;
-  if (lower.includes('dessert') || lower.includes('dezert') || lower.includes('slatko') || lower.includes('kolač') || lower.includes('baklava')) return Cake;
-  if (lower.includes('sea') || lower.includes('fish') || lower.includes('riba') || lower.includes('plodovi') || lower.includes('caviar')) return Fish;
-  if (lower.includes('pizza') || lower.includes('pica') || lower.includes('pide') || lower.includes('pies') || lower.includes('pastries') || lower.includes('blini')) return Pizza;
-  if (lower.includes('salad') || lower.includes('salata') || lower.includes('prilog') || lower.includes('side') || lower.includes('meze') || lower.includes('zakuski') || lower.includes('potato')) return Leaf;
-  if (lower.includes('soup') || lower.includes('supa') || lower.includes('čorba') || lower.includes('potaž')) return Droplets;
-  if (lower.includes('drink') || lower.includes('wine') || lower.includes('piće') || lower.includes('vino')) return Wine;
+  if (lower.includes('signature') || lower.includes('specialty') || lower.includes('house') || lower.includes('kebab')) return Flame; 
+  if (lower.includes('breakfast') || lower.includes('morning') || lower.includes('porridges') || lower.includes('grains')) return Coffee;
+  if (lower.includes('dessert') || lower.includes('sweet') || lower.includes('pastry') || lower.includes('cake') || lower.includes('bakery')) return Cake;
+  if (lower.includes('sea') || lower.includes('fish') || lower.includes('catch') || lower.includes('caviar')) return Fish;
+  if (lower.includes('pizza') || lower.includes('pide') || lower.includes('pies') || lower.includes('blini')) return Pizza;
+  if (lower.includes('salad') || lower.includes('green') || lower.includes('side') || lower.includes('meze') || lower.includes('zakuski') || lower.includes('potato')) return Leaf;
+  if (lower.includes('soup') || lower.includes('stew') || lower.includes('broth')) return Droplets;
+  if (lower.includes('drink') || lower.includes('wine') || lower.includes('beverage') || lower.includes('cocktail')) return Wine;
   if (lower.includes('döner') || lower.includes('street') || lower.includes('dumplings') || lower.includes('tacos') || lower.includes('burgers')) return Utensils;
   return ChefHat; 
 };
@@ -45,10 +45,10 @@ export default function PublicMenuTestQRMenu() {
       try {
         if (activeId === "TEST-QR-PREVIEW") {
           setMenuData({ 
-            restaurantName: "AURA Fine Dining", themeColor: "#ea580c", currency: "€", 
+            restaurantName: "AURA Fine Dining", themeColor: "#ea580c", currency: "$", 
             items: [ 
-              { category: "Doručak", name: "Kraljevska Jaja Benedikt", price: "24.00", desc: "Savršeno poširana jaja na prepečenom brioš hlebu.", img: "", isSignature: false },
-              { category: "Glavna Jela", name: "Wagyu Tomahawk Odrezak", price: "150.00", desc: "Ekskluzivni A5 Wagyu odrezak pečen na otvorenoj vatri.", img: "", isSignature: true }
+              { category: "Breakfast", name: "Royal Eggs Benedict", price: "24.00", desc: "Perfectly poached farm eggs on toasted brioche bread with hollandaise.", img: "", isSignature: false },
+              { category: "Main Courses", name: "Wagyu Tomahawk Steak", price: "150.00", desc: "Exclusive A5 Wagyu steak roasted over an open fire. Carved tableside.", img: "", isSignature: true }
             ] 
           }); return;
         }
@@ -73,8 +73,8 @@ export default function PublicMenuTestQRMenu() {
     return (
       <div className="min-h-[100dvh] bg-[#050505] flex flex-col items-center justify-center p-6 text-center relative z-50">
         <AlertTriangle size={64} className="text-red-500 mb-6 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]" />
-        <h1 className="text-white font-black text-2xl uppercase tracking-widest mb-2">Meni Nije Pronađen</h1>
-        <p className="text-zinc-500 text-sm mb-8">QR kod koji ste skenirali je nevažeći ili meni više nije aktivan.</p>
+        <h1 className="text-white font-black text-2xl uppercase tracking-widest mb-2">Menu Not Found</h1>
+        <p className="text-zinc-500 text-sm mb-8">The scanned QR code is invalid or the menu is no longer active.</p>
       </div>
     );
   }
@@ -93,7 +93,7 @@ export default function PublicMenuTestQRMenu() {
 
   const categories = Object.keys(groupedItems);
   const themeColor = menuData.themeColor || '#ea580c';
-  const currency = menuData.currency || '€';
+  const currency = menuData.currency || '$';
   const FALLBACK_IMAGE_URL = "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=600&q=80";
 
   return (
@@ -109,7 +109,7 @@ export default function PublicMenuTestQRMenu() {
         <div className="relative z-10 flex flex-col items-center">
           <Utensils size={36} style={{ color: themeColor }} className="mb-4 drop-shadow-lg" />
           <h1 className="text-3xl md:text-5xl font-black uppercase tracking-[0.15em] text-white mb-2" style={{ textShadow: `0 0 25px ${themeColor}50` }}>{menuData.restaurantName}</h1>
-          <p className="text-zinc-400 text-[10px] md:text-xs font-bold uppercase tracking-[0.25em]">Zvanični Digitalni Meni</p>
+          <p className="text-zinc-400 text-[10px] md:text-xs font-bold uppercase tracking-[0.25em]">Official Digital Menu</p>
         </div>
       </div>
 
@@ -191,7 +191,7 @@ export default function PublicMenuTestQRMenu() {
       {/* FOOTER */}
       <div className="mt-12 w-full flex flex-col items-center justify-center opacity-40">
         <Crown size={18} className="text-zinc-500 mb-3" />
-        <span className="text-[10px] font-black tracking-[0.25em] text-zinc-500 uppercase">Pokreće Smart Engine</span>
+        <span className="text-[10px] font-black tracking-[0.25em] text-zinc-500 uppercase">Powered by Smart Engine</span>
       </div>
     </div>
   );
