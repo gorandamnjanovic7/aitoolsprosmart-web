@@ -16,6 +16,7 @@ import { GREEK_MASSIVE_MENU } from '../DemoData/greekMassiveData.js';
 import { FRENCH_MASSIVE_MENU } from '../DemoData/frenchMassiveData.js';
 import { TURKISH_MASSIVE_MENU } from '../DemoData/turkishMassiveData.js';
 import { RUSSIAN_MASSIVE_MENU } from '../DemoData/russianMassiveData.js';
+import { SPANISH_MASSIVE_MENU } from '../DemoData/spanishMassiveData.js';
 
 const themeStyles = {
   'V8 Orange': { hex: '#ea580c', text: 'text-orange-500', bg: 'bg-orange-500', border: 'border-orange-500/50', ring: 'focus:border-orange-500/50 focus:ring-orange-500/50', btnText: 'text-black' },
@@ -155,7 +156,6 @@ export default function PremiumMenu() {
     setDemoGeneratedIds(prev => { const next = { ...prev }; delete next[demoKey]; return next; });
   };
 
-  // OVO GARANTUJE OČITAVANJE: Generiše uvek visokokontrastni crno-beli QR kod da ga svaka kamera uhvati
   const getChartUrl = (id) => {
     return `https://quickchart.io/qr?text=${encodeURIComponent(`https://aitoolsprosmart.com/m/${id}`)}&margin=2&size=200&dark=000000&light=ffffff`;
   };
@@ -173,20 +173,21 @@ export default function PremiumMenu() {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(blobUrl);
     } catch (error) {
-      console.error("Greška pri preuzimanju:", error);
+      console.error("Download error:", error);
       window.open(url, '_blank');
     }
   };
 
+  // DODATA ŠPANSKA KUHINJA U STATIC CARDS
   const STATIC_CARDS = [
     { key: 'aura', title: restaurantName || 'AURA Fine Dining', sub: 'PRE-FILLED DEMO', icon: Crown, theme: currentTheme, isDynamic: true },
     { key: 'italian', title: 'Bella Napoli', sub: 'ITALIAN SHOWCASE (330+)', icon: Pizza, theme: themeStyles['V8 Gold'], data: ITALIAN_MASSIVE_MENU },
+    { key: 'spanish', title: 'Casa Real', sub: 'SPANISH TAPAS (250+)', icon: Flame, theme: themeStyles['V8 Red'], data: SPANISH_MASSIVE_MENU },
     { key: 'greek', title: 'Η Χρυσή Ελιά', sub: 'GREEK TAVERNA (300+)', icon: Anchor, theme: themeStyles['V8 Blue'], data: GREEK_MASSIVE_MENU },
-    { key: 'russian', title: 'Romanov Dining', sub: 'RUSSIAN HERITAGE (140+)', icon: ChefHat, theme: themeStyles['V8 Red'], data: RUSSIAN_MASSIVE_MENU },
+    { key: 'french', title: 'La Maison', sub: 'FRENCH CUISINE (360+)', icon: Wine, theme: themeStyles['V8 Purple'], data: FRENCH_MASSIVE_MENU },
     { key: 'global', title: 'Supreme Fast Food', sub: 'GLOBAL STREET FOOD (360+)', icon: Globe, theme: themeStyles['V8 Red'], data: GLOBAL_STREET_MENU },
     { key: 'turkish', title: 'Topkapı Sarayı', sub: 'TURKISH SOFRA (240+)', icon: Moon, theme: themeStyles['V8 Red'], data: TURKISH_MASSIVE_MENU },
-    { key: 'mexican', title: 'La Cantina', sub: 'MEXICAN KITCHEN (230+)', icon: Flame, theme: themeStyles['V8 Green'], data: MEXICAN_MASSIVE_MENU },
-    { key: 'french', title: 'La Maison', sub: 'FRENCH CUISINE (360+)', icon: Wine, theme: themeStyles['V8 Purple'], data: FRENCH_MASSIVE_MENU }
+    { key: 'russian', title: 'Romanov Dining', sub: 'RUSSIAN HERITAGE (140+)', icon: ChefHat, theme: themeStyles['V8 Red'], data: RUSSIAN_MASSIVE_MENU }
   ];
 
   return (
