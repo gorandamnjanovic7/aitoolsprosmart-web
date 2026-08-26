@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion'; 
 import { ShieldCheck, Mail, BellRing, Key, X, Lock, Earth, CheckCircle, Bitcoin, Wallet, Zap, CreditCard, Link, Download, Radar, Loader2 } from 'lucide-react';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js"; 
-import { Turnstile } from '@marsidev/react-turnstile'; // 🔥 Anti-Bot štit
 
 const countryList = [
   "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia", "Cameroon", "Canada", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo", "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "North Macedonia", "Norway", "Oman", "Pakistan", "Palau", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"
@@ -33,8 +32,6 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
   
   const [downloadUrl, setDownloadUrl] = useState(null);
   const [cryptoOrderId, setCryptoOrderId] = useState(null);
-  
-  const [captchaToken, setCaptchaToken] = useState(null); 
 
   const initialOptions = {
     "client-id": import.meta.env.VITE_PAYPAL_CLIENT_ID,
@@ -92,7 +89,6 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
       setShowPayPalModal(false);
       setDownloadUrl(null);
       setCryptoOrderId(null);
-      setCaptchaToken(null); 
     }
   }, [isOpen]);
 
@@ -132,11 +128,6 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
 
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
-    
-    if (!captchaToken) {
-      alert("Security Check: Anti-bot verification failed.");
-      return;
-    }
 
     if (!user || !firstName || !lastName || !country || !email) {
       alert("Please link your Google Account and fill in all fields.");
@@ -358,31 +349,15 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
                       </div>
                     </div>
 
-                    {/* 🔥 POČETAK: CLOUDFLARE TURNSTILE OKLOP OKO DUGMETA 🔥 */}
                     <div className="pt-6 shrink-0 relative z-50 flex flex-col items-center gap-4">
-                      
-                      <div className="w-full flex justify-center">
-                        <Turnstile
-                          siteKey="0x4AAAAAAEAzM1v_xGbxGO60" // 🔥 Ubačen tvoj pravi ključ
-                          onSuccess={(token) => setCaptchaToken(token)}
-                          onError={() => setCaptchaToken(null)}
-                          onExpire={() => setCaptchaToken(null)}
-                          options={{ theme: 'dark' }} 
-                        />
-                      </div>
-
                       <button 
                         type={paymentMethod === 'card' ? 'button' : 'submit'} 
                         onClick={() => {
-                            if (!captchaToken) {
-                                alert("Security Check: Please allow the anti-bot verification to complete.");
-                                return;
-                            }
                             if (paymentMethod === 'card' && firstName && lastName && country) {
                                 setShowPayPalModal(true);
                             }
                         }}
-                        disabled={loading || !country || !user || !captchaToken || (paymentMethod === 'card' && (!firstName || !lastName))} 
+                        disabled={loading || !country || !user || (paymentMethod === 'card' && (!firstName || !lastName))} 
                         className={`w-full text-white font-black py-4 sm:py-4.5 rounded-xl text-[11px] sm:text-sm tracking-widest uppercase transition-all duration-300 disabled:opacity-50 shadow-[0_0_20px_rgba(0,0,0,0.3)] outline-none ${
                           paymentMethod === 'crypto' ? 'bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 shadow-[0_0_30px_rgba(249,115,22,0.5)]'
                           : paymentMethod === 'payoneer' ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.5)]'
@@ -392,7 +367,6 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
                         {loading ? 'Processing...' : paymentMethod === 'card' ? 'PROCEED TO SECURE PAYMENT' : paymentMethod === 'crypto' ? 'PROCEED TO CRYPTO' : 'REQUEST SECURE LINK'}
                       </button>
                     </div>
-                    {/* 🔥 KRAJ: CLOUDFLARE TURNSTILE OKLOP OKO DUGMETA 🔥 */}
 
                   </form>
                 )}

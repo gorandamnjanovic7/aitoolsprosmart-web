@@ -1,13 +1,13 @@
 // POČETAK FAJLA: V8MasterBundles.jsx
 import React from 'react';
-import { Zap, DownloadCloud, Edit, Trash2, ShieldCheck, Diamond, Crown } from 'lucide-react';
+import { Zap, DownloadCloud, Edit, Trash2, ShieldCheck, Crown } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const V8MasterBundles = ({ paketi, isAdmin, getGlobalCena, getAspectClass, prijavaIKupovina, startEditPaket, obrisiPaket, setFullScreenImageUrl, kupljeniPaketiIds }) => {
   if (!paketi || paketi.length === 0) {
     return (
       <div className="w-full text-center py-20 text-zinc-500 font-black uppercase tracking-widest">
-        Awaiting Master Bundles. Radar is clear.
+        Awaiting 45MP Bundles. Radar is clear.
       </div>
     );
   }
@@ -16,12 +16,16 @@ const V8MasterBundles = ({ paketi, isAdmin, getGlobalCena, getAspectClass, prija
     <>
       {paketi.map((paket) => {
         const isOwned = kupljeniPaketiIds?.includes(paket.id) || paket.isFree || parseFloat(paket.cena) === 0;
+        
+        // Provera da li paket već ima tehnički tekst da ga ne bismo duplirali
+        const currentOpis = paket.opisEn || "";
+        const hasTechText = currentOpis.toUpperCase().includes("LANCZOS");
 
         return (
           <div key={paket.id} className="relative w-full lg:w-[calc(50%-1.5rem)] p-[2px] rounded-[2.5rem] overflow-hidden group/wrap transition-all duration-300 hover:shadow-[0_0_40px_rgba(59,130,246,0.3)]">
             
             {/* 🔥 GEMINI AI ROTIRAJUĆI EFEKAT 🔥 */}
-            <div className="absolute top-1/2 left-1/2 w-[200%] h-[200%] -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,transparent_0%,transparent_50%,#4285F4_70%,#EA4335_80%,#FBBC05_90%,#34A853_100%)] animate-ai-spin z-0 pointer-events-none"></div>
+            <div className="absolute top-1/2 left-1/2 w-[200%] h-[200%] -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,transparent_0%,transparent_50%,#3B82F6_70%,#8B5CF6_80%,#3B82F6_90%,#1D4ED8_100%)] animate-ai-spin z-0 pointer-events-none"></div>
 
             {/* UNUTRAŠNJA KARTICA */}
             <div className="relative z-10 bg-[#0a0a0a] rounded-[calc(2.5rem-2px)] border border-blue-500/20 overflow-hidden shadow-[0_0_30px_rgba(59,130,246,0.05)] h-full flex flex-col">
@@ -59,6 +63,7 @@ const V8MasterBundles = ({ paketi, isAdmin, getGlobalCena, getAspectClass, prija
                        <Zap className="text-white w-12 h-12 drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]" />
                     </div>
 
+                    {/* 🔥 PLAVA TAJMING MUNJA ZA 45MP BUNDLES 🔥 */}
                     <motion.div 
                       className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
                       animate={{ 
@@ -74,18 +79,19 @@ const V8MasterBundles = ({ paketi, isAdmin, getGlobalCena, getAspectClass, prija
                     >
                        <Zap className="text-blue-400 w-16 h-16 drop-shadow-[0_0_40px_rgba(59,130,246,1)]" fill="rgba(59,130,246,0.3)" strokeWidth={1.5} />
                     </motion.div>
-
                  </div>
 
-                 {/* MALE SLIKE (THUMBNAILS) SA ASINHRONIM PULSIRANJEM I KONTAKTNOM SENKOM */}
+                 {/* 🔥 MALI THUMBNAILOVI (10 KOMADA) BEZ CRVENOG X 🔥 */}
                  {paket.primeri && paket.primeri.length > 0 && (
-                    <div className="grid grid-cols-4 gap-3 mt-3">
-                       {paket.primeri.slice(0, 4).map((thumb, idx) => (
+                    <div className="grid grid-cols-5 gap-2 mt-3">
+                       {paket.primeri.slice(0, 10).map((thumb, idx) => (
                           <div key={idx} className="aspect-square rounded-xl overflow-hidden cursor-pointer relative group border border-white/5 v8-glass-container" onClick={() => setFullScreenImageUrl(thumb)}>
+                             <span className="absolute bottom-0 right-0 bg-black/80 text-white text-[8px] font-black px-1.5 py-0.5 z-10 pointer-events-none">PREVIEW</span>
+                             
                              <motion.img 
                                src={thumb} 
                                alt={`Preview ${idx}`} 
-                               className="w-full h-full transform-gpu v8-glass-image" 
+                               className="w-full h-full transform-gpu v8-glass-image pointer-events-none" 
                                animate={{ scale: [1, 1.15, 1] }}
                                transition={{ duration: 5 + idx, repeat: Infinity, ease: "easeInOut" }}
                              />
@@ -114,8 +120,14 @@ const V8MasterBundles = ({ paketi, isAdmin, getGlobalCena, getAspectClass, prija
                     <span className="text-[9px] md:text-[10px] text-emerald-400 font-black uppercase tracking-widest">INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP</span>
                  </div>
 
+                 {/* 🔥 AUTO-UBACIVANJE TEKSTA 🔥 */}
                  <p className="text-[10px] md:text-[11px] text-zinc-400 font-bold uppercase tracking-widest mb-8 leading-relaxed">
-                   {paket.opisEn}
+                   {currentOpis}
+                   {!hasTechText && (
+                     <span className="block mt-4 text-zinc-400">
+                       UTILIZING PRECISION LANCZOS INTERPOLATION. AN ADVANCED MEDIANFILTER SYSTEMATICALLY WIPES OUT DIGITAL NOISE AND COMPRESSION ARTIFACTS. CUSTOM NUMPY MATRIX PROCESSING APPLIES A SMOOTH ROLLOFF TO PREVENT BLOWN-OUT WHITES AND RETAIN INTRICATE HIGHLIGHT TEXTURES. STRICT CONVERSION TO THE SRGB ICC PROFILE ENSURES COLOR ACCURACY ACROSS ALL DIGITAL DEVICES AND PROFESSIONAL REFERENCE MONITORS. SIGNATURE GAUSSIAN NOISE DISTRIBUTION BREAKS ARTIFICIAL AI SMOOTHNESS, CREATING AN AUTHENTIC, TANGIBLE PHOTOGRAPHIC LOOK. ZERO TEXT, WATERMARKS, OR LOGOS. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. FULLY PRODUCTION-READY.
+                     </span>
+                   )}
                  </p>
 
                  <div className="flex items-end justify-between mt-auto pt-6 border-t border-white/5">
@@ -140,7 +152,7 @@ const V8MasterBundles = ({ paketi, isAdmin, getGlobalCena, getAspectClass, prija
                           : 'bg-gradient-to-r from-blue-600 to-indigo-500 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)]'
                       }`}
                     >
-                       {(isAdmin || isOwned) ? <><DownloadCloud size={16} /> DOWNLOAD</> : <><Diamond size={16} /> GET ACCESS</>}
+                       {(isAdmin || isOwned) ? <><DownloadCloud size={16} /> DOWNLOAD</> : <><Crown size={16} /> GET ACCESS</>}
                     </button>
                  </div>
 

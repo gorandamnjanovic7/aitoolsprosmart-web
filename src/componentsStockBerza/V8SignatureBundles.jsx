@@ -77,10 +77,10 @@ const V8SignatureBundles = ({ paketi, isAdmin, getGlobalCena, getAspectClass, pr
 
                  </div>
 
-                 {/* MALE SLIKE (THUMBNAILS) SA ASINHRONIM PULSIRANJEM I KONTAKTNOM SENKOM */}
+                 {/* 🔥 OVDE JE PROMENJENO ZA 10 SLIKA (5 KOLONA) 🔥 */}
                  {paket.primeri && paket.primeri.length > 0 && (
-                    <div className="grid grid-cols-4 gap-3 mt-3">
-                       {paket.primeri.slice(0, 4).map((thumb, idx) => (
+                    <div className="grid grid-cols-5 gap-2 mt-3">
+                       {paket.primeri.slice(0, 10).map((thumb, idx) => (
                           <div key={idx} className="aspect-square rounded-xl overflow-hidden cursor-pointer relative group border border-white/5 v8-glass-container" onClick={() => setFullScreenImageUrl(thumb)}>
                              <motion.img 
                                src={thumb} 

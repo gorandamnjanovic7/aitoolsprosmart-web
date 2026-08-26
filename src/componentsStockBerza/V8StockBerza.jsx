@@ -21,6 +21,45 @@ import LoginRequiredModal from '../LoginRequiredModal';
 
 import { trackV8Action } from '../utils/analytics';
 
+// 🔥 V8 ZAŠTITNI ŠTIT (ERROR BOUNDARY) 🔥
+class V8ErrorGuard extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("🚨 [V8 ŠTIT UHVATIO GREŠKU EKSTENZIJE]:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center p-6 text-center z-[999999] relative">
+          <AlertCircle size={64} className="text-[#FF8C00] mb-6 drop-shadow-[0_0_15px_rgba(255,140,0,0.8)]" />
+          <h1 className="text-3xl font-black text-white uppercase tracking-widest mb-4">Sistemska Blokada</h1>
+          <p className="text-zinc-400 max-w-md mx-auto mb-8 font-bold leading-relaxed">
+            Vaš pretraživač ili aktivna ekstenzija (AdBlocker, Video Downloader) agresivno blokira učitavanje V8 modula. 
+            <br/><br/>
+            Molimo vas da <span className="text-[#FF8C00]">pauzirate ekstenzije za ovaj sajt</span> kako biste pristupili bazi.
+          </p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="flex items-center justify-center gap-2 bg-[#FF8C00] hover:bg-orange-500 text-black px-8 py-4 rounded-xl font-black uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(255,140,0,0.4)] hover:scale-105 mx-auto"
+          >
+            <RefreshCcw size={18} strokeWidth={3} /> Osveži Sistem
+          </button>
+        </div>
+      );
+    }
+    return this.props.children; 
+  }
+}
+
 // POČETAK FUNKCIJE: FullScreenLightbox
 const FullScreenLightbox = ({ imageUrl, onClose }) => {
   useEffect(() => {
@@ -44,8 +83,8 @@ const FullScreenLightbox = ({ imageUrl, onClose }) => {
 };
 // KRAJ FUNKCIJE: FullScreenLightbox
 
-// POČETAK FUNKCIJE: V8StockBerza
-const V8StockBerza = () => {
+// POČETAK FUNKCIJE: V8StockBerzaBase
+const V8StockBerzaBase = () => {
   const navigate = useNavigate();
   const [paketi, setPaketi] = useState([]);
   
@@ -74,7 +113,7 @@ const V8StockBerza = () => {
     localStorage.setItem('v8_active_stock_tab', activeTab);
   }, [activeTab]);
 
-  const [otvoreniOpisi, setOtvoreniOpisi] = useState([]);
+  const [otvoreniOpisi, setOtvoreniOpisi] = useState([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]);
   const [kupljeniPaketiIds, setKupljeniPaketiIds] = useState([]);
   const [paidPayoneer, setPaidPayoneer] = useState([]);
   const [paidCrypto, setPaidCrypto] = useState([]);
@@ -95,9 +134,6 @@ const V8StockBerza = () => {
   const galleryImagesRef = useRef(null);
 
   useEffect(() => {
-    // 🔍 RADAR 1: Koji projekat gađamo?
-    console.log("🔥 RADAR 1 - FIREBASE PROJEKAT:", db?.app?.options?.projectId);
-
     const unsubAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
           setCurrentUser(user);
@@ -112,15 +148,11 @@ const V8StockBerza = () => {
     const q = query(collection(db, "v8_stock_paketi"));
     
     const unsubPaketi = onSnapshot(q, (snap) => {
-        // 🔍 RADAR 2: Da li je stiglo išta iz baze?
-        console.log("🔥 RADAR 2 - DOKUMENATA U BAZI:", snap.docs.length);
-
         let ucitani = snap.docs.map(d => {
             let p = d.data();
             let fmt = String(p.format || "").toUpperCase();
             let title = String(p.nazivEn || "").toUpperCase();
             
-            // NASILNO POSTAVLJANJE PRAVOG FORMATA KAKO BI IH POD-KOMPONENTE PRIHVATILE
             if (fmt.includes('150') || title.includes('150') || fmt.includes('ULTRA')) { 
                 p.format = '150MP ULTRA PRINT BUNDLE'; 
             } 
@@ -230,6 +262,31 @@ const V8StockBerza = () => {
     }
   }, [activeTab, editingPaketId]);
 
+  // 🔥 PAMETNI AUTO-FILL ZA 33MP, 45MP, 60MP I 150MP OPIS 🔥
+  useEffect(() => {
+    if (editingPaketId) return; 
+    
+    const tekst33MP = "33.2MP Upscale - Industrial-grade precision for 8K. Supported formats: 16:9 (10 Images) aspect ratio, 9:16 aspect ratio (10 Images). Utilizing precision LANCZOS interpolation. An advanced MedianFilter systematically wipes out digital noise and compression artifacts. Custom NumPy matrix processing applies a smooth rolloff to prevent blown-out whites and retain intricate highlight textures. Strict conversion to the sRGB ICC profile ensures color accuracy across all digital devices and professional reference monitors. Signature Gaussian Noise distribution breaks artificial AI smoothness, creating an authentic, tangible photographic look. Zero text, watermarks, or logos. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Fully production-ready.";
+    
+    const tekst45MP = "10 MASTERWORK BUNDLE: COMPLETE COLLECTION OF 60 PREMIUM VISUALS FOR 8K IN 45 MEGAPIXELS RESOLUTION. INCLUDES 60 IMAGES 16:9 ( 30 Images ) AND 9:16 ( 30 Images ) ASPECT RATIOS. Utilizing precision LANCZOS interpolation. An advanced MedianFilter systematically wipes out digital noise and compression artifacts. Custom NumPy matrix processing applies a smooth rolloff to prevent blown-out whites and retain intricate highlight textures. Strict conversion to the sRGB ICC profile ensures color accuracy across all digital devices and professional reference monitors. Signature Gaussian Noise distribution breaks artificial AI smoothness, creating an authentic, tangible photographic look, Subtle organic micro-grain to break artificial smoothness after heavy upscale, Extra protection around high-contrast bright edges to reduce ugly glow/outline artifacts. Zero text, watermarks, or logos. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Fully production-ready.";
+
+    const tekst60MP = "V10 MASTERWORK BUNDLE 60MP: COMPLETE COLLECTION OF 20 PREMIUM VISUALS FOR 8K IN 65 MEGAPIXELS RESOLUTION. INCLUDES 16:9 ( 10 Images ), 9:16 ( 10 Images ) AND 21:9 (10 Images) ASPECT RATIOS. Utilizing precision LANCZOS interpolation,  Subtle organic micro-grain to break artificial smoothness after heavy upscale, Fine dithering in dark gradients, smoke, mist, and sky areas to reduce banding. An advanced MedianFilter systematically wipes out digital noise and compression artifacts. Custom NumPy matrix processing applies a smooth rolloff to prevent blown-out whites and retain intricate highlight textures. Strict conversion to the sRGB ICC profile ensures color accuracy across all digital devices and professional reference monitors. Signature Gaussian Noise distribution breaks artificial AI smoothness, creating an authentic, tangible photographic look. Zero text, watermarks, or logos. INC, IP SAFE";
+
+    const tekst150MP = "V10 ULTRA PRINT BUNDLE: MASSIVE 150MP RESOLUTION FOR ELITE PRINT & COMMERCIAL WORK. INCLUDES A CURATED 15-FILE COLLECTION: 16:9 ( 5 Images ), 9:16 ( 5 Images ), AND 21:9 ( 5 Images ) ASPECT RATIOS. Processed through the V10 Master Engine utilizing precision LANCZOS interpolation. Includes advanced UnsharpMask micro-contrast, custom NumPy matrix processing for highlight rolloff and shadow depth, and organic anti-plastic grain. Strict sRGB ICC profile embedding. Perfect for high-visibility billboards, museum-grade fine-art printing, and extreme macro cropping. Zero text, watermarks, or logos. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Fully production-ready.";
+
+    if (noviFormat === '33.2MP MASTERWORK SINGLE') {
+      setNoviOpisEn(tekst33MP);
+    } else if (noviFormat === '45MP MASTERWORK BUNDLE') {
+      setNoviOpisEn(tekst45MP);
+    } else if (noviFormat === '60MP SIGNATURE BUNDLE') {
+      setNoviOpisEn(tekst60MP);
+    } else if (noviFormat === '150MP ULTRA PRINT BUNDLE') {
+      setNoviOpisEn(tekst150MP);
+    } else if (noviOpisEn === tekst33MP || noviOpisEn === tekst45MP || noviOpisEn === tekst60MP || noviOpisEn === tekst150MP) {
+      setNoviOpisEn('');
+    }
+  }, [noviFormat, editingPaketId, noviOpisEn]);
+
   const otvoriCheckoutIliPaddle = async (user, paket) => {
     if (!user || !paket) return;
     const fullName = paket.volume ? `${paket.nazivEn} - ${paket.volume}` : paket.nazivEn;
@@ -290,9 +347,12 @@ const V8StockBerza = () => {
   const handleUploadPrimeri = async (e) => {
     const files = Array.from(e.target.files); 
     if (files.length === 0) return;
+    
     let maxThumbnails = 4;
-    if (activeTab === 'bundles') maxThumbnails = 10;
-    else if (activeTab === 'signature' || activeTab === 'ultra150') maxThumbnails = 8;
+    if (activeTab === 'bundles' || activeTab === 'signature' || activeTab === 'ultra150') {
+      maxThumbnails = 10;
+    }
+    
     const slobodnaMesta = maxThumbnails - primeriUrls.length;
     if (slobodnaMesta <= 0) return;
     setIsUploadingPrimer(true);
@@ -348,21 +408,10 @@ const V8StockBerza = () => {
   const getGlobalCena = (cena) => { const numCena = parseFloat(cena); return isNaN(numCena) ? "0.00" : numCena.toFixed(2); };
   const getAspectClass = (format) => { return (!format || format.includes('16:9 ONLY')) ? 'aspect-video' : 'aspect-square'; };
 
-  const premiumPaketi = paketi.filter(p => p.format === '33.2MP MASTERWORK SINGLE');
-  const bundlePaketi = paketi.filter(p => p.format === '45MP MASTERWORK BUNDLE');
-  const signaturePaketi = paketi.filter(p => p.format === '60MP SIGNATURE BUNDLE');
-  const ultra150Paketi = paketi.filter(p => p.format === '150MP ULTRA PRINT BUNDLE');
-
-  // 🔍 RADAR 3: Gde su otišli paketi?
-  useEffect(() => {
-    if (paketi.length > 0) {
-      console.log("🔥 RADAR 3 - RASPORED PAKETA:");
-      console.log("- U 33MP tab ide:", premiumPaketi.length);
-      console.log("- U 45MP tab ide:", bundlePaketi.length);
-      console.log("- U 60MP tab ide:", signaturePaketi.length);
-      console.log("- U 150MP tab ide:", ultra150Paketi.length);
-    }
-  }, [paketi]);
+  const premiumPaketi = paketi.filter(p => String(p.format || '').includes('33'));
+  const signaturePaketi = paketi.filter(p => String(p.format || '').includes('60'));
+  const ultra150Paketi = paketi.filter(p => { const fmt = String(p.format || '').toUpperCase(); return fmt.includes('150') && !fmt.includes('MYSTIC') && !fmt.includes('ANCIENT'); });
+  const bundlePaketi = paketi.filter(p => { const fmt = String(p.format || '').toUpperCase(); if (fmt.includes('45')) return true; if (!fmt.includes('33') && !fmt.includes('60') && !fmt.includes('150')) return true; return false; });
 
   const renderV8Manifest = (rezolucija) => {
     const specifikacije = [
@@ -480,10 +529,11 @@ const V8StockBerza = () => {
         <meta name="description" content="Browse the elite AI stock marketplace." />
       </Helmet>
 
-      {activeTab === 'premium' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/33mp_premium_9_16.mp4" />)}
-      {activeTab === 'ultra150' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/v10bg.mp4" />)}
-      {activeTab === 'signature' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/60mp_signarure.mp4" />)}
-      {activeTab === 'bundles' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/45mp_bundles_9_16.mp4" />)}
+      {/* 🔥 DODATA ZAŠTITA OD VIDEO-DOWNLOADER EKSTENZIJA NA SVIH 8 POZADINA 🔥 */}
+      {activeTab === 'premium' && (<video autoPlay loop muted playsInline disablePictureInPicture controlsList="nodownload" onContextMenu={(e) => e.preventDefault()} className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40 pointer-events-none" src="/33mp_premium_9_16.mp4" />)}
+      {activeTab === 'ultra150' && (<video autoPlay loop muted playsInline disablePictureInPicture controlsList="nodownload" onContextMenu={(e) => e.preventDefault()} className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40 pointer-events-none" src="/v10bg.mp4" />)}
+      {activeTab === 'signature' && (<video autoPlay loop muted playsInline disablePictureInPicture controlsList="nodownload" onContextMenu={(e) => e.preventDefault()} className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40 pointer-events-none" src="/60mp_signarure.mp4" />)}
+      {activeTab === 'bundles' && (<video autoPlay loop muted playsInline disablePictureInPicture controlsList="nodownload" onContextMenu={(e) => e.preventDefault()} className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40 pointer-events-none" src="/45mp_bundles_9_16.mp4" />)}
 
       <div className="fixed inset-0 bg-[#050505]/60 z-0 pointer-events-none"></div>
 
@@ -505,10 +555,10 @@ const V8StockBerza = () => {
           )}
 
           <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.2 }} className="relative w-full mb-16 rounded-[3rem] overflow-hidden border border-white/10 shadow-[0_0_60px_rgba(255,140,0,0.15)]">
-              {activeTab === 'premium' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000" src="/33mp_premium_16_9.mp4" />)}
-              {activeTab === 'ultra150' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000" src="/v10-box-bg.mp4" />)}
-              {activeTab === 'signature' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000" src="/60mp_signarure_16_9.mp4" />)}
-              {activeTab === 'bundles' && (<video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000" src="/45mp_bundles_16_9.mp4" />)}
+              {activeTab === 'premium' && (<video autoPlay loop muted playsInline disablePictureInPicture controlsList="nodownload" onContextMenu={(e) => e.preventDefault()} className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000 pointer-events-none" src="/33mp_premium_16_9.mp4" />)}
+              {activeTab === 'ultra150' && (<video autoPlay loop muted playsInline disablePictureInPicture controlsList="nodownload" onContextMenu={(e) => e.preventDefault()} className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000 pointer-events-none" src="/v10-box-bg.mp4" />)}
+              {activeTab === 'signature' && (<video autoPlay loop muted playsInline disablePictureInPicture controlsList="nodownload" onContextMenu={(e) => e.preventDefault()} className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000 pointer-events-none" src="/60mp_signarure_16_9.mp4" />)}
+              {activeTab === 'bundles' && (<video autoPlay loop muted playsInline disablePictureInPicture controlsList="nodownload" onContextMenu={(e) => e.preventDefault()} className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000 pointer-events-none" src="/45mp_bundles_16_9.mp4" />)}
 
               <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050505]/40 via-[#050505]/80 to-[#050505]"></div>
               
@@ -602,15 +652,17 @@ const V8StockBerza = () => {
                         {previewUrl && (
                           <div className="relative w-20 h-20 rounded-lg overflow-hidden border-2 border-[#FF8C00] shadow-[0_0_15px_rgba(255,140,0,0.4)] group">
                             <span className="absolute top-0 left-0 bg-[#FF8C00] text-black text-[9px] font-black px-2 py-0.5 z-10">MAIN</span>
-                            <button type="button" onClick={removeMainImage} className="absolute top-1 right-1 bg-red-600/90 hover:bg-red-500 text-white rounded-full p-1 z-20 transition-all opacity-0 group-hover:opacity-100 shadow-md drop-shadow-md"><X size={12} strokeWidth={4} /></button>
+                            <button type="button" onClick={removeMainImage} className="absolute top-1 right-1 bg-red-600/90 hover:bg-red-500 text-white rounded-full p-1 z-20 transition-all opacity-80 hover:opacity-100 shadow-md drop-shadow-md"><X size={12} strokeWidth={4} /></button>
                             <img src={previewUrl} alt="Main" className="w-full h-full object-cover" />
                           </div>
                         )}
                         {primeriUrls.map((url, idx) => (
                           <div key={idx} className="w-20 h-20 rounded-lg overflow-hidden border border-white/20 relative group">
-                            <span className="absolute bottom-0 right-0 bg-black/80 text-white text-[8px] font-black px-1.5 py-0.5 z-10">PREVIEW</span>
-                            <button type="button" onClick={() => removeThumbnail(idx)} className="absolute top-1 right-1 bg-red-600/90 hover:bg-red-500 text-white rounded-full p-1 z-20 transition-all opacity-0 group-hover:opacity-100 shadow-md drop-shadow-md"><X size={12} strokeWidth={4} /></button>
-                            <img src={url} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
+                            <span className="absolute bottom-0 right-0 bg-black/80 text-white text-[8px] font-black px-1.5 py-0.5 z-10 pointer-events-none">PREVIEW</span>
+                            <button type="button" onClick={() => removeThumbnail(idx)} className="absolute top-1 right-1 bg-red-600/90 hover:bg-red-500 text-white rounded-full p-1 z-20 transition-all opacity-80 hover:opacity-100 shadow-md drop-shadow-md">
+                                <X size={12} strokeWidth={4} />
+                            </button>
+                            <img src={url} alt={`Preview ${idx}`} className="w-full h-full object-cover pointer-events-none" />
                           </div>
                         ))}
                       </div>
@@ -623,7 +675,9 @@ const V8StockBerza = () => {
                       </div>
                       <div className="flex flex-col gap-2">
                           <label className="flex items-center gap-2 text-zinc-400 font-black text-[10px] tracking-widest uppercase"><Images size={12} /> GALLERY IMAGES</label>
-                          <button type="button" onClick={() => galleryImagesRef.current.click()} className="bg-zinc-900 hover:bg-[#FF8C00] text-white hover:text-black border-2 border-white/20 hover:border-[#FF8C00] px-6 py-4 rounded-xl font-black text-[13px] uppercase transition-all flex items-center justify-center gap-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"><Images size={16} /> {isUploadingPrimer ? 'UPLOADING...' : `ADD THUMBNAILS (${primeriUrls.length}/8)`}</button>
+                          <button type="button" onClick={() => galleryImagesRef.current.click()} className="bg-zinc-900 hover:bg-[#FF8C00] text-white hover:text-black border-2 border-white/20 hover:border-[#FF8C00] px-6 py-4 rounded-xl font-black text-[13px] uppercase transition-all flex items-center justify-center gap-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                              <Images size={16} /> {isUploadingPrimer ? 'UPLOADING...' : `ADD THUMBNAILS (${primeriUrls.length}/10)`}
+                          </button>
                           <input type="file" multiple ref={galleryImagesRef} onChange={handleUploadPrimeri} className="hidden" /> 
                       </div>
                       <button type="submit" className="v8-pay-btn ml-auto px-10 py-5 rounded-xl font-black text-[15px] md:text-[17px] tracking-widest uppercase bg-[#FF8C00] hover:bg-orange-500 text-black transition-all shadow-[0_0_30px_rgba(255,140,0,0.8)] flex items-center gap-2 hover:scale-105 drop-shadow-[0_2px_4px_rgba(255,255,255,0.4)]"><Zap size={20} strokeWidth={3} /> {editingPaketId ? 'SAVE CHANGES' : 'SAVE PACKAGE'}</button>
@@ -650,6 +704,13 @@ const V8StockBerza = () => {
     </div>
   );
 };
+
+// ZAVRŠNO UMOTAVANJE U ZAŠTITNI ŠTIT
+const V8StockBerza = () => (
+  <V8ErrorGuard>
+    <V8StockBerzaBase />
+  </V8ErrorGuard>
+);
 
 export default V8StockBerza;
 // KRAJ FAJLA: src/V8StockBerza.jsx
