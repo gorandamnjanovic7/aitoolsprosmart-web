@@ -58,12 +58,15 @@ import StandardMocup from './StandardMocup';
 
 import { NotificationListener, NotificationModal } from './NotificationSystem';
 
-// 🔥 NOVI IMPORT: Portfolio 🔥
 import Portfolio from './Portfolio';
 
-// 🔥 AŽURIRANI IMPORTI ZA PREMIUM QR MENI IZ NOVOG FOLDERA 🔥
 import V8PremiumTestMenu from './qrcode/V8PremiumTestMenu';
 import PublicMenuTestQRMenu from './qrcode/PublicMenuTestQRMenu';
+
+// 🔥 NOVI IMPORTI: UI/UX V10 INŽENJERING 🔥
+import UiUxHub from './ux/UiUxHub';
+import VaultGrid from './ux/VaultGrid';
+import V10SplitScreen from './ux/V10SplitScreen';
 
 if (typeof window !== 'undefined') {
   if ('scrollRestoration' in window.history) { window.history.scrollRestoration = 'manual'; }
@@ -675,9 +678,16 @@ function AppContent({ appsData, refreshData }) {
 
               <Route path="/portfolio" element={<V8PageWrapper><Portfolio /></V8PageWrapper>} />
               
-              {/* 🔥 NOVE RUTE ZA QR MENI IZ FOLDERA qrcode 🔥 */}
               <Route path="/premium-menu" element={<V8PageWrapper><V8PremiumTestMenu /></V8PageWrapper>} />
               <Route path="/m/:menuId" element={<PublicMenuTestQRMenu />} />
+
+              {/* 🔥 NOVE RUTE: UI/UX V10 INŽENJERING 🔥 */}
+              <Route path="/ui-ux" element={<V8PageWrapper><UiUxHub /></V8PageWrapper>} />
+              <Route path="/ui-ux/vault" element={<V8PageWrapper><VaultGrid /></V8PageWrapper>} />
+              {/* CommercialGrid možeš za sada da mapiraš na VaultGrid dok ne napraviš bazu, ili napravi kopiju fajla */}
+              <Route path="/ui-ux/commercial" element={<V8PageWrapper><VaultGrid /></V8PageWrapper>} /> 
+              <Route path="/ui-ux/project/:projectId" element={<V8PageWrapper><V10SplitScreen /></V8PageWrapper>} />
+
             </Routes>
           </AnimatePresence>
         </div>
