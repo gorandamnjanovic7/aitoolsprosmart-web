@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-// 🔥 DODAT Trash2 U IMPORT 🔥
 import { ShieldCheck, ChevronLeft, ChevronRight, Plus, X, Save, Image as ImageIcon, ChevronDown, UploadCloud, Loader2, Trash2 } from 'lucide-react';
 import { auth, db } from '../firebase'; 
 import { onAuthStateChanged } from 'firebase/auth';
@@ -14,6 +13,7 @@ const CLOUDINARY_UPLOAD_PRESET = "uploads";
 const VaultGrid = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [projects, setProjects] = useState([]);
+  const [showObsidian, setShowObsidian] = useState(true); // OVO KONTROLISE PRVU KARTICU
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -118,11 +118,21 @@ const VaultGrid = () => {
     }
   };
 
-  const handleDeleteProject = async (projectId) => {
+  const handleDeleteProject = async (projectId, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
     if (window.confirm("V10 Upozorenje: Da li ste sigurni da želite trajno obrisati ovaj projekat iz baze?")) {
       try {
         await deleteDoc(doc(db, "v10_projects", projectId));
-        setProjects(prev => prev.filter(p => p.id !== projectId));
+        
+        // Ako je kliknuo na brisanje "Obsidian Emerald", gasi tu specifičnu karticu
+        if (projectId === "obsidian-emerald") {
+          setShowObsidian(false);
+        } else {
+          // Za sve ostale, brise ih iz mapiranog stanja
+          setProjects(prev => prev.filter(p => p.id !== projectId));
+        }
       } catch (error) {
         console.error("Greška pri brisanju projekta:", error);
         alert("Sistemska greška: Nije moguće obrisati projekat.");
@@ -145,22 +155,15 @@ const VaultGrid = () => {
             </p>
           </div>
           <div className="mt-4 md:mt-0 text-zinc-600 text-xs font-black uppercase tracking-widest">
-            {isAdmin ? 'ADMIN ACCESS GRANTED' : `Showing: 1-${projects.length + 1} Projects`}
+            {isAdmin ? 'ADMIN ACCESS GRANTED' : `Showing: 1-${projects.length + (showObsidian ? 1 : 0)} Projects`}
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8 mb-16 items-start">
           
-          <Link to="/ui-ux/project/obsidian-emerald" className="group relative rounded-2xl overflow-hidden bg-[#0a0a0a] border border-white/5 hover:border-orange-500/50 transition-all duration-300 block aspect-video shadow-xl">
-            <div className="absolute inset-0 bg-zinc-900 group-hover:scale-105 transition-transform duration-700">
-               <img src="/esmerald_final.jpg" className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity" alt="Obsidian Emerald" />
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent p-6 flex flex-col justify-end">
-              <span className="text-orange-500 text-[10px] font-black uppercase tracking-widest mb-1 drop-shadow-md">V10 150MP</span>
-              <h3 className="text-white text-xl font-black uppercase tracking-wider drop-shadow-lg">Obsidian Emerald</h3>
-            </div>
-          </Link>
+          
 
+          {/* OSTALE KARTICE KOJE SE VUKU IZ BAZE */}
           {projects.map((project, index) => (
             <div key={index} className={`group relative rounded-2xl overflow-hidden bg-[#0a0a0a] border border-white/5 hover:border-orange-500/50 transition-all duration-300 block ${project.ratio || 'aspect-video'} shadow-xl`}>
               
@@ -182,7 +185,7 @@ const VaultGrid = () => {
 
               {isAdmin && (
                 <button 
-                  onClick={() => handleDeleteProject(project.id)}
+                  onClick={(e) => handleDeleteProject(project.id, e)}
                   className="absolute top-4 right-4 bg-red-600/90 hover:bg-red-500 text-white p-2.5 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 shadow-[0_0_20px_rgba(220,38,38,0.5)] border border-white/10 hover:scale-110 cursor-pointer"
                   title="Obriši projekat"
                 >

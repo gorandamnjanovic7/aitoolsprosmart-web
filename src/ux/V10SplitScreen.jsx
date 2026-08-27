@@ -31,6 +31,9 @@ const V10SplitScreen = () => {
   const [newVideoUrl, setNewVideoUrl] = useState('');
   const [isSavingVideo, setIsSavingVideo] = useState(false);
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+  
+  // 🔥 NOVO: State za Fullscreen Lightbox 🔥
+  const [fullscreenImage, setFullscreenImage] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -191,7 +194,6 @@ const V10SplitScreen = () => {
     }
   };
 
-  // 🔥 FUNKCIJA ZA BRISANJE FAZE 🔥
   const handleDeletePhase = async (indexToDelete) => {
     if(!window.confirm("V10 Upozorenje: Da li ste sigurni da želite obrisati ovu fazu?")) return;
     
@@ -284,7 +286,6 @@ const V10SplitScreen = () => {
         {(projectData?.phases || []).map((phase, index) => (
           <motion.div key={index} initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 0.8 }} className="flex flex-col gap-6 group">
             
-            {/* 🔥 ZAGLAVLJE FAZE SA DELETE DUGMETOM 🔥 */}
             <div className="flex justify-between items-start md:items-center">
               <div className="flex items-center gap-4 border-l-2 border-orange-500 pl-4">
                 <Layers className="w-6 h-6 text-orange-500" />
@@ -308,10 +309,12 @@ const V10SplitScreen = () => {
             <div className={`w-full ${phase.ratio || 'aspect-video'} bg-zinc-950 rounded-2xl md:rounded-[2rem] border border-white/5 overflow-hidden shadow-2xl relative`}>
                {phase.imageUrl ? (
                  <>
+                   {/* 🔥 DODAT onClick I cursor-zoom-in NA SLIKU 🔥 */}
                    <img 
                       src={phase.imageUrl} 
                       alt={phase.title} 
-                      className="w-full h-full object-cover select-none pointer-events-auto" 
+                      className="w-full h-full object-cover select-none pointer-events-auto cursor-zoom-in hover:opacity-80 transition-opacity duration-300" 
+                      onClick={() => setFullscreenImage(phase.imageUrl)}
                       onContextMenu={(e) => e.preventDefault()} 
                       onDragStart={(e) => e.preventDefault()} 
                    />
@@ -510,6 +513,39 @@ const V10SplitScreen = () => {
           </div>
         </section>
       )}
+
+      {/* 🔥 V8 FULLSCREEN MODAL 🔥 */}
+      <AnimatePresence>
+        {fullscreenImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setFullscreenImage(null)}
+            className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-8 bg-black/95 backdrop-blur-xl cursor-zoom-out"
+          >
+            {/* X Dugme */}
+            <button 
+              onClick={(e) => { e.stopPropagation(); setFullscreenImage(null); }}
+              className="absolute top-6 right-6 text-zinc-500 hover:text-white transition-colors bg-black/50 p-2 rounded-full border border-white/10 hover:border-orange-500"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            
+            {/* Centralna Slika */}
+            <motion.img
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              src={fullscreenImage}
+              alt="Fullscreen Preview"
+              className="max-w-full max-h-full object-contain rounded-2xl shadow-[0_0_100px_rgba(249,115,22,0.1)] border border-white/5"
+              onClick={(e) => e.stopPropagation()} 
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );
