@@ -48,7 +48,8 @@ export default function StandardMocup() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentUser, setCurrentUser] = useState(null); 
   
-  const [checkoutData, setCheckoutData] = useState({ isOpen: false, name: '', price: 0 });
+  // 🔥 DODATI ID, LINK I DESC DA BI KASA IMALA SVE PODATKE 🔥
+  const [checkoutData, setCheckoutData] = useState({ isOpen: false, id: '', name: '', price: 0, link: '', desc: '' });
   const [loginRequiredData, setLoginRequiredData] = useState({ isOpen: false, paket: null, name: '', price: 0 });
   
   const [isUploading, setIsUploading] = useState(false);
@@ -158,9 +159,21 @@ export default function StandardMocup() {
     if (!user || !paket) return;
     const fullName = paket.volume ? `${paket.nazivEn} - ${paket.volume}` : paket.nazivEn;
     const finalPrice = getGlobalCena(paket.cena);
+    
+    // Zadržavamo tvoju Payoneer bazu zbog istorije, ali odmah otvaramo novu Kasu
     await snimiKupcaUPayoneerBazu(user, paket);
+    
     if (paket.paddleLink && paket.paddleLink.trim() !== "") { window.location.href = paket.paddleLink; return; }
-    setCheckoutData({ isOpen: true, name: fullName, price: finalPrice });
+    
+    // 🔥 SMEŠTAMO SVE PODATKE U STATE KAKO BI IH KASA PREUZELA 🔥
+    setCheckoutData({ 
+        isOpen: true, 
+        id: paket.id,
+        name: fullName, 
+        price: finalPrice,
+        link: paket.zipLink || "",
+        desc: "Full Commercial License & IP-Safe Cleanup"
+    });
   };
 
   const prijavaIKupovina = async (paket) => {
@@ -697,8 +710,26 @@ export default function StandardMocup() {
       <div className="relative z-10 pt-32 pb-24 px-6">
         <FullScreenLightbox imageUrl={fullScreenImageUrl} onClose={() => setFullScreenImageUrl(null)} />
         <LoginRequiredModal isOpen={loginRequiredData.isOpen} onClose={() => setLoginRequiredData({ isOpen: false, paket: null, name: '', price: 0 })} packageName={loginRequiredData.name} price={loginRequiredData.price} onLoginSuccess={async (user) => { if (loginRequiredData.paket) await otvoriCheckoutIliPaddle(user, loginRequiredData.paket); setLoginRequiredData({ isOpen: false, paket: null, name: '', price: 0 }); }} />
+        
+        {/* 🔥 KASA SA DINAMIČKIM PAKETOM 🔥 */}
         <AnimatePresence>
-           {checkoutData.isOpen && (<V8SecureCheckout isOpen={checkoutData.isOpen} productName={checkoutData.name} price={checkoutData.price} onClose={() => setCheckoutData({ isOpen: false, name: '', price: 0 })} />)}
+           {checkoutData.isOpen && (
+             <V8SecureCheckout 
+               isOpen={checkoutData.isOpen} 
+               onClose={() => setCheckoutData({ isOpen: false, id: '', name: '', price: 0, link: '', desc: '' })} 
+               productName={checkoutData.name} 
+               zipLink={checkoutData.link}
+               availableTiers={[
+                 {
+                   id: checkoutData.id || 'single_mockup',
+                   name: checkoutData.name,
+                   desc: checkoutData.desc || 'Full Commercial License & IP-Safe Cleanup',
+                   price: checkoutData.price,
+                   isMonthly: false
+                 }
+               ]}
+             />
+           )}
         </AnimatePresence>
 
         <div className="max-w-[1800px] mx-auto w-full">

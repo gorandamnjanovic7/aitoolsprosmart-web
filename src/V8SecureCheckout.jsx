@@ -2,570 +2,334 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom'; 
 import { db, auth } from './firebase'; 
-import { collection, addDoc, serverTimestamp, doc, onSnapshot } from 'firebase/firestore';
-import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from 'firebase/auth'; 
-import { useNavigate } from 'react-router-dom'; 
-import { motion } from 'framer-motion'; 
-import { ShieldCheck, Mail, BellRing, Key, X, Lock, Earth, CheckCircle, Bitcoin, Wallet, Zap, CreditCard, Link, Download, Radar, Loader2 } from 'lucide-react';
+import { collection, addDoc, serverTimestamp, doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth'; 
+import { motion, AnimatePresence } from 'framer-motion'; 
+import { ShieldCheck, X, CheckCircle, Bitcoin, Zap, CreditCard, Link as LinkIcon, Download, Radar, Crown, Briefcase, Rocket, Package, ChevronDown, Box, Lock } from 'lucide-react';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js"; 
 
 const countryList = [
-  "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia", "Cameroon", "Canada", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo", "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "North Macedonia", "Norway", "Oman", "Pakistan", "Palau", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"
+  "Australia", "Austria", "Belgium", "Canada", "Denmark", "Finland", "France", "Germany", "Ireland", "Italy", "Japan", "Luxembourg", "Netherlands", "New Zealand", "Norway", "Qatar", "Saudi Arabia", "Singapore", "Spain", "Sweden", "Switzerland", "United Arab Emirates", "United Kingdom", "United States", "Other", "Serbia"
 ];
 
-const getBackendUrl = () => {
-  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  return isLocal ? "http://localhost:8080" : "https://aitoolsprosmart-becend-production.up.railway.app";
-};
+const getBackendUrl = () => "https://aitoolsprosmart-becend-production.up.railway.app";
+const TIER_ICONS = [Rocket, Briefcase, Crown, Package];
 
-const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink }) => {
-  const navigate = useNavigate(); 
+const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink, availableTiers = [], projectImage = "/v8-secure-blue.webp" }) => {
   const [user, setUser] = useState(null);
+  
+  const hasMultipleTiers = availableTiers && availableTiers.length > 0;
+  const defaultTierId = hasMultipleTiers ? availableTiers[0].id : 'default';
+  
+  const [selectedTier, setSelectedTier] = useState(defaultTierId);
   const [paymentMethod, setPaymentMethod] = useState('card'); 
+  
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [country, setCountry] = useState(''); 
+  
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [showPayPalModal, setShowPayPalModal] = useState(false);
-  
   const [downloadUrl, setDownloadUrl] = useState(null);
   const [cryptoOrderId, setCryptoOrderId] = useState(null);
 
-  const initialOptions = {
-    "client-id": import.meta.env.VITE_PAYPAL_CLIENT_ID,
-    currency: "USD",
-    intent: "capture",
-  };
+  const activeTierObj = hasMultipleTiers ? availableTiers.find(t => t.id === selectedTier) : null;
+  const activePrice = hasMultipleTiers ? activeTierObj?.price : price;
+  const activeName = hasMultipleTiers ? activeTierObj?.name : productName;
+  const activeIsMonthly = hasMultipleTiers ? activeTierObj?.isMonthly : false;
+  const activePlanId = hasMultipleTiers ? activeTierObj?.planId : null;
+
+  const initialOptions = { "client-id": import.meta.env.VITE_PAYPAL_CLIENT_ID, currency: "USD", vault: true };
 
   const triggerGoogleAnalyticsPurchase = (transactionId, finalPrice) => {
     if (typeof window !== "undefined" && window.gtag) {
         window.gtag("event", "purchase", {
-            transaction_id: transactionId,
-            value: Number(finalPrice),
-            currency: "USD",
-            items: [
-                {
-                    item_id: productName ? productName.replace(/\s+/g, '_').toUpperCase() : "V8_MASTER_LICENSE",
-                    item_name: productName || "V8 MASTER LICENSE",
-                    price: Number(finalPrice),
-                    quantity: 1
-                }
-            ]
+            transaction_id: transactionId, value: Number(finalPrice), currency: "USD",
+            items: [{ item_id: selectedTier, item_name: activeName, price: Number(finalPrice), quantity: 1 }]
         });
     }
   };
 
-  const triggerGoogleAdsConversion = (transactionId, finalPrice) => {
-    if (typeof window !== "undefined" && window.gtag) {
-        window.gtag('event', 'conversion', {
-            'send_to': 'AW-377804713/4q_-CN-qmtMcEKmvk7QB',
-            'value': Number(finalPrice),
-            'currency': 'USD',
-            'transaction_id': transactionId
-        });
-    }
-  };
+  useEffect(() => { if (isOpen) document.body.style.overflow = 'hidden'; else document.body.style.overflow = ''; return () => { document.body.style.overflow = ''; }; }, [isOpen]);
 
-  useEffect(() => {
-    if (isOpen) document.body.style.overflow = 'hidden';
-    else document.body.style.overflow = '';
-    return () => { document.body.style.overflow = ''; };
-  }, [isOpen]);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setEmail(currentUser?.email || '');
-    });
-    return () => unsubscribe();
-  }, []);
+  useEffect(() => { const unsubscribe = onAuthStateChanged(auth, (currentUser) => { setUser(currentUser); setEmail(currentUser?.email || ''); }); return () => unsubscribe(); }, []);
 
   useEffect(() => {
     if (!isOpen) {
-      setLoading(false);
-      setSuccess(false);
-      setShowPayPalModal(false);
-      setDownloadUrl(null);
-      setCryptoOrderId(null);
+      setLoading(false); setSuccess(false); setShowPayPalModal(false); setDownloadUrl(null); setCryptoOrderId(null);
+      if (hasMultipleTiers) setSelectedTier(defaultTierId);
     }
-  }, [isOpen]);
+  }, [isOpen, defaultTierId, hasMultipleTiers]);
 
   useEffect(() => {
     if (cryptoOrderId && paymentMethod === 'crypto') {
       const unsub = onSnapshot(doc(db, "v8_crypto_requests", cryptoOrderId), (docSnap) => {
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          if (data.status === 'PLAĆENO') {
-            setDownloadUrl(data.zipLink);
-            triggerGoogleAnalyticsPurchase(cryptoOrderId, price);
-            triggerGoogleAdsConversion(cryptoOrderId, price);
-
-            setTimeout(() => {
-              onClose();
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }, 5000); 
-          }
+        if (docSnap.exists() && docSnap.data().status === 'PLAĆENO') {
+          setDownloadUrl(docSnap.data().zipLink); triggerGoogleAnalyticsPurchase(cryptoOrderId, activePrice);
+          setTimeout(() => { onClose(); window.scrollTo({ top: 0, behavior: 'smooth' }); }, 5000); 
         }
       });
       return () => unsub();
     }
-  }, [cryptoOrderId, paymentMethod]);
-
-  const handleGoogleLogin = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: 'select_account' });
-      const result = await signInWithPopup(auth, provider);
-      setUser(result.user);
-      setEmail(result.user?.email || '');
-    } catch (error) {
-      console.error("Login prekinut:", error);
-      alert("Google login failed or was cancelled. Please try again.");
-    }
-  };
+  }, [cryptoOrderId, paymentMethod, activePrice, onClose]);
 
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
-
-    if (!user || !firstName || !lastName || !country || !email) {
-      alert("Please link your Google Account and fill in all fields.");
-      return;
-    }
-
+    if (!user || !firstName || !lastName || !country || !email) return alert("Please complete all fields.");
+    
     setLoading(true);
+    const finalProductName = hasMultipleTiers ? `${productName} - ${activeName}` : productName;
 
     try {
-      if (paymentMethod === 'payoneer') {
+      if (paymentMethod === 'payoneer' || paymentMethod === 'b2b') {
         const docRef = await addDoc(collection(db, "v8_payoneer_requests"), {
-          clientEmail: email, firstName, lastName, country, productName, price, zipLink: zipLink || "",
-          method: "payoneer", handledBy: "info@aitoolsprosmart.com", status: "pending", requestDate: serverTimestamp()
+          clientEmail: email, firstName, lastName, country, productName: finalProductName, price: activePrice, isMonthly: activeIsMonthly, zipLink: zipLink || "", method: "payoneer", handledBy: "info@aitoolsprosmart.com", status: "pending", requestDate: serverTimestamp()
         });
-        setSuccess(true);
-        setLoading(false);
-
-        triggerGoogleAnalyticsPurchase(docRef.id, price);
-        triggerGoogleAdsConversion(docRef.id, price);
-
-        setTimeout(() => {
-          onClose();
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }, 3500); 
-
+        setSuccess(true); setLoading(false); triggerGoogleAnalyticsPurchase(docRef.id, activePrice); setTimeout(() => { onClose(); }, 3500); 
       } else if (paymentMethod === 'crypto') {
         const docRef = await addDoc(collection(db, "v8_crypto_requests"), {
-          clientEmail: email, firstName, lastName, country, productName, price, zipLink: zipLink || "",
-          method: "crypto", status: "initiating_gateway", requestDate: serverTimestamp()
+          clientEmail: email, firstName, lastName, country, productName: finalProductName, price: activePrice, isMonthly: activeIsMonthly, zipLink: zipLink || "", method: "crypto", status: "initiating_gateway", requestDate: serverTimestamp()
         });
-        
-        const backendUrl = getBackendUrl(); 
-
-        const response = await fetch(`${backendUrl}/api/crypto-checkout`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orderId: docRef.id, clientEmail: email, productName, price, zipLink })
-        });
-
+        const response = await fetch(`${getBackendUrl()}/api/crypto-checkout`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId: docRef.id, clientEmail: email, productName: finalProductName, price: activePrice, zipLink }) });
         const data = await response.json();
-        if (response.ok && data.paymentUrl) {
-          window.open(data.paymentUrl, '_blank');
-          setCryptoOrderId(docRef.id);
-          setSuccess(true);
-          setLoading(false);
-        } else {
-          alert("Gateway connection failed. Please try again later or use Card / B2B Link.");
-          setLoading(false);
-        }
+        if (response.ok && data.paymentUrl) { window.open(data.paymentUrl, '_blank'); setCryptoOrderId(docRef.id); setSuccess(true); setLoading(false); } 
+        else { alert("Gateway connection failed."); setLoading(false); }
       }
-    } catch (error) {
-      console.error("Error creating request:", error);
-      alert("An error occurred. Please try again.");
-      setLoading(false);
-    }
+    } catch (error) { console.error("Error:", error); alert("An error occurred."); setLoading(false); }
   };
 
   if (!isOpen) return null;
 
   return createPortal(
     <PayPalScriptProvider options={initialOptions}>
-      <div className="fixed inset-0 z-[9999999] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-[#02040a]/90 backdrop-blur-md">
-        
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
-          className="relative flex flex-col md:flex-row w-full max-w-6xl max-h-[95vh] overflow-y-auto custom-scrollbar bg-[#080d1a] border border-blue-900/50 rounded-2xl md:rounded-3xl shadow-[0_0_80px_rgba(29,78,216,0.15)]"
-        >
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute top-3 right-3 sm:top-5 sm:right-5 z-[100] bg-black/50 backdrop-blur-md p-2.5 rounded-full border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 transition-all shadow-xl"
-          >
-            <X size={20} strokeWidth={2.5} />
-          </button>
-
-          {/* 1. KOLONA: SLIKA */}
-          <div className="hidden lg:flex lg:w-[30%] relative bg-cover bg-center border-r border-blue-900/30 overflow-hidden flex-col justify-end p-8 shrink-0" style={{ backgroundImage: "url('/v8-secure-blue.webp')" }}>
-            <div className="absolute inset-0 bg-gradient-to-r from-[#040812]/40 via-[#040812]/20 to-[#040812]"></div>
-            <div className="relative z-10 pl-4 border-l-2 border-blue-500">
-              <div className="flex items-center gap-2 mb-1">
-                <ShieldCheck className="w-4 h-4 text-white" />
-                <h3 className="text-white font-bold tracking-wider text-base uppercase">Secure Checkout</h3>
-              </div>
-              <p className="text-blue-300 text-xs tracking-wide">256-bit Encrypted Protocol</p>
-            </div>
-          </div>
-
-          {/* 2. KOLONA: FORMA */}
-          <div className="w-full md:w-1/2 lg:w-[40%] p-5 sm:p-8 flex flex-col border-b md:border-b-0 md:border-r border-blue-900/30 bg-[#0a1122]">
-            <div className="flex justify-between items-center border-b border-blue-900/50 pb-3 mb-6 mt-6 md:mt-0">
-              <span className="text-[10px] md:text-[11px] text-blue-500 uppercase tracking-widest font-black flex items-center gap-2 relative">
-                <span className="absolute -left-1.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(37,99,235,1)] animate-pulse"></span>
-                SECURITY CHECKOUT
-              </span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-8">
-              <button 
-                type="button"
-                onClick={() => setPaymentMethod('card')}
-                className={`flex flex-col items-center justify-center gap-2 py-3 rounded-xl border transition-all duration-300 outline-none ${paymentMethod === 'card' ? 'bg-blue-600/20 border-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.3)] scale-105 z-10' : 'bg-[#050914] border-zinc-800 text-zinc-500 hover:border-zinc-700 opacity-70 hover:opacity-100'}`}
-              >
-                <div className={`p-1.5 rounded-full ${paymentMethod === 'card' ? 'bg-blue-500 text-white shadow-[0_0_10px_rgba(37,99,235,0.8)]' : 'bg-zinc-800 text-zinc-500'}`}><CreditCard size={16} /></div>
-                <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-tighter ${paymentMethod === 'card' ? 'text-white' : 'text-zinc-500'}`}>Card</span>
-              </button>
-
-              <button 
-                type="button"
-                onClick={() => setPaymentMethod('payoneer')}
-                className={`flex flex-col items-center justify-center gap-2 py-3 rounded-xl border transition-all duration-300 outline-none ${paymentMethod === 'payoneer' ? 'bg-emerald-600/20 border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.3)] scale-105 z-10' : 'bg-[#050914] border-zinc-800 text-zinc-500 hover:border-zinc-700 opacity-70 hover:opacity-100'}`}
-              >
-                <div className={`p-1.5 rounded-full ${paymentMethod === 'payoneer' ? 'bg-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.8)]' : 'bg-zinc-800 text-zinc-500'}`}><Link size={16} /></div>
-                <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-tighter ${paymentMethod === 'payoneer' ? 'text-white' : 'text-zinc-500'}`}>B2B Link</span>
-              </button>
-
-              <button 
-                type="button"
-                onClick={() => setPaymentMethod('crypto')}
-                className={`flex flex-col items-center justify-center gap-2 py-3 rounded-xl border transition-all duration-300 outline-none ${paymentMethod === 'crypto' ? 'bg-orange-600/20 border-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.3)] scale-105 z-10' : 'bg-[#050914] border-zinc-800 text-zinc-500 hover:border-zinc-700 opacity-70 hover:opacity-100'}`}
-              >
-                <div className={`p-1.5 rounded-full ${paymentMethod === 'crypto' ? 'bg-orange-500 text-white shadow-[0_0_10px_rgba(249,115,22,0.8)]' : 'bg-zinc-800 text-zinc-500'}`}><Bitcoin size={16} /></div>
-                <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-tighter ${paymentMethod === 'crypto' ? 'text-white' : 'text-zinc-500'}`}>Crypto</span>
-              </button>
-            </div>
-
-            <div className="bg-[#050914] border border-blue-900/30 rounded-xl p-5 mb-6 shadow-inner">
-              <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-1">Selected License</p>
-              <h2 className="text-base sm:text-lg font-black text-white uppercase tracking-widest leading-tight">{productName || "V8 MASTER LICENSE"}</h2>
-              <div className="text-xl sm:text-2xl font-black text-blue-400 mt-2">${price || "0.00"}</div>
-            </div>
-
-            {success ? (
-              <div className="flex-1 flex flex-col items-center justify-center text-center py-6 relative z-10 my-auto">
+      <AnimatePresence>
+        {isOpen && (
+          <div className="fixed inset-0 z-[9999999] flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4 sm:p-8 font-sans">
+            
+            {/* 🌟 PREMIUM STUDIO LIGHT MODAL 🌟 */}
+            <motion.div 
+              initial={{ scale: 0.95, y: 20, opacity: 0 }} 
+              animate={{ scale: 1, y: 0, opacity: 1 }} 
+              exit={{ scale: 0.95, y: 20, opacity: 0 }}
+              className="bg-white w-full max-w-6xl rounded-[2.5rem] border border-slate-200 shadow-[0_20px_80px_rgba(0,0,0,0.1)] flex flex-col md:flex-row relative overflow-hidden h-auto min-h-[600px]"
+            >
+              
+              {/* LEVA I SREDNJA KOLONA */}
+              <div className="w-full md:w-2/3 flex flex-col md:flex-row p-8 md:p-10 gap-10">
                 
-                {downloadUrl ? (
-                  <motion.div initial={{scale:0.8, opacity:0}} animate={{scale:1, opacity:1}} className="flex flex-col items-center">
-                    <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center border-2 border-emerald-500 mb-6 shadow-[0_0_50px_rgba(16,185,129,0.4)]">
-                      <Download className="w-10 h-10 text-emerald-400 animate-bounce" />
-                    </div>
-                    <h2 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-widest mb-2">ACCESS GRANTED</h2>
-                    <p className="text-emerald-400 text-sm font-bold mb-8">V8 Master Engine is permanently unlocked.</p>
-                    <a href={downloadUrl} target="_blank" rel="noopener noreferrer" className="px-10 py-5 bg-gradient-to-r from-emerald-600 to-green-500 hover:from-green-500 hover:to-emerald-400 text-white rounded-2xl font-black uppercase tracking-widest text-sm shadow-[0_0_40px_rgba(16,185,129,0.6)] transition-all transform hover:scale-105 outline-none flex items-center gap-3">
-                      <Download size={20} /> PREUZMI V8 PAKET
-                    </a>
-                  </motion.div>
-                ) : paymentMethod === 'crypto' ? (
-                  <div className="flex flex-col items-center">
-                    <div className="relative w-24 h-24 mb-6 flex items-center justify-center">
-                      <div className="absolute inset-0 rounded-full border-2 border-orange-500/30 animate-ping"></div>
-                      <div className="absolute inset-2 rounded-full border border-orange-500/50 animate-spin"></div>
-                      <Radar className="w-10 h-10 text-orange-400 animate-pulse" />
-                    </div>
-                    <h2 className="text-xl sm:text-2xl font-black text-white uppercase tracking-widest mb-3 text-orange-400">BLOCKCHAIN RADAR ACTIVE</h2>
-                    <div className="bg-orange-950/20 border border-orange-900/50 rounded-xl p-5 shadow-inner max-w-md">
-                      <p className="text-orange-100 text-xs sm:text-[13px] leading-relaxed mb-2">
-                        Otvorili smo Vam NOWPayments u novom tabu. Završite transakciju tamo.
-                      </p>
-                      <p className="text-orange-300/80 text-[11px] font-mono flex items-center justify-center gap-2 mt-4">
-                        <Loader2 size={12} className="animate-spin" /> Čekamo potvrdu mreže... Dugme se stvara ovde.
-                      </p>
-                    </div>
+                {/* KOLONA 1: SELECT LICENSE */}
+                <div className="w-full md:w-1/2 flex flex-col">
+                  <h2 className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-6 flex items-center gap-2">
+                    <Box className="w-4 h-4 text-blue-500" /> {hasMultipleTiers ? 'Select License' : 'Selected Asset'}
+                  </h2>
+                  
+                  <div className="flex flex-col gap-4">
+                    {hasMultipleTiers ? (
+                      availableTiers.map((tier, idx) => {
+                        const IconComponent = TIER_ICONS[idx % TIER_ICONS.length]; 
+                        return (
+                        <button 
+                          key={tier.id}
+                          onClick={() => setSelectedTier(tier.id)}
+                          className={`text-left p-6 rounded-2xl border transition-all duration-300 relative overflow-hidden ${
+                            selectedTier === tier.id 
+                              ? 'bg-blue-50/50 border-blue-500 shadow-[0_10px_20px_rgba(59,130,246,0.1)] ring-1 ring-blue-500' 
+                              : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                          }`}
+                        >
+                          {selectedTier === tier.id && <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-500"></div>}
+                          <div className="flex items-center gap-3 mb-2">
+                            <IconComponent className={`w-5 h-5 ${selectedTier === tier.id ? 'text-blue-600' : 'text-slate-400'}`} />
+                            <h3 className={`font-black uppercase tracking-wider text-sm ${selectedTier === tier.id ? 'text-blue-900' : 'text-slate-700'}`}>{tier.name}</h3>
+                          </div>
+                          <p className="text-slate-500 text-[10px] uppercase tracking-widest mb-4 ml-8">{tier.desc}</p>
+                          <div className="text-slate-900 font-black text-2xl ml-8 flex items-baseline gap-1">
+                            ${tier.price} {tier.isMonthly && <span className="text-xs text-slate-400 font-bold uppercase">/mo</span>}
+                          </div>
+                        </button>
+                      )})
+                    ) : (
+                      <div className="text-left p-6 rounded-2xl border bg-blue-50 border-blue-300 shadow-[0_10px_20px_rgba(59,130,246,0.05)] relative overflow-hidden">
+                        <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-500"></div>
+                        <div className="flex items-center gap-3 mb-4">
+                          <ShieldCheck className="w-6 h-6 text-blue-600" />
+                          <h3 className="text-blue-900 font-black uppercase tracking-wider text-sm leading-snug">{productName}</h3>
+                        </div>
+                        <p className="text-slate-500 text-[10px] uppercase tracking-widest mb-4 ml-9">Commercial Master License</p>
+                        <div className="text-slate-900 font-black text-4xl ml-9">${price}</div>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="flex flex-col items-center">
-                    <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center border border-blue-500/30 mb-4 shadow-[0_0_30px_rgba(37,99,235,0.2)]">
-                      <CheckCircle className="w-8 h-8 text-blue-400" />
-                    </div>
-                    <h2 className="text-lg sm:text-xl font-black text-white uppercase tracking-widest mb-3">Request Secured</h2>
-                    <div className="bg-blue-950/20 border border-blue-900/50 rounded-xl p-5 shadow-inner max-w-md">
-                      <p className="text-blue-100 text-xs sm:text-[13px] leading-relaxed">
-                        Thank you, <strong className="text-white">{firstName}</strong>. Vaš zahtev za <strong className="text-white">{productName}</strong> je primljen. B2B link će biti poslat na Vaš email.
-                      </p>
-                    </div>
-                  </div>
-                )}
-                
-                <button onClick={onClose} className="mt-8 px-8 py-3.5 bg-transparent border border-zinc-700 text-zinc-400 hover:border-white hover:text-white rounded-xl font-bold uppercase text-xs tracking-wider transition-all duration-300">
-                  Close Window
-                </button>
-              </div>
-            ) : (
-              <div className="relative z-10 flex flex-col flex-grow">
-                {!user ? (
-                  <div className="flex flex-col items-center justify-center flex-grow space-y-6 bg-[#050914] p-6 sm:p-8 rounded-2xl border border-blue-900/50">
-                    <Lock className="w-8 h-8 text-blue-500" strokeWidth={1.5} />
-                    <h3 className="text-white font-black text-lg sm:text-xl uppercase tracking-wider text-center">Auth Required</h3>
-                    <button type="button" onClick={handleGoogleLogin} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-xl text-[11px] sm:text-sm tracking-widest uppercase transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)]">
-                      Verify Google Account
+                </div>
+
+                {/* KOLONA 2: BILLING INFO */}
+                <div className="w-full md:w-1/2 flex flex-col">
+                  <h2 className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-6 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Billing Info
+                  </h2>
+                  
+                  {/* Tabs za placanje */}
+                  <div className="flex gap-3 mb-8">
+                    <button onClick={() => setPaymentMethod('card')} className={`flex-1 py-4 flex flex-col items-center justify-center gap-2 rounded-xl border transition-all ${paymentMethod === 'card' ? 'bg-blue-50 border-blue-500 text-blue-700 ring-1 ring-blue-500' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-slate-50'}`}>
+                      <CreditCard className="w-5 h-5" />
+                      <span className="text-[9px] font-black uppercase tracking-widest">Card</span>
+                    </button>
+                    <button onClick={() => setPaymentMethod('payoneer')} className={`flex-1 py-4 flex flex-col items-center justify-center gap-2 rounded-xl border transition-all ${paymentMethod === 'payoneer' ? 'bg-blue-50 border-blue-500 text-blue-700 ring-1 ring-blue-500' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-slate-50'}`}>
+                      <LinkIcon className="w-5 h-5" />
+                      <span className="text-[9px] font-black uppercase tracking-widest">B2B Link</span>
+                    </button>
+                    <button onClick={() => setPaymentMethod('crypto')} className={`flex-1 py-4 flex flex-col items-center justify-center gap-2 rounded-xl border transition-all ${paymentMethod === 'crypto' ? 'bg-blue-50 border-blue-500 text-blue-700 ring-1 ring-blue-500' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-slate-50'}`}>
+                      <Bitcoin className="w-5 h-5" />
+                      <span className="text-[9px] font-black uppercase tracking-widest">Crypto</span>
                     </button>
                   </div>
-                ) : (
-                  <form onSubmit={(e) => { e.preventDefault(); if(paymentMethod !== 'card') handleSubmit(); }} className="space-y-4 flex-grow flex flex-col justify-between">
-                    <div className="space-y-4 sm:space-y-5">
-                      <div className="flex flex-col sm:flex-row gap-4">
-                        <div className="w-full sm:w-1/2">
-                          <label className="block text-[10px] font-bold text-zinc-500 mb-1.5 tracking-wide uppercase">First Name</label>
-                          <input type="text" required value={firstName} onChange={(e) => setFirstName(e.target.value)} className="w-full bg-[#050914] border border-blue-900/30 focus:border-blue-500 rounded-xl px-4 py-3.5 text-white text-xs sm:text-[13px] outline-none transition-all" placeholder="e.g. John" />
-                        </div>
-                        <div className="w-full sm:w-1/2">
-                          <label className="block text-[10px] font-bold text-zinc-500 mb-1.5 tracking-wide uppercase">Last Name</label>
-                          <input type="text" required value={lastName} onChange={(e) => setLastName(e.target.value)} className="w-full bg-[#050914] border border-blue-900/30 focus:border-blue-500 rounded-xl px-4 py-3.5 text-white text-xs sm:text-[13px] outline-none transition-all" placeholder="e.g. Doe" />
-                        </div>
-                      </div>
 
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-500 mb-1.5 tracking-wide uppercase">Verified Email</label>
-                        <input type="email" required value={email} readOnly className="w-full bg-[#050914] border border-blue-900/30 rounded-xl px-4 py-3.5 text-zinc-500 text-xs sm:text-[13px] outline-none cursor-not-allowed opacity-70 truncate" />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-500 mb-1.5 tracking-wide uppercase flex items-center gap-1.5"><Earth size={12} /> Country</label>
-                        <select required value={country} onChange={(e) => setCountry(e.target.value)} className="w-full bg-[#050914] border border-blue-900/30 focus:border-blue-500 rounded-xl px-4 py-3.5 text-white text-xs sm:text-[13px] outline-none transition-all appearance-none cursor-pointer">
-                          <option value="" disabled className="text-zinc-700">Select your country</option>
-                          {countryList.map((c, index) => (<option key={index} value={c} className="bg-[#0B1120] text-white">{c}</option>))}
-                        </select>
-                      </div>
+                  {/* Forma ili Success State */}
+                  {success ? (
+                    <div className="flex flex-col items-center justify-center py-10 flex-grow">
+                      {downloadUrl ? (
+                        <motion.div initial={{scale:0.8, opacity:0}} animate={{scale:1, opacity:1}} className="flex flex-col items-center">
+                          <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center border border-emerald-200 mb-6 shadow-sm"><Download className="w-10 h-10 text-emerald-500 animate-bounce" /></div>
+                          <h2 className="text-xl sm:text-2xl font-black text-slate-900 uppercase tracking-widest mb-2 text-center">ACCESS GRANTED</h2>
+                          <p className="text-emerald-600 text-xs font-bold mb-8 text-center">{activeName} is unlocked.</p>
+                          <a href={downloadUrl} target="_blank" rel="noopener noreferrer" className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl font-black uppercase tracking-widest text-[11px] shadow-lg transition-all hover:scale-105 flex items-center gap-3"><Download size={16} /> DOWNLOAD MASTER</a>
+                        </motion.div>
+                      ) : paymentMethod === 'crypto' ? (
+                        <div className="flex flex-col items-center text-center">
+                          <Radar className="w-16 h-16 text-orange-500 animate-pulse mb-4" />
+                          <h2 className="text-xl font-black text-slate-900 uppercase tracking-widest mb-3">RADAR ACTIVE</h2>
+                          <p className="text-slate-500 text-[11px] uppercase font-bold tracking-widest leading-relaxed">Complete transaction in the new tab.<br/>Delivery starts after confirmation.</p>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center text-center">
+                          <CheckCircle className="w-16 h-16 text-blue-500 mb-4" />
+                          <h2 className="text-xl font-black text-slate-900 uppercase tracking-widest mb-3">Request Secured</h2>
+                          <p className="text-slate-500 text-[11px] uppercase font-bold tracking-widest leading-relaxed">Thank you, {firstName}.<br/>Invoice will be sent to your email.</p>
+                        </div>
+                      )}
                     </div>
+                  ) : (
+                    <form onSubmit={handleSubmit} className="flex flex-col gap-5 flex-1">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-2">
+                          <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">First Name</label>
+                          <input type="text" value={firstName} onChange={e => setFirstName(e.target.value)} required className="bg-slate-50 border border-slate-200 text-slate-900 p-3 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium" />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Last Name</label>
+                          <input type="text" value={lastName} onChange={e => setLastName(e.target.value)} required className="bg-slate-50 border border-slate-200 text-slate-900 p-3 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium" />
+                        </div>
+                      </div>
 
-                    <div className="pt-6 shrink-0 relative z-50 flex flex-col items-center gap-4">
+                      <div className="flex flex-col gap-2">
+                        <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 flex items-center justify-between">
+                          <span>Verified Email</span>
+                          <Lock size={10} className="text-emerald-500" />
+                        </label>
+                        <input type="email" value={email} readOnly className="bg-slate-100 border border-slate-200 text-slate-400 p-3 rounded-xl focus:outline-none cursor-not-allowed font-medium" />
+                      </div>
+
+                      <div className="flex flex-col gap-2 mb-4">
+                        <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Country</label>
+                        <div className="relative">
+                          <select required value={country} onChange={e => setCountry(e.target.value)} className="w-full bg-slate-50 border border-slate-200 text-slate-900 p-3 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all appearance-none cursor-pointer font-medium">
+                            <option value="">Select country</option>
+                            {countryList.map((c, i) => <option key={i} value={c}>{c}</option>)}
+                          </select>
+                          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                            <ChevronDown className="w-4 h-4 text-slate-400" />
+                          </div>
+                        </div>
+                      </div>
+
                       <button 
                         type={paymentMethod === 'card' ? 'button' : 'submit'} 
-                        onClick={() => {
-                            if (paymentMethod === 'card' && firstName && lastName && country) {
-                                setShowPayPalModal(true);
-                            }
-                        }}
-                        disabled={loading || !country || !user || (paymentMethod === 'card' && (!firstName || !lastName))} 
-                        className={`w-full text-white font-black py-4 sm:py-4.5 rounded-xl text-[11px] sm:text-sm tracking-widest uppercase transition-all duration-300 disabled:opacity-50 shadow-[0_0_20px_rgba(0,0,0,0.3)] outline-none ${
-                          paymentMethod === 'crypto' ? 'bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 shadow-[0_0_30px_rgba(249,115,22,0.5)]'
-                          : paymentMethod === 'payoneer' ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.5)]'
-                          : 'bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-600 hover:to-blue-400 shadow-[0_0_30px_rgba(37,99,235,0.5)]'
-                        }`}
+                        onClick={() => { if (paymentMethod === 'card' && firstName && lastName && country) setShowPayPalModal(true); }} 
+                        disabled={loading || !country || !firstName || !lastName || !user} 
+                        className="mt-auto w-full bg-slate-900 hover:bg-blue-600 disabled:bg-slate-200 disabled:text-slate-400 text-white font-black py-4 rounded-xl text-[11px] tracking-widest uppercase transition-all shadow-lg hover:shadow-[0_10px_30px_rgba(37,99,235,0.3)] active:scale-95"
                       >
-                        {loading ? 'Processing...' : paymentMethod === 'card' ? 'PROCEED TO SECURE PAYMENT' : paymentMethod === 'crypto' ? 'PROCEED TO CRYPTO' : 'REQUEST SECURE LINK'}
+                        {loading ? 'Processing...' : paymentMethod === 'card' ? 'PROCEED TO SECURE PAYMENT' : 'REQUEST B2B INVOICE'}
                       </button>
-                    </div>
-
-                  </form>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* 3. KOLONA: INFORMACIJE */}
-          <div className="w-full md:w-1/2 lg:w-[30%] p-5 sm:p-8 bg-[#070b16] relative flex flex-col">
-            <div className="flex justify-between items-center border-b border-blue-900/50 pb-3 mb-6 mt-2 md:mt-0">
-              <span className={`text-[10px] md:text-[11px] uppercase tracking-widest font-black flex items-center gap-2 ${paymentMethod === 'crypto' ? 'text-orange-500' : paymentMethod === 'payoneer' ? 'text-emerald-500' : 'text-blue-500'}`}>
-                TRANSACTION PROTOCOL
-              </span>
-            </div>
-
-            <p className="text-zinc-400 text-xs sm:text-[13px] leading-relaxed mb-8">
-              {paymentMethod === 'card' ? "We accept all major credit and debit cards securely processed via PayPal's global infrastructure. Here is how your V8 License is activated:"
-                : paymentMethod === 'crypto' ? "We accept seamless cryptocurrency transactions via official licensed gateways. Here is how your V8 License is activated:"
-                : "To guarantee absolute security, we utilize a verified B2B payment flow. Here is how your V8 License is activated permanently:"}
-            </p>
-
-            <div className="flex flex-col gap-6 relative flex-grow">
-              <div className="absolute left-[19px] top-[10px] bottom-[10px] w-[2px] bg-blue-900/30 hidden sm:block"></div>
-
-              <div className="flex items-start gap-4 relative z-10">
-                <div className={`w-10 h-10 rounded-full border flex items-center justify-center flex-shrink-0 shadow-lg ${paymentMethod === 'crypto' ? 'bg-orange-950 border-orange-800' : paymentMethod === 'payoneer' ? 'bg-emerald-950 border-emerald-800' : 'bg-blue-950 border-blue-800'}`}>
-                  {paymentMethod === 'card' ? <ShieldCheck className="w-4 h-4 text-blue-400" /> : paymentMethod === 'crypto' ? <Wallet className="w-4 h-4 text-orange-400" /> : <Mail className="w-4 h-4 text-emerald-400" />}
-                </div>
-                <div>
-                  <h4 className="text-white text-[11px] sm:text-xs font-black uppercase tracking-widest mb-1">
-                    {paymentMethod === 'card' ? '1. Secure PayPal Gateway' : paymentMethod === 'crypto' ? '1. Secure Gateway' : '1. Secure Link'}
-                  </h4>
-                  <p className="text-zinc-500 text-[10px] sm:text-[11px] leading-relaxed">
-                    {paymentMethod === 'card' ? "You will be safely routed to the encrypted PayPal checkout system to enter your card details."
-                      : paymentMethod === 'crypto' ? "You will be redirected to our Global Web3 Secure Gateway to safely select your preferred coin."
-                      : "A unique, bank-grade B2B payment link will be sent to your verified Google Master Email address."}
-                  </p>
+                    </form>
+                  )}
                 </div>
               </div>
 
-              <div className="flex items-start gap-4 relative z-10">
-                <div className={`w-10 h-10 rounded-full border flex items-center justify-center flex-shrink-0 shadow-lg ${paymentMethod === 'crypto' ? 'bg-orange-950 border-orange-800' : paymentMethod === 'payoneer' ? 'bg-emerald-950 border-emerald-800' : 'bg-blue-950 border-blue-800'}`}>
-                  {paymentMethod === 'card' ? <Lock className="w-4 h-4 text-blue-400" /> : paymentMethod === 'crypto' ? <Bitcoin className="w-4 h-4 text-orange-400" /> : <BellRing className="w-4 h-4 text-emerald-400" />}
-                </div>
-                <div>
-                  <h4 className="text-white text-[11px] sm:text-xs font-black uppercase tracking-widest mb-1">
-                    {paymentMethod === 'card' ? '2. Instant Verification' : paymentMethod === 'crypto' ? '2. Confirmation' : '2. Notification'}
-                  </h4>
-                  <p className="text-zinc-500 text-[10px] sm:text-[11px] leading-relaxed">
-                    {paymentMethod === 'card' ? "PayPal processes your card instantly without sharing your sensitive financial data with us."
-                      : paymentMethod === 'crypto' ? "Complete the transaction from your wallet. The blockchain typically confirms payment within minutes."
-                      : "Once your B2B transaction is completed, our system instantly alerts the AI Tools Pro Smart Administration."}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 relative z-10">
-                <div className="w-10 h-10 rounded-full bg-blue-950 border border-blue-800 flex items-center justify-center flex-shrink-0 shadow-lg">
-                  <Zap className="w-4 h-4 text-emerald-400" />
-                </div>
-                <div>
-                  <h4 className="text-emerald-400 text-[11px] sm:text-xs font-black uppercase tracking-widest mb-1">3. License Unlocked</h4>
-                  <p className="text-zinc-500 text-[10px] sm:text-[11px] leading-relaxed">The system verifies the transaction and permanently unlocks the selected V8 License on your linked account.</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-8 pt-6">
-              <div className={`p-4 border-l-2 rounded-r-xl shadow-inner ${paymentMethod === 'crypto' ? 'bg-orange-950/20 border-orange-500' : paymentMethod === 'payoneer' ? 'bg-emerald-950/20 border-emerald-500' : 'bg-blue-950/20 border-blue-500'}`}>
-                <p className={`text-[10px] font-bold uppercase tracking-widest mb-1.5 ${paymentMethod === 'crypto' ? 'text-orange-400' : paymentMethod === 'payoneer' ? 'text-emerald-400' : 'text-blue-400'}`}>Notice:</p>
-                <p className="text-zinc-500 text-[10px] sm:text-[11px] leading-relaxed">
-                  {paymentMethod === 'card' ? "No PayPal account is required. You can choose to pay as a guest using your standard Credit or Debit card."
-                    : paymentMethod === 'crypto' ? "Ensure you are using the correct network (e.g. USDT TRC20) to avoid loss of funds."
-                    : "Allow 2 to 12 hours. Check your SPAM, TRASH, and JUNK folders for the payment link."}
-                </p>
-              </div>
-            </div>
-          </div>
-
-        </motion.div>
-
-        {/* 🔥 PAYPAL FORMA 🔥 */}
-        {showPayPalModal && (
-          <div className="absolute inset-0 z-[10000000] flex items-center justify-center p-4 sm:p-6 bg-[#02040a]/80 backdrop-blur-md">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="relative flex flex-col md:flex-row w-full max-w-4xl bg-[#050914] border border-blue-600/50 rounded-2xl shadow-[0_0_100px_rgba(37,99,235,0.2)] overflow-hidden max-h-[90vh]"
-            >
-              <button
-                type="button"
-                onClick={() => setShowPayPalModal(false)}
-                className="absolute top-4 right-4 z-[100] p-2 bg-zinc-900/80 backdrop-blur-md rounded-full border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
-              >
-                <X size={18} />
-              </button>
-
-              <div 
-                className="hidden md:flex md:w-1/2 relative bg-cover bg-center"
-                style={{ backgroundImage: "url('/checkout-bg.webp')" }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#050914]/50 to-[#050914]"></div>
-                <div className="absolute bottom-10 left-8 z-10 pr-8">
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-900/50 border border-blue-500/50 backdrop-blur-sm mb-3">
-                    <ShieldCheck className="w-4 h-4 text-blue-400" />
-                    <span className="text-[10px] font-bold tracking-widest text-blue-100 uppercase">256-Bit Encrypted</span>
-                  </div>
-                  <h2 className="text-white font-black text-2xl uppercase tracking-wider mb-2 leading-tight">
-                    Finalize<br />Your Request
-                  </h2>
-                  <p className="text-zinc-400 text-xs leading-relaxed">
-                    You are moments away from unlocking the V8 Master Engine. Your transaction is guarded by global security protocols.
-                  </p>
-                </div>
-              </div>
-
-              <div className="w-full md:w-1/2 p-6 sm:p-10 pt-16 flex flex-col relative bg-[#050914] overflow-y-auto custom-scrollbar">
-                <div className="mb-8">
-                  <h3 className="text-white font-black text-lg sm:text-xl uppercase tracking-widest mb-1">
-                    Complete Payment
-                  </h3>
-                  <p className="text-blue-400 text-sm tracking-wide font-bold">
-                    {productName} &bull; ${price}
-                  </p>
-                </div>
-
-                <div className="relative z-10 w-full min-h-[300px]">
-                  <PayPalButtons 
-                      style={{ layout: "vertical", color: "blue", shape: "rect", label: "pay" }}
-                      createOrder={(data, actions) => {
-                          return actions.order.create({
-                              purchase_units: [{
-                                  description: productName,
-                                  amount: { value: price.toString() }
-                              }]
-                          });
-                      }}
-                      onApprove={async (data, actions) => {
-                          try {
-                              const details = await actions.order.capture();
-                              
-                              const backendUrl = getBackendUrl(); 
-                              
-                              const response = await fetch(`${backendUrl}/api/paypal-verify`, {
-                                  method: 'POST',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ 
-                                      orderId: details.id, 
-                                      clientEmail: email, 
-                                      firstName, 
-                                      lastName, 
-                                      country, 
-                                      productName, 
-                                      price,
-                                      zipLink 
-                                  })
-                              });
-                              
-                              const resData = await response.json();
-                              
-                              if(resData.success) {
-                                  setShowPayPalModal(false); 
-                                  setDownloadUrl(resData.downloadUrl || zipLink);
-                                  setSuccess(true);
-                                  triggerGoogleAnalyticsPurchase(details.id, price);
-                                  triggerGoogleAdsConversion(details.id, price);
-
-                                  setTimeout(() => {
-                                    onClose();
-                                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                                  }, 5000); 
-                              } else {
-                                  alert("Payment verification failed on the server. Please contact support.");
-                              }
-                          } catch (error) {
-                              console.error("Greška pri verifikaciji:", error);
-                              alert("Payment received, but verification delayed. Contact support.");
-                          }
-                      }}
-                      onError={(err) => {
-                          console.error("PayPal Error:", err);
-                          alert("There was an issue processing your payment. Please try again.");
-                      }}
-                  />
-                </div>
+              {/* KOLONA 3: DESNA STRANA (Tvoja slika + Oštar kontrast) */}
+              <div className="relative hidden md:block md:w-1/3 bg-slate-900 overflow-hidden">
                 
-                <div className="mt-6 flex items-center justify-center gap-2 opacity-50 pb-4">
-                  <Lock size={12} className="text-zinc-500" />
-                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
-                    Secured by PayPal
-                  </span>
+                {/* Zatvaranje na slici */}
+                <button onClick={onClose} className="absolute top-6 right-6 z-30 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 border border-white/20 text-white hover:bg-white hover:text-slate-900 transition-all backdrop-blur-md cursor-pointer">
+                  <X className="w-5 h-5" />
+                </button>
+
+                <div className="absolute inset-0 z-0">
+                  <img src={projectImage} alt="Order Preview" className="w-full h-full object-cover opacity-80 mix-blend-luminosity hover:mix-blend-normal transition-all duration-1000" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
+                  {/* Suptilna senka da se stopi sa belim delom modala */}
+                  <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-slate-900/50 to-transparent"></div>
+                </div>
+
+                <div className="absolute bottom-10 right-10 z-10 text-right">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/20 border border-blue-400/30 backdrop-blur-md mb-3">
+                    <ShieldCheck className="w-4 h-4 text-blue-300" /> 
+                    <span className="text-[9px] font-black tracking-widest text-blue-100 uppercase">256-bit Encrypted</span>
+                  </div>
+                  <h2 className="text-white font-black text-2xl uppercase tracking-wider leading-tight drop-shadow-lg">
+                    Secure<br />Protocol
+                  </h2>
+                </div>
+              </div>
+
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* 🔥 PAYPAL MODAL (Sada prebačen u Light/Stripe B2B temu) 🔥 */}
+      <AnimatePresence>
+        {showPayPalModal && (
+          <div className="fixed inset-0 z-[10000000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }} 
+              animate={{ opacity: 1, scale: 1 }} 
+              exit={{ opacity: 0, scale: 0.95 }} 
+              className="relative flex flex-col md:flex-row w-full max-w-4xl bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-slate-200"
+            >
+              <button onClick={() => setShowPayPalModal(false)} className="absolute top-4 right-4 z-[100] w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-200 transition-colors"><X size={16} /></button>
+
+              <div className="hidden md:flex md:w-[45%] relative bg-slate-900 border-r border-slate-200 overflow-hidden">
+                <img src={projectImage} alt="Payment Screen" className="w-full h-full object-cover opacity-60 mix-blend-luminosity" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
+                <div className="absolute bottom-10 left-8 z-10 pr-8">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/20 border border-blue-400/30 backdrop-blur-md mb-3">
+                    <ShieldCheck className="w-4 h-4 text-blue-300" /> 
+                    <span className="text-[10px] font-bold tracking-widest text-blue-100 uppercase">Gateway Secured</span>
+                  </div>
+                  <h2 className="text-white font-black text-2xl uppercase tracking-wider leading-tight drop-shadow-md">Finalize<br />Transaction</h2>
+                </div>
+              </div>
+
+              <div className="w-full md:w-[55%] p-8 md:p-12 flex flex-col justify-center bg-white min-h-[400px]">
+                <div className="mb-8 border-b border-slate-100 pb-6">
+                  <h3 className="text-slate-900 font-black text-xl uppercase tracking-widest mb-1">{activeName}</h3>
+                  <p className="text-slate-500 text-sm font-bold tracking-widest">${activePrice}{activeIsMonthly ? '/mo' : ''}</p>
+                </div>
+
+                <div className="relative z-10 w-full">
+                  {activeIsMonthly ? (
+                    <PayPalButtons style={{ layout: "vertical", color: "blue", shape: "rect", label: "subscribe" }} createSubscription={(data, actions) => { return actions.subscription.create({ plan_id: activePlanId }); }} onApprove={async (data, actions) => { try { await setDoc(doc(db, "v8_paypal_subscriptions", data.subscriptionID), { clientEmail: email, firstName, lastName, country, productName: activeName, subscriptionId: data.subscriptionID, status: "ACTIVE", createdAt: serverTimestamp() }); setShowPayPalModal(false); setSuccess(true); setDownloadUrl(zipLink || "https://link-do-arhiva.zip"); triggerGoogleAnalyticsPurchase(data.subscriptionID, activePrice); setTimeout(() => { onClose(); window.scrollTo({ top: 0, behavior: 'smooth' }); }, 5000); } catch (error) { console.error("Greška:", error); alert("Subscription successful, but verification delayed."); } }} />
+                  ) : (
+                    <PayPalButtons style={{ layout: "vertical", color: "blue", shape: "rect", label: "pay" }} createOrder={(data, actions) => { return actions.order.create({ purchase_units: [{ description: activeName, amount: { value: activePrice.toString() } }] }); }} onApprove={async (data, actions) => { try { const details = await actions.order.capture(); const backendUrl = getBackendUrl(); const response = await fetch(`${backendUrl}/api/paypal-verify`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId: details.id, clientEmail: email, firstName, lastName, country, productName: activeName, price: activePrice, zipLink }) }); const resData = await response.json(); if(resData.success) { setShowPayPalModal(false); setSuccess(true); setDownloadUrl(resData.downloadUrl || zipLink); triggerGoogleAnalyticsPurchase(details.id, activePrice); setTimeout(() => { onClose(); window.scrollTo({ top: 0, behavior: 'smooth' }); }, 5000); } else { alert("Payment verification failed. Contact support."); } } catch (error) { console.error("Greška:", error); alert("Payment received, but verification delayed."); } }} />
+                  )}
                 </div>
               </div>
             </motion.div>
           </div>
         )}
-
-      </div>
+      </AnimatePresence>
     </PayPalScriptProvider>,
     document.body
   );

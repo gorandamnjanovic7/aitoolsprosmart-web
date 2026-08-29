@@ -67,6 +67,7 @@ import PublicMenuTestQRMenu from './qrcode/PublicMenuTestQRMenu';
 import UiUxHub from './ux/UiUxHub';
 import VaultGrid from './ux/VaultGrid';
 import V10SplitScreen from './ux/V10SplitScreen';
+import CommercialOps from './ux/CommercialOps'; // NOVI B2B PANEL
 
 if (typeof window !== 'undefined') {
   if ('scrollRestoration' in window.history) { window.history.scrollRestoration = 'manual'; }
@@ -681,11 +682,10 @@ function AppContent({ appsData, refreshData }) {
               <Route path="/premium-menu" element={<V8PageWrapper><V8PremiumTestMenu /></V8PageWrapper>} />
               <Route path="/m/:menuId" element={<PublicMenuTestQRMenu />} />
 
-              {/* 🔥 NOVE RUTE: UI/UX V10 INŽENJERING 🔥 */}
+              {/* 🔥 ISPRAVLJENE RUTE: UI/UX V10 INŽENJERING 🔥 */}
               <Route path="/ui-ux" element={<V8PageWrapper><UiUxHub /></V8PageWrapper>} />
               <Route path="/ui-ux/vault" element={<V8PageWrapper><VaultGrid /></V8PageWrapper>} />
-              {/* CommercialGrid možeš za sada da mapiraš na VaultGrid dok ne napraviš bazu, ili napravi kopiju fajla */}
-              <Route path="/ui-ux/commercial" element={<V8PageWrapper><VaultGrid /></V8PageWrapper>} /> 
+              <Route path="/ui-ux/commercial" element={<V8PageWrapper><CommercialOps /></V8PageWrapper>} /> 
               <Route path="/ui-ux/project/:projectId" element={<V8PageWrapper><V10SplitScreen /></V8PageWrapper>} />
 
             </Routes>

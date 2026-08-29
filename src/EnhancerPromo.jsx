@@ -1,13 +1,13 @@
 // POČETAK FAJLA: EnhancerPromo.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Zap, PlayCircle, Timer } from 'lucide-react';
+import { Zap, PlayCircle, Timer, ScanLine } from 'lucide-react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import V8Reveal from './V8Reveal';
 import V8CinematicText from './v8-ui-components/V8CinematicText';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion';
 
 // 🔥 IMPORT NOVOG, PROFESIONALNOG MODALA ZA KUPCE 🔥
 import V8SecureCheckout from './V8SecureCheckout';
@@ -31,11 +31,11 @@ const RippleButton = ({ children, onClick, disabled, className }) => {
         {ripples.map(r => (
           <motion.span
             key={r.id}
-            initial={{ scale: 0, opacity: 0.5 }}
+            initial={{ scale: 0, opacity: 0.4 }}
             animate={{ scale: 4, opacity: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="absolute bg-white/40 rounded-full pointer-events-none z-0"
+            className="absolute bg-white/50 rounded-full pointer-events-none z-0"
             style={{ left: r.x, top: r.y, width: 100, height: 100, marginTop: -50, marginLeft: -50 }}
             onAnimationComplete={() => setRipples(prev => prev.filter(rip => rip.id !== r.id))}
           />
@@ -46,7 +46,7 @@ const RippleButton = ({ children, onClick, disabled, className }) => {
 };
 // KRAJ FUNKCIJE: RippleButton
 
-// POČETAK FUNKCIJE: CountdownTimer
+// POČETAK FUNKCIJE: CountdownTimer (Svetla Studio Tema)
 const CountdownTimer = () => {
   const [timeLeft, setTimeLeft] = useState(2 * 3600 + 15 * 60 + 43);
   
@@ -62,11 +62,11 @@ const CountdownTimer = () => {
   const s = (timeLeft % 60).toString().padStart(2, '0');
 
   return (
-    <div className="inline-flex items-center justify-center gap-3 bg-orange-600/10 border border-orange-500/30 px-6 py-3 rounded-2xl shadow-[0_0_15px_rgba(234,88,12,0.2)] mt-4">
+    <div className="inline-flex items-center justify-center gap-3 bg-white border border-orange-200 px-6 py-3 rounded-2xl shadow-sm mt-4">
       <Timer className="w-5 h-5 text-orange-500 animate-pulse" />
       <div className="flex flex-col text-left">
-        <span className="text-[9px] font-black text-orange-400 uppercase tracking-widest">OFFER EXPIRES IN:</span>
-        <span className="text-[16px] font-mono font-black text-white tracking-widest">{h}:{m}:{s}</span>
+        <span className="text-[9px] font-black text-orange-500 uppercase tracking-widest">OFFER EXPIRES IN:</span>
+        <span className="text-[16px] font-mono font-black text-slate-900 tracking-widest">{h}:{m}:{s}</span>
       </div>
     </div>
   );
@@ -78,13 +78,35 @@ const EnhancerPromo = () => {
   const [hasEnhancerAccess, setHasEnhancerAccess] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   
-  // 🔥 STATE ZA MODALE 🔥
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [loginRequiredData, setLoginRequiredData] = useState({
     isOpen: false,
     name: '10X ENHANCER LIFETIME',
     price: 199.99
   });
+
+  // 🔥 3D PARALLAX LOGIKA 🔥
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const mouseXSpring = useSpring(x, { stiffness: 300, damping: 30 });
+  const mouseYSpring = useSpring(y, { stiffness: 300, damping: 30 });
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["5deg", "-5deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-5deg", "5deg"]);
+
+  const handleMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    x.set(mouseX / width - 0.5);
+    y.set(mouseY / height - 0.5);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -118,14 +140,12 @@ const EnhancerPromo = () => {
     return () => unsubscribe(); 
   }, []);
 
-  // POČETAK FUNKCIJE: handlePaymentV8
   const handlePaymentV8 = async () => {
     try {
       if (currentUser || auth.currentUser) {
         setIsCheckoutOpen(true);
         return;
       }
-
       setLoginRequiredData({
         isOpen: true,
         name: '10X ENHANCER LIFETIME',
@@ -135,10 +155,9 @@ const EnhancerPromo = () => {
       console.error("V8 Login Error:", error);
     }
   };
-  // KRAJ FUNKCIJE: handlePaymentV8
 
   return (
-    <div id="enhancer" className="relative mb-24 flex flex-col items-center justify-center text-center py-24 scroll-mt-32 overflow-hidden rounded-[3rem] mx-4 lg:mx-0 border border-orange-500/20 shadow-[0_0_40px_rgba(234,88,12,0.15)] group">
+    <div id="enhancer" className="relative mb-24 flex flex-col items-center justify-center py-24 scroll-mt-32 w-full px-4 lg:px-0">
       
       {/* V8 LOGIN REQUIRED MODAL */}
       <LoginRequiredModal
@@ -164,62 +183,79 @@ const EnhancerPromo = () => {
         )}
       </AnimatePresence>
 
-      <div className="absolute inset-0 z-0">
-        <img src="https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=1600&q=80" alt="10x Background" className="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-1000" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-orange-950/40 to-[#050505]"></div>
-        <div className="absolute inset-0 bg-black/60"></div>
-      </div>
+      {/* 3D KARTICA KOJA PRATI MIŠA */}
+      <motion.div 
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+        className="w-full max-w-5xl relative rounded-[3rem] bg-white/70 backdrop-blur-xl border border-slate-200/80 shadow-[0_20px_60px_rgba(0,0,0,0.05)] overflow-hidden group"
+      >
+        {/* Pozadinski mrežasti patern (Grid) da izgleda kao softverski interfejs */}
+        <div className="absolute inset-0 z-0 opacity-[0.03] bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+        
+        {/* 🟢 AI LASER SKENER KOJI IDE GORE DOLE 🟢 */}
+        <motion.div 
+          className="absolute left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_15px_rgba(52,211,153,0.8)] z-10 pointer-events-none"
+          animate={{ top: ["0%", "100%", "0%"] }}
+          transition={{ duration: 6, ease: "linear", repeat: Infinity }}
+        />
 
-      <V8Reveal delay={0.1} direction="down">
-        <div className="bg-orange-600/10 p-4 rounded-full mb-6 relative z-10 inline-block backdrop-blur-sm">
-          <Zap className="w-12 h-12 text-orange-500 drop-shadow-[0_0_15px_rgba(249,115,22,0.6)]" strokeWidth={1.5} />
+        <div className="relative z-20 flex flex-col items-center justify-center text-center p-10 md:p-16" style={{ transform: "translateZ(30px)" }}>
+          
+          <V8Reveal delay={0.1} direction="down">
+            <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl mb-6 inline-block shadow-sm">
+              <ScanLine className="w-10 h-10 text-emerald-500" strokeWidth={2} />
+            </div>
+          </V8Reveal>
+
+          <V8Reveal delay={0.2} direction="up">
+            <V8CinematicText text="10X PROMPT ENHANCER" className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-slate-900 mb-4 drop-shadow-sm" delay={0.2} />
+          </V8Reveal>
+
+          <V8Reveal delay={0.3} direction="up">
+            <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-4 py-1.5 rounded-full text-[11px] md:text-[13px] font-black text-emerald-600 uppercase tracking-[0.2em] mb-4 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Premium 3-in-1 tool. Only $199.99 Lifetime.
+            </div>
+          </V8Reveal>
+
+          <V8Reveal delay={0.4} direction="up">
+            <CountdownTimer />
+          </V8Reveal>
+
+          <V8Reveal delay={0.5} direction="up">
+            <div className="bg-slate-50/50 border border-slate-100 rounded-2xl p-6 mt-8 mb-10 max-w-2xl mx-auto shadow-inner">
+              <p className="text-slate-600 text-[10px] md:text-[12px] font-medium uppercase tracking-[0.2em] leading-relaxed">
+                <strong className="font-black text-slate-900">ACCESS THE PREMIUM AI PROMPT ENGINEERING SYSTEM. CONVERT SIMPLE IDEAS OR AN IMAGE INTO MASTERPIECES.</strong><br /><br />
+                <span className="text-emerald-600 font-black">ENTER YOUR PROMPT; THE ENGINE WILL ANALYZE IT IN DETAIL AND ENHANCE IT TO BE 10X BETTER.</span>
+              </p>
+            </div>
+          </V8Reveal>
+
+          <V8Reveal delay={0.6} direction="up">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
+              {hasEnhancerAccess ? (
+                <Link to="/enxance" className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-12 py-4 rounded-xl font-black text-[12px] uppercase tracking-widest shadow-[0_10px_20px_rgba(16,185,129,0.3)] hover:scale-105 transition-all flex items-center justify-center gap-3 w-full sm:w-auto cursor-pointer">
+                  🚀 LAUNCH ENGINE
+                </Link>
+              ) : (
+                <>
+                  <RippleButton onClick={handlePaymentV8} className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-8 py-4 rounded-xl font-black text-[11px] uppercase tracking-widest shadow-[0_10px_20px_rgba(16,185,129,0.3)] hover:scale-105 transition-all flex items-center gap-3 w-full sm:w-auto justify-center cursor-pointer">
+                    <Zap className="w-5 h-5 fill-white" /> GET LIFETIME LICENSE ($199.99)
+                  </RippleButton>
+                  <Link to="/promo" className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-emerald-300 hover:text-emerald-600 px-8 py-4 rounded-xl font-black text-[11px] uppercase tracking-widest shadow-sm hover:shadow-md hover:scale-105 transition-all flex items-center gap-3 w-full sm:w-auto justify-center cursor-pointer">
+                    <PlayCircle className="w-5 h-5" /> SEE DEMO
+                  </Link>
+                </>
+              )}
+            </div>
+          </V8Reveal>
+
         </div>
-      </V8Reveal>
-
-      <V8Reveal delay={0.2} direction="up">
-        <V8CinematicText text="10X PROMPT ENHANCER" className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-orange-500 mb-4 drop-shadow-[0_0_20px_rgba(234,88,12,0.8)] relative z-10" delay={0.2} />
-      </V8Reveal>
-
-      <V8Reveal delay={0.3} direction="up">
-        <div className="text-[13px] md:text-[15px] font-black text-green-400 uppercase tracking-[0.2em] mb-4 relative z-10 drop-shadow-md">
-          Premium 3-in-1 tool. ONLY $199.99 LIFETIME.
-        </div>
-      </V8Reveal>
-
-      <V8Reveal delay={0.4} direction="up">
-        <div className="relative z-10"><CountdownTimer /></div>
-      </V8Reveal>
-
-      <V8Reveal delay={0.5} direction="up">
-        <p className="text-zinc-200 text-[10px] md:text-[12px] max-w-2xl font-medium uppercase tracking-[0.2em] leading-relaxed mt-10 mb-10 mx-auto px-4 relative z-10 drop-shadow-lg">
-          <span className="font-black text-white">ACCESS THE PREMIUM AI PROMPT ENGINEERING SYSTEM. CONVERT SIMPLE IDEAS OR AN IMAGE INTO MASTERPIECES.</span><br /><br />
-          <span className="text-orange-400 font-black uppercase">ENTER YOUR PROMPT; WE WILL ANALYZE IT IN DETAIL AND ENHANCE IT TO BE 10X BETTER.</span>
-        </p>
-      </V8Reveal>
-
-      <V8Reveal delay={0.6} direction="up">
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-2 w-full px-6 relative z-10">
-          {hasEnhancerAccess ? (
-            <Link to="/enxance" className="bg-gradient-to-r from-green-600 to-emerald-500 text-white px-12 py-4 rounded-xl font-black text-[14px] uppercase tracking-widest shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:scale-105 transition-all flex items-center justify-center gap-3 w-full sm:w-auto cursor-pointer backdrop-blur-md">
-              🚀 LAUNCH ENGINE
-            </Link>
-          ) : (
-            <>
-              <RippleButton onClick={handlePaymentV8} className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white px-8 py-4 rounded-xl font-black text-[14px] uppercase tracking-widest shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:scale-105 transition-all flex items-center gap-3 w-full sm:w-auto justify-center cursor-pointer backdrop-blur-md">
-                <Zap className="w-5 h-5 fill-white" /> GET LIFETIME LICENSE ($199.99)
-              </RippleButton>
-              <Link to="/promo" className="bg-black/50 backdrop-blur-md border border-orange-500/50 text-orange-400 hover:bg-orange-500 hover:text-white px-8 py-4 rounded-xl font-black text-[14px] uppercase tracking-widest shadow-[0_0_15px_rgba(249,115,22,0.1)] hover:shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:scale-105 transition-all flex items-center gap-3 w-full sm:w-auto justify-center cursor-pointer">
-                <PlayCircle className="w-5 h-5" /> SEE DEMO
-              </Link>
-            </>
-          )}
-        </div>
-      </V8Reveal>
-
+      </motion.div>
     </div>
   );
 };
-// KRAJ FUNKCIJE: EnhancerPromo
 
 export default EnhancerPromo;
 // KRAJ FAJLA: EnhancerPromo.jsx

@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 const V10UltraPrintAssets = ({ paketi, isAdmin, getGlobalCena, getAspectClass, prijavaIKupovina, startEditPaket, obrisiPaket, setFullScreenImageUrl, kupljeniPaketiIds }) => {
   if (!paketi || paketi.length === 0) {
     return (
-      <div className="w-full text-center py-20 text-zinc-500 font-black uppercase tracking-widest">
+      <div className="w-full text-center py-20 text-slate-400 font-black uppercase tracking-widest">
         Awaiting Ultra Print Bundles. Radar is clear.
       </div>
     );
@@ -18,35 +18,34 @@ const V10UltraPrintAssets = ({ paketi, isAdmin, getGlobalCena, getAspectClass, p
         const isOwned = kupljeniPaketiIds?.includes(paket.id) || paket.isFree || parseFloat(paket.cena) === 0;
 
         return (
-          <div key={paket.id} className="relative w-full lg:w-[calc(50%-1.5rem)] p-[2px] rounded-[2.5rem] overflow-hidden group/wrap transition-all duration-300 hover:shadow-[0_0_40px_rgba(66,133,244,0.3)] flex flex-col">
+          <div key={paket.id} className="relative w-full lg:w-[calc(50%-1.5rem)] p-[3px] rounded-[2rem] md:rounded-[3rem] overflow-hidden group/wrap transition-all duration-500 hover:shadow-[0_20px_50px_rgba(168,85,247,0.15)] flex flex-col bg-slate-100">
             
-            {/* 🔥 GEMINI AI ROTIRAJUĆI EFEKAT 🔥 */}
-            <div className="absolute top-1/2 left-1/2 w-[200%] h-[200%] -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,transparent_0%,transparent_50%,#4285F4_70%,#EA4335_80%,#FBBC05_90%,#34A853_100%)] animate-ai-spin z-0 pointer-events-none"></div>
+            {/* 🔥 TAČNA GEMINI ANIMACIJA IZ VIDEA (Uvek vidljiva 100%) 🔥 */}
+            <div className="absolute top-1/2 left-1/2 w-[250%] h-[250%] -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,transparent_0%,transparent_50%,#4285F4_70%,#EA4335_85%,#34A853_100%)] animate-ai-spin z-0 pointer-events-none opacity-100"></div>
 
-            {/* UNUTRAŠNJA KARTICA */}
-            <div className="relative z-10 bg-[#0a0a0a] rounded-[calc(2.5rem-2px)] border border-purple-500/20 overflow-hidden shadow-[0_0_30px_rgba(168,85,247,0.05)] h-full flex flex-col">
+            {/* UNUTRAŠNJA STAKLENA KARTICA */}
+            <div className="relative z-10 bg-white/90 backdrop-blur-xl rounded-[calc(2rem-3px)] md:rounded-[calc(3rem-3px)] overflow-hidden h-full flex flex-col shadow-inner">
               
-              {/* SLIKA I ZNAČKE (BADGES) */}
-              <div className="p-4 md:p-5 relative">
+              {/* SLIKA I ZNAČKE - Skalirano za mobilni */}
+              <div className="p-3 md:p-5 relative bg-slate-50/50">
                  {paket.volume && (
-                   <div className="absolute top-8 left-8 z-10 bg-gradient-to-r from-purple-600 to-pink-500 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg">
+                   <div className="absolute top-5 left-5 md:top-8 md:left-8 z-10 bg-white text-slate-800 text-[8px] md:text-[10px] font-black uppercase tracking-widest px-2.5 py-1 md:px-3 md:py-1.5 rounded-full shadow-sm border border-slate-200">
                      {paket.volume}
                    </div>
                  )}
-                 <div className="absolute top-8 right-8 z-10 flex flex-col items-end gap-2 max-w-[50%]">
-                    <div className="bg-gradient-to-r from-purple-600 to-pink-500 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg text-center">
+                 <div className="absolute top-5 right-5 md:top-8 md:right-8 z-10 flex flex-col items-end gap-1.5 md:gap-2 max-w-[60%] md:max-w-[50%]">
+                    <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[8px] md:text-[10px] font-black uppercase tracking-widest px-2.5 py-1 md:px-3 md:py-1.5 rounded-full shadow-md text-center border border-purple-400">
                       150MP ULTRA PRINT
                     </div>
                     {paket.kategorijaEn && (
-                      <div className="bg-black/80 backdrop-blur-md border border-purple-500/50 text-purple-300 text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full text-center">
+                      <div className="bg-white/90 backdrop-blur-md border border-slate-200 text-slate-500 text-[7px] md:text-[9px] font-black uppercase tracking-widest px-2.5 py-1 md:px-3 md:py-1.5 rounded-full text-center shadow-sm">
                         {paket.kategorijaEn}
                       </div>
                     )}
                  </div>
 
-                 {/* GLAVNA SLIKA SA PULSIRANJEM, TAJMING MUNJOM I KONTAKTNOM SENKOM */}
-                 <div className="w-full aspect-[16/9] rounded-2xl overflow-hidden cursor-pointer relative group border border-white/5 v8-glass-container" onClick={() => setFullScreenImageUrl(paket.previewUrl)}>
-                    
+                 {/* GLAVNA SLIKA - Pulsiranje i munjice su netaknuti */}
+                 <div className="w-full aspect-[16/9] rounded-[1rem] md:rounded-2xl overflow-hidden cursor-pointer relative group border border-slate-200 v8-glass-container bg-slate-100 shadow-inner" onClick={() => setFullScreenImageUrl(paket.previewUrl)}>
                     <motion.img 
                       src={paket.previewUrl} 
                       alt={paket.nazivEn} 
@@ -54,41 +53,29 @@ const V10UltraPrintAssets = ({ paketi, isAdmin, getGlobalCena, getAspectClass, p
                       animate={{ scale: [1, 1.05, 1] }}
                       transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
                     />
-
-                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-20">
-                       <Zap className="text-white w-12 h-12 drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]" />
+                    <div className="absolute inset-0 bg-white/20 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-20">
+                       <Zap className="text-purple-500 w-8 h-8 md:w-12 md:h-12 drop-shadow-md" />
                     </div>
-
                     <motion.div 
                       className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
-                      animate={{ 
-                          opacity: [0, 0, 0.9, 0, 1, 0, 0],
-                          scale: [0.8, 0.8, 1.2, 0.9, 1.5, 1, 1]
-                      }}
-                      transition={{ 
-                          duration: 7, 
-                          repeat: Infinity, 
-                          times: [0, 0.85, 0.87, 0.9, 0.92, 0.98, 1],
-                          ease: "easeInOut"
-                      }}
+                      animate={{ opacity: [0, 0, 0.9, 0, 1, 0, 0], scale: [0.8, 0.8, 1.2, 0.9, 1.5, 1, 1] }}
+                      transition={{ duration: 7, repeat: Infinity, times: [0, 0.85, 0.87, 0.9, 0.92, 0.98, 1], ease: "easeInOut" }}
                     >
-                       <Zap className="text-purple-400 w-16 h-16 drop-shadow-[0_0_40px_rgba(168,85,247,1)]" fill="rgba(168,85,247,0.3)" strokeWidth={1.5} />
+                       <Zap className="text-pink-400 w-10 h-10 md:w-16 md:h-16 drop-shadow-lg" fill="rgba(244,114,182,0.3)" strokeWidth={1.5} />
                     </motion.div>
                  </div>
 
-                 {/* MALE SLIKE (THUMBNAILS) SA ASINHRONIM PULSIRANJEM I KONTAKTNIM SENKAMA */}
+                 {/* THUMBNAILS - Prilagođen razmak */}
                  {paket.primeri && paket.primeri.length > 0 && (
-                    <div className="grid grid-cols-5 gap-2 mt-3">
+                    <div className="grid grid-cols-5 gap-1.5 md:gap-2 mt-2 md:mt-3">
                        {paket.primeri.slice(0, 5).map((thumb, idx) => (
-                          <div key={idx} className="aspect-square rounded-xl overflow-hidden cursor-pointer relative group border border-white/5 v8-glass-container" onClick={() => setFullScreenImageUrl(thumb)}>
+                          <div key={idx} className="aspect-square rounded-lg md:rounded-xl overflow-hidden cursor-pointer relative group border border-slate-200 v8-glass-container bg-slate-50" onClick={() => setFullScreenImageUrl(thumb)}>
                              <motion.img 
-                               src={thumb} 
-                               alt={`Preview ${idx}`} 
-                               className="w-full h-full transform-gpu v8-glass-image" 
+                               src={thumb} alt={`Preview ${idx}`} className="w-full h-full transform-gpu v8-glass-image" 
                                animate={{ scale: [1, 1.15, 1] }}
                                transition={{ duration: 5 + idx, repeat: Infinity, ease: "easeInOut" }}
                              />
-                             <div className="absolute inset-0 bg-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                             <div className="absolute inset-0 bg-white/30 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                           </div>
                        ))}
                     </div>
@@ -96,59 +83,57 @@ const V10UltraPrintAssets = ({ paketi, isAdmin, getGlobalCena, getAspectClass, p
               </div>
 
               {/* TEKST I KONTROLE */}
-              <div className="p-6 md:p-8 pt-2 flex flex-col flex-grow">
+              <div className="p-5 md:p-8 pt-4 flex flex-col flex-grow bg-white/50">
                  
-                 <h3 className="text-xl md:text-[22px] leading-tight font-black uppercase text-white mb-5 tracking-widest flex items-start gap-3">
-                    <Aperture className="text-purple-500 shrink-0 mt-0.5" size={24} />
+                 <h3 className="text-[16px] md:text-[22px] leading-tight font-black uppercase text-slate-900 mb-3 md:mb-4 tracking-tighter flex items-start gap-2 md:gap-3 drop-shadow-sm">
+                    <Aperture className="text-purple-500 shrink-0 mt-0.5 md:mt-1 w-5 h-5 md:w-6 md:h-6" />
                     <span>{paket.nazivEn}</span>
                  </h3>
 
-                 <div className="bg-purple-900/10 border border-purple-500/20 rounded-xl p-3 mb-3 flex items-center gap-2">
-                    <Aperture size={14} className="text-purple-400 shrink-0" />
-                    <span className="text-[9px] md:text-[10px] text-purple-300 font-black uppercase tracking-widest">150 MEGAPIXELS (V10 ENGINE)</span>
+                 <div className="bg-purple-50/50 border border-purple-100 rounded-lg md:rounded-xl p-2.5 md:p-3 mb-2.5 md:mb-3 flex items-center gap-2 shadow-sm">
+                    <Aperture size={12} className="text-purple-500 shrink-0 md:w-[14px] md:h-[14px]" />
+                    <span className="text-[7.5px] md:text-[10px] text-purple-700 font-black uppercase tracking-widest">150 MEGAPIXELS (V10 ENGINE)</span>
                  </div>
 
-                 <div className="bg-emerald-900/10 border border-emerald-500/20 rounded-xl p-3 mb-5 flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                    <ShieldCheck size={14} className="text-emerald-400 shrink-0 hidden sm:block" />
-                    <span className="text-[9px] md:text-[10px] text-emerald-400 font-black uppercase tracking-widest leading-relaxed">INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP</span>
+                 <div className="bg-slate-50/50 border border-slate-200 rounded-lg md:rounded-xl p-2.5 md:p-3 mb-4 md:mb-5 flex flex-row items-center gap-2 shadow-sm">
+                    <ShieldCheck size={12} className="text-emerald-500 shrink-0 md:w-[14px] md:h-[14px]" />
+                    <span className="text-[7.5px] md:text-[10px] text-slate-600 font-black uppercase tracking-[0.1em] md:tracking-[0.15em] leading-tight md:leading-relaxed">COMMERCIAL RIGHTS & IP-SAFE CLEANUP</span>
                  </div>
 
-                 <p className="text-[10px] md:text-[11px] text-zinc-400 font-bold uppercase tracking-widest mb-8 leading-relaxed flex-grow">
+                 <p className="text-[10px] md:text-[12px] text-slate-500 font-medium uppercase tracking-[0.05em] md:tracking-[0.1em] mb-6 md:mb-8 leading-relaxed flex-grow">
                     {paket.opisEn}
                  </p>
 
-                 <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between mt-auto pt-6 border-t border-white/5 gap-6 sm:gap-0">
+                 {/* DUGME I CENA - Stack na telefonu */}
+                 <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between mt-auto pt-5 md:pt-6 border-t border-slate-200 gap-4 sm:gap-0 relative z-20">
                     <div className="text-center sm:text-left w-full sm:w-auto">
-                       <p className="text-[9px] text-zinc-500 font-black uppercase tracking-widest mb-1 flex items-center justify-center sm:justify-start gap-1">
-                         <ShieldCheck size={10} className="text-emerald-500"/> FULL COMMERCIAL RIGHTS
+                       <p className="text-[8px] md:text-[9px] text-slate-400 font-black uppercase tracking-widest mb-1 flex items-center justify-center sm:justify-start gap-1">
+                         <ShieldCheck size={10} className="text-emerald-500"/> B2B READY
                        </p>
-                       <p className="text-4xl font-black text-purple-400 drop-shadow-md">${getGlobalCena(paket.cena)}</p>
+                       <p className="text-3xl md:text-4xl font-black text-slate-900 drop-shadow-sm">${getGlobalCena(paket.cena)}</p>
                     </div>
 
                     <button 
                       onClick={() => {
-                        if (isAdmin || isOwned) {
-                          window.open(paket.zipLink, '_blank');
-                        } else {
-                          prijavaIKupovina(paket);
-                        }
+                        if (isAdmin || isOwned) { window.open(paket.zipLink, '_blank'); } 
+                        else { prijavaIKupovina(paket); }
                       }} 
-                      className={`w-full sm:w-auto px-8 py-4 sm:px-6 sm:py-4 rounded-xl font-black text-[13px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 hover:scale-105 ${
+                      className={`w-full sm:w-auto px-6 py-3.5 md:px-6 md:py-4 rounded-xl font-black text-[11px] md:text-[13px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-md hover:scale-105 ${
                         (!isAdmin && isOwned) 
-                          ? 'bg-gradient-to-r from-emerald-500 to-teal-400 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)]' 
-                          : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-[0_0_20px_rgba(168,85,247,0.3)]'
+                          ? 'bg-slate-900 text-white hover:bg-emerald-500 hover:shadow-[0_10px_20px_rgba(16,185,129,0.3)]' 
+                          : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:shadow-[0_10px_20px_rgba(168,85,247,0.3)]'
                       }`}
                     >
-                       {(isAdmin || isOwned) ? <><DownloadCloud size={16} /> DOWNLOAD</> : <><Diamond size={16} /> GET ACCESS</>}
+                       {(isAdmin || isOwned) ? <><DownloadCloud size={14} className="md:w-4 md:h-4" /> DOWNLOAD ASSET</> : <><Diamond size={14} className="md:w-4 md:h-4" /> SECURE ASSET</>}
                     </button>
                  </div>
 
                  {isAdmin && (
-                    <div className="mt-6 pt-4 border-t border-red-500/20 flex flex-col sm:flex-row justify-between gap-3">
-                       <button onClick={() => startEditPaket(paket)} className="flex-1 w-full bg-zinc-900 hover:bg-white text-zinc-400 hover:text-black py-3 rounded-xl transition-all border border-white/10 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2">
+                    <div className="mt-5 md:mt-6 pt-4 border-t border-red-200 flex flex-col sm:flex-row justify-between gap-2.5 md:gap-3 relative z-20">
+                       <button onClick={() => startEditPaket(paket)} className="flex-1 w-full bg-white hover:bg-slate-900 text-slate-600 hover:text-white py-3 rounded-lg md:rounded-xl transition-all border border-slate-200 shadow-sm text-[9px] md:text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2">
                           EDIT <Edit size={14} />
                        </button>
-                       <button onClick={() => obrisiPaket(paket.id)} className="flex-1 w-full bg-red-900/30 hover:bg-red-500 text-red-500 hover:text-white py-3 rounded-xl transition-all border border-red-500/30 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2">
+                       <button onClick={() => obrisiPaket(paket.id)} className="flex-1 w-full bg-red-50 hover:bg-red-500 text-red-500 hover:text-white py-3 rounded-lg md:rounded-xl transition-all border border-red-200 shadow-sm text-[9px] md:text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2">
                           REMOVE <Trash2 size={14} />
                        </button>
                     </div>

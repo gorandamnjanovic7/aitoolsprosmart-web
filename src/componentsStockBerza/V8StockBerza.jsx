@@ -21,7 +21,6 @@ import LoginRequiredModal from '../LoginRequiredModal';
 
 import { trackV8Action } from '../utils/analytics';
 
-// 🔥 V8 ZAŠTITNI ŠTIT (ERROR BOUNDARY) 🔥
 class V8ErrorGuard extends React.Component {
   constructor(props) {
     super(props);
@@ -39,17 +38,17 @@ class V8ErrorGuard extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center p-6 text-center z-[999999] relative">
-          <AlertCircle size={64} className="text-[#FF8C00] mb-6 drop-shadow-[0_0_15px_rgba(255,140,0,0.8)]" />
-          <h1 className="text-3xl font-black text-white uppercase tracking-widest mb-4">Sistemska Blokada</h1>
-          <p className="text-zinc-400 max-w-md mx-auto mb-8 font-bold leading-relaxed">
-            Vaš pretraživač ili aktivna ekstenzija (AdBlocker, Video Downloader) agresivno blokira učitavanje V8 modula. 
+        <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center z-[999999] relative">
+          <AlertCircle size={64} className="text-orange-500 mb-6 drop-shadow-sm" />
+          <h1 className="text-3xl font-black text-slate-900 uppercase tracking-widest mb-4">Sistemska Blokada</h1>
+          <p className="text-slate-600 max-w-md mx-auto mb-8 font-bold leading-relaxed">
+            Vaš pretraživač ili aktivna ekstenzija agresivno blokira učitavanje V8 modula. 
             <br/><br/>
-            Molimo vas da <span className="text-[#FF8C00]">pauzirate ekstenzije za ovaj sajt</span> kako biste pristupili bazi.
+            Molimo vas da <span className="text-orange-500">pauzirate ekstenzije</span> kako biste pristupili bazi.
           </p>
           <button 
             onClick={() => window.location.reload()} 
-            className="flex items-center justify-center gap-2 bg-[#FF8C00] hover:bg-orange-500 text-black px-8 py-4 rounded-xl font-black uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(255,140,0,0.4)] hover:scale-105 mx-auto"
+            className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-orange-500 text-white px-8 py-4 rounded-xl font-black uppercase tracking-widest transition-all shadow-lg hover:scale-105 mx-auto"
           >
             <RefreshCcw size={18} strokeWidth={3} /> Osveži Sistem
           </button>
@@ -60,7 +59,6 @@ class V8ErrorGuard extends React.Component {
   }
 }
 
-// POČETAK FUNKCIJE: FullScreenLightbox
 const FullScreenLightbox = ({ imageUrl, onClose }) => {
   useEffect(() => {
       if (imageUrl) {
@@ -75,15 +73,13 @@ const FullScreenLightbox = ({ imageUrl, onClose }) => {
 
   if (!imageUrl) return null;
   return createPortal(
-      <div className="fixed inset-0 z-[999999] bg-[#0f172a]/95 flex items-center justify-center p-4" onClick={onClose}>
-          <button type="button" onClick={(e) => { e.stopPropagation(); onClose(); }} className="absolute top-6 right-6 md:top-10 md:right-10 bg-[#FF8C00] hover:bg-orange-500 text-black drop-shadow-[0_2px_4px_rgba(255,255,255,0.4)] p-4 rounded-full font-black z-[1000000] shadow-[0_0_30px_rgba(255,140,0,0.8)] transition-all hover:scale-110"><X size={32} strokeWidth={4} /></button>
-          <img src={imageUrl} alt="Full Screen Preview" className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-[0_0_80px_rgba(255,140,0,0.4)] border border-[#FF8C00]/30 relative z-[999999]" onClick={(e) => e.stopPropagation()} />
+      <div className="fixed inset-0 z-[999999] bg-slate-900/95 backdrop-blur-xl flex items-center justify-center p-4" onClick={onClose}>
+          <button type="button" onClick={(e) => { e.stopPropagation(); onClose(); }} className="absolute top-6 right-6 md:top-10 md:right-10 bg-white hover:bg-orange-500 text-slate-900 hover:text-white drop-shadow-lg p-4 rounded-full font-black z-[1000000] transition-all hover:scale-110"><X size={32} strokeWidth={4} /></button>
+          <img src={imageUrl} alt="Full Screen Preview" className="max-w-full max-h-[90vh] object-contain rounded-[2rem] shadow-2xl relative z-[999999] border border-white/10" onClick={(e) => e.stopPropagation()} />
       </div>, document.body
   );
 };
-// KRAJ FUNKCIJE: FullScreenLightbox
 
-// POČETAK FUNKCIJE: V8StockBerzaBase
 const V8StockBerzaBase = () => {
   const navigate = useNavigate();
   const [paketi, setPaketi] = useState([]);
@@ -165,7 +161,6 @@ const V8StockBerzaBase = () => {
             else { 
                 p.format = '45MP MASTERWORK BUNDLE'; 
             }
-
             return { id: d.id, ...p };
         });
 
@@ -262,7 +257,6 @@ const V8StockBerzaBase = () => {
     }
   }, [activeTab, editingPaketId]);
 
-  // 🔥 PAMETNI AUTO-FILL ZA 33MP, 45MP, 60MP I 150MP OPIS 🔥
   useEffect(() => {
     if (editingPaketId) return; 
     
@@ -270,7 +264,7 @@ const V8StockBerzaBase = () => {
     
     const tekst45MP = "10 MASTERWORK BUNDLE: COMPLETE COLLECTION OF 60 PREMIUM VISUALS FOR 8K IN 45 MEGAPIXELS RESOLUTION. INCLUDES 60 IMAGES 16:9 ( 30 Images ) AND 9:16 ( 30 Images ) ASPECT RATIOS. Utilizing precision LANCZOS interpolation. An advanced MedianFilter systematically wipes out digital noise and compression artifacts. Custom NumPy matrix processing applies a smooth rolloff to prevent blown-out whites and retain intricate highlight textures. Strict conversion to the sRGB ICC profile ensures color accuracy across all digital devices and professional reference monitors. Signature Gaussian Noise distribution breaks artificial AI smoothness, creating an authentic, tangible photographic look, Subtle organic micro-grain to break artificial smoothness after heavy upscale, Extra protection around high-contrast bright edges to reduce ugly glow/outline artifacts. Zero text, watermarks, or logos. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Fully production-ready.";
 
-    const tekst60MP = "V10 MASTERWORK BUNDLE 60MP: COMPLETE COLLECTION OF 20 PREMIUM VISUALS FOR 8K IN 65 MEGAPIXELS RESOLUTION. INCLUDES 16:9 ( 10 Images ), 9:16 ( 10 Images ) AND 21:9 (10 Images) ASPECT RATIOS. Utilizing precision LANCZOS interpolation,  Subtle organic micro-grain to break artificial smoothness after heavy upscale, Fine dithering in dark gradients, smoke, mist, and sky areas to reduce banding. An advanced MedianFilter systematically wipes out digital noise and compression artifacts. Custom NumPy matrix processing applies a smooth rolloff to prevent blown-out whites and retain intricate highlight textures. Strict conversion to the sRGB ICC profile ensures color accuracy across all digital devices and professional reference monitors. Signature Gaussian Noise distribution breaks artificial AI smoothness, creating an authentic, tangible photographic look. Zero text, watermarks, or logos. INC, IP SAFE";
+    const tekst60MP = "V10 MASTERWORK BUNDLE 60MP: COMPLETE COLLECTION OF 20 PREMIUM VISUALS FOR 8K IN 65 MEGAPIXELS RESOLUTION. INCLUDES 16:9 ( 10 Images ), 9:16 ( 10 Images ) AND 21:9 (10 Images) ASPECT RATIOS. Utilizing precision LANCZOS interpolation, Subtle organic micro-grain to break artificial smoothness after heavy upscale, Fine dithering in dark gradients, smoke, mist, and sky areas to reduce banding. An advanced MedianFilter systematically wipes out digital noise and compression artifacts. Custom NumPy matrix processing applies a smooth rolloff to prevent blown-out whites and retain intricate highlight textures. Strict conversion to the sRGB ICC profile ensures color accuracy across all digital devices and professional reference monitors. Signature Gaussian Noise distribution breaks artificial AI smoothness, creating an authentic, tangible photographic look. Zero text, watermarks, or logos. INC, IP SAFE";
 
     const tekst150MP = "V10 ULTRA PRINT BUNDLE: MASSIVE 150MP RESOLUTION FOR ELITE PRINT & COMMERCIAL WORK. INCLUDES A CURATED 15-FILE COLLECTION: 16:9 ( 5 Images ), 9:16 ( 5 Images ), AND 21:9 ( 5 Images ) ASPECT RATIOS. Processed through the V10 Master Engine utilizing precision LANCZOS interpolation. Includes advanced UnsharpMask micro-contrast, custom NumPy matrix processing for highlight rolloff and shadow depth, and organic anti-plastic grain. Strict sRGB ICC profile embedding. Perfect for high-visibility billboards, museum-grade fine-art printing, and extreme macro cropping. Zero text, watermarks, or logos. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Fully production-ready.";
 
@@ -431,10 +425,10 @@ const V8StockBerzaBase = () => {
       { t: `14. Quality Gate`, d: "Final validation & reporting.", insight: `Final validation of ${rezolucija} dimensions, JPEG integrity, TXT report, CSV report, and ZIP validation report.` }
     ];
     return (
-      <div className={`w-full max-w-[1200px] mx-auto mb-12 bg-black/40 border rounded-[2rem] p-8 md:p-10 ${(rezolucija.includes('150MP')) ? 'border-purple-500/20' : 'border-white/5'}`}>
+      <div className={`w-full max-w-[1200px] mx-auto mb-12 bg-white/40 backdrop-blur-3xl border rounded-[3rem] p-8 md:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.03)] ${(rezolucija.includes('150MP')) ? 'border-purple-200/50' : 'border-white/80'}`}>
         <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-black uppercase tracking-[0.2em] text-white">{(rezolucija.includes('150MP')) ? 'V10 ULTRA ENGINE' : 'V8 MASTER ENGINE'}</h2>
-          <p className={`text-[12px] md:text-[14px] font-bold uppercase tracking-[0.3em] mt-3 italic ${(rezolucija.includes('150MP')) ? 'text-purple-400' : 'text-blue-400'}`}>Technical Specifications</p>
+          <h2 className="text-3xl md:text-4xl font-black uppercase tracking-[0.2em] text-slate-900">{(rezolucija.includes('150MP')) ? 'V10 ULTRA ENGINE' : 'V8 MASTER ENGINE'}</h2>
+          <p className={`text-[12px] md:text-[14px] font-bold uppercase tracking-[0.3em] mt-3 italic ${(rezolucija.includes('150MP')) ? 'text-purple-500' : 'text-orange-500'}`}>Technical Specifications</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
           {specifikacije.map((item, i) => {
@@ -447,23 +441,23 @@ const V8StockBerzaBase = () => {
                       return isNowOpen ? [...prev, i] : prev.filter(x => x !== i);
                   });
                 }}
-                className={`bg-white/5 border p-6 rounded-2xl transition-all duration-500 cursor-pointer relative overflow-hidden group ${isOpen ? ((rezolucija.includes('150MP')) ? 'border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.15)]' : 'border-orange-500/50 shadow-[0_0_15px_rgba(249,115,22,0.1)]') : 'border-white/5 hover:border-white/20'}`}
+                className={`bg-white/60 backdrop-blur-md border p-6 rounded-2xl transition-all duration-500 cursor-pointer relative overflow-hidden group ${isOpen ? ((rezolucija.includes('150MP')) ? 'border-purple-300 shadow-[0_10px_20px_rgba(168,85,247,0.1)]' : 'border-orange-300 shadow-[0_10px_20px_rgba(249,115,22,0.1)]') : 'border-white hover:border-slate-300 hover:shadow-md'}`}
               >
                 <div className="relative z-10 flex justify-between items-center">
                   <div>
-                    <h4 className={`text-[13px] md:text-[15px] font-black uppercase transition-colors duration-300 flex items-center gap-3 mb-2 ${isOpen ? ((rezolucija.includes('150MP')) ? 'text-pink-400' : 'text-orange-400') : ((rezolucija.includes('150MP')) ? 'text-purple-400' : 'text-blue-400')}`}>
-                      <span className={`text-lg transition-colors duration-300 ${isOpen ? ((rezolucija.includes('150MP')) ? 'text-pink-500' : 'text-orange-500') : ((rezolucija.includes('150MP')) ? 'text-purple-600/60' : 'text-blue-600/60')}`}>💎</span> 
+                    <h4 className={`text-[13px] md:text-[15px] font-black uppercase transition-colors duration-300 flex items-center gap-3 mb-2 ${isOpen ? ((rezolucija.includes('150MP')) ? 'text-pink-600' : 'text-orange-600') : 'text-slate-800'}`}>
+                      <span className={`text-lg transition-colors duration-300 ${isOpen ? ((rezolucija.includes('150MP')) ? 'text-pink-500' : 'text-orange-500') : 'text-slate-400'}`}>💎</span> 
                       {item.t}
                     </h4>
-                    <p className={`text-[11px] md:text-[13px] font-medium leading-relaxed transition-colors duration-300 ${isOpen ? 'text-white' : 'text-zinc-400'}`}>{item.d}</p>
+                    <p className={`text-[11px] md:text-[13px] font-medium leading-relaxed transition-colors duration-300 ${isOpen ? 'text-slate-900' : 'text-slate-500'}`}>{item.d}</p>
                   </div>
-                  <div className={`ml-4 text-xs md:text-sm font-black transition-all duration-500 ${isOpen ? `rotate-180 ${(rezolucija.includes('150MP')) ? 'text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.8)]' : 'text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]'}` : ((rezolucija.includes('150MP')) ? 'text-purple-500 drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]' : 'text-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]')}`}>▼</div>
+                  <div className={`ml-4 text-xs md:text-sm font-black transition-all duration-500 ${isOpen ? `rotate-180 ${(rezolucija.includes('150MP')) ? 'text-pink-500' : 'text-orange-500'}` : 'text-slate-300'}`}>▼</div>
                 </div>
                 <div className={`grid transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] relative z-10 ${isOpen ? 'grid-rows-[1fr] mt-4 opacity-100 filter-none' : 'grid-rows-[0fr] opacity-0 blur-sm'}`}>
                   <div className="overflow-hidden">
-                    <div className="pt-4 border-t border-white/10">
-                      <p className={`text-[11px] md:text-[12px] text-zinc-300 font-mono leading-relaxed border-l-2 pl-3 ${(rezolucija.includes('150MP')) ? 'border-pink-500' : 'border-orange-500'}`}>
-                        <span className={`font-bold ${(rezolucija.includes('150MP')) ? 'text-pink-400' : 'text-orange-400'}`}>Tech Insight:</span> {item.insight}
+                    <div className="pt-4 border-t border-slate-200">
+                      <p className={`text-[11px] md:text-[12px] text-slate-600 font-mono leading-relaxed border-l-2 pl-3 ${(rezolucija.includes('150MP')) ? 'border-pink-500' : 'border-orange-500'}`}>
+                        <span className={`font-bold ${(rezolucija.includes('150MP')) ? 'text-pink-600' : 'text-orange-600'}`}>Tech Insight:</span> {item.insight}
                       </p>
                     </div>
                   </div>
@@ -477,51 +471,15 @@ const V8StockBerzaBase = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] font-sans text-white relative transition-all duration-1000 ease-in-out">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-gray-100 font-sans text-slate-900 relative transition-all duration-1000 ease-in-out">
       <style>{`
+        /* 🔥 TAČNA GEMINI ANIMACIJA IZ VIDEA 🔥 */
         @keyframes ai-spin {
           0% { transform: translate(-50%, -50%) rotate(0deg); }
           100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
-        .animate-ai-spin { animation: ai-spin 4s linear infinite; }
-        .v8-premium-card, .v8-bundle-card, .v8-signature-card, .v10-ultra-card { position: relative; border-radius: 2rem; padding: 2px; overflow: hidden; background: #0a0a0a; width: 100% !important; max-width: 800px !important; height: auto !important; display: flex; flex-direction: column; }
-        @media (min-width: 1024px) { .v8-premium-card, .v8-bundle-card, .v8-signature-card, .v10-ultra-card { flex: 0 0 calc(50% - 1.5rem) !important; } }
-        .v8-card-content { position: relative; background: #0a0a0a; border-radius: 1.9rem; z-index: 1; height: 100%; display: flex; flex-direction: column; flex-grow: 1; }
-        .v8-card-content > div:first-child { height: 480px !important; background: #050505; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 1.9rem 1.9rem 0 0; }
-        .v8-card-content > div:first-child img { height: 100% !important; max-height: 480px !important; width: 100% !important; object-fit: cover !important; }
-        .v8-card-content div.grid { align-items: stretch; }
-        .v8-card-content div.grid > div { height: 100%; }
-        .v8-card-content div.grid img { height: 100% !important; min-height: 160px !important; width: 100% !important; object-fit: cover !important; background-color: transparent !important; border-radius: 0.75rem !important; border: 1px solid rgba(255,255,255,0.1); padding: 0 !important; display: block; }
-
-        .v8-glass-container {
-          position: relative;
-          display: flex;
-          justify-content: center;
-          align-items: flex-end;
-          background: transparent !important;
-        }
-
-        .v8-glass-container::after {
-          content: '';
-          position: absolute;
-          bottom: 2%;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 50%;
-          height: 12px;
-          background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.6) 40%, transparent 75%);
-          filter: blur(4px);
-          z-index: 0;
-          pointer-events: none;
-        }
-
-        .v8-glass-image {
-          position: relative;
-          z-index: 1;
-          object-fit: contain !important;
-          filter: drop-shadow(0 25px 35px rgba(0,0,0,0.85));
-          padding-bottom: 5% !important;
-        }
+        /* Ubrzano na tačno 3s kao na Gemini interfejsu */
+        .animate-ai-spin { animation: ai-spin 3s linear infinite; }
       `}</style>
 
       <Helmet>
@@ -529,13 +487,13 @@ const V8StockBerzaBase = () => {
         <meta name="description" content="Browse the elite AI stock marketplace." />
       </Helmet>
 
-      {/* 🔥 DODATA ZAŠTITA OD VIDEO-DOWNLOADER EKSTENZIJA NA SVIH 8 POZADINA 🔥 */}
-      {activeTab === 'premium' && (<video autoPlay loop muted playsInline disablePictureInPicture controlsList="nodownload" onContextMenu={(e) => e.preventDefault()} className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40 pointer-events-none" src="/33mp_premium_9_16.mp4" />)}
-      {activeTab === 'ultra150' && (<video autoPlay loop muted playsInline disablePictureInPicture controlsList="nodownload" onContextMenu={(e) => e.preventDefault()} className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40 pointer-events-none" src="/v10bg.mp4" />)}
-      {activeTab === 'signature' && (<video autoPlay loop muted playsInline disablePictureInPicture controlsList="nodownload" onContextMenu={(e) => e.preventDefault()} className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40 pointer-events-none" src="/60mp_signarure.mp4" />)}
-      {activeTab === 'bundles' && (<video autoPlay loop muted playsInline disablePictureInPicture controlsList="nodownload" onContextMenu={(e) => e.preventDefault()} className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40 pointer-events-none" src="/45mp_bundles_9_16.mp4" />)}
-
-      <div className="fixed inset-0 bg-[#050505]/60 z-0 pointer-events-none"></div>
+      {/* JAKA VIDEO POZADINA */}
+      <div className="fixed inset-0 z-0 pointer-events-none opacity-40">
+        {activeTab === 'premium' && (<video autoPlay loop muted playsInline disablePictureInPicture className="w-full h-full object-cover transition-opacity duration-1000" src="/33mp_premium_9_16.mp4" />)}
+        {activeTab === 'ultra150' && (<video autoPlay loop muted playsInline disablePictureInPicture className="w-full h-full object-cover transition-opacity duration-1000" src="/v10bg.mp4" />)}
+        {activeTab === 'signature' && (<video autoPlay loop muted playsInline disablePictureInPicture className="w-full h-full object-cover transition-opacity duration-1000" src="/60mp_signarure.mp4" />)}
+        {activeTab === 'bundles' && (<video autoPlay loop muted playsInline disablePictureInPicture className="w-full h-full object-cover transition-opacity duration-1000" src="/45mp_bundles_9_16.mp4" />)}
+      </div>
 
       <div className="relative z-10 pt-32 pb-24 px-6">
         <div className="max-w-[1800px] mx-auto w-full">
@@ -544,122 +502,125 @@ const V8StockBerzaBase = () => {
             <div className="w-full flex justify-end mb-6 relative z-20">
               <button 
                 onClick={() => navigate('/stock-2')}
-                className="v8-pay-btn relative group p-[2px] rounded-xl overflow-hidden transition-all duration-300 hover:shadow-[0_0_35px_rgba(245,158,11,0.5)] active:scale-95"
+                className="v8-pay-btn relative group p-[2px] rounded-xl overflow-hidden transition-all duration-300 hover:shadow-[0_10px_20px_rgba(245,158,11,0.2)] active:scale-95 bg-white border border-slate-200"
               >
-                <div className="absolute top-1/2 left-1/2 w-[250%] h-[250%] -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,transparent_0%,transparent_50%,#F59E0B_70%,#EF4444_85%,#F59E0B_100%)] animate-ai-spin pointer-events-none"></div>
-                <div className="relative z-10 px-8 py-3 bg-[#050505] text-amber-500 rounded-[10px] font-black text-xs md:text-sm uppercase tracking-widest border border-amber-500/30 group-hover:text-white transition-colors flex items-center gap-2">
+                {/* Tačan Gemini gradient oko explore dugmeta */}
+                <div className="absolute top-1/2 left-1/2 w-[250%] h-[250%] -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,transparent_0%,transparent_50%,#4285F4_70%,#EA4335_80%,#FBBC05_90%,#34A853_100%)] animate-ai-spin pointer-events-none opacity-20 group-hover:opacity-50"></div>
+                <div className="relative z-10 px-8 py-3 bg-white text-slate-800 rounded-[10px] font-black text-xs md:text-sm uppercase tracking-widest group-hover:text-orange-500 transition-colors flex items-center gap-2">
                   Explore More Protocols <Zap size={16} />
                 </div>
               </button>
             </div>
           )}
 
-          <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.2 }} className="relative w-full mb-16 rounded-[3rem] overflow-hidden border border-white/10 shadow-[0_0_60px_rgba(255,140,0,0.15)]">
+          <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.2 }} className="relative w-full mb-16 rounded-[3rem] overflow-hidden border border-white shadow-[0_20px_60px_rgba(0,0,0,0.05)] bg-white/40 backdrop-blur-3xl">
               {activeTab === 'premium' && (<video autoPlay loop muted playsInline disablePictureInPicture controlsList="nodownload" onContextMenu={(e) => e.preventDefault()} className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000 pointer-events-none" src="/33mp_premium_16_9.mp4" />)}
               {activeTab === 'ultra150' && (<video autoPlay loop muted playsInline disablePictureInPicture controlsList="nodownload" onContextMenu={(e) => e.preventDefault()} className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000 pointer-events-none" src="/v10-box-bg.mp4" />)}
               {activeTab === 'signature' && (<video autoPlay loop muted playsInline disablePictureInPicture controlsList="nodownload" onContextMenu={(e) => e.preventDefault()} className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000 pointer-events-none" src="/60mp_signarure_16_9.mp4" />)}
               {activeTab === 'bundles' && (<video autoPlay loop muted playsInline disablePictureInPicture controlsList="nodownload" onContextMenu={(e) => e.preventDefault()} className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 transition-opacity duration-1000 pointer-events-none" src="/45mp_bundles_16_9.mp4" />)}
 
-              <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050505]/40 via-[#050505]/80 to-[#050505]"></div>
+              <div className="absolute inset-0 z-0 bg-gradient-to-b from-white/30 via-white/70 to-slate-50 pointer-events-none"></div>
               
               <div className="relative z-10 text-center py-20 px-6">
-                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter mb-4 text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)] transition-all">
-                      {activeTab === 'premium' && (<>V8 33MP <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500 drop-shadow-none">PRODUCTION-READY ASSETS</span></>)}
-                      {activeTab === 'bundles' && (<>V8 45MP EXTREME MASTER <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500 drop-shadow-none">STOCK BUNDLES</span></>)}
-                      {activeTab === 'signature' && (<>V8 60MP <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-500 drop-shadow-none">SIGNATURE BUNDLES</span></>)}
-                      {activeTab === 'ultra150' && (<>V10 150MP <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 drop-shadow-none">ULTRA PRINT</span></>)}
+                  {/* PRAVI TABOVI U GLAVNOM MARKRTU */}
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter mb-4 text-slate-900 drop-shadow-sm transition-all">
+                      {activeTab === 'premium' && (<>V8 33MP <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500">PRODUCTION-READY ASSETS</span></>)}
+                      {activeTab === 'bundles' && (<>V8 45MP EXTREME MASTER <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-indigo-500">STOCK BUNDLES</span></>)}
+                      {activeTab === 'signature' && (<>V8 60MP <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-orange-500">SIGNATURE BUNDLES</span></>)}
+                      {activeTab === 'ultra150' && (<>V10 150MP <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500">ULTRA PRINT</span></>)}
                   </h1>
-                 <p className="text-zinc-200 font-bold uppercase tracking-[0.2em] text-[10px] md:text-[12px] max-w-4xl mx-auto leading-relaxed mb-10 drop-shadow-lg bg-black/30 p-4 rounded-lg backdrop-blur-sm transition-all">
+                 <p className="text-slate-600 font-bold uppercase tracking-[0.2em] text-[10px] md:text-[12px] max-w-4xl mx-auto leading-relaxed mb-10 shadow-sm bg-white/60 p-4 rounded-xl backdrop-blur-md border border-white transition-all">
                   {activeTab === 'premium' && "33MP OF FLAWLESS DETAIL. HOLLYWOOD BLOCKBUSTER QUALITY MEETS 100% COMMERCIALLY SECURE VISUALS. THE ULTIMATE ARSENAL FOR HIGH-END CREATORS."}
-                  {activeTab === 'bundles' && (<>THE DEFINITIVE <span className="text-blue-400">45MP</span> PRODUCTION-READY ARSENAL. BUILT FOR HIGH-END PRODUCTION. ENGINEERED FOR VISIONARY CREATORS AND SCALABLE, 100% IP-SAFE COMMERCIAL CAMPAIGNS.</>)}
-                  {activeTab === 'signature' && (<>THE PINNACLE OF COMMERCIAL ASSETS. <span className="text-yellow-400">45-FILE OMNI-CHANNEL CAMPAIGNS</span> IN 60 MEGAPIXELS. BUILT FOR ELITE AGENCIES AND LUXURY BRANDS.</>)}
+                  {activeTab === 'bundles' && (<>THE DEFINITIVE <span className="text-blue-600">45MP</span> PRODUCTION-READY ARSENAL. BUILT FOR HIGH-END PRODUCTION. ENGINEERED FOR VISIONARY CREATORS AND SCALABLE, 100% IP-SAFE COMMERCIAL CAMPAIGNS.</>)}
+                  {activeTab === 'signature' && (<>THE PINNACLE OF COMMERCIAL ASSETS. <span className="text-orange-500">45-FILE OMNI-CHANNEL CAMPAIGNS</span> IN 60 MEGAPIXELS. BUILT FOR ELITE AGENCIES AND LUXURY BRANDS.</>)}
                   {activeTab === 'ultra150' && "THE ABSOLUTE PINNACLE OF RESOLUTION. 150 MEGAPIXELS ENGINEERED SPECIFICALLY FOR BILLBOARDS, FINE-ART PRINTING, AND EXTREME CROPPING."}
                  </p>
                   
                   <div className="flex justify-center relative z-10 mt-10">
-                      <div className="bg-[#050505]/80 backdrop-blur-md border border-white/10 p-2 rounded-full inline-flex flex-wrap items-center justify-center shadow-xl gap-2">
-                          <button onClick={() => setActiveTab('premium')} className={`v8-pay-btn px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[13px] md:text-[15px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'premium' ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-white shadow-[0_0_25px_rgba(234,88,12,0.8)] border-2 border-orange-400 scale-105' : 'text-zinc-100 bg-black/60 hover:bg-orange-900/40 hover:text-white border border-white/20'}`}><Zap className="w-5 h-5" /> 33MP Premium</button>
-                          <button onClick={() => setActiveTab('bundles')} className={`v8-pay-btn px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[13px] md:text-[15px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'bundles' ? 'bg-gradient-to-r from-blue-600 to-indigo-500 text-white shadow-[0_0_25px_rgba(59,130,246,0.8)] border-2 border-blue-400 scale-105' : 'text-zinc-100 bg-black/60 hover:bg-blue-900/40 hover:text-white border border-white/20'}`}><Crown className="w-5 h-5" /> 45MP Bundles</button>
-                          <button onClick={() => setActiveTab('signature')} className={`v8-pay-btn px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[13px] md:text-[15px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'signature' ? 'bg-gradient-to-r from-yellow-600 to-amber-500 text-white shadow-[0_0_25px_rgba(245,158,11,0.8)] border-2 border-yellow-400 scale-105' : 'text-zinc-100 bg-black/60 hover:bg-yellow-900/40 hover:text-white border border-white/20'}`}><Diamond className="w-5 h-5" /> 60MP Signature</button>
-                          <button onClick={() => setActiveTab('ultra150')} className={`v8-pay-btn px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[13px] md:text-[15px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'ultra150' ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-[0_0_25px_rgba(168,85,247,0.8)] border-2 border-purple-400 scale-105' : 'text-zinc-100 bg-black/60 hover:bg-purple-900/40 hover:text-white border border-white/20'}`}><Aperture className="w-5 h-5" /> 150MP Ultra</button>
+                      <div className="bg-white/80 backdrop-blur-xl border border-white p-2 rounded-full inline-flex flex-wrap items-center justify-center shadow-[0_10px_30px_rgba(0,0,0,0.05)] gap-2">
+                          <button onClick={() => setActiveTab('premium')} className={`v8-pay-btn px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[12px] md:text-[14px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${activeTab === 'premium' ? 'bg-slate-900 text-white shadow-lg scale-105' : 'text-slate-500 bg-transparent hover:bg-white hover:text-slate-900 hover:shadow-sm'}`}><Zap className="w-5 h-5" /> 33MP Premium</button>
+                          <button onClick={() => setActiveTab('bundles')} className={`v8-pay-btn px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[12px] md:text-[14px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${activeTab === 'bundles' ? 'bg-slate-900 text-white shadow-lg scale-105' : 'text-slate-500 bg-transparent hover:bg-white hover:text-slate-900 hover:shadow-sm'}`}><Crown className="w-5 h-5" /> 45MP Bundles</button>
+                          <button onClick={() => setActiveTab('signature')} className={`v8-pay-btn px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[12px] md:text-[14px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${activeTab === 'signature' ? 'bg-slate-900 text-white shadow-lg scale-105' : 'text-slate-500 bg-transparent hover:bg-white hover:text-slate-900 hover:shadow-sm'}`}><Diamond className="w-5 h-5" /> 60MP Signature</button>
+                          <button onClick={() => setActiveTab('ultra150')} className={`v8-pay-btn px-6 py-4 md:px-8 md:py-4 rounded-full font-black text-[12px] md:text-[14px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${activeTab === 'ultra150' ? 'bg-slate-900 text-white shadow-lg scale-105' : 'text-slate-500 bg-transparent hover:bg-white hover:text-slate-900 hover:shadow-sm'}`}><Aperture className="w-5 h-5" /> 150MP Ultra</button>
                       </div>
                   </div>
               </div>
           </motion.div>
 
+          {/* ADMIN FORMA */}
           {isAdmin && (
-            <form onSubmit={dodajPaket} className="bg-[#0a0a0a] border-2 border-[#FF8C00]/50 rounded-[2.5rem] p-8 mb-16 shadow-[0_0_30px_rgba(255,140,0,0.1)] max-w-4xl mx-auto">
-              <h2 className="text-xl font-black text-[#FF8C00] uppercase tracking-widest mb-8 flex items-center gap-2 border-b border-[#FF8C00]/20 pb-4">
-                <Zap className="w-6 h-6" /> {editingPaketId ? 'EDIT PACKAGE' : 'ADD NEW ZIP PACKAGE'}
+            <form onSubmit={dodajPaket} className="bg-white border-2 border-[#FF8C00] rounded-[2.5rem] p-6 md:p-8 mb-16 shadow-[0_10px_30px_rgba(0,0,0,0.1)] max-w-4xl mx-auto relative z-50">
+              <h2 className="text-xl md:text-2xl font-black text-[#FF8C00] uppercase tracking-widest mb-6 md:mb-8 flex items-center gap-2 border-b border-[#FF8C00]/20 pb-4">
+                <Zap className="w-6 h-6 md:w-8 md:h-8" /> {editingPaketId ? 'EDIT PACKAGE' : 'ADD NEW ZIP PACKAGE'}
               </h2>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                  <div className="flex flex-col gap-2 md:col-span-1">
+                  <div className="flex flex-col gap-2">
                       <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase"><Type size={14} /> PACKAGE TITLE</label>
-                      <input type="text" value={noviNazivEn} onChange={(e)=>setNoviNazivEn(e.target.value)} placeholder="E.g. Neon City" className="bg-black border border-[#FF8C00]/50 p-4 rounded-xl text-[14px] font-black text-white w-full outline-none focus:border-[#FF8C00] transition-all" required />
+                      <input type="text" value={noviNazivEn} onChange={(e)=>setNoviNazivEn(e.target.value)} placeholder="E.g. Neon City" className="bg-white border border-slate-300 p-4 rounded-xl text-[14px] font-black text-slate-900 w-full outline-none focus:border-[#FF8C00] transition-all" required />
                   </div>
-                  <div className="flex flex-col gap-2 md:col-span-1">
+                  <div className="flex flex-col gap-2">
                       <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase"><Layers size={14} /> CATEGORY</label>
-                      <input type="text" value={novaKategorijaEn} onChange={(e)=>setNovaKategorijaEn(e.target.value)} placeholder="E.g. Abstract" className="bg-black border border-[#FF8C00]/50 p-4 rounded-xl text-[14px] font-black text-white w-full outline-none focus:border-[#FF8C00] transition-all" required />
+                      <input type="text" value={novaKategorijaEn} onChange={(e)=>setNovaKategorijaEn(e.target.value)} placeholder="E.g. Abstract" className="bg-white border border-slate-300 p-4 rounded-xl text-[14px] font-black text-slate-900 w-full outline-none focus:border-[#FF8C00] transition-all" required />
                   </div>
-                  <div className="flex flex-col gap-2 md:col-span-1">
+                  <div className="flex flex-col gap-2">
                       <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase"><FolderArchive size={14} /> COLLECTION (VOLUME)</label>
-                      <input type="text" placeholder="E.g. VOL 1" value={noviVolume} onChange={(e) => setNoviVolume(e.target.value)} className="bg-black text-white border border-white/10 p-4 rounded-xl text-[13px] font-black outline-none focus:border-[#FF8C00] transition-all" />
+                      <input type="text" placeholder="E.g. VOL 1" value={noviVolume} onChange={(e) => setNoviVolume(e.target.value)} className="bg-white border border-slate-300 p-4 rounded-xl text-[13px] font-black text-slate-900 outline-none focus:border-[#FF8C00] transition-all" />
                   </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div className="flex flex-col gap-2 md:col-span-1">
                     <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase"><FileText size={14} /> DESCRIPTION</label>
-                    <textarea value={noviOpisEn} onChange={(e)=>setNoviOpisEn(e.target.value)} placeholder="Package contents..." rows={4} className="bg-black border border-white/10 p-4 rounded-xl text-[12px] font-bold text-white w-full outline-none resize-none focus:border-[#FF8C00] transition-all h-full" required />
+                    <textarea value={noviOpisEn} onChange={(e)=>setNoviOpisEn(e.target.value)} placeholder="Package contents..." rows={4} className="bg-white border border-slate-300 p-4 rounded-xl text-[12px] font-bold text-slate-700 w-full outline-none resize-none focus:border-[#FF8C00] transition-all h-full min-h-[120px]" required />
                 </div>
                 <div className="flex flex-col gap-6 md:col-span-2">
                     <div className="flex flex-col gap-2">
                         <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase"><Wallet size={14} /> PRICE (USD)</label>
-                        <input type="text" value={novaCena} onChange={(e)=>setNovaCena(e.target.value)} disabled={isFree} placeholder="E.g. 49.99" className={`bg-black border border-white/10 p-4 rounded-xl text-[13px] font-bold outline-none focus:border-[#FF8C00] transition-all ${isFree ? 'text-zinc-500 border-zinc-800' : 'text-white'}`} />
+                        <input type="text" value={novaCena} onChange={(e)=>setNovaCena(e.target.value)} disabled={isFree} placeholder="E.g. 49.99" className={`bg-white border p-4 rounded-xl text-[13px] font-bold outline-none transition-all ${isFree ? 'text-slate-400 border-slate-200' : 'text-slate-900 border-slate-300 focus:border-[#FF8C00]'}`} />
                     </div>
                     <div className="flex flex-col gap-2">
                         <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase"><MonitorPlay size={14} /> FORMAT</label>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             {['33.2MP MASTERWORK SINGLE', '45MP MASTERWORK BUNDLE', '60MP SIGNATURE BUNDLE', '150MP ULTRA PRINT BUNDLE'].map((fmt) => (
-                                <label key={fmt} className={`cursor-pointer p-3 rounded-xl border-2 transition-all text-center font-black text-[9px] uppercase flex items-center justify-center ${noviFormat === fmt ? 'bg-[#FF8C00] text-black shadow-[0_0_15px_rgba(255,140,0,0.5)] border-[#FF8C00]' : 'bg-black border-white/10 text-zinc-500 hover:border-[#FF8C00]/50'}`}>
+                                <label key={fmt} className={`cursor-pointer p-3 rounded-xl border-2 transition-all text-center font-black text-[9px] uppercase flex items-center justify-center ${noviFormat === fmt ? 'bg-[#FF8C00] text-white border-[#FF8C00]' : 'bg-white border-slate-200 text-slate-500 hover:border-[#FF8C00]/50'}`}>
                                     <input type="radio" name="format" value={fmt} checked={noviFormat === fmt} onChange={(e) => setNoviFormat(e.target.value)} className="hidden" />
                                     {fmt.replace(' (16:9, 9:16, 21:9, 1:1)', '')}
                                 </label>
                             ))}
                         </div>
                     </div>
-                    </div>
+                 </div>
               </div>
 
-              <div className="border-t border-white/10 pt-6 mt-2">
+              <div className="border-t border-slate-200 pt-6 mt-2">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                       <div className="flex flex-col gap-2">
-                          <label className="flex items-center gap-2 text-blue-400 font-black text-[11px] tracking-widest uppercase"><LinkIcon size={14} /> GOOGLE DRIVE</label>
-                          <input type="url" value={zipLink} onChange={(e)=>setZipLink(e.target.value)} placeholder="https://drive.google.com/..." className="bg-black border border-blue-500/50 p-4 rounded-xl text-[13px] text-white w-full outline-none font-bold focus:border-blue-400 transition-all" required />
+                          <label className="flex items-center gap-2 text-blue-500 font-black text-[11px] tracking-widest uppercase"><LinkIcon size={14} /> GOOGLE DRIVE</label>
+                          <input type="url" value={zipLink} onChange={(e)=>setZipLink(e.target.value)} placeholder="https://drive.google.com/..." className="bg-white border border-blue-200 p-4 rounded-xl text-[13px] text-slate-900 w-full outline-none font-bold focus:border-blue-500 transition-all" required />
                       </div>
                       <div className="flex flex-col gap-2">
-                          <label className="flex items-center gap-2 text-emerald-400 font-black text-[11px] tracking-widest uppercase"><Zap size={14} /> SECURITY PROTOCOL</label>
-                          <button type="button" onClick={() => { const nextFreeStatus = !isFree; setIsFree(nextFreeStatus); if (nextFreeStatus) setNovaCena("0.00"); else setNovaCena("49.99"); }} className={`w-full p-4 md:p-5 rounded-xl font-black text-[13px] md:text-[15px] tracking-widest uppercase border-2 transition-all text-center flex items-center justify-center gap-2 cursor-pointer drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] ${isFree ? 'bg-gradient-to-r from-emerald-600 to-green-500 border-emerald-400 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)]' : 'bg-black border-white/10 text-zinc-400 hover:text-white hover:border-emerald-500/50'}`}>
-                            {isFree ? "⚡ FREE PROTOCOL" : "SET AS FREE PACKAGE"}
+                          <label className="flex items-center gap-2 text-emerald-500 font-black text-[11px] tracking-widest uppercase"><Zap size={14} /> SECURITY PROTOCOL</label>
+                          <button type="button" onClick={() => { const nextFreeStatus = !isFree; setIsFree(nextFreeStatus); if (nextFreeStatus) setNovaCena("0.00"); else setNovaCena("49.99"); }} className={`w-full p-4 md:p-5 rounded-xl font-black text-[13px] md:text-[15px] tracking-widest uppercase border-2 transition-all text-center flex items-center justify-center gap-2 cursor-pointer ${isFree ? 'bg-emerald-500 border-emerald-500 text-white shadow-md' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 hover:border-emerald-500'}`}>
+                            {isFree ? "⚡ FREE PROTOCOL ENABLED" : "SET AS FREE PACKAGE"}
                           </button>
                       </div>
                   </div>
 
                   <div className="flex flex-col gap-4">
                     {(previewUrl || primeriUrls.length > 0) && (
-                      <div className="flex flex-wrap gap-4 p-4 bg-white/5 rounded-xl border border-white/10">
+                      <div className="flex flex-wrap gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
                         {previewUrl && (
-                          <div className="relative w-20 h-20 rounded-lg overflow-hidden border-2 border-[#FF8C00] shadow-[0_0_15px_rgba(255,140,0,0.4)] group">
-                            <span className="absolute top-0 left-0 bg-[#FF8C00] text-black text-[9px] font-black px-2 py-0.5 z-10">MAIN</span>
-                            <button type="button" onClick={removeMainImage} className="absolute top-1 right-1 bg-red-600/90 hover:bg-red-500 text-white rounded-full p-1 z-20 transition-all opacity-80 hover:opacity-100 shadow-md drop-shadow-md"><X size={12} strokeWidth={4} /></button>
+                          <div className="relative w-20 h-20 rounded-lg overflow-hidden border-2 border-[#FF8C00] shadow-sm group">
+                            <span className="absolute top-0 left-0 bg-[#FF8C00] text-white text-[9px] font-black px-2 py-0.5 z-10">MAIN</span>
+                            <button type="button" onClick={removeMainImage} className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 z-20 transition-all opacity-0 group-hover:opacity-100 shadow-md"><X size={12} strokeWidth={4} /></button>
                             <img src={previewUrl} alt="Main" className="w-full h-full object-cover" />
                           </div>
                         )}
                         {primeriUrls.map((url, idx) => (
-                          <div key={idx} className="w-20 h-20 rounded-lg overflow-hidden border border-white/20 relative group">
-                            <span className="absolute bottom-0 right-0 bg-black/80 text-white text-[8px] font-black px-1.5 py-0.5 z-10 pointer-events-none">PREVIEW</span>
-                            <button type="button" onClick={() => removeThumbnail(idx)} className="absolute top-1 right-1 bg-red-600/90 hover:bg-red-500 text-white rounded-full p-1 z-20 transition-all opacity-80 hover:opacity-100 shadow-md drop-shadow-md">
+                          <div key={idx} className="w-20 h-20 rounded-lg overflow-hidden border border-slate-300 relative group">
+                            <span className="absolute bottom-0 right-0 bg-slate-900 text-white text-[8px] font-black px-1.5 py-0.5 z-10 pointer-events-none">PREVIEW</span>
+                            <button type="button" onClick={() => removeThumbnail(idx)} className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 z-20 transition-all opacity-0 group-hover:opacity-100 shadow-md">
                                 <X size={12} strokeWidth={4} />
                             </button>
                             <img src={url} alt={`Preview ${idx}`} className="w-full h-full object-cover pointer-events-none" />
@@ -667,27 +628,27 @@ const V8StockBerzaBase = () => {
                         ))}
                       </div>
                     )}
-                    <div className="flex flex-wrap gap-4 items-end">
-                      <div className="flex flex-col gap-2">
-                          <label className="flex items-center gap-2 text-zinc-400 font-black text-[10px] tracking-widest uppercase"><ImageIcon size={12} /> MAIN IMAGE</label>
-                          <button type="button" onClick={() => mainImageRef.current.click()} className="bg-zinc-900 hover:bg-[#FF8C00] text-white hover:text-black border-2 border-white/20 hover:border-[#FF8C00] px-6 py-4 rounded-xl font-black text-[13px] uppercase transition-all flex items-center justify-center gap-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"><ImageIcon size={16} /> {isUploading ? 'UPLOADING...' : 'ADD PREVIEW'}</button>
+                    <div className="flex flex-col md:flex-row flex-wrap gap-4 items-end justify-between">
+                      <div className="flex flex-col w-full md:w-auto gap-2">
+                          <label className="flex items-center gap-2 text-slate-500 font-black text-[10px] tracking-widest uppercase"><ImageIcon size={12} /> MAIN IMAGE</label>
+                          <button type="button" onClick={() => mainImageRef.current.click()} className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-6 py-4 rounded-xl font-black text-[13px] uppercase transition-all flex items-center justify-center gap-2 shadow-sm w-full md:w-auto"><ImageIcon size={16} /> {isUploading ? 'UPLOADING...' : 'ADD PREVIEW'}</button>
                           <input type="file" ref={mainImageRef} onChange={handleUploadPreview} className="hidden" /> 
                       </div>
-                      <div className="flex flex-col gap-2">
-                          <label className="flex items-center gap-2 text-zinc-400 font-black text-[10px] tracking-widest uppercase"><Images size={12} /> GALLERY IMAGES</label>
-                          <button type="button" onClick={() => galleryImagesRef.current.click()} className="bg-zinc-900 hover:bg-[#FF8C00] text-white hover:text-black border-2 border-white/20 hover:border-[#FF8C00] px-6 py-4 rounded-xl font-black text-[13px] uppercase transition-all flex items-center justify-center gap-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                      <div className="flex flex-col w-full md:w-auto gap-2">
+                          <label className="flex items-center gap-2 text-slate-500 font-black text-[10px] tracking-widest uppercase"><Images size={12} /> GALLERY IMAGES</label>
+                          <button type="button" onClick={() => galleryImagesRef.current.click()} className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-6 py-4 rounded-xl font-black text-[13px] uppercase transition-all flex items-center justify-center gap-2 shadow-sm w-full md:w-auto">
                               <Images size={16} /> {isUploadingPrimer ? 'UPLOADING...' : `ADD THUMBNAILS (${primeriUrls.length}/10)`}
                           </button>
                           <input type="file" multiple ref={galleryImagesRef} onChange={handleUploadPrimeri} className="hidden" /> 
                       </div>
-                      <button type="submit" className="v8-pay-btn ml-auto px-10 py-5 rounded-xl font-black text-[15px] md:text-[17px] tracking-widest uppercase bg-[#FF8C00] hover:bg-orange-500 text-black transition-all shadow-[0_0_30px_rgba(255,140,0,0.8)] flex items-center gap-2 hover:scale-105 drop-shadow-[0_2px_4px_rgba(255,255,255,0.4)]"><Zap size={20} strokeWidth={3} /> {editingPaketId ? 'SAVE CHANGES' : 'SAVE PACKAGE'}</button>
+                      <button type="submit" className="w-full md:w-auto px-10 py-5 rounded-xl font-black text-[15px] md:text-[17px] tracking-widest uppercase bg-[#FF8C00] hover:bg-orange-600 text-white transition-all shadow-lg flex items-center justify-center gap-2 mt-4 md:mt-0"><Zap size={20} strokeWidth={3} /> {editingPaketId ? 'SAVE CHANGES' : 'SAVE PACKAGE'}</button>
                     </div>
                   </div>
               </div>
             </form>
           )}
 
-          <div className="flex flex-wrap justify-center gap-6 lg:gap-12 w-full mx-auto px-4 lg:px-8">
+          <div className="flex flex-col lg:flex-row lg:flex-wrap justify-center gap-6 lg:gap-12 w-full mx-auto px-2 sm:px-4 lg:px-8 relative z-10">
             {activeTab === 'premium' && (<> {renderV8Manifest("33.2MP")} <V8PremiumAssets paketi={premiumPaketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} kupljeniPaketiIds={kupljeniPaketiIds} /> </>)}
             {activeTab === 'bundles' && (<> {renderV8Manifest("45MP")} <V8MasterBundles paketi={bundlePaketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} kupljeniPaketiIds={kupljeniPaketiIds} /> </>)}
             {activeTab === 'signature' && (<> {renderV8Manifest("60MP")} <V8SignatureBundles paketi={signaturePaketi} isAdmin={isAdmin} getGlobalCena={getGlobalCena} getAspectClass={getAspectClass} prijavaIKupovina={prijavaIKupovina} startEditPaket={startEditPaket} obrisiPaket={obrisiPaket} setFullScreenImageUrl={setFullScreenImageUrl} kupljeniPaketiIds={kupljeniPaketiIds} /> </>)}
@@ -705,7 +666,6 @@ const V8StockBerzaBase = () => {
   );
 };
 
-// ZAVRŠNO UMOTAVANJE U ZAŠTITNI ŠTIT
 const V8StockBerza = () => (
   <V8ErrorGuard>
     <V8StockBerzaBase />
