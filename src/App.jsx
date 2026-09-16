@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
-import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay, CheckCircle, ChevronUp, Bitcoin, CreditCard, DollarSign, X } from 'lucide-react';
+import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay, CheckCircle, ChevronUp, Bitcoin, CreditCard, DollarSign, X, Palette } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ScanOverlay from './ScanOverlay'; 
 
@@ -26,7 +26,7 @@ import VisitorCounter from './VisitorCounter';
 import SingleProductPage from './SingleProductPage';
 import V8MediaViewer from './v8-ui-components/V8MediaViewer'; 
 import V8Terms from './V8Terms';
-import V8Privacy from './V8Privacy';
+import V8Privacy from './V8Refund';
 import V8Refund from './V8Refund';
 import TrezorPage from './TrezorPage'; 
 import V8DatabaseAdmin from "./V8DatabaseAdmin";
@@ -68,6 +68,7 @@ import UiUxHub from './ux/UiUxHub';
 import VaultGrid from './ux/VaultGrid';
 import V10SplitScreen from './ux/V10SplitScreen';
 import CommercialOps from './ux/CommercialOps'; // NOVI B2B PANEL
+import V10MyVault from './ux/V10MyVault'; // KLIJENTSKI PORTAL
 
 if (typeof window !== 'undefined') {
   if ('scrollRestoration' in window.history) { window.history.scrollRestoration = 'manual'; }
@@ -213,7 +214,9 @@ const V8AlertModalContainer = () => {
 
   let themeBg = 'bg-zinc-800';
   
-  if (modalData.icon === 'b2b') {
+  if (modalData.icon === 'uiux') {
+    themeBg = 'bg-[#0a0a0a] shadow-[0_0_50px_rgba(234,88,12,0.4)] border border-orange-500/50';
+  } else if (modalData.icon === 'b2b') {
     themeBg = 'bg-gradient-to-br from-blue-600 to-blue-900 shadow-blue-500/50';
   } else if (modalData.icon === 'paypal') {
     themeBg = 'bg-gradient-to-br from-[#003087] to-[#009cde] shadow-[#009cde]/50';
@@ -241,9 +244,19 @@ const V8AlertModalContainer = () => {
           <div className="mb-4 pr-6">
             <h3 className="font-black text-lg leading-tight uppercase">{modalData.customerName}</h3>
             <p className="text-white/80 text-[12px] font-medium tracking-wider">{modalData.email}</p>
+            {modalData.packageTitle && (
+              <p className="text-orange-400 text-[10px] font-black tracking-widest uppercase mt-1">PKG: {modalData.packageTitle}</p>
+            )}
           </div>
 
           <div className="flex justify-center items-center py-6 bg-black/20 rounded-xl mb-4 border border-white/10 shadow-inner">
+            {modalData.icon === 'uiux' && (
+              <div className="flex flex-col items-center gap-2 drop-shadow-[0_0_15px_rgba(234,88,12,0.5)]">
+                <Palette className="w-14 h-14 text-orange-500" />
+                <span className="text-[10px] font-black tracking-[0.3em] text-orange-500 uppercase">V10 UI/UX Asset Unlocked</span>
+                {modalData.methodLabel && <span className="bg-orange-600/20 px-2 py-1 rounded text-[8px] text-orange-300 font-black tracking-widest">VIA {modalData.methodLabel}</span>}
+              </div>
+            )}
             {modalData.icon === 'b2b' && (
               <svg viewBox="0 0 250 60" className="w-48 h-auto drop-shadow-xl" xmlns="http://www.w3.org/2000/svg">
                 <defs>
@@ -290,6 +303,7 @@ const V8AlertModalContainer = () => {
 // KRAJ FUNKCIJE V8AlertModalContainer
 
 // POČETAK FUNKCIJE AdminLiveSalesTracker
+// 🔥 RADAR SADA PRATI I UI/UX PAYONEER BAZE I SVE OSTALE KANALE 🔥
 const AdminLiveSalesTracker = () => {
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -310,7 +324,9 @@ const AdminLiveSalesTracker = () => {
     let isFirstKupci = true;
     let isFirstCrypto = true;
     let isFirstPaypal = true;
+    let isFirstPayoneer = true;
 
+    // 1. STARI KUPCI BAZA
     const unsubKupci = onSnapshot(query(collection(db, "v8_kupci"), orderBy("vreme", "desc"), limit(1)), (snap) => {
       if (isFirstKupci) { isFirstKupci = false; return; }
       snap.docChanges().forEach(change => {
@@ -330,42 +346,70 @@ const AdminLiveSalesTracker = () => {
       });
     });
 
+    // 2. KRIPTO BAZA (Sa UI/UX proverom)
     const unsubCrypto = onSnapshot(query(collection(db, "v8_crypto_requests"), orderBy("requestDate", "desc"), limit(1)), (snap) => {
       if (isFirstCrypto) { isFirstCrypto = false; return; }
       snap.docChanges().forEach(change => {
         if (change.type === 'added') {
           const d = change.doc.data();
+          const isUiUx = d.selectedProjects && d.selectedProjects.length > 0;
           v8AlertModal.show({ 
             customerName: `${d.firstName} ${d.lastName}`,
             email: d.clientEmail || 'Bez emaila',
+            packageTitle: d.productName || '',
             timestamp: new Date().toLocaleString('sr-RS'),
             amount: d.price || 0, 
             type: 'success',
-            icon: 'crypto'
+            icon: isUiUx ? 'uiux' : 'crypto',
+            methodLabel: 'CRYPTO'
           });
         }
       });
     });
 
+    // 3. PAYPAL BAZA (Sa UI/UX i Card proverom)
     const unsubPaypal = onSnapshot(query(collection(db, "v8_paypal_requests"), orderBy("requestDate", "desc"), limit(1)), (snap) => {
       if (isFirstPaypal) { isFirstPaypal = false; return; }
       snap.docChanges().forEach(change => {
         if (change.type === 'added') {
           const d = change.doc.data();
           const isCard = d.paymentSource && d.paymentSource.toLowerCase() !== 'paypal';
+          const isUiUx = d.selectedProjects && d.selectedProjects.length > 0;
           v8AlertModal.show({ 
             customerName: `${d.firstName} ${d.lastName}`,
             email: d.clientEmail || 'Bez emaila',
+            packageTitle: d.productName || '',
             timestamp: new Date().toLocaleString('sr-RS'),
             amount: d.price || 0, 
             type: 'success',
-            icon: isCard ? 'card' : 'paypal'
+            icon: isUiUx ? 'uiux' : (isCard ? 'card' : 'paypal'),
+            methodLabel: isCard ? 'CREDIT CARD' : 'PAYPAL'
           });
         }
       });
     });
 
-    return () => { unsubKupci(); unsubCrypto(); unsubPaypal(); };
+    // 4. NOVA UI/UX PAYONEER (B2B) BAZA
+    const unsubPayoneer = onSnapshot(query(collection(db, "v8_payoneer_requests"), orderBy("requestDate", "desc"), limit(1)), (snap) => {
+      if (isFirstPayoneer) { isFirstPayoneer = false; return; }
+      snap.docChanges().forEach(change => {
+        if (change.type === 'added') {
+          const d = change.doc.data();
+          v8AlertModal.show({ 
+            customerName: `${d.firstName} ${d.lastName}`,
+            email: d.clientEmail || 'Bez emaila',
+            packageTitle: d.productName || '',
+            timestamp: new Date().toLocaleString('sr-RS'),
+            amount: d.price || 0, 
+            type: 'success',
+            icon: 'uiux', // Payoneer na checkoutu je uvek UI/UX
+            methodLabel: 'PAYONEER / B2B'
+          });
+        }
+      });
+    });
+
+    return () => { unsubKupci(); unsubCrypto(); unsubPaypal(); unsubPayoneer(); };
   }, [isAdmin]);
 
   return null;
@@ -687,6 +731,7 @@ function AppContent({ appsData, refreshData }) {
               <Route path="/ui-ux/vault" element={<V8PageWrapper><VaultGrid /></V8PageWrapper>} />
               <Route path="/ui-ux/commercial" element={<V8PageWrapper><CommercialOps /></V8PageWrapper>} /> 
               <Route path="/ui-ux/project/:projectId" element={<V8PageWrapper><V10SplitScreen /></V8PageWrapper>} />
+              <Route path="/my-vault" element={<V8PageWrapper><V10MyVault /></V8PageWrapper>} />
 
             </Routes>
           </AnimatePresence>

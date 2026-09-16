@@ -5,7 +5,7 @@ import { db, auth } from './firebase';
 import { collection, addDoc, serverTimestamp, doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth'; 
 import { motion, AnimatePresence } from 'framer-motion'; 
-import { ShieldCheck, X, CheckCircle, Bitcoin, Zap, CreditCard, Link as LinkIcon, Download, Radar, Crown, Briefcase, Rocket, Package, ChevronDown, Box, Lock } from 'lucide-react';
+import { ShieldCheck, X, CheckCircle, Bitcoin, Zap, CreditCard, Link as LinkIcon, Download, Radar, Crown, Briefcase, Rocket, Package, ChevronDown, Box, Lock, Clock } from 'lucide-react';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js"; 
 
 const countryList = [
@@ -15,7 +15,8 @@ const countryList = [
 const getBackendUrl = () => "https://aitoolsprosmart-becend-production.up.railway.app";
 const TIER_ICONS = [Rocket, Briefcase, Crown, Package];
 
-const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink, availableTiers = [], projectImage = "/v8-secure-blue.webp" }) => {
+// 🔥 DODAT PROP selectedProjects 🔥
+const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink, availableTiers = [], projectImage = "/v8-secure-blue.webp", selectedProjects = [] }) => {
   const [user, setUser] = useState(null);
   
   const hasMultipleTiers = availableTiers && availableTiers.length > 0;
@@ -85,12 +86,14 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink, availa
     try {
       if (paymentMethod === 'payoneer' || paymentMethod === 'b2b') {
         const docRef = await addDoc(collection(db, "v8_payoneer_requests"), {
-          clientEmail: email, firstName, lastName, country, productName: finalProductName, price: activePrice, isMonthly: activeIsMonthly, zipLink: zipLink || "", method: "payoneer", handledBy: "info@aitoolsprosmart.com", status: "pending", requestDate: serverTimestamp()
+          clientEmail: email, firstName, lastName, country, productName: finalProductName, price: activePrice, isMonthly: activeIsMonthly, zipLink: zipLink || "", method: "payoneer", handledBy: "info@aitoolsprosmart.com", status: "pending", requestDate: serverTimestamp(),
+          selectedProjects: selectedProjects // 🔥 DODATO SNIMANJE KORPE 🔥
         });
         setSuccess(true); setLoading(false); triggerGoogleAnalyticsPurchase(docRef.id, activePrice); setTimeout(() => { onClose(); }, 3500); 
       } else if (paymentMethod === 'crypto') {
         const docRef = await addDoc(collection(db, "v8_crypto_requests"), {
-          clientEmail: email, firstName, lastName, country, productName: finalProductName, price: activePrice, isMonthly: activeIsMonthly, zipLink: zipLink || "", method: "crypto", status: "initiating_gateway", requestDate: serverTimestamp()
+          clientEmail: email, firstName, lastName, country, productName: finalProductName, price: activePrice, isMonthly: activeIsMonthly, zipLink: zipLink || "", method: "crypto", status: "initiating_gateway", requestDate: serverTimestamp(),
+          selectedProjects: selectedProjects // 🔥 DODATO SNIMANJE KORPE 🔥
         });
         const response = await fetch(`${getBackendUrl()}/api/crypto-checkout`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId: docRef.id, clientEmail: email, productName: finalProductName, price: activePrice, zipLink }) });
         const data = await response.json();
@@ -108,7 +111,6 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink, availa
         {isOpen && (
           <div className="fixed inset-0 z-[9999999] flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4 sm:p-8 font-sans">
             
-            {/* 🌟 PREMIUM STUDIO LIGHT MODAL 🌟 */}
             <motion.div 
               initial={{ scale: 0.95, y: 20, opacity: 0 }} 
               animate={{ scale: 1, y: 0, opacity: 1 }} 
@@ -116,10 +118,8 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink, availa
               className="bg-white w-full max-w-6xl rounded-[2.5rem] border border-slate-200 shadow-[0_20px_80px_rgba(0,0,0,0.1)] flex flex-col md:flex-row relative overflow-hidden h-auto min-h-[600px]"
             >
               
-              {/* LEVA I SREDNJA KOLONA */}
               <div className="w-full md:w-2/3 flex flex-col md:flex-row p-8 md:p-10 gap-10">
                 
-                {/* KOLONA 1: SELECT LICENSE */}
                 <div className="w-full md:w-1/2 flex flex-col">
                   <h2 className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-6 flex items-center gap-2">
                     <Box className="w-4 h-4 text-blue-500" /> {hasMultipleTiers ? 'Select License' : 'Selected Asset'}
@@ -161,16 +161,37 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink, availa
                         <div className="text-slate-900 font-black text-4xl ml-9">${price}</div>
                       </div>
                     )}
+
+                    <AnimatePresence>
+                      {paymentMethod === 'payoneer' && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0, y: -10 }}
+                          animate={{ opacity: 1, height: 'auto', y: 0 }}
+                          exit={{ opacity: 0, height: 0, y: -10 }}
+                          transition={{ duration: 0.3, ease: "easeOut" }}
+                          className="overflow-hidden"
+                        >
+                          <div className="p-5 rounded-2xl bg-orange-50 border border-orange-200 flex gap-4 items-start shadow-sm mt-1">
+                            <Clock className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                            <div className="flex flex-col gap-1.5">
+                              <h4 className="text-orange-900 text-[10px] font-black uppercase tracking-widest">Payoneer B2B Protocol</h4>
+                              <p className="text-orange-800 text-[11px] font-bold leading-relaxed">
+                                Access to package downloads takes between 6 and 12 hours due to Payoneer bank processing and balance verification. You will be notified via email as soon as possible to seamlessly download your purchased assets.
+                              </p>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
                   </div>
                 </div>
 
-                {/* KOLONA 2: BILLING INFO */}
                 <div className="w-full md:w-1/2 flex flex-col">
                   <h2 className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-6 flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Billing Info
                   </h2>
                   
-                  {/* Tabs za placanje */}
                   <div className="flex gap-3 mb-8">
                     <button onClick={() => setPaymentMethod('card')} className={`flex-1 py-4 flex flex-col items-center justify-center gap-2 rounded-xl border transition-all ${paymentMethod === 'card' ? 'bg-blue-50 border-blue-500 text-blue-700 ring-1 ring-blue-500' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-slate-50'}`}>
                       <CreditCard className="w-5 h-5" />
@@ -186,7 +207,6 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink, availa
                     </button>
                   </div>
 
-                  {/* Forma ili Success State */}
                   {success ? (
                     <div className="flex flex-col items-center justify-center py-10 flex-grow">
                       {downloadUrl ? (
@@ -257,21 +277,15 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink, availa
                 </div>
               </div>
 
-              {/* KOLONA 3: DESNA STRANA (Tvoja slika + Oštar kontrast) */}
               <div className="relative hidden md:block md:w-1/3 bg-slate-900 overflow-hidden">
-                
-                {/* Zatvaranje na slici */}
                 <button onClick={onClose} className="absolute top-6 right-6 z-30 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 border border-white/20 text-white hover:bg-white hover:text-slate-900 transition-all backdrop-blur-md cursor-pointer">
                   <X className="w-5 h-5" />
                 </button>
-
                 <div className="absolute inset-0 z-0">
                   <img src={projectImage} alt="Order Preview" className="w-full h-full object-cover opacity-80 mix-blend-luminosity hover:mix-blend-normal transition-all duration-1000" />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
-                  {/* Suptilna senka da se stopi sa belim delom modala */}
                   <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-slate-900/50 to-transparent"></div>
                 </div>
-
                 <div className="absolute bottom-10 right-10 z-10 text-right">
                   <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/20 border border-blue-400/30 backdrop-blur-md mb-3">
                     <ShieldCheck className="w-4 h-4 text-blue-300" /> 
@@ -288,7 +302,6 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink, availa
         )}
       </AnimatePresence>
 
-      {/* 🔥 PAYPAL MODAL (Sada prebačen u Light/Stripe B2B temu) 🔥 */}
       <AnimatePresence>
         {showPayPalModal && (
           <div className="fixed inset-0 z-[10000000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
@@ -320,9 +333,9 @@ const V8SecureCheckout = ({ isOpen, onClose, productName, price, zipLink, availa
 
                 <div className="relative z-10 w-full">
                   {activeIsMonthly ? (
-                    <PayPalButtons style={{ layout: "vertical", color: "blue", shape: "rect", label: "subscribe" }} createSubscription={(data, actions) => { return actions.subscription.create({ plan_id: activePlanId }); }} onApprove={async (data, actions) => { try { await setDoc(doc(db, "v8_paypal_subscriptions", data.subscriptionID), { clientEmail: email, firstName, lastName, country, productName: activeName, subscriptionId: data.subscriptionID, status: "ACTIVE", createdAt: serverTimestamp() }); setShowPayPalModal(false); setSuccess(true); setDownloadUrl(zipLink || "https://link-do-arhiva.zip"); triggerGoogleAnalyticsPurchase(data.subscriptionID, activePrice); setTimeout(() => { onClose(); window.scrollTo({ top: 0, behavior: 'smooth' }); }, 5000); } catch (error) { console.error("Greška:", error); alert("Subscription successful, but verification delayed."); } }} />
+                    <PayPalButtons style={{ layout: "vertical", color: "blue", shape: "rect", label: "subscribe" }} createSubscription={(data, actions) => { return actions.subscription.create({ plan_id: activePlanId }); }} onApprove={async (data, actions) => { try { await setDoc(doc(db, "v8_paypal_subscriptions", data.subscriptionID), { clientEmail: email, firstName, lastName, country, productName: activeName, subscriptionId: data.subscriptionID, status: "ACTIVE", createdAt: serverTimestamp(), selectedProjects: selectedProjects }); setShowPayPalModal(false); setSuccess(true); setDownloadUrl(zipLink || "https://link-do-arhiva.zip"); triggerGoogleAnalyticsPurchase(data.subscriptionID, activePrice); setTimeout(() => { onClose(); window.scrollTo({ top: 0, behavior: 'smooth' }); }, 5000); } catch (error) { console.error("Greška:", error); alert("Subscription successful, but verification delayed."); } }} />
                   ) : (
-                    <PayPalButtons style={{ layout: "vertical", color: "blue", shape: "rect", label: "pay" }} createOrder={(data, actions) => { return actions.order.create({ purchase_units: [{ description: activeName, amount: { value: activePrice.toString() } }] }); }} onApprove={async (data, actions) => { try { const details = await actions.order.capture(); const backendUrl = getBackendUrl(); const response = await fetch(`${backendUrl}/api/paypal-verify`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId: details.id, clientEmail: email, firstName, lastName, country, productName: activeName, price: activePrice, zipLink }) }); const resData = await response.json(); if(resData.success) { setShowPayPalModal(false); setSuccess(true); setDownloadUrl(resData.downloadUrl || zipLink); triggerGoogleAnalyticsPurchase(details.id, activePrice); setTimeout(() => { onClose(); window.scrollTo({ top: 0, behavior: 'smooth' }); }, 5000); } else { alert("Payment verification failed. Contact support."); } } catch (error) { console.error("Greška:", error); alert("Payment received, but verification delayed."); } }} />
+                    <PayPalButtons style={{ layout: "vertical", color: "blue", shape: "rect", label: "pay" }} createOrder={(data, actions) => { return actions.order.create({ purchase_units: [{ description: activeName, amount: { value: activePrice.toString() } }] }); }} onApprove={async (data, actions) => { try { const details = await actions.order.capture(); const backendUrl = getBackendUrl(); const response = await fetch(`${backendUrl}/api/paypal-verify`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId: details.id, clientEmail: email, firstName, lastName, country, productName: activeName, price: activePrice, zipLink, selectedProjects: selectedProjects }) }); const resData = await response.json(); if(resData.success) { setShowPayPalModal(false); setSuccess(true); setDownloadUrl(resData.downloadUrl || zipLink); triggerGoogleAnalyticsPurchase(details.id, activePrice); setTimeout(() => { onClose(); window.scrollTo({ top: 0, behavior: 'smooth' }); }, 5000); } else { alert("Payment verification failed. Contact support."); } } catch (error) { console.error("Greška:", error); alert("Payment received, but verification delayed."); } }} />
                   )}
                 </div>
               </div>

@@ -1,15 +1,15 @@
+// POČETAK FAJLA: data.jsx
 import React from 'react';
 export const CLOUDINARY_CLOUD_NAME = "drllxycnh";
 export const CLOUDINARY_UPLOAD_PRESET = "uploads";
 
 // --- TVOJI ORIGINALNI IMAGE IMPORTS ---
-import v10UltraImg from './banner-v10-spartan.webp'; // 🔥 1. TVOJ NOVI IMPORT JE NA VRHU
+import v10UltraImg from './banner-v10-spartan.webp';
 import sl1Img from './sl1.webp';
 import sl2Img from './sl2.webp';
-import sl3Img from './sl3.webp';
 import sl4Img from './sl4.webp';
-// sl5Img je obrisan
-import superCarImg from './super_car.webp'; // 🔥 Uvezao sam tvoju novu sliku iz src foldera
+import superCarImg from './super_car.webp'; 
+import uiuxImg from './uiuxImg.jpeg'; // 🔥 AŽURIRANA PUTANJA I EKSTENZIJA (.jpeg umesto .jpg)
 import sl6Img from './sl6.webp';
 import mojLogo from './logo.png';
 import macroHelmet from './praetorian-macro.jpg';
@@ -19,12 +19,11 @@ import godTierFistImg from './banner-v8-godtier-fist.jpg';
 // OSNOVNI PODACI I POMOĆNE KOMPONENTE
 // ============================================================================
 
-// 🔥 Vraćamo pesnicu kao glavnu pozadinu za sajt
 export const bannerUrl = godTierFistImg; 
 export const logoUrl = mojLogo; 
 
 // ============================================================================
-// POČETAK: BANNER_DATA NIZ (PODACI ZA NASLOVNI KARUSEL)
+// POČETAK: BANNER_DATA NIZ
 // ============================================================================
 export const BANNER_DATA = [
   { 
@@ -60,7 +59,7 @@ export const BANNER_DATA = [
     duration: 168000 
   },
   { 
-    // 5. MESTO - ZAMENJENO SA super_car.webp
+    // 5. MESTO
     image: superCarImg, 
     badge: "VELOCITY & POWER", 
     title: "ENGINEERED FOR DOMINANCE", 
@@ -69,36 +68,41 @@ export const BANNER_DATA = [
   },
   { 
     // 6. MESTO
-    image: sl3Img, 
-    badge: "VISIONARY ENVIRONMENTS", 
-    title: "ARCHITECTURAL SUPREMACY", 
-    subtitle: "Design the future of business. Hyper-realistic interior generation for visionary agencies and real estate titans." 
+    image: uiuxImg, 
+    badge: "[ V10 PREMIUM UI/UX PROTOCOL ]", 
+    title: "UNCOMPROMISING DESIGN FOR ELITE BRANDS", 
+    subtitle: "Forget generic templates. We engineer luxury digital interfaces that fuse flawless aesthetics with the raw power of React and Vite architecture. Absolute visual dominance, designed exclusively to convert your most demanding high-end clients.",
+    duration: 168000 
   },
   { 
     // 7. MESTO
     image: sl1Img, 
     badge: "V8 CORE ARCHITECTURE", 
     title: "OBSIDIAN & GOLD: THE V8 STANDARD", 
-    subtitle: "Uncompromising aesthetic precision. Fluid dynamic rendering designed for ultra-luxury brand positioning." 
+    subtitle: "Uncompromising aesthetic precision. Fluid dynamic rendering designed for ultra-luxury brand positioning.",
+    duration: 168000
   },
   { 
     // 8. MESTO
     image: sl6Img, 
     badge: "COMMERCIAL PRECISION", 
     title: "GOURMET KINETICS", 
-    subtitle: "Microsecond macro capture simulations. Absolute perfection for high-end Food & Beverage commercial assets." 
+    subtitle: "Microsecond macro capture simulations. Absolute perfection for high-end Food & Beverage commercial assets.",
+    duration: 168000
   },
   {
     // 9. MESTO
     image: "/banner-v8-fluid.webp",
     badge: "V8 MASTERWORK EDITION",
     title: "BEYOND PIXELS",
-    subtitle: "Experience 33.2 Megapixel resolution and hyper-realistic cinematic motion. Designed exclusively for top-tier agencies."
+    subtitle: "Experience 33.2 Megapixel resolution and hyper-realistic cinematic motion. Designed exclusively for top-tier agencies.",
+    duration: 168000
   }
 ];
-// --- OSTATAK data.jsx FAJLA OSTAJE ISTI ---/ ============================================================================
+// ============================================================================
 // KRAJ: BANNER_DATA NIZA
 // ============================================================================
+
 export const formatExternalLink = (url) => { if (!url) return '#'; if (!url.startsWith('http://') && !url.startsWith('https://')) return `https://${url}`; return url; };
 export const extractSys = (desc) => { if (!desc) return { d: '', s: {} }; const m = desc.match(/\[SYS\]([\s\S]*?)\[\/SYS\]/i); if (!m) return { d: desc, s: {} }; try { return { d: desc.replace(m[0], '').trim(), s: JSON.parse(m[1]) }; } catch { return { d: desc, s: {} }; } };
 export const renderDescription = (text) => { if (!text) return null; const { d } = extractSys(text); return <div className="w-full text-left"><p className="text-zinc-400 text-sm md:text-base leading-relaxed mb-6 whitespace-pre-wrap font-sans">{d}</p></div>; };

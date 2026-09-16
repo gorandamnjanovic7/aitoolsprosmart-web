@@ -17,7 +17,7 @@ import MagneticButton from './MagneticButton';
 // 🔥 GA4 ANALITIKA 🔥
 import { trackV8Action } from './utils/analytics';
 
-// --- POČETAK FUNKCIJE: V8Navbar ---
+// POČETAK FUNKCIJE: V8Navbar
 const V8Navbar = ({ handleHomeClick }) => {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
@@ -32,6 +32,7 @@ const V8Navbar = ({ handleHomeClick }) => {
   const isAdmin = currentUserEmail === "damnjanovicgoran7@gmail.com" || currentUserEmail === "aitoolsprosmart@gmail.com";
   const isVIP = isAdmin || isVIPInDB;
 
+  // POČETAK FUNKCIJE: useEffect_Auth
   useEffect(() => {
     let unsubTrial = null;
 
@@ -67,13 +68,17 @@ const V8Navbar = ({ handleHomeClick }) => {
       if (unsubTrial) unsubTrial(); 
     };
   }, []);
+  // KRAJ FUNKCIJE: useEffect_Auth
 
+  // POČETAK FUNKCIJE: useEffect_Scroll
   useEffect(() => {
     const handleScroll = () => { setScrolled(window.scrollY > 50); };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+  // KRAJ FUNKCIJE: useEffect_Scroll
 
+  // POČETAK FUNKCIJE: useEffect_HtmlOverflow
   useEffect(() => {
     const html = document.documentElement;
     const body = document.body;
@@ -88,7 +93,9 @@ const V8Navbar = ({ handleHomeClick }) => {
       body.style.overflowX = previousBodyOverflowX;
     };
   }, []);
+  // KRAJ FUNKCIJE: useEffect_HtmlOverflow
 
+  // POČETAK FUNKCIJE: useEffect_MobileMenuOverflow
   useEffect(() => {
     const html = document.documentElement;
     const body = document.body;
@@ -105,11 +112,15 @@ const V8Navbar = ({ handleHomeClick }) => {
       body.style.overflow = previousBodyOverflow;
     };
   }, [isMobileMenuOpen]);
+  // KRAJ FUNKCIJE: useEffect_MobileMenuOverflow
 
+  // POČETAK FUNKCIJE: useEffect_RouteChange
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location.pathname, location.hash]);
+  // KRAJ FUNKCIJE: useEffect_RouteChange
 
+  // POČETAK FUNKCIJE: useEffect_EscapeKey
   useEffect(() => {
     if (!isMobileMenuOpen) return undefined;
 
@@ -120,8 +131,9 @@ const V8Navbar = ({ handleHomeClick }) => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isMobileMenuOpen]);
+  // KRAJ FUNKCIJE: useEffect_EscapeKey
 
-  // --- POČETAK FUNKCIJE: handleLogout ---
+  // POČETAK FUNKCIJE: handleLogout
   const handleLogout = async () => {
     trackV8Action("user_logout");
     await signOut(auth);
@@ -129,9 +141,9 @@ const V8Navbar = ({ handleHomeClick }) => {
     setIsMobileMenuOpen(false); 
     window.location.reload(); 
   };
-  // --- KRAJ FUNKCIJE: handleLogout ---
+  // KRAJ FUNKCIJE: handleLogout
 
-  // --- POČETAK FUNKCIJE: handleLogin ---
+  // POČETAK FUNKCIJE: handleLogin
   const handleLogin = async () => {
     trackV8Action("login_initiated");
     try {
@@ -164,9 +176,9 @@ const V8Navbar = ({ handleHomeClick }) => {
       }
     } catch (err) { console.error("[V8 AUTH ERROR]:", err); }
   };
-  // --- KRAJ FUNKCIJE: handleLogin ---
+  // KRAJ FUNKCIJE: handleLogin
 
-  // --- POČETAK FUNKCIJE: handleClaimTrial ---
+  // POČETAK FUNKCIJE: handleClaimTrial
   const handleClaimTrial = async () => {
     if (!user) return;
     try {
@@ -184,14 +196,14 @@ const V8Navbar = ({ handleHomeClick }) => {
       console.error("Error claiming trial:", error);
     }
   };
-  // --- KRAJ FUNKCIJE: handleClaimTrial ---
+  // KRAJ FUNKCIJE: handleClaimTrial
 
-  // --- POČETAK FUNKCIJE: handleMobileLinkClick ---
+  // POČETAK FUNKCIJE: handleMobileLinkClick
   const handleMobileLinkClick = () => {
     setIsMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-  // --- KRAJ FUNKCIJE: handleMobileLinkClick ---
+  // KRAJ FUNKCIJE: handleMobileLinkClick
 
   return (
     <div className="fixed inset-x-0 top-0 z-[1000] w-full max-w-[100vw]">
@@ -221,7 +233,7 @@ const V8Navbar = ({ handleHomeClick }) => {
             </div>
           </Link>
 
-          {/* Desktop navigacija - SMANJENI RAZMACI (gap-1.5 xl:gap-2 umesto gap-2 xl:gap-3) */}
+          {/* Desktop navigacija */}
           <div className="hidden xl:flex items-center justify-end gap-1.5 xl:gap-2 font-black uppercase tracking-widest shrink-0">
             
             {/* HOME DUGME */}
@@ -456,9 +468,13 @@ const V8Navbar = ({ handleHomeClick }) => {
               </Link>
             </MagneticButton>
 
-            {/* 🔥 NOVO: UI/UX INŽENJERING (V10 OŠTRI EFEKAT) 🔥 */}
+            {/* 🔥 NOVO: UI/UX INŽENJERING (KONDICIONALNI LINK - SAMO ADMIN IDE NA /ui-ux) 🔥 */}
             <MagneticButton>
-              <Link to="/ui-ux" onClick={() => window.scrollTo(0,0)} className="flex items-center gap-1 xl:gap-1.5 px-3 xl:px-4 py-2 rounded-full bg-black border-2 border-orange-500 text-orange-500 font-black hover:bg-orange-500 hover:text-black transition-colors duration-150 shadow-[0_0_15px_rgba(249,115,22,0.4)] hover:shadow-[0_0_25px_rgba(249,115,22,0.8)] whitespace-nowrap cursor-pointer">
+              <Link 
+                to={isAdmin ? "/ui-ux" : "/ui-ux/vault"} 
+                onClick={() => window.scrollTo(0,0)} 
+                className="flex items-center gap-1 xl:gap-1.5 px-3 xl:px-4 py-2 rounded-full bg-black border-2 border-orange-500 text-orange-500 font-black hover:bg-orange-500 hover:text-black transition-colors duration-150 shadow-[0_0_15px_rgba(249,115,22,0.4)] hover:shadow-[0_0_25px_rgba(249,115,22,0.8)] whitespace-nowrap cursor-pointer"
+              >
                 <LayoutGrid className="w-3.5 h-3.5 shrink-0" />
                 <span className="text-[9px] xl:text-[10px] uppercase tracking-widest">UI/UX</span>
               </Link>
@@ -727,8 +743,12 @@ const V8Navbar = ({ handleHomeClick }) => {
                     <span className="text-[7px] bg-white text-orange-600 px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 ml-2 shadow-md">HOT</span>
                   </Link>
 
-                  {/* 🔥 UI/UX MOBILE 🔥 */}
-                  <Link to="/ui-ux" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border-2 border-orange-500 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0 shadow-[0_0_20px_rgba(249,115,22,0.4)]">
+                  {/* 🔥 UI/UX MOBILE (KONDICIONALNI LINK - SAMO ADMIN IDE NA /ui-ux) 🔥 */}
+                  <Link 
+                    to={isAdmin ? "/ui-ux" : "/ui-ux/vault"} 
+                    onClick={handleMobileLinkClick} 
+                    className="flex items-center justify-between bg-black border-2 border-orange-500 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0 shadow-[0_0_20px_rgba(249,115,22,0.4)]"
+                  >
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0 w-full">
                       <div className="bg-orange-500/20 p-2.5 sm:p-3 rounded-xl shrink-0"><LayoutGrid className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" /></div>
                       <div className="flex flex-col min-w-0">
@@ -836,6 +856,7 @@ const V8Navbar = ({ handleHomeClick }) => {
                         <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">White-Label Engine</span>
                       </div>
                     </div>
+                    <span className="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded font-black tracking-widest shadow-[0_0_8px_rgba(16,185,129,0.5)] shrink-0">NEW</span>
                   </Link>
 
                   <div className="mt-1 grid w-full min-w-0 grid-cols-2 gap-2 sm:gap-3">
@@ -882,6 +903,7 @@ const V8Navbar = ({ handleHomeClick }) => {
     </div>
   );
 };
+// KRAJ FUNKCIJE: V8Navbar
+
 export default V8Navbar;
-// --- KRAJ FUNKCIJE: V8Navbar ---
 // KRAJ FAJLA: V8Navbar.jsx

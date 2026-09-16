@@ -1,5 +1,6 @@
 // POČETAK FAJLA: src/qrcode/V8PremiumTestMenu.jsx
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { v8Toast } from '../v8Utils';
 import { db, auth } from '../firebase'; 
@@ -277,6 +278,20 @@ export default function PremiumMenu() {
   if (!currentUser) {
     return (
       <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        <Helmet>
+          <title>V8 QR Menu Builder | Cinematic Restaurant Suite</title>
+          <meta name="description" content="Kreiraj premium digitalne QR menije uz V10 Ultra-Print Engine. Pristupi masivnim template-ima i preuzmi interaktivni meni u visokoj rezoluciji." />
+          <meta name="keywords" content="QR meni, izrada qr menija, restoran meni, digitalni meni, V8 engine, V10, premium UI/UX, B2B SaaS" />
+          <meta property="og:type" content="website" />
+          <meta property="og:title" content="V8 QR Menu Builder | Cinematic Protocol" />
+          <meta property="og:description" content="Vrhunski B2B softver za kreiranje restoranskih QR menija. Generiši kodove, izaberi dizajn i lansiraj platformu odmah." />
+          <meta property="og:image" content="https://aitoolsprosmart.com/QRMenuPromo.webp" />
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content="V8 QR Menu Builder" />
+          <meta name="twitter:description" content="Lansiraj premium QR meni za svoj restoran uz V10 Ultra-Print inženjering." />
+          <meta name="twitter:image" content="https://aitoolsprosmart.com/QRMenuPromo.webp" />
+          <meta name="theme-color" content="#ea580c" />
+        </Helmet>
         <div className="absolute inset-0 bg-[url('/video_bg_explore.mp4')] bg-cover opacity-20 blur-sm mix-blend-overlay"></div>
         <div className="relative z-10 max-w-xl text-center bg-[#0a0f1c] border border-blue-500/30 p-10 rounded-[2.5rem] shadow-[0_0_50px_rgba(37,99,235,0.2)]">
           <Lock className="w-16 h-16 text-blue-500 mx-auto mb-6 drop-shadow-[0_0_15px_rgba(37,99,235,0.6)]" />
@@ -299,6 +314,21 @@ export default function PremiumMenu() {
     <PayPalScriptProvider options={paypalOptions}>
       <div className="relative min-h-screen bg-black text-white font-sans selection:bg-orange-500/30">
         
+        <Helmet>
+          <title>V8 QR Menu Builder | Cinematic Restaurant Suite</title>
+          <meta name="description" content="Kreiraj premium digitalne QR menije uz V10 Ultra-Print Engine. Pristupi masivnim template-ima i preuzmi interaktivni meni u visokoj rezoluciji." />
+          <meta name="keywords" content="QR meni, izrada qr menija, restoran meni, digitalni meni, V8 engine, V10, premium UI/UX, B2B SaaS" />
+          <meta property="og:type" content="website" />
+          <meta property="og:title" content="V8 QR Menu Builder | Cinematic Protocol" />
+          <meta property="og:description" content="Vrhunski B2B softver za kreiranje restoranskih QR menija. Generiši kodove, izaberi dizajn i lansiraj platformu odmah." />
+          <meta property="og:image" content="https://aitoolsprosmart.com/QRMenuPromo.webp" />
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content="V8 QR Menu Builder" />
+          <meta name="twitter:description" content="Lansiraj premium QR meni za svoj restoran uz V10 Ultra-Print inženjering." />
+          <meta name="twitter:image" content="https://aitoolsprosmart.com/QRMenuPromo.webp" />
+          <meta name="theme-color" content="#ea580c" />
+        </Helmet>
+
         {/* --- GLAVNI VIDEO BACKGROUND SLOJ --- */}
         <div className="fixed top-0 left-0 w-full h-full z-0 overflow-hidden pointer-events-none bg-black">
           <video autoPlay loop muted playsInline className="absolute top-1/2 left-1/2 min-w-full min-h-full w-auto h-auto object-cover -translate-x-1/2 -translate-y-1/2 opacity-100">
@@ -327,7 +357,7 @@ export default function PremiumMenu() {
             <motion.div 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
-              className="fixed inset-0 z-[99999] flex items-center justify-center p-4 pt-20 bg-black/50 backdrop-blur-md"
+              className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[3px]"
             >
               <div className="bg-[#050914]/95 border border-cyan-500/40 rounded-[3rem] p-8 md:p-14 text-center max-w-2xl w-full shadow-[0_0_80px_rgba(6,182,212,0.3)] relative overflow-hidden pointer-events-auto">
                 <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 via-cyan-400 to-emerald-500"></div>
@@ -390,8 +420,8 @@ export default function PremiumMenu() {
           )}
         </AnimatePresence>
 
-        {/* 🔥 3. ORIGINALNA STRANICA (Uvek se renderuje u pozadini, ali je ZAMAGLJENA I NEKLIKABILNA ako nije plaćeno) 🔥 */}
-        <main className={`relative z-10 max-w-[1600px] mx-auto px-4 md:px-12 py-10 space-y-12 transition-all duration-700 ${isLockedOut ? 'opacity-30 blur-sm pointer-events-none select-none h-screen overflow-hidden' : ''}`}>
+        {/* 🔥 3. ORIGINALNA STRANICA (Uvek se renderuje u pozadini, vidljiva ali ZAMAGLJENA I NEKLIKABILNA ako nije plaćeno) 🔥 */}
+        <main className={`relative z-10 max-w-[1600px] mx-auto px-4 md:px-12 py-10 space-y-12 transition-all duration-700 ${isLockedOut ? 'opacity-50 blur-[2px] pointer-events-none select-none' : ''}`}>
           
           {/* --- HORIZONTALNI HEADER BOX --- */}
           <div className="relative w-full rounded-[2.5rem] p-10 md:p-16 flex flex-col md:flex-row items-center justify-center gap-16 border border-blue-500/20 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden mt-10">

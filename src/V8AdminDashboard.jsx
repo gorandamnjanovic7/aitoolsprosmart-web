@@ -2,13 +2,13 @@
 // Ne zaboravi React source code link u repozitorijumu!
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShieldAlert, Users, Zap, Image as ImageIcon, CheckCircle, Activity, 
   PlayCircle, Loader2, UploadCloud, Trash2, DollarSign, Calendar, 
   Layers, Film, Sparkles, Flame, Crown, Rocket, 
   Star, Camera, Droplets, Hexagon, Globe, Bitcoin, FileText,
-  PieChart, Eye, Clock, Filter, CreditCard
+  PieChart, Eye, Clock, Filter, CreditCard, Palette, FileCheck2, Link as LinkIcon
 } from 'lucide-react';
 import { v8Toast } from './v8Utils';
 
@@ -21,10 +21,14 @@ import V8PayoneerDashboard from './V8PayoneerDashboard';
 
 // POČETAK FUNKCIJE: V8AdminDashboard
 const V8AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState('payoneer_blagajna');
+  const [activeTab, setActiveTab] = useState('uiux_orders');
   const [sales, setSales] = useState([]);
   const [cryptoReqs, setCryptoReqs] = useState([]); 
   const [paypalReqs, setPaypalReqs] = useState([]); 
+  
+  // 🔥 NOVI STATE ZA UI/UX FAKTURE 🔥
+  const [payoneerReqs, setPayoneerReqs] = useState([]);
+  const [paypalSubs, setPaypalSubs] = useState([]);
   
   // 🔥 V8 ANALITIKA STATE 🔥
   const [analyticsData, setAnalyticsData] = useState([]);
@@ -32,6 +36,7 @@ const V8AdminDashboard = () => {
   
   const [isAuthChecking, setIsAuthChecking] = useState(true);
 
+  // POČETAK FUNKCIJE: useEffect Auth
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -47,6 +52,7 @@ const V8AdminDashboard = () => {
     });
     return () => unsubscribe();
   }, []);
+  // KRAJ FUNKCIJE: useEffect Auth
 
   const [srTitle, setSrTitle] = useState('');
   const [srCategory, setSrCategory] = useState('UNDERWATER MARINE LIFE');
@@ -86,16 +92,19 @@ const V8AdminDashboard = () => {
     { value: 'yellow', label: 'Gold Amber', class: 'bg-yellow-400' }
   ];
 
-  const handleGenerateInvoice = (saleData) => {
-    const invoiceNum = `INV-2026-${Math.floor(Math.random() * 9000 + 1000)}`; 
+  // POČETAK FUNKCIJE: handleGenerateUIUXInvoice
+  // 🔥 NOVA PAMETNA FAKTURA ZA UI/UX SA HASH ZAŠTITOM I SVE 3 EULA LICENCE 🔥
+  const handleGenerateUIUXInvoice = (saleData) => {
+    const invoiceNum = `INV-UIUX-${Math.floor(Math.random() * 9000 + 1000)}`; 
     let dateObj = new Date();
-    if (saleData.vreme?.toDate) dateObj = saleData.vreme.toDate();
-    else if (saleData.requestDate?.toDate) dateObj = saleData.requestDate.toDate();
+    if (saleData.requestDate?.toDate) dateObj = saleData.requestDate.toDate();
+    else if (saleData.createdAt?.toDate) dateObj = saleData.createdAt.toDate();
+    else if (saleData.vreme?.toDate) dateObj = saleData.vreme.toDate();
     
-    // Tačan format za fakturu
     const formattedDate = dateObj.toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
-    const clientName = saleData.ime || saleData.klijent || saleData.firstName + ' ' + (saleData.lastName || '') || 'Valued Client';
+    // 🔥 OVDE JE UBAČENA LOGIKA ZA KOMPANIJU 🔥
+    const clientName = saleData.company ? `${saleData.company} (${saleData.firstName || saleData.ime || ''} ${saleData.lastName || ''})`.trim() : (saleData.ime || saleData.klijent || saleData.firstName + ' ' + (saleData.lastName || '') || 'Valued Client');
     const clientEmail = saleData.email || saleData.clientEmail || 'N/A';
     const clientCountry = saleData.country || 'N/A';
     const productName = saleData.zeliPaket || saleData.film || saleData.productName || 'V8 Master License';
@@ -105,6 +114,58 @@ const V8AdminDashboard = () => {
        finalPrice = Math.ceil(saleData.cenaPaketa / 117); 
     } else if (saleData.price) {
        finalPrice = saleData.price;
+    }
+    const isMonthly = saleData.isMonthly || saleData.status === 'ACTIVE';
+
+    // 🔥 GENERISANJE HASH KLJUČA 🔥
+    const generateLicenseKey = () => {
+      const segment = () => Math.random().toString(36).substring(2, 6).toUpperCase();
+      return `V10-TRK-${segment()}-${segment()}-${segment()}-${segment()}`;
+    };
+    const licenseKey = generateLicenseKey();
+
+    // Default je PERSONAL licenca (ako paket nije Pitch, Retainer, Master ili Enterprise)
+    let licenseTitle = "PERSONAL LICENSE";
+    let licenseDesc = "This license is intended exclusively for students, independent designers, and hobbyists for non-commercial purposes.";
+    let permitted = "Use of the files for personal concepts, practice, education, and presentation in a personal portfolio (e.g., Behance, Dribbble, personal website).";
+    let prohibited = "Any commercial use. It is strictly forbidden to use these files on websites, applications, or in menus that are billed to a client or generate any financial profit.";
+    
+    if (productName?.toUpperCase().includes('RETAINER') || productName?.toUpperCase().includes('PITCH')) {
+      // COMMERCIAL AGENCY licenca
+      licenseTitle = "COMMERCIAL AGENCY LICENSE";
+      licenseDesc = "A standard B2B license intended for professional designers, freelancers, and web agencies.";
+      permitted = "Integration of V10 MASTERWORK files into one (1) commercial client project (e.g., developing a premium website or restaurant application billed to a client). The license covers the work of up to three (3) team members within your agency.";
+      prohibited = "Multiple resales or using the same V10 design for several different clients. Distribution or resale of the original, unmodified V10 files and PSD templates to third parties on stock platforms.";
+    } else if (productName?.toUpperCase().includes('MASTER') || productName?.toUpperCase().includes('ENTERPRISE')) {
+      // ENTERPRISE / MASTER licenca
+      licenseTitle = "ENTERPRISE / MASTER LICENSE";
+      licenseDesc = "The highest tier license, intended for large agencies, corporations, and SaaS platforms requiring maximum flexibility and legal security.";
+      permitted = "Unlimited use of all files from the package across an unlimited number of commercial client projects. Integration of visuals into internal software, SaaS platforms, and global marketing campaigns is allowed. The license covers an unlimited number of \"seats\" (access for all employees within your company).";
+      prohibited = "The only restriction is a strict ban on the direct, raw resale of the source V10 files as a competing \"Stock\" package. The materials must be used as part of a broader design or software solution.";
+    }
+
+    const projects = saleData.selectedProjects || [];
+    let tableRows = '';
+    let contractAssetsList = '';
+    
+    if (projects.length > 0) {
+      tableRows = projects.map((p, idx) => `
+        <tr>
+          <td><strong>${idx + 1}. V10 UI/UX Asset: ${p.title}</strong><br><small style="color:#666;">Format: Master .PSD & .ZIP Archive</small></td>
+          <td style="text-align: center;">1</td>
+          <td style="text-align: right; font-weight: bold;">Included</td>
+        </tr>
+      `).join('');
+      contractAssetsList = projects.map(p => `<li style="color: #ea580c; font-weight: bold;">${p.title} (Master PSD & ZIP)</li>`).join('');
+    } else {
+      tableRows = `
+        <tr>
+          <td><strong>${productName}</strong><br><small style="color:#666;">Entire V10 Master Vault Collection</small></td>
+          <td style="text-align: center;">1</td>
+          <td style="text-align: right; font-weight: bold;">$${finalPrice}</td>
+        </tr>
+      `;
+      contractAssetsList = `<li style="color: #ea580c; font-weight: bold;">Entire V10 Master Vault Collection</li>`;
     }
 
     const printWindow = window.open('', '_blank', 'width=800,height=900');
@@ -116,162 +177,97 @@ const V8AdminDashboard = () => {
         <title>Invoice & Contract - ${invoiceNum}</title>
         <style>
           body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #333; margin: 0; background: #fff; }
-          .invoice-box { max-width: 800px; margin: auto; padding: 40px; border: 1px solid #ddd; box-shadow: 0 0 15px rgba(0, 0, 0, 0.05); font-size: 16px; line-height: 24px; color: #333; }
+          .invoice-box { max-width: 800px; margin: auto; padding: 40px; border: 1px solid #ddd; box-shadow: 0 0 15px rgba(0, 0, 0, 0.05); font-size: 14px; line-height: 24px; }
           .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 50px; border-bottom: 2px solid #000; padding-bottom: 20px; }
-          .header-left { display: flex; align-items: center; gap: 20px; }
-          .logo-img { width: 80px; height: 80px; object-fit: contain; border-radius: 10px; }
           .header h1 { margin: 0; color: #ea580c; font-size: 42px; text-transform: uppercase; letter-spacing: 2px; font-weight: 900; }
-          .details-wrapper { display: flex; justify-content: space-between; margin-bottom: 50px; }
+          .details-wrapper { display: flex; justify-content: space-between; margin-bottom: 40px; }
           .details-col { width: 48%; }
-          .section-title { font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; color: #888; margin-bottom: 10px; display: block; }
-          table { width: 100%; line-height: inherit; text-align: left; border-collapse: collapse; margin-bottom: 40px; }
-          table th, table td { padding: 15px; border-bottom: 1px solid #eee; }
-          table th { background: #f9f9f9; font-weight: bold; text-transform: uppercase; font-size: 13px; color: #555; }
-          table td.bold-col { font-weight: bold; }
+          .section-title { font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; color: #888; margin-bottom: 5px; display: block; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+          table th, table td { padding: 12px; border-bottom: 1px solid #eee; }
+          table th { background: #f9f9f9; font-weight: bold; text-transform: uppercase; font-size: 12px; color: #555; text-align: left; }
           .total-box { text-align: right; border-top: 2px solid #000; padding-top: 20px; margin-top: 20px; }
-          .total-box .due { font-size: 24px; font-weight: 900; }
+          .total-box .due { font-size: 24px; font-weight: 900; color: #111; }
           .payment-status { margin-top: 40px; padding: 20px; background: #fdfdfd; border-left: 4px solid #16a34a; }
-          .status-badge { color: #16a34a; font-weight: 900; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 5px; }
+          .status-badge { color: #16a34a; font-weight: 900; font-size: 16px; text-transform: uppercase; display: block; margin-bottom: 5px; }
           .footer { margin-top: 60px; font-size: 11px; color: #999; text-align: center; border-top: 1px solid #eee; padding-top: 20px; }
-          
-          /* Contract Styles */
           .contract-box { page-break-before: always; max-width: 800px; margin: auto; padding: 40px; font-size: 13px; line-height: 1.6; color: #444; }
-          .contract-title { color: #ea580c; text-transform: uppercase; font-size: 24px; margin-bottom: 10px; font-weight: 900; }
-          .contract-meta { border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 20px; font-size: 12px; color: #666; }
+          .contract-title { color: #ea580c; text-transform: uppercase; font-size: 20px; margin-bottom: 20px; font-weight: 900; border-bottom: 1px solid #eee; padding-bottom: 10px; }
           .contract-section { margin-bottom: 20px; }
-          .contract-section h3 { font-size: 14px; text-transform: uppercase; color: #111; margin-bottom: 8px; }
-          .contract-section ul { margin-top: 5px; padding-left: 20px; }
-          .contract-section li { margin-bottom: 5px; }
+          .contract-section h3 { font-size: 13px; text-transform: uppercase; color: #111; margin-bottom: 5px; }
+          .warning-box { background-color: #fff5f5; padding: 20px; border-left: 4px solid #ef4444; margin-bottom: 25px; }
+          .tracking-hash { background: #111; color: #ea580c; padding: 10px; text-align: center; font-family: monospace; font-size: 16px; font-weight: bold; margin: 15px 0; letter-spacing: 2px; }
         </style>
       </head>
       <body>
         <div class="invoice-box">
           <div class="header">
-            <div class="header-left">
-               <img src="/logo.png" alt="V8 Vault Logo" class="logo-img" onerror="this.style.display='none'; document.getElementById('fallback-logo').style.display='flex';" />
-               <div id="fallback-logo" style="display: none; background-color: #ea580c; color: #fff; width: 80px; height: 80px; align-items: center; justify-content: center; font-size: 32px; font-weight: 900; border-radius: 12px; letter-spacing: 2px;">V8</div>
-               <h1>INVOICE</h1>
-            </div>
+            <div><h1>INVOICE</h1></div>
             <div style="text-align: right;">
-              <strong>Invoice Number:</strong> ${invoiceNum}<br>
-              <strong>Date of Issue:</strong> ${formattedDate}
+              <strong>Invoice No:</strong> ${invoiceNum}<br>
+              <strong>Date:</strong> ${formattedDate}<br>
+              <strong style="color: #ea580c; display: block; margin-top: 5px;">Tracking Hash: ${licenseKey}</strong>
             </div>
           </div>
-
           <div class="details-wrapper">
             <div class="details-col">
               <span class="section-title">FROM (Issuer):</span>
-              <strong>Goran Damnjanovic</strong><br>
-              Vucka Milicevica 117<br>
-              11306 Grocka, Serbia<br>
-              National ID (JMBG): 0911972710000
+              <strong>Goran Damnjanovic</strong><br>Vucka Milicevica 117<br>11306 Grocka, Serbia<br>National ID (JMBG): 0911972710000
             </div>
             <div class="details-col" style="text-align: right;">
               <span class="section-title">BILL TO (Client):</span>
-              <strong>${clientName}</strong><br>
-              ${clientEmail}<br>
-              ${clientCountry}
+              <strong>${clientName}</strong><br>${clientEmail}<br>${clientCountry}
             </div>
           </div>
-
+          <div style="margin-bottom: 20px;">
+            <span class="section-title">Package Active:</span>
+            <strong style="font-size: 16px; color: #ea580c;">${productName}</strong>
+          </div>
           <table>
-            <thead>
-              <tr>
-                <th>Description of Services</th>
-                <th style="text-align: center;">Quantity</th>
-                <th style="text-align: right;">Total</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Description of Services / Master Files</th><th style="text-align: center;">Quantity</th><th style="text-align: right;">Total</th></tr></thead>
             <tbody>
-              <tr>
-                <td class="bold-col">${productName} - Web Development & Digital Asset Engineering</td>
-                <td style="text-align: center;">1</td>
-                <td style="text-align: right; font-weight: bold;">$${finalPrice}</td>
-              </tr>
+              ${tableRows}
             </tbody>
           </table>
-
-          <div class="total-box">
-            <div class="due">TOTAL DUE: $${finalPrice}</div>
-          </div>
-
-          <div class="payment-status">
-            <span class="status-badge">PAID IN FULL</span>
-            <small style="color: #666;">(Note: Payment settled via secure gateway. Exact Timestamp: ${formattedDate}).</small>
-          </div>
-
-          <div class="footer">
-            This document is generated electronically and is valid without a physical signature or stamp.
-          </div>
+          <div class="total-box"><div class="due">TOTAL DUE: $${finalPrice}${isMonthly ? ' /mo' : ''}</div></div>
+          <div class="payment-status"><span class="status-badge">SECURED & LICENSED</span><small style="color: #666;">(Timestamp: ${formattedDate}. Payment Method: ${saleData.method || 'Card/Crypto/Transfer'}).</small></div>
+          <div class="footer">This document is generated electronically and is valid without a physical signature or stamp.</div>
         </div>
 
         <div class="contract-box">
-          <h2 class="contract-title">V8 Masterwork License Agreement</h2>
+          <h2 class="contract-title">V10 MASTERWORK - OFFICIAL END USER LICENSE AGREEMENT (EULA)</h2>
           
-          <div class="contract-meta">
-            <strong>Version:</strong> 1.0 &nbsp;|&nbsp; 
-            <strong>Date:</strong> June 10, 2026 &nbsp;|&nbsp; 
-            <strong>Author/Seller:</strong> Goran Damnjanović (https://aitoolsprosmart.com)<br><br>
-            This document is a legally binding agreement between you (User/Buyer) and the author (Goran Damnjanovic). By purchasing and downloading digital assets from the V8 Masterwork collection, you agree to the following terms:
+          <div class="warning-box">
+            <h3 style="color: #ef4444; margin-top: 0;">IMPORTANT NOTICE REGARDING COPYRIGHT PROTECTION AND TRACKING</h3>
+            <p style="margin-bottom: 0;">All graphic files within this package (including 150MP renders and originals) contain a permanently integrated, encrypted digital footprint and proprietary IPTC/EXIF metadata. This data does not affect the visual quality of the image but is permanently embedded into the file's code.</p>
+            
+            <div class="tracking-hash">[ SYSTEM HASH: ${licenseKey} ]</div>
+            
+            <p style="margin-bottom: 0; font-size: 12px;"><strong>V10 MASTERWORK</strong> utilizes advanced Reverse Image Tracking software to continuously monitor the use of these visuals across the internet. Any use of the files that exceeds the scope of your purchased license will be automatically detected. Violation of these terms will result in an immediate DMCA takedown notice against the website hosting the material, as well as the direct issuance of an Enterprise License invoice to your agency or your client</p>
           </div>
 
           <div class="contract-section">
-            <h3>1. LICENSE SUBJECT</h3>
-            <p>V8 Vault grants you a non-exclusive, lifetime, global right to use the purchased digital assets in accordance with the terms outlined in this document.</p>
+            <h3 style="color: #ea580c;">${licenseTitle}</h3>
+            <p>${licenseDesc}</p>
           </div>
 
           <div class="contract-section">
-            <h3>2. PERMITTED USE</h3>
-            <p>As an authorized user, you are entitled to use the assets for:</p>
-            <ul>
-              <li><strong>Commercial Marketing Campaigns:</strong> Use in advertisements, social media, websites, and digital ads.</li>
-              <li><strong>Content Production:</strong> Inclusion in video production, films, presentations, and edited materials.</li>
-              <li><strong>Print Materials:</strong> Use in catalogs, brochures, billboards, and other marketing collateral.</li>
-              <li><strong>Modifications:</strong> You have the right to modify, crop, color grade, or adapt the assets to your needs, provided the final product remains professional.</li>
+            <h3 style="color: #16a34a;">• COVERED DIGITAL ASSETS:</h3>
+            <p>This license strictly applies ONLY to the following downloaded files:</p>
+            <ul style="background: #f9f9f9; border: 1px solid #eee; padding: 15px 15px 15px 30px; margin-top: 10px;">
+              ${contractAssetsList}
             </ul>
           </div>
 
-          <div class="contract-section">
-            <h3>3. PROHIBITED USE</h3>
-            <p>Strictly prohibited:</p>
-            <ul>
-              <li><strong>Resale and Distribution:</strong> Selling, licensing, sharing, or distributing original files (or slightly modified versions) as "stock" assets or separate digital products is prohibited.</li>
-              <li><strong>AI Model Training:</strong> Using these assets to train other AI models or for machine learning is prohibited.</li>
-              <li><strong>Unregistered Use:</strong> Any use outside the scope of this license without explicit written permission is a violation of copyright.</li>
-            </ul>
+          <div class="contract-section"><h3>• Permitted Use:</h3><p>${permitted}</p></div>
+          <div class="contract-section"><h3>• Prohibited Use:</h3><p>${prohibited}</p></div>
+          
+          <div style="margin-top: 30px; padding: 20px; background: #fdfdfd; border-left: 4px solid #ea580c;">
+            <p style="margin: 0 0 10px 0;">By purchasing and downloading this V10 MASTERWORK package, you automatically agree to all the above-mentioned terms and legal consequences in the event of a license violation.</p>
+            <strong>License Granted to: ${clientName} (${clientEmail})</strong>
           </div>
-
-          <div class="contract-section">
-            <h3>4. OWNERSHIP AND COPYRIGHT</h3>
-            <p>All copyright, intellectual property, and ownership of the original digital assets remain exclusively with the author (Goran Damnjanovic). This purchase does not transfer ownership of copyright, only the right to use.</p>
-          </div>
-
-          <div class="contract-section">
-            <h3>5. LIABILITY AND WARRANTY</h3>
-            <p>Digital assets are provided "as is". V8 Vault makes no warranties regarding specific fitness for a particular purpose. The author is not liable for any direct or indirect damage resulting from the use of these assets.</p>
-          </div>
-
-          <div class="contract-section">
-            <h3>6. VALIDITY</h3>
-            <p>This license is perpetual (lifetime) for the buyer who has duly paid the license fee. In case of breach of any clause, the license is automatically terminated without refund.</p>
-          </div>
-
-          <div class="contract-section" style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px;">
-            <p><strong>Support:</strong> For additional questions or corporate inquiries, contact:<br>
-            Email: aitoolsprosmart@gmail.com / info@aitoolsprosmart.com<br>
-            Platform: aitoolsprosmart.com</p>
-          </div>
-
         </div>
-
-        <script>
-          window.onload = function() {
-             setTimeout(function() {
-                window.print();
-             }, 500);
-             window.onafterprint = function() { window.close(); };
-          };
-        </script>
+        <script>window.onload = function() { setTimeout(function() { window.print(); }, 500); window.onafterprint = function() { window.close(); }; };</script>
       </body>
       </html>
     `;
@@ -280,7 +276,9 @@ const V8AdminDashboard = () => {
     printWindow.document.write(htmlContent);
     printWindow.document.close();
   };
+  // KRAJ FUNKCIJE: handleGenerateUIUXInvoice
 
+  // POČETAK FUNKCIJE: handleNukePayoneer
   const handleNukePayoneer = async () => {
     if (!window.confirm("🚨 UPOZORENJE: Da li si siguran da želiš da izbrišeš apsolutno sve B2B (Payoneer) zahteve iz baze, osim jednog?")) return;
     try {
@@ -299,8 +297,9 @@ const V8AdminDashboard = () => {
       alert("Greška pri brisanju: " + error.message);
     }
   };
+  // KRAJ FUNKCIJE: handleNukePayoneer
 
-  // 🔥 NUKE ZA KRIPTO 🔥
+  // POČETAK FUNKCIJE: handleNukeCrypto
   const handleNukeCrypto = async () => {
     if (!window.confirm("🚨 UPOZORENJE: Da li si siguran da želiš da izbrišeš apsolutno sve KRIPTO zahteve iz baze, osim jednog?")) return;
     try {
@@ -319,8 +318,9 @@ const V8AdminDashboard = () => {
       alert("Greška pri brisanju: " + error.message);
     }
   };
+  // KRAJ FUNKCIJE: handleNukeCrypto
 
-  // 🔥 NUKE ZA PAYPAL I KARTICE (Oni dele istu kolekciju v8_paypal_requests) 🔥
+  // POČETAK FUNKCIJE: handleNukePayPalAndCard
   const handleNukePayPalAndCard = async () => {
     if (!window.confirm("🚨 UPOZORENJE: Da li si siguran da želiš da izbrišeš apsolutno sve PAYPAL I KARTICNE zahteve iz baze, osim jednog?")) return;
     try {
@@ -339,8 +339,9 @@ const V8AdminDashboard = () => {
       alert("Greška pri brisanju: " + error.message);
     }
   };
+  // KRAJ FUNKCIJE: handleNukePayPalAndCard
 
-  // 🔥 RESETOVANJE ANALITIKE NA NULU 🔥
+  // POČETAK FUNKCIJE: handleNukeAnalytics
   const handleNukeAnalytics = async () => {
     if (!window.confirm("🚨 UPOZORENJE: Da li si siguran da želiš da izbrišeš CELOKUPNU ANALITIKU? Svi brojači se vraćaju na nulu! Ovo se ne može poništiti.")) return;
     try {
@@ -361,7 +362,48 @@ const V8AdminDashboard = () => {
       alert("Greška pri brisanju analitike: " + error.message);
     }
   };
+  // KRAJ FUNKCIJE: handleNukeAnalytics
 
+  // POČETAK FUNKCIJE: handleNukeAllOrders
+  // 🔥 NOVO DUGME KOJE BRISE SVE BLAGAJNE ODJEDNOM 🔥
+  const handleNukeAllOrders = async () => {
+    if (!window.confirm("🚨 BURN IT ALL: Da li si apsolutno siguran da želiš da spališ SVE transakcije iz SVIH blagajni (B2B, Kripto, PayPal, Kartice), osim po jednog test primera? Ovo je nepovratno!")) return;
+    try {
+      let totalDeleted = 0;
+
+      // 1. Spali B2B (Payoneer)
+      const snapPayoneer = await getDocs(query(collection(db, "v8_payoneer_requests")));
+      if (snapPayoneer.docs.length > 1) {
+        const docsToDelete = snapPayoneer.docs.slice(1);
+        for (let d of docsToDelete) { await deleteDoc(doc(db, "v8_payoneer_requests", d.id)); totalDeleted++; }
+      }
+
+      // 2. Spali Kripto
+      const snapCrypto = await getDocs(query(collection(db, "v8_crypto_requests")));
+      if (snapCrypto.docs.length > 1) {
+        const docsToDelete = snapCrypto.docs.slice(1);
+        for (let d of docsToDelete) { await deleteDoc(doc(db, "v8_crypto_requests", d.id)); totalDeleted++; }
+      }
+
+      // 3. Spali PayPal & Card Pay
+      const snapPayPal = await getDocs(query(collection(db, "v8_paypal_requests")));
+      if (snapPayPal.docs.length > 1) {
+        const docsToDelete = snapPayPal.docs.slice(1);
+        for (let d of docsToDelete) { await deleteDoc(doc(db, "v8_paypal_requests", d.id)); totalDeleted++; }
+      }
+
+      if(typeof v8Toast !== 'undefined') {
+        v8Toast.success(`🔥 BURN IT ALL USPEŠAN: Spaljeno ${totalDeleted} starih zahteva!`);
+      } else {
+        alert(`🔥 BURN IT ALL USPEŠAN: Spaljeno ${totalDeleted} starih zahteva!`);
+      }
+    } catch (error) {
+      alert("Greška pri brisanju: " + error.message);
+    }
+  };
+  // KRAJ FUNKCIJE: handleNukeAllOrders
+
+  // POČETAK FUNKCIJE: simulateDirectPurchase
   const simulateDirectPurchase = async () => {
     try {
       await addDoc(collection(db, "v8_kupci"), {
@@ -377,11 +419,13 @@ const V8AdminDashboard = () => {
       if(typeof v8Toast !== 'undefined') v8Toast.error("Database injection failed!");
     }
   };
+  // KRAJ FUNKCIJE: simulateDirectPurchase
 
   const [promoVideo, setPromoVideo] = useState("");
   const [promoImagesArray, setPromoImagesArray] = useState([]);
   const [isUploadingPromo, setIsUploadingPromo] = useState(false);
 
+  // POČETAK FUNKCIJE: useEffect za Sales
   useEffect(() => {
     const q = query(collection(db, "v8_kupci"), orderBy("vreme", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -390,25 +434,27 @@ const V8AdminDashboard = () => {
     });
     return () => unsubscribe();
   }, []);
+  // KRAJ FUNKCIJE: useEffect za Sales
 
+  // POČETAK FUNKCIJE: Osluškivanje baza
   useEffect(() => {
-    const q = query(collection(db, "v8_crypto_requests"), orderBy("requestDate", "desc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubCrypto = onSnapshot(query(collection(db, "v8_crypto_requests"), orderBy("requestDate", "desc")), (snapshot) => {
       setCryptoReqs(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
-    return () => unsubscribe();
-  }, []);
-
-  // Osluškivanje PayPal Baze
-  useEffect(() => {
-    const q = query(collection(db, "v8_paypal_requests"), orderBy("requestDate", "desc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubPaypal = onSnapshot(query(collection(db, "v8_paypal_requests"), orderBy("requestDate", "desc")), (snapshot) => {
       setPaypalReqs(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
-    return () => unsubscribe();
+    const unsubPayoneer = onSnapshot(query(collection(db, "v8_payoneer_requests"), orderBy("requestDate", "desc")), snap => {
+      setPayoneerReqs(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    const unsubSubs = onSnapshot(query(collection(db, "v8_paypal_subscriptions"), orderBy("createdAt", "desc")), snap => {
+      setPaypalSubs(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    return () => { unsubCrypto(); unsubPaypal(); unsubPayoneer(); unsubSubs(); };
   }, []);
+  // KRAJ FUNKCIJE: Osluškivanje baza
 
-  // 🔥 V8 ANALITIKA LISTENER (ZAKLJUČANO NA MAX 200 DA NE ZABODE BROWSER) 🔥
+  // POČETAK FUNKCIJE: Osluškivanje analitike
   useEffect(() => {
     const q = query(collection(db, "analytics"), orderBy("timestamp", "desc"), limit(200));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -417,7 +463,9 @@ const V8AdminDashboard = () => {
     });
     return () => unsubscribe();
   }, []);
+  // KRAJ FUNKCIJE: Osluškivanje analitike
 
+  // POČETAK FUNKCIJE: Dohvatanje Promo10x
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -432,7 +480,9 @@ const V8AdminDashboard = () => {
     };
     fetchData();
   }, []);
+  // KRAJ FUNKCIJE: Dohvatanje Promo10x
 
+  // POČETAK FUNKCIJE: handleUploadPromoImage
   const handleUploadPromoImage = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -457,7 +507,9 @@ const V8AdminDashboard = () => {
       setIsUploadingPromo(false);
     }
   };
+  // KRAJ FUNKCIJE: handleUploadPromoImage
 
+  // POČETAK FUNKCIJE: handleDeletePromoImage
   const handleDeletePromoImage = async (urlToDelete) => {
     if (window.confirm("Delete this image?")) {
       const newImagesArray = promoImagesArray.filter(url => url !== urlToDelete);
@@ -466,7 +518,9 @@ const V8AdminDashboard = () => {
       if(typeof v8Toast !== 'undefined') v8Toast.success("Image removed.");
     }
   };
+  // KRAJ FUNKCIJE: handleDeletePromoImage
 
+  // POČETAK FUNKCIJE: handleSavePromoConfig
   const handleSavePromoConfig = async () => {
     try {
       await setDoc(doc(db, "v8_settings", "promo10x"), { 
@@ -478,7 +532,9 @@ const V8AdminDashboard = () => {
       if(typeof v8Toast !== 'undefined') v8Toast.error("Database save error.");
     }
   };
+  // KRAJ FUNKCIJE: handleSavePromoConfig
 
+  // POČETAK FUNKCIJE: handleShowroomUpload
   const handleShowroomUpload = async (e) => {
     e.preventDefault();
     const fileInput = document.getElementById('srFileInput');
@@ -518,7 +574,9 @@ const V8AdminDashboard = () => {
       setIsSrUploading(false);
     }
   };
+  // KRAJ FUNKCIJE: handleShowroomUpload
 
+  // POČETAK FUNKCIJE: handleSaveCategory
   const handleSaveCategory = async (e) => {
     e.preventDefault();
     if(!catName.trim()) {
@@ -541,23 +599,26 @@ const V8AdminDashboard = () => {
       setIsCatSaving(false);
     }
   };
+  // KRAJ FUNKCIJE: handleSaveCategory
 
-  // Tačan prikaz vremena u tabelama do sekunde
+  // POČETAK FUNKCIJE: formatTimeExact
   const formatTimeExact = (timestamp) => {
     if (!timestamp) return "N/A";
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return date.toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
   };
+  // KRAJ FUNKCIJE: formatTimeExact
 
-  const formatTime = (timestamp) => {
-    if (!timestamp) return "Just now";
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-  };
+  // 🔥 FILTER ZA UI/UX NARUDŽBINE 🔥
+  const allUiUxOrders = [...payoneerReqs, ...cryptoReqs, ...paypalReqs, ...paypalSubs]
+    .filter(req => req.selectedProjects && req.selectedProjects.length > 0)
+    .sort((a, b) => {
+      const timeA = a.requestDate?.toMillis() || a.createdAt?.toMillis() || 0;
+      const timeB = b.requestDate?.toMillis() || b.createdAt?.toMillis() || 0;
+      return timeB - timeA;
+    });
 
-  // 🔥 LOGIKA ZA FILTRIRANJE ANALITIKE (SAMO ULOGOVANI KLIJENTI) 🔥
   const uniqueRegisteredUsers = Array.from(new Set(analyticsData.filter(d => d.userEmail).map(d => d.userEmail)));
-  
   const filteredAnalytics = analyticsData.filter(log => {
     if (!log.userEmail) return false; 
     if (selectedAnalyticsFilter === 'ALL') return true;
@@ -575,7 +636,6 @@ const V8AdminDashboard = () => {
     );
   }
 
-  // Filtriranje PayPal / Card zahteva ukoliko backend snima payment_source (ako ne, prikazuju se svi u PayPal)
   const paypalOrders = paypalReqs.filter(r => !r.paymentSource || r.paymentSource.toLowerCase() === 'paypal');
   const cardOrders = paypalReqs.filter(r => r.paymentSource && r.paymentSource.toLowerCase() !== 'paypal');
 
@@ -594,6 +654,13 @@ const V8AdminDashboard = () => {
 
         <div className="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
           
+          {/* 🔥 NOVI UI/UX DESIGN TAB 🔥 */}
+          <button onClick={() => setActiveTab('uiux_orders')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all mb-4 ${activeTab === 'uiux_orders' ? 'bg-orange-600 border border-orange-500 text-black shadow-[0_0_20px_rgba(234,88,12,0.4)]' : 'bg-orange-600/10 text-orange-500 hover:bg-orange-600/20 border border-orange-500/30'}`}>
+            <Palette className="w-4 h-4" />
+            UI/UX ORDERS
+            {allUiUxOrders.length > 0 && <span className={`ml-auto text-[9px] px-2 py-0.5 rounded-full ${activeTab === 'uiux_orders' ? 'bg-black text-orange-500' : 'bg-orange-500 text-black'}`}>{allUiUxOrders.length}</span>}
+          </button>
+
           <button onClick={() => setActiveTab('payoneer_blagajna')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === 'payoneer_blagajna' ? 'bg-orange-600/10 text-orange-500 border border-orange-500/30' : 'text-zinc-500 hover:text-white hover:bg-white/5 border border-transparent'}`}>
             <img src="/payoneer.png" alt="B2B" className="w-4 h-4 object-contain" onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
             <div style={{display: 'none'}} className="w-4 h-4 rounded-full border border-orange-500 items-center justify-center"><div className="w-1.5 h-1.5 rounded-full bg-orange-500"></div></div>
@@ -607,7 +674,6 @@ const V8AdminDashboard = () => {
             {cryptoReqs.length > 0 && <span className="ml-auto bg-yellow-500 text-black text-[9px] px-2 py-0.5 rounded-full">{cryptoReqs.length}</span>}
           </button>
 
-          {/* 🔥 NOVI PAYPAL TAB 🔥 */}
           <button onClick={() => setActiveTab('paypal_blagajna')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === 'paypal_blagajna' ? 'bg-blue-600/10 text-blue-500 border border-blue-500/30' : 'text-zinc-500 hover:text-white hover:bg-white/5 border border-transparent'}`}>
             <img src="/paypal.png" alt="PayPal" className="w-4 h-4 object-contain" onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
             <div style={{display: 'none'}} className="w-4 h-4 text-blue-500 font-bold items-center justify-center">P</div>
@@ -615,7 +681,6 @@ const V8AdminDashboard = () => {
             {paypalOrders.length > 0 && <span className="ml-auto bg-blue-600 text-white text-[9px] px-2 py-0.5 rounded-full">{paypalOrders.length}</span>}
           </button>
 
-          {/* 🔥 NOVI CARD PAY TAB 🔥 */}
           <button onClick={() => setActiveTab('card_blagajna')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === 'card_blagajna' ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/30' : 'text-zinc-500 hover:text-white hover:bg-white/5 border border-transparent'}`}>
             <img src="/visa.png" alt="Visa" className="w-5 h-3 object-contain" onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
             <div style={{display: 'none'}} className="w-5 h-3 bg-indigo-500/20 text-indigo-400 text-[6px] items-center justify-center rounded-sm border border-indigo-500/50">VISA</div>
@@ -653,6 +718,82 @@ const V8AdminDashboard = () => {
       {/* MAIN CONTENT (RIGHT) */}
       <div className="ml-64 flex-1 p-10 overflow-y-auto">
         
+        {/* 🔥 NOVI UI/UX DESIGN TAB SADRŽAJ 🔥 */}
+        {activeTab === 'uiux_orders' && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-6xl mx-auto">
+             <div className="mb-8 flex items-center justify-between border-b border-orange-500/20 pb-6">
+              <div>
+                <h1 className="text-3xl font-black uppercase tracking-widest text-white mb-2 flex items-center gap-3">
+                  <Palette className="w-8 h-8 text-orange-500" />
+                  UI/UX DESIGN & VAULT ORDERS
+                </h1>
+                <p className="text-zinc-500 text-[12px] font-bold tracking-widest uppercase">Aggregated list with Dynamic Licensing and Projects</p>
+              </div>
+              
+              {/* 🔥 NOVO BURN IT ALL DUGME 🔥 */}
+              <button 
+                onClick={handleNukeAllOrders} 
+                className="bg-red-600/10 text-red-500 border border-red-500/50 hover:bg-red-600 hover:text-white px-6 py-3.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-[0_0_25px_rgba(220,38,38,0.3)] group"
+              >
+                <Flame className="w-5 h-5 group-hover:scale-125 transition-transform" /> BURN IT ALL
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+              {allUiUxOrders.length === 0 ? (
+                <div className="text-center py-20 opacity-50 bg-[#0a0a0a] rounded-3xl border border-white/5">
+                  <Palette className="w-16 h-16 text-zinc-600 mx-auto mb-4" />
+                  <p className="text-[12px] font-black uppercase tracking-widest text-zinc-500">Nema UI/UX narudžbina u sistemu.</p>
+                </div>
+              ) : (
+                allUiUxOrders.map(req => (
+                  <div key={req.id} className="bg-[#050505] border border-orange-500/20 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between hover:border-orange-500/50 shadow-[0_5px_30px_rgba(234,88,12,0.05)] transition-all gap-6">
+                    <div className="flex items-center gap-6 flex-1 w-full">
+                       <div className="w-12 h-12 rounded-full bg-orange-600/10 flex items-center justify-center border border-orange-500/30 shrink-0">
+                         {req.method === 'payoneer' || req.method === 'b2b' ? <LinkIcon className="w-5 h-5 text-blue-500" /> : 
+                          req.method === 'crypto' ? <Bitcoin className="w-5 h-5 text-yellow-500" /> : 
+                          <span className="text-blue-500 font-black text-lg">P</span>}
+                       </div>
+                       <div className="flex-1">
+                         <h3 className="text-[16px] font-black uppercase tracking-widest text-white">{req.firstName} {req.lastName}</h3>
+                         <p className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5 mb-2">{req.clientEmail} • {req.country}</p>
+                         
+                         <div className="bg-[#0a0a0a] border border-white/5 rounded-xl p-3">
+                            <span className="text-orange-400 text-[10px] font-black uppercase tracking-widest border-b border-white/10 pb-1 mb-2 block w-max">
+                              Package: {req.productName}
+                            </span>
+                            <ul className="space-y-1">
+                              {req.selectedProjects && req.selectedProjects.map((proj, idx) => (
+                                <li key={idx} className="text-zinc-400 text-[11px] font-bold flex items-center gap-2">
+                                  <div className="w-1.5 h-1.5 rounded-full bg-orange-500"></div>
+                                  {proj.title} <span className="text-zinc-600 text-[9px] uppercase">({proj.engine})</span>
+                                </li>
+                              ))}
+                            </ul>
+                         </div>
+
+                       </div>
+                    </div>
+                    <div className="flex flex-col md:items-end gap-3 shrink-0">
+                       <div className="text-2xl font-black text-orange-500">${req.price}{req.isMonthly || req.status === 'ACTIVE' ? <span className="text-xs text-zinc-500 ml-1">/MO</span> : ''}</div>
+                       <div className="text-zinc-500 text-[10px] font-bold tracking-widest uppercase flex items-center gap-1"><Clock className="w-3 h-3"/> {formatTimeExact(req.requestDate || req.createdAt)}</div>
+                       
+                       <div className="flex flex-col gap-2 w-full mt-2">
+                         <button 
+                            onClick={() => handleGenerateUIUXInvoice(req)} 
+                            className="w-full bg-orange-600 hover:bg-orange-500 text-black px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-[0_0_15px_rgba(234,88,12,0.4)]"
+                         >
+                           <FileCheck2 className="w-4 h-4" /> GENERATE INVOICE & LICENSE
+                         </button>
+                       </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </motion.div>
+        )}
+
         {/* --- TAB: PAYONEER BLAGAJNA --- */}
         {activeTab === 'payoneer_blagajna' && (
           <div className="animate-in fade-in duration-500">
@@ -677,7 +818,6 @@ const V8AdminDashboard = () => {
                 </h1>
                 <p className="text-zinc-500 text-[12px] font-bold tracking-widest uppercase">Live NOWPayments Gateway Feed</p>
               </div>
-              {/* 🔥 DUGME ZA KRIPTO BAZU 🔥 */}
               <button onClick={handleNukeCrypto} className="bg-red-600/20 text-red-500 border border-red-500/50 hover:bg-red-600 hover:text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(220,38,38,0.2)]">
                 <Flame className="w-4 h-4" /> Očisti bazu (Ostavi 1 primer)
               </button>
@@ -713,7 +853,7 @@ const V8AdminDashboard = () => {
                            {req.status === 'initiating_gateway' ? 'GATEWAY PENDING' : req.status}
                          </span>
                          
-                         <button onClick={() => handleGenerateInvoice(req)} className="bg-white/10 hover:bg-white text-white hover:text-black border border-white/20 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all">
+                         <button onClick={() => handleGenerateUIUXInvoice(req)} className="bg-white/10 hover:bg-white text-white hover:text-black border border-white/20 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all">
                             <FileText className="w-3 h-3" /> PDF INVOICE
                          </button>
                        </div>
@@ -737,7 +877,6 @@ const V8AdminDashboard = () => {
                 </h1>
                 <p className="text-zinc-500 text-[12px] font-bold tracking-widest uppercase">Live PayPal Express Feed</p>
               </div>
-              {/* 🔥 DUGME ZA PAYPAL I CARD BAZU 🔥 */}
               <button onClick={handleNukePayPalAndCard} className="bg-red-600/20 text-red-500 border border-red-500/50 hover:bg-red-600 hover:text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(220,38,38,0.2)]">
                 <Flame className="w-4 h-4" /> Očisti bazu (Ostavi 1 primer)
               </button>
@@ -773,7 +912,7 @@ const V8AdminDashboard = () => {
                            {req.status === 'completed_verified' ? 'VERIFIED' : req.status}
                          </span>
                          
-                         <button onClick={() => handleGenerateInvoice(req)} className="bg-white/10 hover:bg-white text-white hover:text-black border border-white/20 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all">
+                         <button onClick={() => handleGenerateUIUXInvoice(req)} className="bg-white/10 hover:bg-white text-white hover:text-black border border-white/20 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all">
                             <FileText className="w-3 h-3" /> PDF INVOICE
                          </button>
                        </div>
@@ -797,7 +936,6 @@ const V8AdminDashboard = () => {
                 </h1>
                 <p className="text-zinc-500 text-[12px] font-bold tracking-widest uppercase">Live Credit Card Processing Feed</p>
               </div>
-              {/* 🔥 DUGME ZA PAYPAL I CARD BAZU 🔥 */}
               <button onClick={handleNukePayPalAndCard} className="bg-red-600/20 text-red-500 border border-red-500/50 hover:bg-red-600 hover:text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(220,38,38,0.2)]">
                 <Flame className="w-4 h-4" /> Očisti bazu (Ostavi 1 primer)
               </button>
@@ -833,13 +971,66 @@ const V8AdminDashboard = () => {
                            {req.status === 'completed_verified' ? 'VERIFIED' : req.status}
                          </span>
                          
-                         <button onClick={() => handleGenerateInvoice(req)} className="bg-white/10 hover:bg-white text-white hover:text-black border border-white/20 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all">
+                         <button onClick={() => handleGenerateUIUXInvoice(req)} className="bg-white/10 hover:bg-white text-white hover:text-black border border-white/20 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all">
                             <FileText className="w-3 h-3" /> PDF INVOICE
                          </button>
                        </div>
                     </div>
                   </div>
                 ))
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* --- TAB: LIVE SALES --- */}
+        {activeTab === 'live_sales' && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl mx-auto">
+            <div className="mb-8 flex items-center justify-between border-b border-emerald-500/20 pb-6">
+              <div>
+                <h1 className="text-3xl font-black uppercase tracking-widest text-white mb-2 flex items-center gap-3">
+                  <Activity className="w-8 h-8 text-emerald-500" /> PAID CLIENTS HISTORY
+                </h1>
+                <p className="text-zinc-500 text-[12px] font-bold tracking-widest uppercase">Automated V8 transaction feed</p>
+              </div>
+              <button onClick={simulateDirectPurchase} className="bg-emerald-600/20 text-emerald-500 border border-emerald-500/50 hover:bg-emerald-600 hover:text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
+                <Zap className="w-4 h-4" /> INJECT TEST PURCHASE
+              </button>
+            </div>
+            <div className="bg-[#0a0a0a] border border-emerald-500/20 rounded-[2rem] p-2">
+              {sales.length === 0 ? (
+                <div className="text-center py-20 opacity-50">
+                  <DollarSign className="w-16 h-16 text-zinc-600 mx-auto mb-4" />
+                  <p className="text-[12px] font-black uppercase tracking-widest text-zinc-500">Awaiting incoming signals. The radar is clear.</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {sales.map((sale) => (
+                    <div key={sale.id} className="flex flex-col md:flex-row md:items-center justify-between p-6 rounded-3xl bg-[#050505] border border-white/5 hover:border-emerald-500/30 transition-all group">
+                      <div className="flex items-center gap-6 mb-4 md:mb-0">
+                        <div className="w-12 h-12 rounded-full bg-emerald-600/10 flex items-center justify-center border border-emerald-500/30">
+                          <DollarSign className="w-5 h-5 text-emerald-500" />
+                        </div>
+                        <div>
+                          <h3 className="text-[14px] font-black uppercase tracking-widest text-white group-hover:text-emerald-400">{sale.ime || sale.klijent || "Valued Client"}</h3>
+                          <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-1">{sale.email || "No email"}</p>
+                          <div className="flex items-center gap-2 mt-2"><span className="text-orange-400 text-[10px] font-black uppercase bg-orange-600/10 px-2 py-0.5 rounded-md border border-orange-500/20">{sale.zeliPaket || sale.film || "V8 Digital Asset"}</span></div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col md:items-end gap-3 border-t border-white/5 md:border-none pt-4 md:pt-0">
+                        <div className="text-2xl font-black text-white">${sale.cenaPaketa ? Math.ceil(sale.cenaPaketa / 117) : "0"}</div>
+                        <div className="flex items-center gap-3">
+                          <span className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-zinc-500"><Calendar className="w-3 h-3" /> {formatTimeExact(sale.vreme)}</span>
+                          <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5"><CheckCircle className="w-3 h-3" /> PAID</div>
+                          
+                          <button onClick={() => handleGenerateUIUXInvoice(sale)} className="bg-white/10 hover:bg-white text-white hover:text-black border border-white/20 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all">
+                            <FileText className="w-3 h-3" /> PDF INVOICE
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           </motion.div>
@@ -856,7 +1047,6 @@ const V8AdminDashboard = () => {
                 <p className="text-zinc-500 text-[12px] font-bold tracking-widest uppercase">Praćenje registrovanih klijenata u realnom vremenu</p>
               </div>
               
-              {/* 🔥 DUGME ZA RESETOVANJE (NUKE) ANALITIKE 🔥 */}
               <button 
                 onClick={handleNukeAnalytics} 
                 className="bg-red-600/20 text-red-500 border border-red-500/50 hover:bg-red-600 hover:text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(220,38,38,0.2)]"
@@ -865,7 +1055,6 @@ const V8AdminDashboard = () => {
               </button>
             </div>
 
-            {/* 🔥 FILTER PO KORISNIKU 🔥 */}
             <div className="mb-6 flex justify-end">
               <div className="bg-[#050505] border border-white/10 rounded-xl p-2 flex items-center gap-3 w-full md:w-auto">
                 <Filter className="w-4 h-4 text-fuchsia-500 ml-2" />
@@ -908,7 +1097,6 @@ const V8AdminDashboard = () => {
                 {filteredAnalytics.length === 0 ? (
                   <p className="text-zinc-500 text-center py-10 text-[12px] uppercase font-black tracking-widest">Nema zabeleženih aktivnosti za ovog klijenta.</p>
                 ) : (
-                  // 🔥 RENDERUJEMO SAMO POSLEDNJIH 50 DA MIŠ LETI 🔥
                   filteredAnalytics.slice(0, 50).map(log => (
                     <div key={log.id} className="flex items-center justify-between bg-[#050505] p-4 rounded-2xl border border-white/5 hover:border-fuchsia-500/30 transition-all">
                       <div className="flex items-center gap-4">
@@ -1100,59 +1288,6 @@ const V8AdminDashboard = () => {
                 </div>
               </div>
               <div className="border-t border-white/5 pt-6 flex justify-end"><button onClick={handleSavePromoConfig} className="bg-gradient-to-r from-orange-600 to-red-600 text-white px-8 py-4 rounded-xl font-black text-[12px] uppercase flex items-center gap-2"><CheckCircle className="w-5 h-5" /> Commit Video Config</button></div>
-            </div>
-          </motion.div>
-        )}
-
-        {/* --- TAB: LIVE SALES --- */}
-        {activeTab === 'live_sales' && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl mx-auto">
-            <div className="mb-8 flex items-center justify-between border-b border-emerald-500/20 pb-6">
-              <div>
-                <h1 className="text-3xl font-black uppercase tracking-widest text-white mb-2 flex items-center gap-3">
-                  <Activity className="w-8 h-8 text-emerald-500" /> PAID CLIENTS HISTORY
-                </h1>
-                <p className="text-zinc-500 text-[12px] font-bold tracking-widest uppercase">Automated V8 transaction feed</p>
-              </div>
-              <button onClick={simulateDirectPurchase} className="bg-emerald-600/20 text-emerald-500 border border-emerald-500/50 hover:bg-emerald-600 hover:text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
-                <Zap className="w-4 h-4" /> INJECT TEST PURCHASE
-              </button>
-            </div>
-            <div className="bg-[#0a0a0a] border border-emerald-500/20 rounded-[2rem] p-2">
-              {sales.length === 0 ? (
-                <div className="text-center py-20 opacity-50">
-                  <DollarSign className="w-16 h-16 text-zinc-600 mx-auto mb-4" />
-                  <p className="text-[12px] font-black uppercase tracking-widest text-zinc-500">Awaiting incoming signals. The radar is clear.</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {sales.map((sale) => (
-                    <div key={sale.id} className="flex flex-col md:flex-row md:items-center justify-between p-6 rounded-3xl bg-[#050505] border border-white/5 hover:border-emerald-500/30 transition-all group">
-                      <div className="flex items-center gap-6 mb-4 md:mb-0">
-                        <div className="w-12 h-12 rounded-full bg-emerald-600/10 flex items-center justify-center border border-emerald-500/30">
-                          <DollarSign className="w-5 h-5 text-emerald-500" />
-                        </div>
-                        <div>
-                          <h3 className="text-[14px] font-black uppercase tracking-widest text-white group-hover:text-emerald-400">{sale.ime || sale.klijent || "Valued Client"}</h3>
-                          <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-1">{sale.email || "No email"}</p>
-                          <div className="flex items-center gap-2 mt-2"><span className="text-orange-400 text-[10px] font-black uppercase bg-orange-600/10 px-2 py-0.5 rounded-md border border-orange-500/20">{sale.zeliPaket || sale.film || "V8 Digital Asset"}</span></div>
-                        </div>
-                      </div>
-                      <div className="flex flex-col md:items-end gap-3 border-t border-white/5 md:border-none pt-4 md:pt-0">
-                        <div className="text-2xl font-black text-white">${sale.cenaPaketa ? Math.ceil(sale.cenaPaketa / 117) : "0"}</div>
-                        <div className="flex items-center gap-3">
-                          <span className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-zinc-500"><Calendar className="w-3 h-3" /> {formatTimeExact(sale.vreme)}</span>
-                          <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5"><CheckCircle className="w-3 h-3" /> PAID</div>
-                          
-                          <button onClick={() => handleGenerateInvoice(sale)} className="bg-white/10 hover:bg-white text-white hover:text-black border border-white/20 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all">
-                            <FileText className="w-3 h-3" /> PDF INVOICE
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </motion.div>
         )}
