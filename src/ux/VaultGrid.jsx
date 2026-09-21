@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Helmet } from 'react-helmet'; // 🔥 DODAT HELMET 🔥
+import { Helmet } from 'react-helmet';
 import { 
   ShieldCheck, Plus, X, Save, 
   Image as ImageIcon, UploadCloud, Loader2, Trash2,
@@ -31,6 +31,7 @@ const CATEGORY_ENGINE_MAP = {
   'perfumes': 'V10 Ultra-Print'
 };
 
+// POCETAK FUNKCIJE: VaultGrid
 const VaultGrid = () => {
   const location = useLocation(); 
 
@@ -44,6 +45,11 @@ const VaultGrid = () => {
   const [isUploadingThumbnail, setIsUploadingThumbnail] = useState(false); 
   
   const [activeFilter, setActiveFilter] = useState(location.state?.category || 'all');
+  
+  // POCETAK FUNKCIJE: expandedCategory state
+  // Prati koja je kategorija trenutno prosirena kako bi prikazala Bundles unutar iste kartice
+  const [expandedCategory, setExpandedCategory] = useState(null);
+  // KRAJ FUNKCIJE: expandedCategory state
   
   const [copiedId, setCopiedId] = useState(null);
 
@@ -82,16 +88,18 @@ const VaultGrid = () => {
   const vaultCategories = [
     { id: 'food_ui', title: 'V10 Michelin UI', subtitle: 'Premium Culinary Assets', coverImage: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&w=800&q=80' },
     { id: 'women_bags', title: 'Luxury Women Bags', subtitle: 'High-End Product UI', coverImage: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=800&q=80' },
-    { id: 'perfumes', title: 'Interior Glass Mockup', subtitle: 'Architectural Displays', coverImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80' }
+    { id: 'perfumes', title: 'V10 Executive Glass Plaques', subtitle: 'Executive Displays', coverImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80' }
   ];
 
   const isVIPTest = userEmail === 'historical.stories7972@gmail.com';
   const limitReached = packageLimit > 0 && cart.length >= packageLimit;
   const canCheckout = limitReached || (isVIPTest && cart.length > 0);
 
+  // POCETAK FUNKCIJE: Alert helpers
   const showAlert = (title, message) => setCustomAlert({ isOpen: true, title, message, onConfirm: null, isDestructive: false });
   const showConfirm = (title, message, onConfirm, isDestructive = false) => setCustomAlert({ isOpen: true, title, message, onConfirm, isDestructive });
   const closeAlert = () => setCustomAlert({ ...customAlert, isOpen: false });
+  // KRAJ FUNKCIJE: Alert helpers
 
   useEffect(() => {
     let unsubDoc = null;
@@ -288,7 +296,6 @@ const VaultGrid = () => {
 
   return (
     <div className="min-h-screen bg-[#020202] pt-24 pb-12 px-4 sm:px-8 relative selection:bg-[#ff6a00] selection:text-black font-sans">
-      {/* 🔥 DODAT HELMET ZA SEO I DELJENJE 🔥 */}
       <Helmet>
         <title>V10 Master Vault | Premium B2B UI/UX Assets</title>
         <meta name="description" content="Exclusive B2B repository for 150MP UI/UX designs, Master PSDs, and cinematic commercial pitches. Reserved for premium agencies." />
@@ -416,20 +423,77 @@ const VaultGrid = () => {
             <div className={`relative transition-all duration-500 ${isVaultLocked && !isAdmin ? 'pointer-events-none select-none' : ''}`}>
               {activeFilter === 'all' ? (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                  {/* POCETAK FUNKCIJE: Mapiranje Kategorija (Sa novim harmonika efektom za Bundles) */}
                   {vaultCategories.map((cat) => (
-                    <motion.div key={cat.id} onClick={() => setActiveFilter(tab.id)} className="group relative h-[280px] w-full rounded-3xl cursor-pointer shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-gradient-to-br from-[#111] via-[#1a1a1a] to-[#0a0a0a] p-[2px] border border-white/5 hover:border-[#ff6a00]/50">
-                      <div className="relative w-full h-full bg-[#050505] rounded-[22px] flex flex-row items-center p-8 gap-10 overflow-hidden">
-                        <div className="h-full w-[50%] bg-black relative flex-shrink-0 flex items-center justify-center rounded-2xl overflow-hidden shadow-inner">
-                          <img src={cat.coverImage} alt={cat.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 ease-out opacity-80 group-hover:opacity-100" />
-                          <div className="absolute inset-0 border-[3px] border-[#ff6a00]/30 shadow-[inset_0_0_20px_rgba(255,106,0,0.3)] pointer-events-none transition-all duration-500 group-hover:border-[#ff6a00]/80 group-hover:shadow-[inset_0_0_40px_rgba(255,106,0,0.6)]"></div>
+                    <motion.div 
+                      layout
+                      key={cat.id}
+                      onClick={() => {
+                        if (cat.id === 'perfumes') {
+                          // OVO OTVARA KARTICU UMESTO DA PREBACUJE EKRAN
+                          setExpandedCategory(expandedCategory === cat.id ? null : cat.id);
+                        } else {
+                          setActiveFilter(cat.id);
+                        }
+                      }} 
+                      className="group relative w-full rounded-3xl cursor-pointer shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-gradient-to-br from-[#111] via-[#1a1a1a] to-[#0a0a0a] p-[2px] border border-white/5 hover:border-[#ff6a00]/50 overflow-hidden"
+                    >
+                      {/* Unutrašnji kontejner koji se širi */}
+                      <div className="relative w-full h-full bg-[#050505] rounded-[22px] flex flex-col overflow-hidden">
+                        
+                        {/* Glavni deo kartice (Uvek vidljiv, fiksna visina 280px) */}
+                        <div className="flex flex-row items-center p-8 gap-10 h-[280px]">
+                          <div className="h-full w-[50%] bg-black relative flex-shrink-0 flex items-center justify-center rounded-2xl overflow-hidden shadow-inner">
+                            <img src={cat.coverImage} alt={cat.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 ease-out opacity-80 group-hover:opacity-100" />
+                            <div className="absolute inset-0 border-[3px] border-[#ff6a00]/30 shadow-[inset_0_0_20px_rgba(255,106,0,0.3)] pointer-events-none transition-all duration-500 group-hover:border-[#ff6a00]/80 group-hover:shadow-[inset_0_0_40px_rgba(255,106,0,0.6)]"></div>
+                          </div>
+                          <div className="w-[50%] flex flex-col justify-center transform group-hover:translate-x-2 transition-transform duration-500 z-30 pointer-events-auto select-text cursor-text">
+                            <span className="text-[#ff6a00] text-[10px] font-black uppercase tracking-[0.4em] mb-3 block drop-shadow-md">{cat.subtitle}</span>
+                            <h3 className="text-white text-3xl leading-tight font-black tracking-widest drop-shadow-lg">{cat.title}</h3>
+                          </div>
                         </div>
-                        <div className="w-[50%] flex flex-col justify-center transform group-hover:translate-x-2 transition-transform duration-500 z-30 pointer-events-auto select-text cursor-text">
-                          <span className="text-[#ff6a00] text-[10px] font-black uppercase tracking-[0.4em] mb-3 block drop-shadow-md">{cat.subtitle}</span>
-                          <h3 className="text-white text-3xl leading-tight font-black tracking-widest drop-shadow-lg">{cat.title}</h3>
-                        </div>
+
+                        {/* Prošireni deo sa Bundles (Pojavljuje se unutar kartice) */}
+                        <AnimatePresence>
+                          {expandedCategory === cat.id && cat.id === 'perfumes' && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.4, ease: "easeInOut" }}
+                              className="border-t border-white/10 bg-[#0a0a0a]"
+                            >
+                              <div className="p-8 pt-6">
+                                <div 
+                                  onClick={(e) => { 
+                                    e.stopPropagation(); 
+                                    setActiveFilter(cat.id); 
+                                  }}
+                                  className="group/bundle relative h-[220px] w-full rounded-2xl cursor-pointer shadow-xl transition-all duration-300 bg-gradient-to-br from-[#111] to-[#050505] p-[1px] border border-[#ff6a00]/30 hover:border-[#ff6a00]"
+                                >
+                                  <div className="relative w-full h-full bg-[#050505] rounded-[20px] flex flex-row items-center p-6 gap-8 overflow-hidden">
+                                    <div className="h-full w-[40%] bg-black relative flex-shrink-0 flex items-center justify-center rounded-xl overflow-hidden">
+                                      <img src={cat.coverImage} alt="Bundles" className="w-full h-full object-cover group-hover/bundle:scale-110 transition-transform duration-700 opacity-70 group-hover/bundle:opacity-100" />
+                                      <div className="absolute top-3 left-3 bg-black/80 backdrop-blur-md border border-white/10 rounded px-2 py-1 flex items-center gap-1.5">
+                                        <PackageCheck className="w-3 h-3 text-[#ff6a00]" />
+                                        <span className="text-[10px] text-white font-bold tracking-wider">BUNDLES</span>
+                                      </div>
+                                    </div>
+                                    <div className="w-[60%] flex flex-col justify-center z-30">
+                                      <span className="text-[#ff6a00] text-[10px] font-black uppercase tracking-[0.4em] mb-2 block drop-shadow-md">PREMIUM COLLECTION</span>
+                                      <h3 className="text-white text-2xl font-black tracking-widest leading-snug drop-shadow-lg">V10 Executive Glass Plaques Bundles</h3>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                        
                       </div>
                     </motion.div>
                   ))}
+                  {/* KRAJ FUNKCIJE: Mapiranje Kategorija */}
                 </motion.div>
               ) : (
                 <motion.div layout className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-16 items-start">
@@ -734,6 +798,6 @@ const VaultGrid = () => {
     </div>
   );
 };
+// KRAJ FUNKCIJE: VaultGrid
 
 export default VaultGrid;
-// KRAJ FAJLA: VaultGrid.jsx
