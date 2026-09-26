@@ -1,6 +1,6 @@
-// FAJL: V10PricingDetails.jsx
+// FAJL: src/ux/V10PricingDetails.jsx
 import React, { useState, useEffect } from 'react';
-import { CheckCircle2, Zap, Sparkles, ArrowRight, Loader2 } from 'lucide-react'; 
+import { CheckCircle2, Zap, Sparkles, ArrowRight, Loader2, AlertTriangle, ShieldCheck, Lock } from 'lucide-react'; 
 import { motion } from 'framer-motion';
 
 import { auth, db } from '../firebase'; 
@@ -168,7 +168,7 @@ const V10PricingDetails = ({ onPackageLoaded, onPackageSelect }) => {
           variants={containerVariants}
           initial="hidden"
           animate="show" 
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-stretch"
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-stretch mb-16"
         >
           
           {/* TIER 1: B2B RETAINER */}
@@ -193,6 +193,10 @@ const V10PricingDetails = ({ onPackageLoaded, onPackageSelect }) => {
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-cyan-500 shrink-0" />
                   <span><strong className="text-white">150MP ready UI/UX design</strong> + all accompanying presentation images.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-cyan-500 shrink-0" />
+                  <span><strong className="text-white">1 Point 1 UI/UX Design</strong></span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-cyan-500 shrink-0" />
@@ -256,7 +260,7 @@ const V10PricingDetails = ({ onPackageLoaded, onPackageSelect }) => {
             <motion.div 
               animate={{ boxShadow: ["0px 0px 10px rgba(249,115,22,0.4)", "0px 0px 25px rgba(249,115,22,0.8)", "0px 0px 10px rgba(249,115,22,0.4)"] }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-600 to-amber-500 text-black text-[10px] font-black px-4 py-1.5 uppercase tracking-widest rounded-full"
+              className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-600 to-amber-500 text-black text-[10px] font-black px-4 py-1.5 uppercase tracking-widest rounded-full whitespace-nowrap"
             >
               Most Popular Choice
             </motion.div>
@@ -268,7 +272,6 @@ const V10PricingDetails = ({ onPackageLoaded, onPackageSelect }) => {
               <div className="text-white text-4xl font-black tracking-tight mb-2">
                 $1.500 <span className="text-neutral-500 text-sm font-medium uppercase tracking-wider">/ one-time</span>
               </div>
-              {/* 🔥 Ovde sada piše 10 projekata 🔥 */}
               <p className="text-neutral-400 text-sm font-medium">10 production-ready projects for massive pitches.</p>
             </div>
             
@@ -278,6 +281,10 @@ const V10PricingDetails = ({ onPackageLoaded, onPackageSelect }) => {
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-orange-500 shrink-0" />
                   <span><strong className="text-white">150MP ready UI/UX design</strong> + all accompanying images (per project).</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-orange-500 shrink-0" />
+                  <span><strong className="text-white">1 Point 1 UI/UX Design</strong></span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-orange-500 shrink-0" />
@@ -345,7 +352,7 @@ const V10PricingDetails = ({ onPackageLoaded, onPackageSelect }) => {
               <div className="text-white text-4xl font-black tracking-tight mb-2">
                 $7.000 <span className="text-neutral-500 text-sm font-medium uppercase tracking-wider">/ one-time</span>
               </div>
-              <p className="text-neutral-400 text-sm font-medium">40 projects (the ultimate agency archive).</p>
+              <p className="text-neutral-400 text-sm font-medium">40 points (the ultimate agency archive).</p>
             </div>
             
             <div className="flex-grow mb-8">
@@ -354,6 +361,10 @@ const V10PricingDetails = ({ onPackageLoaded, onPackageSelect }) => {
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-amber-500 shrink-0" />
                   <span><strong className="text-white">150MP ready UI/UX design</strong> + all images (for all 40 projects).</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-amber-500 shrink-0" />
+                  <span><strong className="text-white">1 Point 1 UI/UX Design</strong></span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-amber-500 shrink-0" />
@@ -409,6 +420,65 @@ const V10PricingDetails = ({ onPackageLoaded, onPackageSelect }) => {
           </motion.div>
 
         </motion.div>
+
+        {/* 🔥 VRACEN ORGINALNI WARNING BOX ISPOD PAKETA 🔥 */}
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="flex items-center justify-center w-full max-w-5xl mx-auto"
+        >
+          <div className="bg-gradient-to-br from-[#020617]/95 to-black border border-blue-500/30 border-t-4 border-t-red-600 w-full rounded-[2rem] shadow-[0_0_80px_rgba(59,130,246,0.2)] flex flex-col md:flex-row overflow-hidden">
+            
+            <div className="flex-1 p-10 md:p-12 border-b md:border-b-0 md:border-r border-blue-500/20 bg-blue-950/10 text-left">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-14 h-14 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
+                  <AlertTriangle className="w-7 h-7 text-red-500" />
+                </div>
+                <h2 className="text-3xl font-black text-red-500 uppercase tracking-[0.2em] drop-shadow-md">Warning</h2>
+              </div>
+              
+              <p className="text-zinc-300 text-base font-medium leading-relaxed mb-6">
+                We have deployed an advanced cryptographic watermarking and Reverse Image Tracking software across all visual assets. Every file in this vault carries a permanent, integrated footprint detailing the <strong className="text-blue-400">exact license and the authorized buyer's identity</strong>.
+              </p>
+              
+              <div className="border-l-2 border-red-500/50 pl-5 bg-red-500/5 py-4 pr-4 rounded-r-xl mb-6">
+                <p className="text-zinc-400 text-sm leading-relaxed font-bold">
+                  Any misuse, unauthorized distribution, or resale of these files beyond the scope of your purchased license will be immediately prosecuted under the <strong className="text-white">Digital Millennium Copyright Act (DMCA)</strong> and <strong className="text-white">Title 17 of the United States Code</strong>. Violations will result in immediate DMCA domain takedowns and statutory financial penalties of up to $150,000.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 mt-8">
+                <ShieldCheck className="w-5 h-5 text-blue-500" />
+                <p className="text-blue-400 font-black text-xs uppercase tracking-widest">
+                  Please log in and select an access tier to proceed.
+                </p>
+              </div>
+            </div>
+
+            <div className="w-full md:w-2/5 p-10 md:p-12 flex flex-col items-center justify-center text-center bg-black/40 relative">
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(59,130,246,0.1)_0%,_transparent_70%)] pointer-events-none"></div>
+              
+              <div className="relative mb-8">
+                <div className="absolute inset-0 bg-blue-500 blur-[40px] opacity-30 animate-pulse"></div>
+                <Lock className="w-20 h-20 text-blue-500 relative z-10 drop-shadow-[0_0_20px_rgba(59,130,246,0.8)]" />
+              </div>
+              
+              <h3 className="text-4xl font-black text-white uppercase tracking-widest mb-3 relative z-10">Vault Locked</h3>
+              <p className="text-blue-400 font-black text-xs uppercase tracking-[0.3em] mb-8 relative z-10">
+                Secured V10 Environment
+              </p>
+              
+              <div className="bg-white/5 border border-white/10 rounded-xl p-5 w-full relative z-10">
+                <p className="text-zinc-400 text-xs font-bold uppercase tracking-widest leading-relaxed">
+                  Please log in and select an access tier to unlock this vault.
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </motion.div>
+
       </div>
 
       <LoginRequiredModal
@@ -421,7 +491,6 @@ const V10PricingDetails = ({ onPackageLoaded, onPackageSelect }) => {
     </>
   );
 };
-// KRAJ FUNKCIJE: V10PricingDetails
 
 export default V10PricingDetails;
-// KRAJ FAJLA: V10PricingDetails.jsx
+// KRAJ FAJLA: src/ux/V10PricingDetails.jsx
