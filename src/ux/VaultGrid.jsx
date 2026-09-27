@@ -166,10 +166,31 @@ const VaultGrid = () => {
     }
   };
 
-  const handleCancelPackage = () => {
-    showConfirm("Cancel Plan", "Are you sure you want to cancel your package? You will lose access to Vault files.", async () => {
-      try { await deleteDoc(doc(db, "checkout_requests", userEmail)); setCart([]); setActivePackage(null); closeAlert(); } 
-      catch (error) { showAlert("System Error", "An error occurred."); }
+  const handleSelectPackage = async (pkgId, priceNum) => {
+    try {
+      await setDoc(doc(db, "checkout_requests", userEmail), {
+        selectedPackage: pkgId,
+        price: priceNum,
+        timestamp: serverTimestamp(),
+        status: 'pending'
+      }, { merge: true });
+    } catch (error) {
+      showAlert("System Error", "Дошло је до грешке при одабиру пакета.");
+    }
+  };
+
+  const handleCancelPackage = (e) => {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    showConfirm("Cancel Plan", "Да ли сте сигурни да желите да откажете пакет? Изгубићете приступ пројектима.", async () => {
+      try { 
+        await deleteDoc(doc(db, "checkout_requests", userEmail)); 
+        setCart([]); 
+        setActivePackage(null); 
+        closeAlert(); 
+      } 
+      catch (error) { 
+        showAlert("System Error", "Дошло је до грешке приликом брисања."); 
+      }
     }, true);
   };
 
@@ -359,25 +380,19 @@ const VaultGrid = () => {
 
         <div className="flex flex-col xl:flex-row gap-12 items-start">
           
-          {userEmail && !isAdmin && (
-            <div className="w-full xl:w-[320px] flex-shrink-0 sticky top-24 z-20">
+          {/* ПРОМЕЊЕНО: Приказује се само ако постоји активан пакет, и приказује само тај пакет */}
+          {userEmail && !isAdmin && activePackage && (
+            <div className="w-full xl:w-[320px] flex-shrink-0 sticky top-24 z-20 pointer-events-auto">
               <h2 className="text-[#ff6a00] font-black uppercase tracking-widest text-xs mb-6 flex items-center gap-2"><ShieldCheck className="w-4 h-4" /> Your Access Tier</h2>
               <div className="flex flex-col gap-4">
-                {PRICING_PACKAGES.map(pkg => {
-                  const isActive = activePackage === pkg.id;
-                  return (
-                    <div key={pkg.id} className={`p-6 rounded-3xl border transition-all duration-500 ${isActive ? 'border-[#ff6a00] bg-[#ff6a00]/10 shadow-[0_0_40px_rgba(255,106,0,0.2)] backdrop-blur-md' : 'border-white/10 bg-[#0a0a0a]/80 backdrop-blur-md hover:border-white/30'}`}>
-                      <h3 className="text-white font-black uppercase tracking-widest text-sm mb-1">{pkg.id}</h3>
-                      <div className="text-zinc-400 font-bold mb-3">{pkg.price} <span className="text-xs">{pkg.type}</span></div>
-                      <p className="text-zinc-500 text-[10px] uppercase font-bold tracking-widest mb-6 leading-relaxed">{pkg.desc}</p>
-                      {isActive ? (
-                        <button onClick={handleCancelPackage} className="w-full py-3 bg-red-600/10 hover:bg-red-600/20 text-red-500 border border-red-500/30 rounded-xl font-black uppercase tracking-widest text-[10px] transition-colors cursor-pointer">Cancel Plan</button>
-                      ) : (
-                        <button onClick={() => handleSelectPackage(pkg.id, pkg.priceNum)} className="w-full py-3 rounded-xl font-black uppercase tracking-widest text-[10px] transition-colors bg-zinc-800 text-white hover:bg-[#ff6a00] hover:text-black cursor-pointer">Switch to this</button>
-                      )}
-                    </div>
-                  );
-                })}
+                {PRICING_PACKAGES.filter(pkg => pkg.id === activePackage).map(pkg => (
+                  <div key={pkg.id} className="p-6 rounded-3xl border transition-all duration-500 relative z-30 border-[#ff6a00] bg-[#ff6a00]/10 shadow-[0_0_40px_rgba(255,106,0,0.2)] backdrop-blur-md">
+                    <h3 className="text-white font-black uppercase tracking-widest text-sm mb-1">{pkg.id}</h3>
+                    <div className="text-zinc-400 font-bold mb-3">{pkg.price} <span className="text-xs">{pkg.type}</span></div>
+                    <p className="text-zinc-500 text-[10px] uppercase font-bold tracking-widest mb-6 leading-relaxed">{pkg.desc}</p>
+                    <button onClick={handleCancelPackage} className="w-full py-3 bg-red-600/10 hover:bg-red-600/20 text-red-500 border border-red-500/30 rounded-xl font-black uppercase tracking-widest text-[10px] transition-colors cursor-pointer relative z-50 pointer-events-auto">Cancel Plan</button>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -450,12 +465,11 @@ const VaultGrid = () => {
                         </div>
                         
                         {isAdmin && (
-                          <button onClick={(e) => handleCopyProjectTitle(e, project.title, project.id)} className="absolute top-4 left-4 bg-black/80 hover:bg-orange-500 text-orange-500 hover:text-black p-2.5 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 z-30 shadow-lg border border-white/10 cursor-pointer" title="Копирај назив за ZIP">
+                          <button onClick={(e) => handleCopyProjectTitle(e, project.title, project.id)} className="absolute top-4 left-4 bg-black/80 hover:bg-orange-500 text-orange-500 hover:text-black p-2.5 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 z-30 shadow-lg border border-white/10 cursor-pointer" title="Kopiraj naziv za ZIP">
                             {copiedId === project.id ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
                           </button>
                         )}
 
-                        {/* БЕЗ + ЗНАКА АКО ПРОЈЕКАТ ИМА BUNDLE У ИМЕНУ ИЛИ ИД-у */}
                         {!isAdmin && !project.id.toLowerCase().includes('bundle') && !project.title.toLowerCase().includes('bundle') && (
                           <button onClick={(e) => handleAddToCart(e, project)} disabled={!isVIPTest && limitReached && cart.find(i => i.id === project.id)} className="absolute bottom-5 right-5 z-30 bg-black/80 backdrop-blur-md hover:bg-[#ff6a00] text-[#ff6a00] hover:text-black border border-white/20 hover:border-[#ff6a00] p-3 rounded-2xl transition-all duration-300 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed group/btn cursor-pointer">
                             {cart.find(i => i.id === project.id) ? ( <CheckCircle2 className="w-5 h-5 text-emerald-500" /> ) : ( <Plus className="w-5 h-5" /> )}
@@ -463,7 +477,7 @@ const VaultGrid = () => {
                         )}
                         
                         {isAdmin && (
-                          <button onClick={(e) => handleDeleteProject(project.id, e)} className="absolute top-4 right-4 bg-red-600/90 hover:bg-red-500 text-white p-2.5 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 z-30 shadow-[0_0_20px_rgba(220,38,38,0.5)] border border-white/10 hover:scale-110 cursor-pointer" title="Обриши пројекат">
+                          <button onClick={(e) => handleDeleteProject(project.id, e)} className="absolute top-4 right-4 bg-red-600/90 hover:bg-red-500 text-white p-2.5 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 z-30 shadow-[0_0_20px_rgba(220,38,38,0.5)] border border-white/10 hover:scale-110 cursor-pointer" title="Obriši projekat">
                             <Trash2 className="w-4 h-4" />
                           </button>
                         )}
@@ -484,9 +498,9 @@ const VaultGrid = () => {
           </div>
         </div>
 
-        {/* МАЛА КОРПА ЗА КОРИСНИКА У ДНУ ЕКРАНА */}
+        {/* MALA KORPA ZA KORISNIKA U DNU EKRANA */}
         {!isAdmin && userEmail && activeFilter !== 'all' && (
-          <div className="fixed bottom-8 right-8 z-[80] w-80 bg-[#0a0a0a]/90 border border-[#ff6a00]/40 rounded-3xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.8)] backdrop-blur-xl">
+          <div className="fixed bottom-8 right-8 z-[80] w-80 bg-[#0a0a0a]/90 border border-[#ff6a00]/40 rounded-3xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.8)] backdrop-blur-xl pointer-events-auto">
             <div className="flex justify-between items-center mb-5 pb-4 border-b border-white/10">
               <div className="flex items-center gap-3">
                 <ShoppingCart className="w-5 h-5 text-[#ff6a00]" />
@@ -498,11 +512,11 @@ const VaultGrid = () => {
             </div>
             
             {cart.length > 0 && (
-              <div className="flex flex-col gap-3 mb-6 max-h-40 overflow-y-auto pr-1">
+              <div className="flex flex-col gap-3 mb-6 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
                 {cart.map((item) => (
                   <div key={item.id} className="flex justify-between items-center bg-white/5 border border-white/10 hover:border-[#ff6a00]/50 rounded-xl p-3 transition-colors group/item">
                     <span className="text-white text-[10px] font-bold uppercase tracking-widest truncate pr-2">{item.title}</span>
-                    <button onClick={() => handleRemoveFromCart(item.id)} className="text-zinc-600 hover:text-red-500 transition-colors cursor-pointer">
+                    <button onClick={() => handleRemoveFromCart(item.id)} className="text-zinc-600 hover:text-red-500 transition-colors cursor-pointer pointer-events-auto">
                       <X className="w-4 h-4" />
                     </button>
                   </div>
@@ -526,7 +540,7 @@ const VaultGrid = () => {
                   )}
                   Proceed to checkout to generate download links.
                 </div>
-                <button onClick={() => setShowCheckout(true)} className="w-full bg-gradient-to-r from-[#ff6a00] to-[#e65c00] text-black font-black uppercase tracking-widest py-4 rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95 shadow-[0_0_20px_rgba(255,106,0,0.4)] cursor-pointer">
+                <button onClick={() => setShowCheckout(true)} className="w-full bg-gradient-to-r from-[#ff6a00] to-[#e65c00] text-black font-black uppercase tracking-widest py-4 rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95 shadow-[0_0_20px_rgba(255,106,0,0.4)] cursor-pointer pointer-events-auto">
                   <Lock className="w-4 h-4" /> Security Checkout
                 </button>
               </div>
@@ -588,7 +602,7 @@ const VaultGrid = () => {
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }} 
-              className="fixed inset-0 w-screen h-screen z-[9999999] flex items-center justify-center p-4 bg-black/70"
+              className="fixed inset-0 w-screen h-screen z-[9999999] flex items-center justify-center p-4 bg-black/70 pointer-events-auto"
             >
               <motion.div 
                 initial={{ scale: 0.8, opacity: 0, y: 30 }} 
@@ -623,8 +637,8 @@ const VaultGrid = () => {
       {typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
           {customAlert.isOpen && (
-            <motion.div key="custom-alert-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 w-screen h-screen z-[9999999] flex items-center justify-center p-4 bg-black/70">
-              <motion.div initial={{ scale: 0.95, opacity: 0, y: 15 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 15 }} className="relative w-full max-w-md">
+            <motion.div key="custom-alert-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 w-screen h-screen z-[9999999] flex items-center justify-center p-4 bg-black/70 pointer-events-auto">
+              <motion.div initial={{ scale: 0.95, opacity: 0, y: 15 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 15 }} className="relative w-full max-w-md pointer-events-auto relative z-50">
                 <div className="relative bg-gradient-to-br from-slate-700 via-slate-800 to-slate-950 border border-slate-600 border-t-slate-400/80 border-l-slate-400/80 rounded-[2.5rem] p-10 shadow-[0_40px_80px_rgba(0,0,0,0.9),_inset_0_2px_10px_rgba(255,255,255,0.2)] flex flex-col items-center text-center overflow-hidden">
                   <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 blur-[60px] opacity-30 pointer-events-none ${customAlert.isDestructive ? 'bg-red-500' : 'bg-cyan-500'}`}></div>
                   <div className={`w-20 h-20 rounded-full mb-8 flex items-center justify-center border relative z-10 shadow-[inset_0_2px_5px_rgba(255,255,255,0.15),_0_10px_20px_rgba(0,0,0,0.8)] ${customAlert.isDestructive ? 'bg-gradient-to-b from-slate-800 to-black border-slate-600 text-red-500' : 'bg-gradient-to-b from-slate-800 to-black border-slate-600 text-cyan-400'}`}>
@@ -632,14 +646,14 @@ const VaultGrid = () => {
                   </div>
                   <h2 className="text-2xl font-black text-white uppercase tracking-[0.2em] mb-4 relative z-10 drop-shadow-md">{customAlert.title}</h2>
                   <p className="text-slate-300 text-sm font-medium leading-relaxed mb-10 max-w-sm relative z-10">{customAlert.message}</p>
-                  <div className="flex w-full gap-4 relative z-10">
+                  <div className="flex w-full gap-4 relative z-10 pointer-events-auto">
                     {customAlert.onConfirm ? (
                       <>
-                        <button onClick={closeAlert} className="flex-1 py-4 rounded-xl border border-slate-500 bg-gradient-to-b from-slate-700 to-slate-800 hover:from-slate-600 hover:to-slate-700 text-white font-black uppercase tracking-widest text-[10px] transition-all shadow-lg cursor-pointer">Cancel</button>
-                        <button onClick={customAlert.onConfirm} className={`flex-1 py-4 rounded-xl font-black uppercase tracking-widest text-[10px] text-white transition-all shadow-[0_10px_20px_rgba(0,0,0,0.5),_inset_0_2px_2px_rgba(255,255,255,0.4)] border-b-[4px] hover:translate-y-[2px] hover:border-b-[2px] active:translate-y-[4px] active:border-b-0 cursor-pointer ${customAlert.isDestructive ? 'bg-gradient-to-b from-red-500 to-red-700 border-red-900' : 'bg-gradient-to-b from-cyan-500 to-blue-700 border-blue-900'}`}>Confirm</button>
+                        <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); closeAlert(); }} className="flex-1 py-4 rounded-xl border border-slate-500 bg-gradient-to-b from-slate-700 to-slate-800 hover:from-slate-600 hover:to-slate-700 text-white font-black uppercase tracking-widest text-[10px] transition-all shadow-lg cursor-pointer pointer-events-auto relative z-50">Cancel</button>
+                        <button onClick={async (e) => { e.preventDefault(); e.stopPropagation(); await customAlert.onConfirm(); }} className={`flex-1 py-4 rounded-xl font-black uppercase tracking-widest text-[10px] text-white transition-all shadow-[0_10px_20px_rgba(0,0,0,0.5),_inset_0_2px_2px_rgba(255,255,255,0.4)] border-b-[4px] hover:translate-y-[2px] hover:border-b-[2px] active:translate-y-[4px] active:border-b-0 cursor-pointer pointer-events-auto relative z-50 ${customAlert.isDestructive ? 'bg-gradient-to-b from-red-500 to-red-700 border-red-900' : 'bg-gradient-to-b from-cyan-500 to-blue-700 border-blue-900'}`}>Confirm</button>
                       </>
                     ) : (
-                      <button onClick={closeAlert} className="w-full py-4 rounded-xl font-black uppercase tracking-widest text-[10px] text-white bg-gradient-to-b from-cyan-400 to-blue-600 border-b-[4px] border-blue-900 shadow-[0_10px_20px_rgba(0,0,0,0.5),_inset_0_2px_2px_rgba(255,255,255,0.4)] hover:translate-y-[2px] hover:border-b-[2px] active:translate-y-[4px] active:border-b-0 transition-all cursor-pointer">Acknowledge</button>
+                      <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); closeAlert(); }} className="w-full py-4 rounded-xl font-black uppercase tracking-widest text-[10px] text-white bg-gradient-to-b from-cyan-400 to-blue-600 border-b-[4px] border-blue-900 shadow-[0_10px_20px_rgba(0,0,0,0.5),_inset_0_2px_2px_rgba(255,255,255,0.4)] hover:translate-y-[2px] hover:border-b-[2px] active:translate-y-[4px] active:border-b-0 transition-all cursor-pointer pointer-events-auto relative z-50">Acknowledge</button>
                     )}
                   </div>
                 </div>
