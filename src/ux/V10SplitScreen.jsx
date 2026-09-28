@@ -54,8 +54,9 @@ const V10SplitScreen = () => {
   const [isSavingPhase, setIsSavingPhase] = useState(false);
 
   const [isEditLinksModalOpen, setIsEditLinksModalOpen] = useState(false);
-  const [editLinks, setEditLinks] = useState({ driveLink: '', psdLink: '', zipLink: '' });
+  const [editLinks, setEditLinks] = useState({ driveLink: '', psdLink: '' });
   const [isSavingLinks, setIsSavingLinks] = useState(false);
+  const [isUploadingPsd, setIsUploadingPsd] = useState(false);
 
   const [isTitleCopied, setIsTitleCopied] = useState(false);
   const [fullscreenImage, setFullscreenImage] = useState(null);
@@ -114,11 +115,10 @@ const V10SplitScreen = () => {
         });
         setEditLinks({
           driveLink: data.driveLink || "",
-          psdLink: data.psdLink || "",
-          zipLink: data.zipLink || ""
+          psdLink: data.psdLink || ""
         });
       } else {
-        setProjectData(prev => ({...prev, title: "Project Not Found", description: "Овај пројекат не постоји у бази."}));
+        setProjectData(prev => ({...prev, title: "Project Not Found", description: "This project does not exist in the database."}));
       }
     } catch (error) {
       console.error("Error fetching project:", error);
@@ -193,6 +193,7 @@ const V10SplitScreen = () => {
   const limitReached = packageLimit > 0 && cart.length >= packageLimit;
   const canCheckout = limitReached || (isVIPTest && cart.length > 0);
   
+  const isAlreadySelected = cart.some(p => p.id === projectId);
   const isUninitialized = safeTitle === "Project Not Found";
 
   const currentProjectObj = {
@@ -215,6 +216,34 @@ const V10SplitScreen = () => {
         setTimeout(() => { setIsLimitModalOpen(true); }, 300);
       }
     }
+  };
+
+  const handleAddToCartClick = async (e) => {
+      e?.preventDefault(); 
+      e?.stopPropagation();
+
+      if (!currentUser) {
+          sessionStorage.setItem('v10_pending_project_split', JSON.stringify(currentProjectObj));
+          setPendingProject(currentProjectObj);
+          const provider = new GoogleAuthProvider();
+          try {
+              await signInWithPopup(auth, provider);
+          } catch (error) {
+              console.error("Login failed", error);
+              sessionStorage.removeItem('v10_pending_project_split');
+              setPendingProject(null);
+          }
+          return;
+      }
+
+      if (!isAdmin && !selectedUserPackage) {
+          sessionStorage.setItem('v10_pending_project_split', JSON.stringify(currentProjectObj));
+          setPendingProject(currentProjectObj);
+          setIsPricingModalOpen(true);
+          return;
+      }
+
+      performAddToCart(currentProjectObj);
   };
 
   useEffect(() => {
@@ -245,7 +274,7 @@ const V10SplitScreen = () => {
   };
 
   const handleSavePhase = async () => {
-    if (!newPhase.title || !newPhase.imageUrl) return alert("Наслов и слика су обавезни!");
+    if (!newPhase.title || !newPhase.imageUrl) return alert("Title and image are required!");
     setIsSavingPhase(true);
     try {
       const updatedPhases = [...(projectData.phases || []), newPhase];
@@ -262,7 +291,7 @@ const V10SplitScreen = () => {
   };
 
   const handleDeletePhase = async (indexToDelete) => {
-    if (!window.confirm("Да ли сте сигурни да желите да обришете ову слику?")) return;
+    if (!window.confirm("Are you sure you want to delete this image?")) return;
     try {
       const updatedPhases = projectData.phases.filter((_, idx) => idx !== indexToDelete);
       const docRef = doc(db, "v10_projects", projectId);
@@ -274,13 +303,36 @@ const V10SplitScreen = () => {
     }
   };
 
+  const handlePsdUpload = async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    setIsUploadingPsd(true);
+    const formData = new FormData(); 
+    formData.append('file', file); 
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    
+    try {
+      // Koristimo auto upload endpoint za fajlove poput PSD
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`, { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.secure_url) {
+        setEditLinks({ ...editLinks, psdLink: data.secure_url });
+      } else {
+        alert("Upload Error: " + (data.error?.message || "Došlo je do greške"));
+      }
+    } catch (error) {
+      alert("Upload Error: " + error.message);
+    } finally { 
+      setIsUploadingPsd(false); 
+      e.target.value = null; 
+    }
+  };
+
   const handleSaveLinks = async () => {
     setIsSavingLinks(true);
     try {
       await setDoc(doc(db, "v10_projects", projectId), {
         driveLink: editLinks.driveLink,
-        psdLink: editLinks.psdLink,
-        zipLink: editLinks.zipLink
+        psdLink: editLinks.psdLink
       }, { merge: true });
       setProjectData(prev => ({ ...prev, ...editLinks }));
       setIsEditLinksModalOpen(false);
@@ -305,7 +357,7 @@ const V10SplitScreen = () => {
   };
 
   const handleCreateProject = async () => {
-    if (!newProject.title) return alert("Наслов пројекта је обавезан!");
+    if (!newProject.title) return alert("Project title is required!");
     setIsSavingProject(true);
     try {
       await setDoc(doc(db, "v10_projects", projectId), {
@@ -322,7 +374,7 @@ const V10SplitScreen = () => {
       fetchProject(); 
     } catch (error) {
       console.error("Error saving:", error);
-      alert("Грешка при чувању: " + error.message);
+      alert("Error saving: " + error.message);
     } finally {
       setIsSavingProject(false);
     }
@@ -351,7 +403,7 @@ const V10SplitScreen = () => {
 
       <div className="fixed inset-0 pointer-events-none z-0 bg-[radial-gradient(circle_at_top_left,_rgba(249,115,22,0.12)_0%,_transparent_50%),_radial-gradient(circle_at_bottom_right,_rgba(249,115,22,0.12)_0%,_transparent_50%)]"></div>
 
-      {/* ДУГМЕ ЗА ПОВРАТАК (ГОРЕ ЛЕВО) */}
+      {/* DUGME ZA POVRATAK (GORE LEVO) */}
       <div className="fixed top-24 left-4 md:left-8 z-[90] pointer-events-none">
         <Link to="/ui-ux/vault" state={{ category: projectData.category }} className="flex w-max items-center gap-2 text-zinc-500 hover:text-orange-500 transition-colors bg-black/80 p-2 pr-4 rounded-full backdrop-blur-md border border-white/10 hover:border-orange-500/50 shadow-lg cursor-pointer pointer-events-auto">
           <div className="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center"><ArrowLeft className="w-4 h-4 text-white" /></div>
@@ -371,7 +423,7 @@ const V10SplitScreen = () => {
           ) : (
             <div className="text-center pointer-events-auto">
               <h1 className="text-5xl md:text-7xl font-black uppercase tracking-wider text-white mb-4">Project Not Found</h1>
-              <p className="text-zinc-500 uppercase tracking-widest">Овај пројекат не постоји у бази.</p>
+              <p className="text-zinc-500 uppercase tracking-widest">This project does not exist in the database.</p>
             </div>
           )}
         </div>
@@ -394,7 +446,7 @@ const V10SplitScreen = () => {
                 <button 
                   onClick={() => { navigator.clipboard.writeText(safeTitle); setIsTitleCopied(true); setTimeout(() => setIsTitleCopied(false), 2000); }} 
                   className="bg-black/50 hover:bg-orange-500/20 p-4 rounded-full transition-all border border-white/10 hover:border-orange-500 cursor-pointer shadow-xl mt-4 md:mt-0 pointer-events-auto" 
-                  title="Копирај назив пројекта за ZIP"
+                  title="Copy Title"
                 >
                   {isTitleCopied ? <CheckCircle2 className="w-8 h-8 text-emerald-500" /> : <Copy className="w-8 h-8 text-orange-500" />}
                 </button>
@@ -405,7 +457,7 @@ const V10SplitScreen = () => {
               {projectData?.description || ""}
             </motion.p>
 
-            {/* ЗАШТИЋЕНИ ПРИКАЗ ЛИНКОВА И АДМИН ДУГМАДИ */}
+            {/* ZASTIĆENI PRIKAZ LINKOVA I ADMIN DUGMADI */}
             {isAdmin && (
               <>
                 <div className="mt-8 flex flex-col md:flex-row items-center justify-center gap-4 pointer-events-auto">
@@ -425,7 +477,7 @@ const V10SplitScreen = () => {
                   <button 
                     onClick={() => setIsAddPhaseModalOpen(true)} 
                     className="w-12 h-12 rounded-full border-2 border-orange-500 flex items-center justify-center text-orange-500 hover:bg-orange-500 hover:text-black transition-all cursor-pointer shadow-[0_0_15px_rgba(249,115,22,0.3)]"
-                    title="Додај нову слику (Фазу)"
+                    title="Add new phase image"
                   >
                     <Plus className="w-6 h-6" />
                   </button>
@@ -434,7 +486,7 @@ const V10SplitScreen = () => {
                     onClick={() => setIsEditLinksModalOpen(true)} 
                     className="px-6 py-3 bg-zinc-900 border border-zinc-700 hover:border-orange-500 rounded-xl text-xs font-black uppercase tracking-widest text-zinc-400 hover:text-orange-500 transition-colors flex items-center gap-2 cursor-pointer"
                   >
-                    <LinkIcon className="w-4 h-4" /> Уреди Линкове
+                    <LinkIcon className="w-4 h-4" /> Edit Links
                   </button>
                 </div>
               </>
@@ -478,7 +530,7 @@ const V10SplitScreen = () => {
         </>
       )}
 
-      {/* МАЛА КОРПА ЗА КОРИСНИКА У ДНУ ЕКРАНА */}
+      {/* MALA KORPA ZA KORISNIKA U DNU EKRANA */}
       {!isAdmin && currentUser && (
         <div className="fixed bottom-8 right-8 z-[80] w-80 bg-[#0a0a0a]/90 border border-[#ff6a00]/40 rounded-3xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.8)] backdrop-blur-xl pointer-events-auto">
           <div className="flex justify-between items-center mb-5 pb-4 border-b border-white/10">
@@ -542,56 +594,61 @@ const V10SplitScreen = () => {
         selectedProjects={cart} 
       />
 
-      {/* МОДАЛ ЗА ДОДАВАЊЕ НОВЕ СЛИКЕ (ФАЗЕ) - САМО ЗА АДМИНА */}
+      {/* MODAL ZA DODAVANJE NOVE SLIKE (FAZE) - SAMO ZA ADMINA */}
       {typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
           {isAddPhaseModalOpen && isAdmin && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 w-screen h-screen z-[9999999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm pointer-events-auto">
-              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative bg-[#0a0a0a] border border-white/10 p-10 rounded-[2.5rem] w-full max-w-xl shadow-2xl">
-                <button onClick={() => setIsAddPhaseModalOpen(false)} className="absolute top-6 right-6 p-2 bg-white/5 hover:bg-white/10 rounded-full text-zinc-400 hover:text-white transition-colors cursor-pointer">
-                  <X className="w-5 h-5" />
+              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#020617] border border-slate-600 border-t-slate-400/80 border-l-slate-400/80 p-10 rounded-[2.5rem] w-full max-w-xl shadow-[0_40px_80px_rgba(0,0,0,0.9),_inset_0_2px_10px_rgba(255,255,255,0.15)]">
+                
+                <button onClick={() => setIsAddPhaseModalOpen(false)} className="absolute top-6 right-6 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-b from-red-500 to-red-700 border border-red-400 text-white shadow-[0_8px_15px_rgba(220,38,38,0.5),_inset_0_2px_4px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 cursor-pointer transition-transform">
+                  <X className="w-5 h-5 drop-shadow-md" />
                 </button>
-                <h2 className="text-2xl font-black text-white uppercase tracking-widest mb-8"><span className="text-orange-500">Add</span> Asset Image</h2>
+                
+                <h2 className="text-3xl font-black text-white uppercase tracking-widest mb-8 drop-shadow-md"><span className="text-cyan-400">Add</span> Asset Image</h2>
                 
                 <div className="space-y-5">
                   <div>
-                    <label className="block text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-2">Наслов Слике</label>
-                    <input type="text" value={newPhase.title} onChange={(e) => setNewPhase({ ...newPhase, title: e.target.value })} className="w-full bg-black border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-orange-500 transition-colors" placeholder="e.g. THE ALCHEMY PROTOCOL" />
+                    <label className="block text-cyan-400 text-[10px] font-black uppercase tracking-widest mb-2">Image Title</label>
+                    <input type="text" value={newPhase.title} onChange={(e) => setNewPhase({ ...newPhase, title: e.target.value })} className="w-full bg-[#020617] border border-slate-700 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-cyan-400 transition-colors shadow-inner" placeholder="e.g. THE ALCHEMY PROTOCOL" />
                   </div>
                   <div>
-                    <label className="block text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-2">Поднаслов</label>
-                    <input type="text" value={newPhase.subtitle} onChange={(e) => setNewPhase({ ...newPhase, subtitle: e.target.value })} className="w-full bg-black border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-orange-500 transition-colors" placeholder="e.g. PRIME BEEF SPECIAL DISPLAY" />
+                    <label className="block text-cyan-400 text-[10px] font-black uppercase tracking-widest mb-2">Subtitle</label>
+                    <input type="text" value={newPhase.subtitle} onChange={(e) => setNewPhase({ ...newPhase, subtitle: e.target.value })} className="w-full bg-[#020617] border border-slate-700 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-cyan-400 transition-colors shadow-inner" placeholder="e.g. PRIME BEEF SPECIAL DISPLAY" />
                   </div>
                   <div>
-                    <label className="block text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-2">Формат (Ratio)</label>
+                    <label className="block text-cyan-400 text-[10px] font-black uppercase tracking-widest mb-2">Format (Ratio)</label>
                     <div className="relative">
-                      <select value={newPhase.ratio} onChange={(e) => setNewPhase({ ...newPhase, ratio: e.target.value })} className="w-full bg-black border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-orange-500 transition-colors appearance-none cursor-pointer">
-                        <option value="aspect-video">16:9 (Cinematic)</option>
-                        <option value="aspect-[21/9]">21:9 (Ultrawide)</option>
-                        <option value="aspect-square">1:1 (Square)</option>
-                        <option value="aspect-[4/5]">4:5 (Portrait)</option>
-                        <option value="aspect-auto">Auto</option>
+                      <select value={newPhase.ratio} onChange={(e) => setNewPhase({ ...newPhase, ratio: e.target.value })} className="w-full bg-[#020617] border border-slate-700 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-cyan-400 transition-colors appearance-none cursor-pointer shadow-inner">
+                        <option value="aspect-video">16:9 (Cinematic / Landscape)</option>
+                        <option value="aspect-[21/9]">21:9 (Ultrawide / Hero)</option>
+                        <option value="aspect-[3/2]">3:2 (Classic Photo)</option>
+                        <option value="aspect-square">1:1 (Square Product)</option>
+                        <option value="aspect-[4/5]">4:5 (Portrait / IG)</option>
+                        <option value="aspect-[2/3]">2:3 (Classic Photo Portrait)</option>
+                        <option value="aspect-[9/16]">9:16 (Vertical / Reels)</option>
+                        <option value="aspect-auto">Auto (Keep Original)</option>
                       </select>
-                      <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
+                      <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-2">Слика (Upload)</label>
+                    <label className="block text-cyan-400 text-[10px] font-black uppercase tracking-widest mb-2">Image (Upload)</label>
                     <div className="relative group cursor-pointer h-32">
                       <input type="file" accept="image/*" onChange={handlePhaseImageUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                      <div className={`w-full h-full rounded-xl flex flex-col items-center justify-center transition-all ${newPhase.imageUrl ? 'border border-orange-500' : 'border-2 border-dashed border-white/10 group-hover:border-orange-500'}`}>
+                      <div className={`w-full h-full rounded-2xl flex flex-col items-center justify-center transition-all ${newPhase.imageUrl ? 'bg-gradient-to-br from-cyan-400 to-blue-600 p-[3px] shadow-[0_0_40px_rgba(6,182,212,0.4)]' : 'border-2 border-dashed border-slate-600 bg-[#020617] group-hover:border-cyan-400 shadow-inner'}`}>
                         {isUploadingPhaseImg ? (
-                          <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
+                          <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
                         ) : newPhase.imageUrl ? (
-                          <img src={newPhase.imageUrl} alt="Preview" className="w-full h-full object-cover rounded-xl opacity-80" />
+                          <div className="w-full h-full bg-black rounded-xl p-[4px]"><img src={newPhase.imageUrl} alt="Preview" className="w-full h-full object-cover rounded-lg brightness-110" /></div>
                         ) : (
-                          <><UploadCloud className="w-6 h-6 text-zinc-500 group-hover:text-orange-500 mb-2" /><span className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Click to upload</span></>
+                          <><UploadCloud className="w-6 h-6 text-slate-500 group-hover:text-cyan-400 mb-2 transition-colors" /><span className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Click to upload</span></>
                         )}
                       </div>
                     </div>
                   </div>
-                  <button onClick={handleSavePhase} disabled={isSavingPhase || isUploadingPhaseImg} className="w-full py-4 rounded-xl bg-orange-500 hover:bg-orange-400 text-black font-black uppercase tracking-widest mt-4 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 pointer-events-auto">
-                    {isSavingPhase ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-5 h-5" /> Save Image</>}
+                  <button onClick={handleSavePhase} disabled={isSavingPhase || isUploadingPhaseImg} className="relative w-full px-8 py-5 rounded-2xl bg-gradient-to-b from-cyan-400 to-blue-600 text-white font-black uppercase tracking-widest mt-8 transition-all shadow-[0_15px_30px_rgba(0,0,0,0.6),_inset_0_2px_4px_rgba(255,255,255,0.5)] border-b-[5px] border-blue-900 hover:translate-y-[2px] hover:border-b-[3px] active:translate-y-[5px] active:border-b-0 flex items-center justify-center gap-3 cursor-pointer z-10 disabled:opacity-50 pointer-events-auto">
+                    {isSavingPhase ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-5 h-5 drop-shadow-sm" /> <span className="drop-shadow-sm">Save Image</span></>}
                   </button>
                 </div>
               </motion.div>
@@ -601,32 +658,46 @@ const V10SplitScreen = () => {
         document.body
       )}
 
-      {/* МОДАЛ ЗА УНОС ЛИНКОВА - САМО ЗА АДМИНА */}
+      {/* MODAL ZA UNOS LINKOVA - SAMO ZA ADMINA */}
       {typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
           {isEditLinksModalOpen && isAdmin && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 w-screen h-screen z-[9999999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm pointer-events-auto">
-              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative bg-[#0a0a0a] border border-white/10 p-10 rounded-[2.5rem] w-full max-w-xl shadow-2xl">
-                <button onClick={() => setIsEditLinksModalOpen(false)} className="absolute top-6 right-6 p-2 bg-white/5 hover:bg-white/10 rounded-full text-zinc-400 hover:text-white transition-colors cursor-pointer">
-                  <X className="w-5 h-5" />
+              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#020617] border border-slate-600 border-t-slate-400/80 border-l-slate-400/80 p-10 rounded-[2.5rem] w-full max-w-xl shadow-[0_40px_80px_rgba(0,0,0,0.9),_inset_0_2px_10px_rgba(255,255,255,0.15)]">
+                
+                <button onClick={() => setIsEditLinksModalOpen(false)} className="absolute top-6 right-6 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-b from-red-500 to-red-700 border border-red-400 text-white shadow-[0_8px_15px_rgba(220,38,38,0.5),_inset_0_2px_4px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 cursor-pointer transition-transform">
+                  <X className="w-5 h-5 drop-shadow-md" />
                 </button>
-                <h2 className="text-2xl font-black text-white uppercase tracking-widest mb-8"><span className="text-orange-500">Edit</span> Project Links</h2>
+                
+                <h2 className="text-3xl font-black text-white uppercase tracking-widest mb-8 drop-shadow-md"><span className="text-cyan-400">Edit</span> Project Links</h2>
                 
                 <div className="space-y-5">
                   <div>
                     <label className="block text-blue-400 text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2"><UploadCloud className="w-3 h-3"/> Google Drive Link</label>
-                    <input type="text" value={editLinks.driveLink} onChange={(e) => setEditLinks({ ...editLinks, driveLink: e.target.value })} className="w-full bg-black border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-blue-500 transition-colors" placeholder="https://drive.google.com/..." />
+                    <input type="text" value={editLinks.driveLink} onChange={(e) => setEditLinks({ ...editLinks, driveLink: e.target.value })} className="w-full bg-[#020617] border border-slate-700 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-cyan-400 transition-colors shadow-inner" placeholder="https://drive.google.com/..." />
                   </div>
                   <div>
-                    <label className="block text-cyan-400 text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2"><Layers className="w-3 h-3"/> PSD Link</label>
-                    <input type="text" value={editLinks.psdLink} onChange={(e) => setEditLinks({ ...editLinks, psdLink: e.target.value })} className="w-full bg-black border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-cyan-500 transition-colors" placeholder="Link to Master PSD..." />
+                    <label className="block text-cyan-400 text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2"><Layers className="w-3 h-3"/> Master PSD File</label>
+                    <div className="relative group cursor-pointer h-20">
+                      <input type="file" accept=".psd, image/vnd.adobe.photoshop" onChange={handlePsdUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                      <div className={`w-full h-full rounded-2xl flex flex-col items-center justify-center transition-all ${editLinks.psdLink ? 'bg-gradient-to-br from-cyan-400 to-blue-600 p-[2px] shadow-[0_0_20px_rgba(6,182,212,0.4)]' : 'border-2 border-dashed border-slate-600 bg-[#020617] group-hover:border-cyan-400 shadow-inner'}`}>
+                        {isUploadingPsd ? (
+                          <Loader2 className="w-6 h-6 text-cyan-400 animate-spin" />
+                        ) : editLinks.psdLink ? (
+                          <div className="flex items-center gap-2 bg-black w-full h-full rounded-xl justify-center text-xs font-bold text-cyan-400">
+                            <CheckCircle2 className="w-4 h-4"/> PSD UPLOADED
+                          </div>
+                        ) : (
+                          <>
+                            <UploadCloud className="w-5 h-5 text-slate-500 group-hover:text-cyan-400 mb-1 transition-colors" />
+                            <span className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Click to upload .PSD</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-2">ZIP Link (Опционо)</label>
-                    <input type="text" value={editLinks.zipLink} onChange={(e) => setEditLinks({ ...editLinks, zipLink: e.target.value })} className="w-full bg-black border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-white/30 transition-colors" placeholder="Link to ZIP..." />
-                  </div>
-                  <button onClick={handleSaveLinks} disabled={isSavingLinks} className="w-full py-4 rounded-xl bg-orange-500 hover:bg-orange-400 text-black font-black uppercase tracking-widest mt-4 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 pointer-events-auto">
-                    {isSavingLinks ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-5 h-5" /> Save Links</>}
+                  <button onClick={handleSaveLinks} disabled={isSavingLinks || isUploadingPsd} className="relative w-full px-8 py-5 rounded-2xl bg-gradient-to-b from-cyan-400 to-blue-600 text-white font-black uppercase tracking-widest mt-8 transition-all shadow-[0_15px_30px_rgba(0,0,0,0.6),_inset_0_2px_4px_rgba(255,255,255,0.5)] border-b-[5px] border-blue-900 hover:translate-y-[2px] hover:border-b-[3px] active:translate-y-[5px] active:border-b-0 flex items-center justify-center gap-3 cursor-pointer z-10 disabled:opacity-50 pointer-events-auto">
+                    {isSavingLinks ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-5 h-5 drop-shadow-sm" /> <span className="drop-shadow-sm">Save Links</span></>}
                   </button>
                 </div>
               </motion.div>
@@ -641,9 +712,9 @@ const V10SplitScreen = () => {
         <AnimatePresence>
           {isInitModalOpen && isAdmin && (
             <motion.div key="modal-init" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 w-screen h-screen z-[9999999] flex items-center justify-center p-4 bg-black/70 pointer-events-auto">
-              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#020617] border border-slate-600 border-t-slate-400/80 border-l-slate-400/80 p-10 rounded-[2.5rem] w-full max-w-xl shadow-[0_40px_80px_rgba(0,0,0,0.9),_inset_0_2px_10px_rgba(255,255,255,0.15)] max-h-[95vh] overflow-y-auto custom-scrollbar">
+              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#020617] border border-slate-600 border-t-slate-400/80 border-l-slate-400/80 p-10 rounded-[2.5rem] w-full max-w-xl shadow-[0_40px_80px_rgba(0,0,0,0.9),_inset_0_2px_10px_rgba(255,255,255,0.15)] max-h-[95vh] overflow-y-auto custom-scrollbar relative z-50">
                 
-                <button onClick={() => setIsInitModalOpen(false)} className="absolute top-6 right-6 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-b from-red-500 to-red-700 border border-red-400 text-white shadow-[0_8px_15px_rgba(220,38,38,0.5),_inset_0_2px_4px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 cursor-pointer transition-transform">
+                <button onClick={() => setIsInitModalOpen(false)} className="absolute top-6 right-6 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-b from-red-500 to-red-700 border border-red-400 text-white shadow-[0_8px_15px_rgba(220,38,38,0.5),_inset_0_2px_4px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 cursor-pointer transition-transform pointer-events-auto">
                   <X className="w-5 h-5 drop-shadow-md" />
                 </button>
                 
@@ -666,7 +737,7 @@ const V10SplitScreen = () => {
                         <option value="aspect-[4/5]">4:5 (Portrait / IG)</option>
                         <option value="aspect-[2/3]">2:3 (Classic Photo Portrait)</option>
                         <option value="aspect-[9/16]">9:16 (Vertical / Reels)</option>
-                        <option value="aspect-auto">Auto (Zadrži originalni format)</option>
+                        <option value="aspect-auto">Auto (Keep Original)</option>
                       </select>
                       <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                     </div>
@@ -699,8 +770,18 @@ const V10SplitScreen = () => {
                     </div>
                   </div>
 
-                  <button onClick={handleCreateProject} disabled={isSavingProject || isUploadingThumbnail} className="relative w-full px-8 py-5 rounded-2xl bg-gradient-to-b from-cyan-400 to-blue-600 text-white font-black uppercase tracking-widest mt-8 transition-all shadow-[0_15px_30px_rgba(0,0,0,0.6),_inset_0_2px_4px_rgba(255,255,255,0.5)] border-b-[5px] border-blue-900 hover:translate-y-[2px] hover:border-b-[3px] active:translate-y-[5px] active:border-b-0 flex items-center justify-center gap-3 cursor-pointer z-10 disabled:opacity-50 disabled:cursor-not-allowed pointer-events-auto">
-                    {isSavingProject ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-5 h-5 drop-shadow-sm" /> <span className="drop-shadow-sm">Save Project</span></>}
+                  <button 
+                    onClick={handleCreateProject} 
+                    disabled={isSavingProject || isUploadingThumbnail} 
+                    className="relative w-full px-8 py-5 rounded-2xl bg-gradient-to-b from-cyan-400 to-blue-600 text-white font-black uppercase tracking-widest mt-8 transition-all shadow-[0_15px_30px_rgba(0,0,0,0.6),_inset_0_2px_4px_rgba(255,255,255,0.5)] border-b-[5px] border-blue-900 hover:translate-y-[2px] hover:border-b-[3px] active:translate-y-[5px] active:border-b-0 flex items-center justify-center gap-3 cursor-pointer z-10 disabled:opacity-50 disabled:cursor-not-allowed pointer-events-auto"
+                  >
+                    {isSavingProject ? (
+                      <><Loader2 className="w-5 h-5 animate-spin drop-shadow-sm" /> <span className="drop-shadow-sm">SAVING...</span></>
+                    ) : isUploadingThumbnail ? (
+                      <><Loader2 className="w-5 h-5 animate-spin drop-shadow-sm" /> <span className="drop-shadow-sm">UPLOADING IMAGE...</span></>
+                    ) : (
+                      <><Save className="w-5 h-5 drop-shadow-sm" /> <span className="drop-shadow-sm">SAVE PROJECT</span></>
+                    )}
                   </button>
                 </div>
               </motion.div>
@@ -755,6 +836,7 @@ const V10SplitScreen = () => {
                     if (pkg) setIsPricingModalOpen(false);
                   }}
                   onPackageSelect={(pkgName, price) => {
+                    setupPackageLimits(pkgName, new Date());
                     setIsPricingModalOpen(false);
                   }}
                 />

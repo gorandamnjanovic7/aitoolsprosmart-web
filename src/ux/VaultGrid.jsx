@@ -7,7 +7,7 @@ import { Helmet } from 'react-helmet';
 import { 
   ShieldCheck, Plus, X, Save, 
   Image as ImageIcon, UploadCloud, Loader2, Trash2,
-  ShoppingCart, Lock, Clock, CheckCircle2, AlertTriangle, Link as LinkIcon, Copy, ChevronDown, Sparkles, Zap, ArrowRight, ArrowLeft
+  ShoppingCart, Lock, Clock, CheckCircle2, AlertTriangle, Link as LinkIcon, Copy, ChevronDown
 } from 'lucide-react';
 import { auth, db } from '../firebase'; 
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
@@ -97,7 +97,7 @@ const VaultGrid = () => {
   const [showCheckout, setShowCheckout] = useState(false);
 
   const [newProject, setNewProject] = useState({ 
-    title: '', engine: '', img: '', ratio: 'aspect-video', category: '' 
+    title: '', engine: 'V10 ULTRA-PRINT', img: '', ratio: 'aspect-video', category: '' 
   });
 
   const tabs = [{ id: 'all', label: 'Vault Folders' }];
@@ -175,13 +175,13 @@ const VaultGrid = () => {
         status: 'pending'
       }, { merge: true });
     } catch (error) {
-      showAlert("System Error", "Дошло је до грешке при одабиру пакета.");
+      showAlert("System Error", "Došlo je do greške pri odabiru paketa.");
     }
   };
 
   const handleCancelPackage = (e) => {
     if (e) { e.preventDefault(); e.stopPropagation(); }
-    showConfirm("Cancel Plan", "Да ли сте сигурни да желите да откажете пакет? Изгубићете приступ пројектима.", async () => {
+    showConfirm("Cancel Plan", "Da li ste sigurni da želite da otkažete paket? Izgubićete pristup projektima.", async () => {
       try { 
         await deleteDoc(doc(db, "checkout_requests", userEmail)); 
         setCart([]); 
@@ -189,7 +189,7 @@ const VaultGrid = () => {
         closeAlert(); 
       } 
       catch (error) { 
-        showAlert("System Error", "Дошло је до грешке приликом брисања."); 
+        showAlert("System Error", "Došlo je do greške prilikom brisanja."); 
       }
     }, true);
   };
@@ -271,28 +271,69 @@ const VaultGrid = () => {
   const handleThumbnailUpload = async (e) => {
     const file = e.target.files[0]; if (!file) return;
     setIsUploadingThumbnail(true);
-    const formData = new FormData(); formData.append('file', file); formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    const formData = new FormData(); 
+    formData.append('file', file); 
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    
     try {
       const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, { method: 'POST', body: formData });
       const data = await res.json();
-      if (data.secure_url) setNewProject({ ...newProject, img: data.secure_url });
-      else showAlert("Upload Error", data.error?.message);
-    } catch (error) {} finally { setIsUploadingThumbnail(false); }
+      if (data.secure_url) {
+        setNewProject({ ...newProject, img: data.secure_url });
+      } else {
+        showAlert("Upload Error", data.error?.message || "Došlo je do greške pri otpremanju слике.");
+      }
+    } catch (error) {
+      showAlert("Upload Error", error.message);
+    } finally { 
+      setIsUploadingThumbnail(false); 
+      e.target.value = null; // Reset inputa
+    }
   };
 
-  const handleCreateProject = async () => {
-    if (!newProject.title) return showAlert("Validation Error", "Project Title is required!");
+  const handleCreateProject = async (e) => {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    
+    if (!newProject.title || !newProject.title.trim()) {
+      return showAlert("Грешка при уносу", "Мораш унети наслов пројекта (Project Title) да би сачувао!");
+    }
+    
+    if (isSaving || isUploadingThumbnail) return;
     setIsSaving(true);
+    
     try {
-      const projectId = createSlug(newProject.title);
-      await setDoc(doc(db, "v10_projects", projectId), {
-        title: newProject.title, engine: newProject.engine, img: newProject.img,
-        ratio: newProject.ratio, category: newProject.category, 
-        createdAt: serverTimestamp(), description: "New project initialized.", phases: [] 
+      const safeTitle = newProject.title.trim();
+      const projectId = createSlug(safeTitle);
+      const safeCategory = (newProject.category || '').toLowerCase().trim(); 
+      
+      const newProjData = {
+        title: safeTitle, 
+        engine: newProject.engine || 'V10 ULTRA-PRINT', 
+        img: newProject.img || '',
+        ratio: newProject.ratio || 'aspect-video', 
+        category: safeCategory, 
+        createdAt: new Date(), 
+        description: "New project initialized.", 
+        phases: [] 
+      };
+      
+      setIsModalOpen(false);
+      setProjects(prev => {
+        if (prev.find(p => p.id === projectId)) return prev;
+        return [{ id: projectId, ...newProjData }, ...prev];
       });
-      fetchProjects(); setIsModalOpen(false);
-      setNewProject({ title: '', engine: '', img: '', ratio: 'aspect-video', category: '' });
-    } catch (error) {} finally { setIsSaving(false); }
+      
+      setNewProject({ title: '', engine: 'V10 ULTRA-PRINT', img: '', ratio: 'aspect-video', category: '' });
+
+      const dbData = { ...newProjData, createdAt: serverTimestamp() };
+      await setDoc(doc(db, "v10_projects", projectId), dbData);
+
+    } catch (error) {
+      console.error("Greška pri kreiranju:", error);
+      showAlert("Sistemska greška", error.message);
+    } finally { 
+      setIsSaving(false); 
+    }
   };
 
   const handleDeleteProject = (projectId, e) => {
@@ -312,11 +353,14 @@ const VaultGrid = () => {
   };
 
   const handleOpenModal = () => {
-    if (activeFilter !== 'all') {
-      setNewProject({ ...newProject, category: activeFilter, engine: CATEGORY_ENGINE_MAP[activeFilter] || '' });
-    } else {
-       setNewProject({ ...newProject, category: 'food_ui', engine: CATEGORY_ENGINE_MAP['food_ui'] });
-    }
+    const currentCategory = activeFilter === 'all' ? '' : activeFilter;
+    setNewProject({ 
+      title: '', 
+      img: '', 
+      ratio: 'aspect-video', 
+      category: currentCategory, 
+      engine: 'V10 ULTRA-PRINT' 
+    });
     setIsModalOpen(true);
   };
 
@@ -380,7 +424,6 @@ const VaultGrid = () => {
 
         <div className="flex flex-col xl:flex-row gap-12 items-start">
           
-          {/* ПРОМЕЊЕНО: Приказује се само ако постоји активан пакет, и приказује само тај пакет */}
           {userEmail && !isAdmin && activePackage && (
             <div className="w-full xl:w-[320px] flex-shrink-0 sticky top-24 z-20 pointer-events-auto">
               <h2 className="text-[#ff6a00] font-black uppercase tracking-widest text-xs mb-6 flex items-center gap-2"><ShieldCheck className="w-4 h-4" /> Your Access Tier</h2>
@@ -420,7 +463,7 @@ const VaultGrid = () => {
                       <div className="relative w-full h-full bg-[#050505] rounded-[22px] flex flex-col overflow-hidden">
                         <div className="flex flex-row items-center p-8 gap-10 h-[280px]">
                           <div className="h-full w-[50%] bg-black relative flex-shrink-0 flex items-center justify-center rounded-2xl overflow-hidden shadow-inner">
-                            <img src={cat.coverImage} alt={cat.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 ease-out opacity-80 group-hover:opacity-100" />
+                            <img src={cat.coverImage} alt={cat.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 ease-out opacity-80 group-hover:opacity-100" draggable="false" />
                             <div className="absolute inset-0 border-[3px] border-[#ff6a00]/30 shadow-[inset_0_0_20px_rgba(255,106,0,0.3)] pointer-events-none transition-all duration-500 group-hover:border-[#ff6a00]/80 group-hover:shadow-[inset_0_0_40px_rgba(255,106,0,0.6)]"></div>
                           </div>
                           <div className="w-[50%] flex flex-col justify-center transform group-hover:translate-x-2 transition-transform duration-500 z-30 pointer-events-auto select-text cursor-text">
@@ -448,7 +491,7 @@ const VaultGrid = () => {
                         <Link to={`/ui-ux/project/${project.id}`} className="absolute inset-0 z-10 cursor-pointer"></Link>
                         
                         {project.img ? ( 
-                          <img src={project.img} alt={project.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-90 group-hover:opacity-100" /> 
+                          <img src={project.img} alt={project.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-90 group-hover:opacity-100" draggable="false" /> 
                         ) : ( 
                           <div className="absolute inset-0 bg-zinc-900 flex items-center justify-center"><ImageIcon className="w-10 h-10 text-orange-500/40" /></div> 
                         )}
@@ -456,16 +499,22 @@ const VaultGrid = () => {
                         <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/50 to-transparent z-10 pointer-events-none"></div>
                         
                         <div className="absolute bottom-0 left-0 w-full p-6 z-20 pointer-events-none flex flex-col items-start">
-                          <span className={`text-[#ff6a00] text-[9px] font-black uppercase tracking-widest block mb-1 drop-shadow-md ${isAdmin ? 'pointer-events-auto cursor-text select-text' : ''}`}>
+                          <span 
+                            className={`text-[#ff6a00] text-[9px] font-black uppercase tracking-widest block mb-1 drop-shadow-md ${isAdmin ? 'pointer-events-auto cursor-text select-text' : ''}`}
+                            onMouseDown={(e) => { if(isAdmin) e.stopPropagation(); }}
+                          >
                             {project.engine}
                           </span>
-                          <h3 className={`text-white text-lg lg:text-xl font-black uppercase tracking-widest leading-snug drop-shadow-lg pr-12 ${isAdmin ? 'pointer-events-auto cursor-text select-text' : ''}`}>
+                          <h3 
+                            className={`text-white text-lg lg:text-xl font-black uppercase tracking-widest leading-snug drop-shadow-lg pr-12 ${isAdmin ? 'pointer-events-auto cursor-text select-text' : ''}`}
+                            onMouseDown={(e) => { if(isAdmin) e.stopPropagation(); }}
+                          >
                             {project.title}
                           </h3>
                         </div>
                         
                         {isAdmin && (
-                          <button onClick={(e) => handleCopyProjectTitle(e, project.title, project.id)} className="absolute top-4 left-4 bg-black/80 hover:bg-orange-500 text-orange-500 hover:text-black p-2.5 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 z-30 shadow-lg border border-white/10 cursor-pointer" title="Kopiraj naziv za ZIP">
+                          <button onClick={(e) => handleCopyProjectTitle(e, project.title, project.id)} className="absolute top-4 left-4 bg-black/80 hover:bg-orange-500 text-orange-500 hover:text-black p-2.5 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 z-30 shadow-lg border border-white/10 cursor-pointer" title="Copy Title">
                             {copiedId === project.id ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
                           </button>
                         )}
@@ -485,7 +534,7 @@ const VaultGrid = () => {
                     ))}
                     {isAdmin && (
                       <motion.div layout initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} transition={{ duration: 0.4 }} className="h-[300px] w-full">
-                        <button onClick={handleOpenModal} className="group relative w-full h-full rounded-2xl overflow-hidden bg-[#050505] border-2 border-dashed border-[#ff6a00]/30 hover:border-[#ff6a00] transition-all duration-300 flex flex-col items-center justify-center cursor-pointer shadow-[0_0_0_rgba(255,106,0,0)] hover:shadow-[0_0_40px_rgba(255,106,0,0.15)]">
+                        <button type="button" onClick={(e) => { e.preventDefault(); handleOpenModal(); }} className="group relative w-full h-full rounded-2xl overflow-hidden bg-[#050505] border-2 border-dashed border-[#ff6a00]/30 hover:border-[#ff6a00] transition-all duration-300 flex flex-col items-center justify-center cursor-pointer shadow-[0_0_0_rgba(255,106,0,0)] hover:shadow-[0_0_40px_rgba(255,106,0,0.15)] pointer-events-auto z-40">
                           <div className="w-16 h-16 rounded-full bg-[#ff6a00]/10 group-hover:bg-[#ff6a00] flex items-center justify-center transition-colors duration-300 mb-4"><Plus className="w-8 h-8 text-[#ff6a00] group-hover:text-black transition-colors" /></div>
                           <span className="text-[#ff6a00] font-black uppercase tracking-widest text-sm group-hover:scale-105 transition-transform">Initialize Project</span>
                         </button>
@@ -634,10 +683,11 @@ const VaultGrid = () => {
         document.body
       )}
 
+      {/* CUSTOM ALERT MODAL - Sada ima z-index: 100000000 da UVEK bude na samom vrhu */}
       {typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
           {customAlert.isOpen && (
-            <motion.div key="custom-alert-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 w-screen h-screen z-[9999999] flex items-center justify-center p-4 bg-black/70 pointer-events-auto">
+            <motion.div key="custom-alert-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 w-screen h-screen z-[100000000] flex items-center justify-center p-4 bg-black/80 pointer-events-auto">
               <motion.div initial={{ scale: 0.95, opacity: 0, y: 15 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 15 }} className="relative w-full max-w-md pointer-events-auto relative z-50">
                 <div className="relative bg-gradient-to-br from-slate-700 via-slate-800 to-slate-950 border border-slate-600 border-t-slate-400/80 border-l-slate-400/80 rounded-[2.5rem] p-10 shadow-[0_40px_80px_rgba(0,0,0,0.9),_inset_0_2px_10px_rgba(255,255,255,0.2)] flex flex-col items-center text-center overflow-hidden">
                   <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 blur-[60px] opacity-30 pointer-events-none ${customAlert.isDestructive ? 'bg-red-500' : 'bg-cyan-500'}`}></div>
@@ -656,6 +706,90 @@ const VaultGrid = () => {
                       <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); closeAlert(); }} className="w-full py-4 rounded-xl font-black uppercase tracking-widest text-[10px] text-white bg-gradient-to-b from-cyan-400 to-blue-600 border-b-[4px] border-blue-900 shadow-[0_10px_20px_rgba(0,0,0,0.5),_inset_0_2px_2px_rgba(255,255,255,0.4)] hover:translate-y-[2px] hover:border-b-[2px] active:translate-y-[4px] active:border-b-0 transition-all cursor-pointer pointer-events-auto relative z-50">Acknowledge</button>
                     )}
                   </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
+      {/* MODAL ZA INICIJALIZACIJU PROJEKTA (ADMIN) - Prikazuje se ISPOD Alert modala */}
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {isModalOpen && isAdmin && (
+            <motion.div key="init-modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 w-screen h-screen z-[9999999] flex items-center justify-center p-4 bg-black/70 pointer-events-auto">
+              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#020617] border border-slate-600 border-t-slate-400/80 border-l-slate-400/80 p-10 rounded-[2.5rem] w-full max-w-xl shadow-[0_40px_80px_rgba(0,0,0,0.9),_inset_0_2px_10px_rgba(255,255,255,0.15)] max-h-[95vh] overflow-y-auto custom-scrollbar relative z-50">
+                
+                <button onClick={() => setIsModalOpen(false)} className="absolute top-6 right-6 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-b from-red-500 to-red-700 border border-red-400 text-white shadow-[0_8px_15px_rgba(220,38,38,0.5),_inset_0_2px_4px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 cursor-pointer transition-transform pointer-events-auto">
+                  <X className="w-5 h-5 drop-shadow-md" />
+                </button>
+                
+                <h2 className="text-3xl font-black text-white uppercase tracking-widest mb-8 drop-shadow-md">Init New Project</h2>
+                
+                <div className="space-y-5">
+                  <div>
+                    <label className="block text-cyan-400 text-[10px] font-black uppercase tracking-widest mb-2">Project Title</label>
+                    <input type="text" value={newProject.title} onChange={(e) => setNewProject({ ...newProject, title: e.target.value })} className="w-full bg-[#020617] border border-slate-700 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-cyan-400 transition-colors shadow-inner" placeholder="Упиши наслов овде..." />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-cyan-400 text-[10px] font-black uppercase tracking-widest mb-2">Image Format (Ratio)</label>
+                    <div className="relative">
+                      <select value={newProject.ratio} onChange={(e) => setNewProject({ ...newProject, ratio: e.target.value })} className="w-full bg-[#020617] border border-slate-700 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-cyan-400 transition-colors appearance-none cursor-pointer shadow-inner">
+                        <option value="aspect-video">16:9 (Cinematic / Landscape)</option>
+                        <option value="aspect-[21/9]">21:9 (Ultrawide / Hero)</option>
+                        <option value="aspect-[3/2]">3:2 (Classic Photo)</option>
+                        <option value="aspect-square">1:1 (Square Product)</option>
+                        <option value="aspect-[4/5]">4:5 (Portrait / IG)</option>
+                        <option value="aspect-[2/3]">2:3 (Classic Photo Portrait)</option>
+                        <option value="aspect-[9/16]">9:16 (Vertical / Reels)</option>
+                        <option value="aspect-auto">Auto (Keep Original)</option>
+                      </select>
+                      <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-slate-500 text-[9px] font-black uppercase tracking-widest mb-2">Category (ID)</label>
+                      <input type="text" value={newProject.category} onChange={(e) => setNewProject({...newProject, category: e.target.value})} className="w-full bg-[#020617]/50 border border-slate-800 rounded-xl px-4 py-3 text-slate-400 text-xs font-black uppercase tracking-widest focus:outline-none focus:border-cyan-400 transition-colors" />
+                    </div>
+                    <div>
+                      <label className="block text-slate-500 text-[9px] font-black uppercase tracking-widest mb-2">Engine</label>
+                      <input type="text" value={newProject.engine} onChange={(e) => setNewProject({...newProject, engine: e.target.value})} className="w-full bg-[#020617]/50 border border-slate-800 rounded-xl px-4 py-3 text-slate-400 text-xs font-black uppercase tracking-widest focus:outline-none focus:border-cyan-400 transition-colors" />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-cyan-400 text-[10px] font-black uppercase tracking-widest mb-2">Cover Image</label>
+                    <div className="relative group cursor-pointer h-40">
+                      <input type="file" accept="image/*" onChange={handleThumbnailUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                      <div className={`w-full h-40 rounded-2xl flex flex-col items-center justify-center transition-all ${newProject.img ? 'bg-gradient-to-br from-cyan-400 to-blue-600 p-[3px] shadow-[0_0_40px_rgba(6,182,212,0.4)]' : 'border-2 border-dashed border-slate-600 bg-[#020617] group-hover:border-cyan-400 shadow-inner'}`}>
+                        {isUploadingThumbnail ? (
+                          <div className={`w-full h-full flex items-center justify-center ${newProject.img ? 'bg-black rounded-xl' : ''}`}><Loader2 className="w-8 h-8 text-cyan-400 animate-spin" /></div>
+                        ) : newProject.img ? (
+                          <div className="w-full h-full bg-black rounded-xl p-[4px]"><img src={newProject.img} alt="Preview" className="w-full h-full object-cover rounded-lg brightness-110" /></div>
+                        ) : (
+                          <><UploadCloud className="w-8 h-8 text-slate-500 group-hover:text-cyan-400 transition-colors mb-3" /><span className="text-slate-500 text-xs font-bold uppercase tracking-widest">Click to upload cover</span></>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={handleCreateProject} 
+                    disabled={isSaving || isUploadingThumbnail} 
+                    className="relative w-full px-8 py-5 rounded-2xl bg-gradient-to-b from-cyan-400 to-blue-600 text-white font-black uppercase tracking-widest mt-8 transition-all shadow-[0_15px_30px_rgba(0,0,0,0.6),_inset_0_2px_4px_rgba(255,255,255,0.5)] border-b-[5px] border-blue-900 hover:translate-y-[2px] hover:border-b-[3px] active:translate-y-[5px] active:border-b-0 flex items-center justify-center gap-3 cursor-pointer z-10 disabled:opacity-50 disabled:cursor-not-allowed pointer-events-auto"
+                  >
+                    {isSaving ? (
+                      <><Loader2 className="w-5 h-5 animate-spin drop-shadow-sm" /> <span className="drop-shadow-sm">SAVING...</span></>
+                    ) : isUploadingThumbnail ? (
+                      <><Loader2 className="w-5 h-5 animate-spin drop-shadow-sm" /> <span className="drop-shadow-sm">UPLOADING IMAGE...</span></>
+                    ) : (
+                      <><Save className="w-5 h-5 drop-shadow-sm" /> <span className="drop-shadow-sm">SAVE PROJECT</span></>
+                    )}
+                  </button>
                 </div>
               </motion.div>
             </motion.div>
