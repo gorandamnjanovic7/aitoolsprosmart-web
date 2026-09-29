@@ -7,7 +7,7 @@ import { Helmet } from 'react-helmet';
 import { 
   ShieldCheck, Plus, X, Save, 
   Image as ImageIcon, UploadCloud, Loader2, Trash2,
-  ShoppingCart, Lock, Clock, CheckCircle2, AlertTriangle, Link as LinkIcon, Copy, ChevronDown
+  ShoppingCart, Lock, Clock, CheckCircle2, AlertTriangle, Link as LinkIcon, Copy, ChevronDown, ArrowLeft
 } from 'lucide-react';
 import { auth, db } from '../firebase'; 
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
@@ -57,8 +57,14 @@ const VaultGrid = () => {
 
   const [pendingProject, setPendingProject] = useState(() => {
     if (typeof window !== 'undefined') {
-      const savedProject = sessionStorage.getItem('v10_pending_project');
-      if (savedProject) return JSON.parse(savedProject);
+      try {
+        const savedProject = sessionStorage.getItem('v10_pending_project');
+        if (savedProject && savedProject !== 'undefined' && savedProject !== 'null') {
+          return JSON.parse(savedProject);
+        }
+      } catch (e) {
+        console.error("Greška pri čitanju pending projekta:", e);
+      }
     }
     return null;
   });
@@ -77,8 +83,15 @@ const VaultGrid = () => {
 
   const [cart, setCart] = useState(() => {
     if (typeof window !== 'undefined') {
-      const savedCart = localStorage.getItem('v10_vault_cart');
-      if (savedCart) return JSON.parse(savedCart);
+      try {
+        const savedCart = localStorage.getItem('v10_vault_cart');
+        if (savedCart && savedCart !== 'undefined' && savedCart !== 'null') {
+          const parsed = JSON.parse(savedCart);
+          return Array.isArray(parsed) ? parsed : [];
+        }
+      } catch (e) {
+        console.error("Greška pri čitanju korpe:", e);
+      }
     }
     return [];
   });
@@ -134,6 +147,7 @@ const VaultGrid = () => {
               setupPackageLimits(data.selectedPackage, data.timestamp);
             } else {
               setActivePackage(null); 
+              setIsPricingModalOpen(true);
             }
             setIsAuthLoaded(true);
           });
@@ -210,11 +224,17 @@ const VaultGrid = () => {
 
   useEffect(() => {
     if (isAuthLoaded && userEmail && !isAdmin) {
-      if (activePackage && pendingProject) {
-        performAddToCart(pendingProject);
-        setPendingProject(null);
-        sessionStorage.removeItem('v10_pending_project');
-        setIsPricingModalOpen(false);
+      if (pendingProject) {
+        if (activePackage) {
+          performAddToCart(pendingProject);
+          setPendingProject(null);
+          sessionStorage.removeItem('v10_pending_project');
+          setIsPricingModalOpen(false);
+        } else {
+          setIsPricingModalOpen(true);
+        }
+      } else if (!activePackage) {
+        setIsPricingModalOpen(true); 
       }
     }
   }, [isAuthLoaded, userEmail, activePackage, pendingProject, isAdmin]);
@@ -519,7 +539,7 @@ const VaultGrid = () => {
                           </button>
                         )}
 
-                        {!isAdmin && !project.id.toLowerCase().includes('bundle') && !project.title.toLowerCase().includes('bundle') && (
+                        {!isAdmin && !project.id?.toLowerCase().includes('bundle') && !project.title?.toLowerCase().includes('bundle') && (
                           <button onClick={(e) => handleAddToCart(e, project)} disabled={!isVIPTest && limitReached && cart.find(i => i.id === project.id)} className="absolute bottom-5 right-5 z-30 bg-black/80 backdrop-blur-md hover:bg-[#ff6a00] text-[#ff6a00] hover:text-black border border-white/20 hover:border-[#ff6a00] p-3 rounded-2xl transition-all duration-300 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed group/btn cursor-pointer">
                             {cart.find(i => i.id === project.id) ? ( <CheckCircle2 className="w-5 h-5 text-emerald-500" /> ) : ( <Plus className="w-5 h-5" /> )}
                           </button>
