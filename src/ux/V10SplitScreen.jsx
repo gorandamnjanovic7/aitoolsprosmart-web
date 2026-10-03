@@ -42,14 +42,14 @@ const V10SplitScreen = () => {
     title: projectId.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '), 
     engine: 'PREMIUM COLLECTION', 
     img: '', 
-    ratio: 'aspect-video', 
+    ratio: 'aspect-[21/9]', 
     category: location.state?.category || 'perfumes' 
   });
   const [isUploadingThumbnail, setIsUploadingThumbnail] = useState(false);
   const [isSavingProject, setIsSavingProject] = useState(false);
 
   const [isAddPhaseModalOpen, setIsAddPhaseModalOpen] = useState(false);
-  const [newPhase, setNewPhase] = useState({ title: '', subtitle: '', imageUrl: '', ratio: 'aspect-video' });
+  const [newPhase, setNewPhase] = useState({ title: '', subtitle: '', imageUrl: '', ratio: 'aspect-[21/9]' });
   const [isUploadingPhaseImg, setIsUploadingPhaseImg] = useState(false);
   const [isSavingPhase, setIsSavingPhase] = useState(false);
 
@@ -281,7 +281,7 @@ const V10SplitScreen = () => {
       await setDoc(doc(db, "v10_projects", projectId), { phases: updatedPhases }, { merge: true });
       setProjectData(prev => ({ ...prev, phases: updatedPhases }));
       setIsAddPhaseModalOpen(false);
-      setNewPhase({ title: '', subtitle: '', imageUrl: '', ratio: 'aspect-video' });
+      setNewPhase({ title: '', subtitle: '', imageUrl: '', ratio: 'aspect-[21/9]' });
     } catch (error) {
       console.error("Error saving phase:", error);
       alert("Error: " + error.message);
@@ -311,7 +311,6 @@ const V10SplitScreen = () => {
     formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
     
     try {
-      // Koristimo auto upload endpoint za fajlove poput PSD
       const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`, { method: 'POST', body: formData });
       const data = await res.json();
       if (data.secure_url) {
@@ -403,12 +402,44 @@ const V10SplitScreen = () => {
 
       <div className="fixed inset-0 pointer-events-none z-0 bg-[radial-gradient(circle_at_top_left,_rgba(249,115,22,0.12)_0%,_transparent_50%),_radial-gradient(circle_at_bottom_right,_rgba(249,115,22,0.12)_0%,_transparent_50%)]"></div>
 
-      {/* DUGME ZA POVRATAK (GORE LEVO) */}
-      <div className="fixed top-24 left-4 md:left-8 z-[90] pointer-events-none">
+      {/* DUGME ZA POVRATAK I SELECT ALL (GORE LEVO) */}
+      <div className="fixed top-24 left-4 md:left-8 z-[90] flex flex-col gap-4 pointer-events-none">
+        
         <Link to="/ui-ux/vault" state={{ category: projectData.category }} className="flex w-max items-center gap-2 text-zinc-500 hover:text-orange-500 transition-colors bg-black/80 p-2 pr-4 rounded-full backdrop-blur-md border border-white/10 hover:border-orange-500/50 shadow-lg cursor-pointer pointer-events-auto">
           <div className="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center"><ArrowLeft className="w-4 h-4 text-white" /></div>
           <span className="text-[10px] md:text-xs font-black uppercase tracking-widest">Back to Vault</span>
         </Link>
+        
+        {/* PRIKAZUJE SE SAMO KAD JE OVO ODREĐENI PROJEKAT (BEZ OBZIRA DA LI JE PRAZAN ILI NE) */}
+        {projectId?.toLowerCase() === 'v10-futuristic-habitats-bundle' && (
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            animate={{ 
+              boxShadow: ["0px 0px 10px rgba(249,115,22,0.3)", "0px 0px 20px rgba(249,115,22,0.7)", "0px 0px 10px rgba(249,115,22,0.3)"]
+            }}
+            transition={{ duration: 2, repeat: Infinity }}
+            onClick={(e) => {
+              if (isAdmin) return alert("Admin prikaz: Ovo dugme skida 1 poen klijentu i dodaje ceo bundle u korpu.");
+              if (isAlreadySelected) handleRemoveFromCart(projectId);
+              else handleAddToCartClick(e); 
+            }}
+            className={`flex w-max items-center gap-3 transition-all p-2 pr-5 rounded-full backdrop-blur-md border cursor-pointer group pointer-events-auto ${
+              isAlreadySelected 
+                ? 'bg-orange-500 text-black border-orange-500 hover:bg-orange-600' 
+                : 'bg-orange-500/10 text-orange-500 border-orange-500/30 hover:bg-orange-500 hover:text-black'
+            }`}
+          >
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+              isAlreadySelected ? 'bg-black/20' : 'bg-orange-500/20 group-hover:bg-black/20'
+            }`}>
+              {isAlreadySelected ? <CheckCircle2 className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+            </div>
+            <span className="text-[10px] md:text-xs font-black uppercase tracking-widest">
+              {isAlreadySelected ? 'SELECTED (1 POINT)' : 'SELECT ALL (1 POINT)'}
+            </span>
+          </motion.button>
+        )}
       </div>
 
       {isUninitialized ? (
@@ -511,7 +542,7 @@ const V10SplitScreen = () => {
                   )}
                 </div>
                 
-                <div className={`w-full ${phase.ratio || 'aspect-video'} bg-zinc-950 rounded-2xl md:rounded-[2rem] border border-white/5 overflow-hidden shadow-2xl relative group/image`}>
+                <div className={`w-full ${phase.ratio || 'aspect-[21/9]'} bg-zinc-950 rounded-2xl md:rounded-[2rem] border border-white/5 overflow-hidden shadow-2xl relative group/image`}>
                    {phase.imageUrl && (
                      <>
                        <img 
@@ -620,8 +651,8 @@ const V10SplitScreen = () => {
                     <label className="block text-cyan-400 text-[10px] font-black uppercase tracking-widest mb-2">Format (Ratio)</label>
                     <div className="relative">
                       <select value={newPhase.ratio} onChange={(e) => setNewPhase({ ...newPhase, ratio: e.target.value })} className="w-full bg-[#020617] border border-slate-700 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-cyan-400 transition-colors appearance-none cursor-pointer shadow-inner">
-                        <option value="aspect-video">16:9 (Cinematic / Landscape)</option>
                         <option value="aspect-[21/9]">21:9 (Ultrawide / Hero)</option>
+                        <option value="aspect-video">16:9 (Cinematic / Landscape)</option>
                         <option value="aspect-[3/2]">3:2 (Classic Photo)</option>
                         <option value="aspect-square">1:1 (Square Product)</option>
                         <option value="aspect-[4/5]">4:5 (Portrait / IG)</option>
@@ -714,6 +745,7 @@ const V10SplitScreen = () => {
             <motion.div key="modal-init" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 w-screen h-screen z-[9999999] flex items-center justify-center p-4 bg-black/70 pointer-events-auto">
               <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#020617] border border-slate-600 border-t-slate-400/80 border-l-slate-400/80 p-10 rounded-[2.5rem] w-full max-w-xl shadow-[0_40px_80px_rgba(0,0,0,0.9),_inset_0_2px_10px_rgba(255,255,255,0.15)] max-h-[95vh] overflow-y-auto custom-scrollbar relative z-50">
                 
+                {/* ZNAK X U GORNJEM DESNOM KUTU (ZA PONIŠTAVANJE) */}
                 <button onClick={() => setIsInitModalOpen(false)} className="absolute top-6 right-6 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-b from-red-500 to-red-700 border border-red-400 text-white shadow-[0_8px_15px_rgba(220,38,38,0.5),_inset_0_2px_4px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 cursor-pointer transition-transform pointer-events-auto">
                   <X className="w-5 h-5 drop-shadow-md" />
                 </button>
@@ -723,15 +755,15 @@ const V10SplitScreen = () => {
                 <div className="space-y-5">
                   <div>
                     <label className="block text-cyan-400 text-[10px] font-black uppercase tracking-widest mb-2">Project Title</label>
-                    <input type="text" value={newProject.title} onChange={(e) => setNewProject({ ...newProject, title: e.target.value })} className="w-full bg-[#020617] border border-slate-700 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-cyan-400 transition-colors shadow-inner" placeholder="e.g. Obsidian Emerald" />
+                    <input type="text" value={newProject.title} onChange={(e) => setNewProject({ ...newProject, title: e.target.value })} className="w-full bg-[#020617] border border-slate-700 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-cyan-400 transition-colors shadow-inner" placeholder="Упиши наслов овде..." />
                   </div>
                   
                   <div>
                     <label className="block text-cyan-400 text-[10px] font-black uppercase tracking-widest mb-2">Image Format (Ratio)</label>
                     <div className="relative">
                       <select value={newProject.ratio} onChange={(e) => setNewProject({ ...newProject, ratio: e.target.value })} className="w-full bg-[#020617] border border-slate-700 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-cyan-400 transition-colors appearance-none cursor-pointer shadow-inner">
-                        <option value="aspect-video">16:9 (Cinematic / Landscape)</option>
                         <option value="aspect-[21/9]">21:9 (Ultrawide / Hero)</option>
+                        <option value="aspect-video">16:9 (Cinematic / Landscape)</option>
                         <option value="aspect-[3/2]">3:2 (Classic Photo)</option>
                         <option value="aspect-square">1:1 (Square Product)</option>
                         <option value="aspect-[4/5]">4:5 (Portrait / IG)</option>
@@ -756,15 +788,15 @@ const V10SplitScreen = () => {
                   
                   <div>
                     <label className="block text-cyan-400 text-[10px] font-black uppercase tracking-widest mb-2">Cover Image</label>
-                    <div className="relative group cursor-pointer h-40">
-                      <input type="file" accept="image/*" onChange={handleThumbnailUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                      <div className={`w-full h-40 rounded-2xl flex flex-col items-center justify-center transition-all ${newProject.img ? 'bg-gradient-to-br from-cyan-400 to-blue-600 p-[3px] shadow-[0_0_40px_rgba(6,182,212,0.4)]' : 'border-2 border-dashed border-slate-600 bg-[#020617] group-hover:border-cyan-400 shadow-inner'}`}>
+                    <div className={`relative group cursor-pointer w-full ${newProject.ratio !== 'aspect-auto' ? newProject.ratio : 'h-40 min-h-[160px]'}`}>
+                      <div className={`relative w-full h-full rounded-2xl flex flex-col items-center justify-center transition-all overflow-hidden ${newProject.img ? 'bg-gradient-to-br from-cyan-400 to-blue-600 p-[3px] shadow-[0_0_40px_rgba(6,182,212,0.4)]' : 'border-2 border-dashed border-slate-600 bg-[#020617] group-hover:border-cyan-400 shadow-inner'}`}>
+                        <input type="file" accept="image/*" onChange={handleThumbnailUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-[100]" />
                         {isUploadingThumbnail ? (
                           <div className={`w-full h-full flex items-center justify-center ${newProject.img ? 'bg-black rounded-xl' : ''}`}><Loader2 className="w-8 h-8 text-cyan-400 animate-spin" /></div>
                         ) : newProject.img ? (
-                          <div className="w-full h-full bg-black rounded-xl p-[4px]"><img src={newProject.img} alt="Preview" className="w-full h-full object-cover rounded-lg brightness-110" /></div>
+                          <div className="w-full h-full bg-black rounded-xl overflow-hidden p-[2px]"><img src={newProject.img} alt="Preview" className="w-full h-full object-cover rounded-lg brightness-110" /></div>
                         ) : (
-                          <><UploadCloud className="w-8 h-8 text-slate-500 group-hover:text-cyan-400 transition-colors mb-3" /><span className="text-slate-500 text-xs font-bold uppercase tracking-widest">Click to upload cover</span></>
+                          <div className="flex flex-col items-center justify-center pointer-events-none z-10"><UploadCloud className="w-8 h-8 text-slate-500 group-hover:text-cyan-400 transition-colors mb-3" /><span className="text-slate-500 text-xs font-bold uppercase tracking-widest">Click to upload cover</span></div>
                         )}
                       </div>
                     </div>
@@ -785,21 +817,6 @@ const V10SplitScreen = () => {
                   </button>
                 </div>
               </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>,
-        document.body
-      )}
-
-      {/* Fullscreen Image Modal */}
-      {typeof document !== 'undefined' && createPortal(
-        <AnimatePresence>
-          {fullscreenImage && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[9999999] flex items-center justify-center p-4 sm:p-8 bg-black/95 backdrop-blur-xl pointer-events-auto">
-              <button onClick={(e) => { e.stopPropagation(); setFullscreenImage(null); }} className="fixed top-6 right-6 md:top-10 md:right-10 text-red-500 hover:text-white bg-red-500/10 hover:bg-red-600 p-4 rounded-full border border-red-500/30 hover:border-red-500 transition-all shadow-[0_0_30px_rgba(239,68,68,0.4)] cursor-pointer z-[100000]">
-                <X className="w-8 h-8" />
-              </button>
-              <motion.img initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} transition={{ duration: 0.3 }} src={fullscreenImage} alt="Fullscreen Preview" onContextMenu={(e) => e.preventDefault()} onDragStart={(e) => e.preventDefault()} className="max-w-full max-h-full object-contain rounded-2xl shadow-[0_0_100px_rgba(249,115,22,0.1)] border border-white/5 select-none pointer-events-auto" />
             </motion.div>
           )}
         </AnimatePresence>,

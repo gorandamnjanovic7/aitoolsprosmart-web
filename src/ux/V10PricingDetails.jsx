@@ -196,7 +196,7 @@ const V10PricingDetails = ({ onPackageLoaded, onPackageSelect }) => {
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-cyan-500 shrink-0" />
-                  <span><strong className="text-white">1 Point 1 UI/UX Design</strong></span>
+                  <span><strong className="text-white">1 UI/UX Design = 1 Vault Point</strong> (Deducted from your total limit).</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-cyan-500 shrink-0" />
@@ -284,7 +284,7 @@ const V10PricingDetails = ({ onPackageLoaded, onPackageSelect }) => {
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-orange-500 shrink-0" />
-                  <span><strong className="text-white">1 Point 1 UI/UX Design</strong></span>
+                  <span><strong className="text-white">1 UI/UX Design = 1 Vault Point</strong> (Deducted from your total limit).</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-orange-500 shrink-0" />
@@ -364,7 +364,7 @@ const V10PricingDetails = ({ onPackageLoaded, onPackageSelect }) => {
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-amber-500 shrink-0" />
-                  <span><strong className="text-white">1 Point 1 UI/UX Design</strong></span>
+                  <span><strong className="text-white">1 UI/UX Design = 1 Vault Point</strong> (Deducted from your total limit).</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-amber-500 shrink-0" />

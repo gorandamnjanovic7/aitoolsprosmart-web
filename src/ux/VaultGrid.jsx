@@ -25,12 +25,6 @@ const PRICING_PACKAGES = [
   { id: 'V10 MASTER VAULT', priceNum: 7000, price: '$7.000', type: 'ONE-TIME', desc: '40 custom projects of your choice (ultimate agency archive).' }
 ];
 
-const CATEGORY_ENGINE_MAP = {
-  'food_ui': 'V8 Michelin UI',
-  'women_bags': 'V10 Ultra-Print',
-  'perfumes': 'V10 Ultra-Print'
-};
-
 const VaultGrid = () => {
   const location = useLocation(); 
 
@@ -110,7 +104,7 @@ const VaultGrid = () => {
   const [showCheckout, setShowCheckout] = useState(false);
 
   const [newProject, setNewProject] = useState({ 
-    title: '', engine: 'V10 ULTRA-PRINT', img: '', ratio: 'aspect-video', category: '' 
+    title: '', engine: 'V10 ULTRA-PRINT', img: '', ratio: 'aspect-[21/9]', category: '' 
   });
 
   const tabs = [{ id: 'all', label: 'Vault Folders' }];
@@ -118,7 +112,7 @@ const VaultGrid = () => {
   const vaultCategories = [
     { id: 'food_ui', title: 'V10 Michelin UI', subtitle: 'Premium Culinary Assets', coverImage: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&w=800&q=80' },
     { id: 'women_bags', title: 'Luxury Women Bags', subtitle: 'High-End Product UI', coverImage: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=800&q=80' },
-    { id: 'perfumes', title: 'V10 Executive Glass Plaques', subtitle: 'Executive Displays', coverImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80' }
+    { id: 'perfumes', title: 'V10 Executive Glass Plaques', subtitle: 'Executive Displays', coverImage: '/orange.webp' }
   ];
 
   const isVIPTest = userEmail === 'historical.stories7972@gmail.com';
@@ -180,19 +174,6 @@ const VaultGrid = () => {
     }
   };
 
-  const handleSelectPackage = async (pkgId, priceNum) => {
-    try {
-      await setDoc(doc(db, "checkout_requests", userEmail), {
-        selectedPackage: pkgId,
-        price: priceNum,
-        timestamp: serverTimestamp(),
-        status: 'pending'
-      }, { merge: true });
-    } catch (error) {
-      showAlert("System Error", "Došlo je do greške pri odabiru paketa.");
-    }
-  };
-
   const handleCancelPackage = (e) => {
     if (e) { e.preventDefault(); e.stopPropagation(); }
     showConfirm("Cancel Plan", "Da li ste sigurni da želite da otkažete paket? Izgubićete pristup projektima.", async () => {
@@ -231,7 +212,7 @@ const VaultGrid = () => {
           sessionStorage.removeItem('v10_pending_project');
           setIsPricingModalOpen(false);
         } else {
-          setIsPricingModalOpen(true);
+          setIsPricingModalOpen(true); 
         }
       } else if (!activePackage) {
         setIsPricingModalOpen(true); 
@@ -301,13 +282,13 @@ const VaultGrid = () => {
       if (data.secure_url) {
         setNewProject({ ...newProject, img: data.secure_url });
       } else {
-        showAlert("Upload Error", data.error?.message || "Došlo je do greške pri otpremanju слике.");
+        showAlert("Upload Error", data.error?.message || "Došlo je do greške pri otpremanju slike.");
       }
     } catch (error) {
       showAlert("Upload Error", error.message);
     } finally { 
       setIsUploadingThumbnail(false); 
-      e.target.value = null; // Reset inputa
+      e.target.value = null; 
     }
   };
 
@@ -315,7 +296,7 @@ const VaultGrid = () => {
     if (e) { e.preventDefault(); e.stopPropagation(); }
     
     if (!newProject.title || !newProject.title.trim()) {
-      return showAlert("Грешка при уносу", "Мораш унети наслов пројекта (Project Title) да би сачувао!");
+      return showAlert("Greška pri unosu", "Moraš uneti naslov projekta (Project Title) da bi sačuvao!");
     }
     
     if (isSaving || isUploadingThumbnail) return;
@@ -330,7 +311,7 @@ const VaultGrid = () => {
         title: safeTitle, 
         engine: newProject.engine || 'V10 ULTRA-PRINT', 
         img: newProject.img || '',
-        ratio: newProject.ratio || 'aspect-video', 
+        ratio: newProject.ratio || 'aspect-[21/9]', 
         category: safeCategory, 
         createdAt: new Date(), 
         description: "New project initialized.", 
@@ -343,7 +324,7 @@ const VaultGrid = () => {
         return [{ id: projectId, ...newProjData }, ...prev];
       });
       
-      setNewProject({ title: '', engine: 'V10 ULTRA-PRINT', img: '', ratio: 'aspect-video', category: '' });
+      setNewProject({ title: '', engine: 'V10 ULTRA-PRINT', img: '', ratio: 'aspect-[21/9]', category: '' });
 
       const dbData = { ...newProjData, createdAt: serverTimestamp() };
       await setDoc(doc(db, "v10_projects", projectId), dbData);
@@ -377,7 +358,7 @@ const VaultGrid = () => {
     setNewProject({ 
       title: '', 
       img: '', 
-      ratio: 'aspect-video', 
+      ratio: 'aspect-[21/9]', 
       category: currentCategory, 
       engine: 'V10 ULTRA-PRINT' 
     });
@@ -519,16 +500,10 @@ const VaultGrid = () => {
                         <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/50 to-transparent z-10 pointer-events-none"></div>
                         
                         <div className="absolute bottom-0 left-0 w-full p-6 z-20 pointer-events-none flex flex-col items-start">
-                          <span 
-                            className={`text-[#ff6a00] text-[9px] font-black uppercase tracking-widest block mb-1 drop-shadow-md ${isAdmin ? 'pointer-events-auto cursor-text select-text' : ''}`}
-                            onMouseDown={(e) => { if(isAdmin) e.stopPropagation(); }}
-                          >
+                          <span className="text-[#ff6a00] text-[9px] font-black uppercase tracking-widest block mb-1 drop-shadow-md pointer-events-auto cursor-text select-text">
                             {project.engine}
                           </span>
-                          <h3 
-                            className={`text-white text-lg lg:text-xl font-black uppercase tracking-widest leading-snug drop-shadow-lg pr-12 ${isAdmin ? 'pointer-events-auto cursor-text select-text' : ''}`}
-                            onMouseDown={(e) => { if(isAdmin) e.stopPropagation(); }}
-                          >
+                          <h3 className="text-white text-lg lg:text-xl font-black uppercase tracking-widest leading-snug drop-shadow-lg pr-12 pointer-events-auto cursor-text select-text">
                             {project.title}
                           </h3>
                         </div>
@@ -539,7 +514,8 @@ const VaultGrid = () => {
                           </button>
                         )}
 
-                        {!isAdmin && !project.id?.toLowerCase().includes('bundle') && !project.title?.toLowerCase().includes('bundle') && (
+                        {/* Ovdje se nalazi dugme sa ikonom za selekciju klijenta, a u tvom VaultScreen.jsx se to iscrtava gore lijevo */}
+                        {(!isAdmin && !project.id?.toLowerCase().includes('bundle') && !project.title?.toLowerCase().includes('bundle')) && (
                           <button onClick={(e) => handleAddToCart(e, project)} disabled={!isVIPTest && limitReached && cart.find(i => i.id === project.id)} className="absolute bottom-5 right-5 z-30 bg-black/80 backdrop-blur-md hover:bg-[#ff6a00] text-[#ff6a00] hover:text-black border border-white/20 hover:border-[#ff6a00] p-3 rounded-2xl transition-all duration-300 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed group/btn cursor-pointer">
                             {cart.find(i => i.id === project.id) ? ( <CheckCircle2 className="w-5 h-5 text-emerald-500" /> ) : ( <Plus className="w-5 h-5" /> )}
                           </button>
