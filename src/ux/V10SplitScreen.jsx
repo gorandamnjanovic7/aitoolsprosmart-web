@@ -11,10 +11,12 @@ import { doc, getDoc, setDoc, onSnapshot, serverTimestamp } from 'firebase/fires
 
 import V10SecureCheckout from './V10SecureCheckout';
 import V10PricingDetails from './V10PricingDetails'; 
+import V10Story from './V10Story'; 
 
 const CLOUDINARY_CLOUD_NAME = "drllxycnh"; 
 const CLOUDINARY_UPLOAD_PRESET = "uploads"; 
 
+// POČETAK FUNKCIJE: V10SplitScreen
 const V10SplitScreen = () => {
   const { projectId } = useParams();
   const location = useLocation();
@@ -42,15 +44,16 @@ const V10SplitScreen = () => {
     title: projectId.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '), 
     engine: 'PREMIUM COLLECTION', 
     img: '', 
-    ratio: 'aspect-[21/9]', 
+    ratio: 'aspect-[3/1]', 
     category: location.state?.category || 'perfumes' 
   });
   const [isUploadingThumbnail, setIsUploadingThumbnail] = useState(false);
   const [isSavingProject, setIsSavingProject] = useState(false);
 
   const [isAddPhaseModalOpen, setIsAddPhaseModalOpen] = useState(false);
-  const [newPhase, setNewPhase] = useState({ title: '', subtitle: '', imageUrl: '', ratio: 'aspect-[21/9]' });
+  const [newPhase, setNewPhase] = useState({ title: '', subtitle: '', imageUrl: '', psdLink: '', ratio: 'aspect-[3/1]' });
   const [isUploadingPhaseImg, setIsUploadingPhaseImg] = useState(false);
+  const [isUploadingPhasePsd, setIsUploadingPhasePsd] = useState(false);
   const [isSavingPhase, setIsSavingPhase] = useState(false);
 
   const [isEditLinksModalOpen, setIsEditLinksModalOpen] = useState(false);
@@ -79,6 +82,7 @@ const V10SplitScreen = () => {
   const [isMonthly, setIsMonthly] = useState(false);
   const [daysLeft, setDaysLeft] = useState(0);
 
+  // POČETAK FUNKCIJE: setupPackageLimits
   const setupPackageLimits = (pkgName, timestamp) => {
     setSelectedUserPackage(pkgName); 
     let limit = 0; let monthly = false;
@@ -94,7 +98,9 @@ const V10SplitScreen = () => {
       if (diffDays > 31) { setCart([]); setDaysLeft(0); } else { setDaysLeft(31 - diffDays); }
     }
   };
+  // KRAJ FUNKCIJE: setupPackageLimits
 
+  // POČETAK FUNKCIJE: fetchProject
   const fetchProject = useCallback(async () => {
     try {
       const docRef = doc(db, "v10_projects", projectId); 
@@ -126,6 +132,7 @@ const V10SplitScreen = () => {
       setIsProjectLoading(false);
     }
   }, [projectId]);
+  // KRAJ FUNKCIJE: fetchProject
 
   const [pendingProject, setPendingProject] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -204,6 +211,7 @@ const V10SplitScreen = () => {
     category: projectData.category || "all"
   };
 
+  // POČETAK FUNKCIJE: performAddToCart
   const performAddToCart = (projectToAdd) => {
     if (!isVIPTest && limitReached) {
       setIsLimitModalOpen(true);
@@ -217,7 +225,9 @@ const V10SplitScreen = () => {
       }
     }
   };
+  // KRAJ FUNKCIJE: performAddToCart
 
+  // POČETAK FUNKCIJE: handleAddToCartClick
   const handleAddToCartClick = async (e) => {
       e?.preventDefault(); 
       e?.stopPropagation();
@@ -245,6 +255,7 @@ const V10SplitScreen = () => {
 
       performAddToCart(currentProjectObj);
   };
+  // KRAJ FUNKCIJE: handleAddToCartClick
 
   useEffect(() => {
     if (isAuthLoaded && currentUser && !isAdmin) {
@@ -257,10 +268,13 @@ const V10SplitScreen = () => {
     }
   }, [isAuthLoaded, currentUser, selectedUserPackage, pendingProject, isAdmin]);
 
+  // POČETAK FUNKCIJE: handleRemoveFromCart
   const handleRemoveFromCart = (idToRemove) => {
     setCart(cart.filter(item => item.id !== idToRemove));
   };
+  // KRAJ FUNKCIJE: handleRemoveFromCart
 
+  // POČETAK FUNKCIJE: handlePhaseImageUpload
   const handlePhaseImageUpload = async (e) => {
     const file = e.target.files[0]; if (!file) return;
     setIsUploadingPhaseImg(true);
@@ -272,7 +286,34 @@ const V10SplitScreen = () => {
       else alert("Upload Error: " + data.error?.message);
     } catch (error) {} finally { setIsUploadingPhaseImg(false); }
   };
+  // KRAJ FUNKCIJE: handlePhaseImageUpload
 
+  // POČETAK FUNKCIJE: handlePhasePsdUpload
+  const handlePhasePsdUpload = async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    setIsUploadingPhasePsd(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    
+    try {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`, { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.secure_url) {
+        setNewPhase({ ...newPhase, psdLink: data.secure_url });
+      } else {
+        alert("Upload Error: " + (data.error?.message || "Došlo je do greške"));
+      }
+    } catch (error) {
+      alert("Upload Error: " + error.message);
+    } finally {
+      setIsUploadingPhasePsd(false);
+      e.target.value = null;
+    }
+  };
+  // KRAJ FUNKCIJE: handlePhasePsdUpload
+
+  // POČETAK FUNKCIJE: handleSavePhase
   const handleSavePhase = async () => {
     if (!newPhase.title || !newPhase.imageUrl) return alert("Title and image are required!");
     setIsSavingPhase(true);
@@ -281,7 +322,7 @@ const V10SplitScreen = () => {
       await setDoc(doc(db, "v10_projects", projectId), { phases: updatedPhases }, { merge: true });
       setProjectData(prev => ({ ...prev, phases: updatedPhases }));
       setIsAddPhaseModalOpen(false);
-      setNewPhase({ title: '', subtitle: '', imageUrl: '', ratio: 'aspect-[21/9]' });
+      setNewPhase({ title: '', subtitle: '', imageUrl: '', psdLink: '', ratio: 'aspect-[3/1]' });
     } catch (error) {
       console.error("Error saving phase:", error);
       alert("Error: " + error.message);
@@ -289,7 +330,9 @@ const V10SplitScreen = () => {
       setIsSavingPhase(false);
     }
   };
+  // KRAJ FUNKCIJE: handleSavePhase
 
+  // POČETAK FUNKCIJE: handleDeletePhase
   const handleDeletePhase = async (indexToDelete) => {
     if (!window.confirm("Are you sure you want to delete this image?")) return;
     try {
@@ -302,7 +345,9 @@ const V10SplitScreen = () => {
       alert("Error: " + error.message);
     }
   };
+  // KRAJ FUNKCIJE: handleDeletePhase
 
+  // POČETAK FUNKCIJE: handlePsdUpload
   const handlePsdUpload = async (e) => {
     const file = e.target.files[0]; if (!file) return;
     setIsUploadingPsd(true);
@@ -325,7 +370,9 @@ const V10SplitScreen = () => {
       e.target.value = null; 
     }
   };
+  // KRAJ FUNKCIJE: handlePsdUpload
 
+  // POČETAK FUNKCIJE: handleSaveLinks
   const handleSaveLinks = async () => {
     setIsSavingLinks(true);
     try {
@@ -342,7 +389,9 @@ const V10SplitScreen = () => {
       setIsSavingLinks(false);
     }
   };
+  // KRAJ FUNKCIJE: handleSaveLinks
 
+  // POČETAK FUNKCIJE: handleThumbnailUpload
   const handleThumbnailUpload = async (e) => {
     const file = e.target.files[0]; if (!file) return;
     setIsUploadingThumbnail(true);
@@ -354,7 +403,9 @@ const V10SplitScreen = () => {
       else alert("Upload Error: " + data.error?.message);
     } catch (error) {} finally { setIsUploadingThumbnail(false); }
   };
+  // KRAJ FUNKCIJE: handleThumbnailUpload
 
+  // POČETAK FUNKCIJE: handleCreateProject
   const handleCreateProject = async () => {
     if (!newProject.title) return alert("Project title is required!");
     setIsSavingProject(true);
@@ -378,6 +429,7 @@ const V10SplitScreen = () => {
       setIsSavingProject(false);
     }
   };
+  // KRAJ FUNKCIJE: handleCreateProject
 
   if (isAuthLoading || isProjectLoading) {
     return (
@@ -402,44 +454,12 @@ const V10SplitScreen = () => {
 
       <div className="fixed inset-0 pointer-events-none z-0 bg-[radial-gradient(circle_at_top_left,_rgba(249,115,22,0.12)_0%,_transparent_50%),_radial-gradient(circle_at_bottom_right,_rgba(249,115,22,0.12)_0%,_transparent_50%)]"></div>
 
-      {/* DUGME ZA POVRATAK I SELECT ALL (GORE LEVO) */}
+      {/* DUGME ZA POVRATAK (GORE LEVO) - UKLONJENO DUGME ZA KORPU */}
       <div className="fixed top-24 left-4 md:left-8 z-[90] flex flex-col gap-4 pointer-events-none">
-        
         <Link to="/ui-ux/vault" state={{ category: projectData.category }} className="flex w-max items-center gap-2 text-zinc-500 hover:text-orange-500 transition-colors bg-black/80 p-2 pr-4 rounded-full backdrop-blur-md border border-white/10 hover:border-orange-500/50 shadow-lg cursor-pointer pointer-events-auto">
           <div className="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center"><ArrowLeft className="w-4 h-4 text-white" /></div>
           <span className="text-[10px] md:text-xs font-black uppercase tracking-widest">Back to Vault</span>
         </Link>
-        
-        {/* PRIKAZUJE SE SAMO KAD JE OVO ODREĐENI PROJEKAT (BEZ OBZIRA DA LI JE PRAZAN ILI NE) */}
-        {projectId?.toLowerCase() === 'v10-futuristic-habitats-bundle' && (
-          <motion.button 
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            animate={{ 
-              boxShadow: ["0px 0px 10px rgba(249,115,22,0.3)", "0px 0px 20px rgba(249,115,22,0.7)", "0px 0px 10px rgba(249,115,22,0.3)"]
-            }}
-            transition={{ duration: 2, repeat: Infinity }}
-            onClick={(e) => {
-              if (isAdmin) return alert("Admin prikaz: Ovo dugme skida 1 poen klijentu i dodaje ceo bundle u korpu.");
-              if (isAlreadySelected) handleRemoveFromCart(projectId);
-              else handleAddToCartClick(e); 
-            }}
-            className={`flex w-max items-center gap-3 transition-all p-2 pr-5 rounded-full backdrop-blur-md border cursor-pointer group pointer-events-auto ${
-              isAlreadySelected 
-                ? 'bg-orange-500 text-black border-orange-500 hover:bg-orange-600' 
-                : 'bg-orange-500/10 text-orange-500 border-orange-500/30 hover:bg-orange-500 hover:text-black'
-            }`}
-          >
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-              isAlreadySelected ? 'bg-black/20' : 'bg-orange-500/20 group-hover:bg-black/20'
-            }`}>
-              {isAlreadySelected ? <CheckCircle2 className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-            </div>
-            <span className="text-[10px] md:text-xs font-black uppercase tracking-widest">
-              {isAlreadySelected ? 'SELECTED (1 POINT)' : 'SELECT ALL (1 POINT)'}
-            </span>
-          </motion.button>
-        )}
       </div>
 
       {isUninitialized ? (
@@ -458,8 +478,47 @@ const V10SplitScreen = () => {
             </div>
           )}
         </div>
+      ) : projectData?.category === 'storytelling' ? (
+        <>
+          {/* 🔥 STORYTELLING PRIKAZ PREKO CELOG EKRANA 🔥 */}
+          <V10Story 
+            projectData={projectData} 
+            handleAddToCartClick={handleAddToCartClick} 
+            isAlreadySelected={isAlreadySelected} 
+            isAdmin={isAdmin} 
+            handleDeletePhase={handleDeletePhase}
+          />
+          {/* ZASTIĆENI PRIKAZ LINKOVA I ADMIN DUGMADI ZA STORYTELLING */}
+          {isAdmin && (
+            <div className="relative z-50 max-w-7xl mx-auto px-4 pb-20 flex flex-col items-center">
+              <div className="mt-8 flex flex-col md:flex-row items-center justify-center gap-4 pointer-events-auto">
+                {projectData.driveLink && (
+                  <a href={projectData.driveLink} target="_blank" rel="noreferrer" className="px-6 py-3 bg-blue-500/10 text-blue-500 border border-blue-500/30 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-blue-500 hover:text-black transition-all shadow-lg">
+                    <UploadCloud className="w-4 h-4" /> Google Drive Asset
+                  </a>
+                )}
+              </div>
+              <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-6 p-4 rounded-2xl border border-white/5 bg-white/5 pointer-events-auto">
+                <button 
+                  onClick={() => setIsAddPhaseModalOpen(true)} 
+                  className="w-12 h-12 rounded-full border-2 border-orange-500 flex items-center justify-center text-orange-500 hover:bg-orange-500 hover:text-black transition-all cursor-pointer shadow-[0_0_15px_rgba(249,115,22,0.3)]"
+                  title="Add new phase image"
+                >
+                  <Plus className="w-6 h-6" />
+                </button>
+                <button 
+                  onClick={() => setIsEditLinksModalOpen(true)} 
+                  className="px-6 py-3 bg-zinc-900 border border-zinc-700 hover:border-orange-500 rounded-xl text-xs font-black uppercase tracking-widest text-zinc-400 hover:text-orange-500 transition-colors flex items-center gap-2 cursor-pointer shadow-lg"
+                >
+                  <LinkIcon className="w-4 h-4" /> Edit Global Links
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       ) : (
         <>
+          {/* STANDARDNI PRIKAZ ZA OSTALE KATEGORIJE (MICHELIN UI, LUXURY BAGS ITD) */}
           <section className="pt-40 pb-20 px-4 md:px-8 max-w-6xl mx-auto flex flex-col items-center text-center relative z-10 pointer-events-none">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="inline-flex items-center gap-2 px-4 py-1.5 bg-orange-500/10 border border-orange-500/30 rounded-full mb-8 pointer-events-auto">
                <Cpu className="w-4 h-4 text-orange-500" />
@@ -499,7 +558,7 @@ const V10SplitScreen = () => {
                   )}
                   {projectData.psdLink && (
                     <a href={projectData.psdLink} target="_blank" rel="noreferrer" className="px-6 py-3 bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-cyan-500 hover:text-black transition-all">
-                      <Layers className="w-4 h-4" /> Master PSD File
+                      <Layers className="w-4 h-4" /> Global Master PSD
                     </a>
                   )}
                 </div>
@@ -517,7 +576,7 @@ const V10SplitScreen = () => {
                     onClick={() => setIsEditLinksModalOpen(true)} 
                     className="px-6 py-3 bg-zinc-900 border border-zinc-700 hover:border-orange-500 rounded-xl text-xs font-black uppercase tracking-widest text-zinc-400 hover:text-orange-500 transition-colors flex items-center gap-2 cursor-pointer"
                   >
-                    <LinkIcon className="w-4 h-4" /> Edit Links
+                    <LinkIcon className="w-4 h-4" /> Edit Global Links
                   </button>
                 </div>
               </>
@@ -532,11 +591,18 @@ const V10SplitScreen = () => {
                     <Layers className="w-6 h-6 text-orange-500" />
                     <div>
                       <h3 className="text-xl md:text-2xl font-black uppercase tracking-widest text-white">{phase.title}</h3>
-                      <p className="text-zinc-500 text-xs font-bold uppercase tracking-wider">{phase.subtitle}</p>
+                      <div className="flex items-center gap-3">
+                        <p className="text-zinc-500 text-xs font-bold uppercase tracking-wider">{phase.subtitle}</p>
+                        {isAdmin && phase.psdLink && (
+                          <a href={phase.psdLink} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-[9px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded-full hover:bg-cyan-500 hover:text-black transition-colors pointer-events-auto shadow-sm">
+                            <Layers className="w-3 h-3" /> PSD Link
+                          </a>
+                        )}
+                      </div>
                     </div>
                   </div>
                   {isAdmin && (
-                    <button onClick={() => handleDeletePhase(index)} className="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white p-2 md:p-3 rounded-xl transition-all border border-red-500/30 opacity-0 group-hover:opacity-100 mt-2 md:mt-0 cursor-pointer shadow-lg hover:shadow-[0_0_20px_rgba(239,68,68,0.5)]">
+                    <button onClick={() => handleDeletePhase(index)} className="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white p-2 md:p-3 rounded-xl transition-all border border-red-500/30 opacity-0 group-hover:opacity-100 mt-2 md:mt-0 cursor-pointer shadow-lg hover:shadow-[0_0_20px_rgba(239,68,68,0.5)] pointer-events-auto">
                       <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
                     </button>
                   )}
@@ -549,7 +615,7 @@ const V10SplitScreen = () => {
                          src={phase.imageUrl} alt={phase.title} onContextMenu={(e) => e.preventDefault()} onDragStart={(e) => e.preventDefault()}
                          className="w-full h-full object-cover select-none pointer-events-auto transition-opacity duration-300 opacity-90 group-hover/image:opacity-100" 
                        />
-                       <button onClick={(e) => { e.stopPropagation(); setFullscreenImage(phase.imageUrl); }} className="absolute bottom-4 right-4 bg-black/80 hover:bg-orange-500 text-white p-3.5 rounded-xl backdrop-blur-sm border border-white/10 hover:border-orange-500 transition-all z-40 shadow-xl opacity-0 group-hover/image:opacity-100 cursor-pointer">
+                       <button onClick={(e) => { e.stopPropagation(); setFullscreenImage(phase.imageUrl); }} className="absolute bottom-4 right-4 bg-black/80 hover:bg-orange-500 text-white p-3.5 rounded-xl backdrop-blur-sm border border-white/10 hover:border-orange-500 transition-all z-40 shadow-xl opacity-0 group-hover/image:opacity-100 cursor-pointer pointer-events-auto">
                          <Maximize className="w-5 h-5" />
                        </button>
                      </>
@@ -630,7 +696,7 @@ const V10SplitScreen = () => {
         <AnimatePresence>
           {isAddPhaseModalOpen && isAdmin && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 w-screen h-screen z-[9999999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm pointer-events-auto">
-              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#020617] border border-slate-600 border-t-slate-400/80 border-l-slate-400/80 p-10 rounded-[2.5rem] w-full max-w-xl shadow-[0_40px_80px_rgba(0,0,0,0.9),_inset_0_2px_10px_rgba(255,255,255,0.15)]">
+              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#020617] border border-slate-600 border-t-slate-400/80 border-l-slate-400/80 p-10 rounded-[2.5rem] w-full max-w-xl shadow-[0_40px_80px_rgba(0,0,0,0.9),_inset_0_2px_10px_rgba(255,255,255,0.15)] max-h-[95vh] overflow-y-auto custom-scrollbar">
                 
                 <button onClick={() => setIsAddPhaseModalOpen(false)} className="absolute top-6 right-6 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-b from-red-500 to-red-700 border border-red-400 text-white shadow-[0_8px_15px_rgba(220,38,38,0.5),_inset_0_2px_4px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 cursor-pointer transition-transform">
                   <X className="w-5 h-5 drop-shadow-md" />
@@ -651,6 +717,7 @@ const V10SplitScreen = () => {
                     <label className="block text-cyan-400 text-[10px] font-black uppercase tracking-widest mb-2">Format (Ratio)</label>
                     <div className="relative">
                       <select value={newPhase.ratio} onChange={(e) => setNewPhase({ ...newPhase, ratio: e.target.value })} className="w-full bg-[#020617] border border-slate-700 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-cyan-400 transition-colors appearance-none cursor-pointer shadow-inner">
+                        <option value="aspect-[3/1]">3:1 (Panoramic / Storytelling)</option>
                         <option value="aspect-[21/9]">21:9 (Ultrawide / Hero)</option>
                         <option value="aspect-video">16:9 (Cinematic / Landscape)</option>
                         <option value="aspect-[3/2]">3:2 (Classic Photo)</option>
@@ -663,6 +730,8 @@ const V10SplitScreen = () => {
                       <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                     </div>
                   </div>
+                  
+                  {/* UPLOAD SLIKE */}
                   <div>
                     <label className="block text-cyan-400 text-[10px] font-black uppercase tracking-widest mb-2">Image (Upload)</label>
                     <div className="relative group cursor-pointer h-32">
@@ -673,13 +742,36 @@ const V10SplitScreen = () => {
                         ) : newPhase.imageUrl ? (
                           <div className="w-full h-full bg-black rounded-xl p-[4px]"><img src={newPhase.imageUrl} alt="Preview" className="w-full h-full object-cover rounded-lg brightness-110" /></div>
                         ) : (
-                          <><UploadCloud className="w-6 h-6 text-slate-500 group-hover:text-cyan-400 mb-2 transition-colors" /><span className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Click to upload</span></>
+                          <><UploadCloud className="w-6 h-6 text-slate-500 group-hover:text-cyan-400 mb-2 transition-colors" /><span className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Click to upload image</span></>
                         )}
                       </div>
                     </div>
                   </div>
-                  <button onClick={handleSavePhase} disabled={isSavingPhase || isUploadingPhaseImg} className="relative w-full px-8 py-5 rounded-2xl bg-gradient-to-b from-cyan-400 to-blue-600 text-white font-black uppercase tracking-widest mt-8 transition-all shadow-[0_15px_30px_rgba(0,0,0,0.6),_inset_0_2px_4px_rgba(255,255,255,0.5)] border-b-[5px] border-blue-900 hover:translate-y-[2px] hover:border-b-[3px] active:translate-y-[5px] active:border-b-0 flex items-center justify-center gap-3 cursor-pointer z-10 disabled:opacity-50 pointer-events-auto">
-                    {isSavingPhase ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-5 h-5 drop-shadow-sm" /> <span className="drop-shadow-sm">Save Image</span></>}
+
+                  {/* UPLOAD PSD FAJLA ZA OVU FAZU */}
+                  <div>
+                    <label className="block text-cyan-400 text-[10px] font-black uppercase tracking-widest mb-2">Phase PSD File (Optional)</label>
+                    <div className="relative group cursor-pointer h-20">
+                      <input type="file" accept=".psd, image/vnd.adobe.photoshop" onChange={handlePhasePsdUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                      <div className={`w-full h-full rounded-2xl flex flex-col items-center justify-center transition-all ${newPhase.psdLink ? 'bg-gradient-to-br from-cyan-400 to-blue-600 p-[2px] shadow-[0_0_20px_rgba(6,182,212,0.4)]' : 'border-2 border-dashed border-slate-600 bg-[#020617] group-hover:border-cyan-400 shadow-inner'}`}>
+                        {isUploadingPhasePsd ? (
+                          <Loader2 className="w-6 h-6 text-cyan-400 animate-spin" />
+                        ) : newPhase.psdLink ? (
+                          <div className="flex items-center gap-2 bg-black w-full h-full rounded-xl justify-center text-xs font-bold text-cyan-400">
+                            <CheckCircle2 className="w-4 h-4"/> PSD LINKED
+                          </div>
+                        ) : (
+                          <>
+                            <Layers className="w-5 h-5 text-slate-500 group-hover:text-cyan-400 mb-1 transition-colors" />
+                            <span className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Click to upload .PSD</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <button onClick={handleSavePhase} disabled={isSavingPhase || isUploadingPhaseImg || isUploadingPhasePsd} className="relative w-full px-8 py-5 rounded-2xl bg-gradient-to-b from-cyan-400 to-blue-600 text-white font-black uppercase tracking-widest mt-8 transition-all shadow-[0_15px_30px_rgba(0,0,0,0.6),_inset_0_2px_4px_rgba(255,255,255,0.5)] border-b-[5px] border-blue-900 hover:translate-y-[2px] hover:border-b-[3px] active:translate-y-[5px] active:border-b-0 flex items-center justify-center gap-3 cursor-pointer z-10 disabled:opacity-50 pointer-events-auto">
+                    {isSavingPhase ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-5 h-5 drop-shadow-sm" /> <span className="drop-shadow-sm">Save Asset Data</span></>}
                   </button>
                 </div>
               </motion.div>
@@ -689,7 +781,7 @@ const V10SplitScreen = () => {
         document.body
       )}
 
-      {/* MODAL ZA UNOS LINKOVA - SAMO ZA ADMINA */}
+      {/* MODAL ZA UNOS GLOBALNIH LINKOVA - SAMO ZA ADMINA */}
       {typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
           {isEditLinksModalOpen && isAdmin && (
@@ -700,7 +792,7 @@ const V10SplitScreen = () => {
                   <X className="w-5 h-5 drop-shadow-md" />
                 </button>
                 
-                <h2 className="text-3xl font-black text-white uppercase tracking-widest mb-8 drop-shadow-md"><span className="text-cyan-400">Edit</span> Project Links</h2>
+                <h2 className="text-3xl font-black text-white uppercase tracking-widest mb-8 drop-shadow-md"><span className="text-cyan-400">Edit</span> Global Links</h2>
                 
                 <div className="space-y-5">
                   <div>
@@ -708,7 +800,7 @@ const V10SplitScreen = () => {
                     <input type="text" value={editLinks.driveLink} onChange={(e) => setEditLinks({ ...editLinks, driveLink: e.target.value })} className="w-full bg-[#020617] border border-slate-700 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-cyan-400 transition-colors shadow-inner" placeholder="https://drive.google.com/..." />
                   </div>
                   <div>
-                    <label className="block text-cyan-400 text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2"><Layers className="w-3 h-3"/> Master PSD File</label>
+                    <label className="block text-cyan-400 text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2"><Layers className="w-3 h-3"/> Global Master PSD File</label>
                     <div className="relative group cursor-pointer h-20">
                       <input type="file" accept=".psd, image/vnd.adobe.photoshop" onChange={handlePsdUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
                       <div className={`w-full h-full rounded-2xl flex flex-col items-center justify-center transition-all ${editLinks.psdLink ? 'bg-gradient-to-br from-cyan-400 to-blue-600 p-[2px] shadow-[0_0_20px_rgba(6,182,212,0.4)]' : 'border-2 border-dashed border-slate-600 bg-[#020617] group-hover:border-cyan-400 shadow-inner'}`}>
@@ -745,7 +837,6 @@ const V10SplitScreen = () => {
             <motion.div key="modal-init" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 w-screen h-screen z-[9999999] flex items-center justify-center p-4 bg-black/70 pointer-events-auto">
               <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#020617] border border-slate-600 border-t-slate-400/80 border-l-slate-400/80 p-10 rounded-[2.5rem] w-full max-w-xl shadow-[0_40px_80px_rgba(0,0,0,0.9),_inset_0_2px_10px_rgba(255,255,255,0.15)] max-h-[95vh] overflow-y-auto custom-scrollbar relative z-50">
                 
-                {/* ZNAK X U GORNJEM DESNOM KUTU (ZA PONIŠTAVANJE) */}
                 <button onClick={() => setIsInitModalOpen(false)} className="absolute top-6 right-6 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-b from-red-500 to-red-700 border border-red-400 text-white shadow-[0_8px_15px_rgba(220,38,38,0.5),_inset_0_2px_4px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 cursor-pointer transition-transform pointer-events-auto">
                   <X className="w-5 h-5 drop-shadow-md" />
                 </button>
@@ -762,6 +853,7 @@ const V10SplitScreen = () => {
                     <label className="block text-cyan-400 text-[10px] font-black uppercase tracking-widest mb-2">Image Format (Ratio)</label>
                     <div className="relative">
                       <select value={newProject.ratio} onChange={(e) => setNewProject({ ...newProject, ratio: e.target.value })} className="w-full bg-[#020617] border border-slate-700 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-cyan-400 transition-colors appearance-none cursor-pointer shadow-inner">
+                        <option value="aspect-[3/1]">3:1 (Panoramic / Storytelling)</option>
                         <option value="aspect-[21/9]">21:9 (Ultrawide / Hero)</option>
                         <option value="aspect-video">16:9 (Cinematic / Landscape)</option>
                         <option value="aspect-[3/2]">3:2 (Classic Photo)</option>
@@ -834,7 +926,6 @@ const V10SplitScreen = () => {
               exit={{ opacity: 0 }} 
               className="fixed inset-0 w-screen h-screen z-[9999999] bg-[#020202] overflow-y-auto pointer-events-auto"
             >
-              {/* Dugme za povratak */}
               <button 
                 onClick={() => { 
                   setIsPricingModalOpen(false); 
@@ -866,6 +957,7 @@ const V10SplitScreen = () => {
     </div>
   );
 };
+// KRAJ FUNKCIJE: V10SplitScreen
 
 export default V10SplitScreen;
 // KRAJ FAJLA: src/ux/V10SplitScreen.jsx

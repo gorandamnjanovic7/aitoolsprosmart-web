@@ -109,10 +109,12 @@ const VaultGrid = () => {
 
   const tabs = [{ id: 'all', label: 'Vault Folders' }];
 
+  // 🔥 DODATO: badge: 'EXCLUSIVE' ZA STORYTELLING KARTICU 🔥
   const vaultCategories = [
     { id: 'food_ui', title: 'V10 Michelin UI', subtitle: 'Premium Culinary Assets', coverImage: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&w=800&q=80' },
     { id: 'women_bags', title: 'Luxury Women Bags', subtitle: 'High-End Product UI', coverImage: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=800&q=80' },
-    { id: 'perfumes', title: 'V10 Executive Glass Plaques', subtitle: 'Executive Displays', coverImage: '/orange.webp' }
+    { id: 'perfumes', title: 'V10 Executive Glass Plaques', subtitle: 'Executive Displays', coverImage: '/orange.webp' },
+    { id: 'storytelling', title: 'V10 Storytelling', subtitle: 'Cinematic Narratives', coverImage: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=800&q=80', badge: 'EXCLUSIVE' }
   ];
 
   const isVIPTest = userEmail === 'historical.stories7972@gmail.com';
@@ -358,7 +360,7 @@ const VaultGrid = () => {
     setNewProject({ 
       title: '', 
       img: '', 
-      ratio: 'aspect-[21/9]', 
+      ratio: 'aspect-[3/1]', 
       category: currentCategory, 
       engine: 'V10 ULTRA-PRINT' 
     });
@@ -462,6 +464,15 @@ const VaultGrid = () => {
                       className="group relative w-full rounded-3xl cursor-pointer shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-gradient-to-br from-[#111] via-[#1a1a1a] to-[#0a0a0a] p-[2px] border border-white/5 hover:border-[#ff6a00]/50 overflow-hidden"
                     >
                       <div className="relative w-full h-full bg-[#050505] rounded-[22px] flex flex-col overflow-hidden">
+                        
+                        {/* 🔥 OVO JE NOVI V10 BEDŽ 🔥 */}
+                        {cat.badge && (
+                          <div className="absolute top-6 right-6 z-40 flex items-center gap-1.5 px-3 py-1 bg-black/80 backdrop-blur-md border border-[#ff6a00]/50 rounded-full shadow-[0_0_20px_rgba(255,106,0,0.4)] pointer-events-none">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#ff6a00] animate-pulse"></span>
+                            <span className="text-[#ff6a00] font-black text-[9px] uppercase tracking-[0.2em]">{cat.badge}</span>
+                          </div>
+                        )}
+
                         <div className="flex flex-row items-center p-8 gap-10 h-[280px]">
                           <div className="h-full w-[50%] bg-black relative flex-shrink-0 flex items-center justify-center rounded-2xl overflow-hidden shadow-inner">
                             <img src={cat.coverImage} alt={cat.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 ease-out opacity-80 group-hover:opacity-100" draggable="false" />
@@ -514,7 +525,6 @@ const VaultGrid = () => {
                           </button>
                         )}
 
-                        {/* Ovdje se nalazi dugme sa ikonom za selekciju klijenta, a u tvom VaultScreen.jsx se to iscrtava gore lijevo */}
                         {(!isAdmin && !project.id?.toLowerCase().includes('bundle') && !project.title?.toLowerCase().includes('bundle')) && (
                           <button onClick={(e) => handleAddToCart(e, project)} disabled={!isVIPTest && limitReached && cart.find(i => i.id === project.id)} className="absolute bottom-5 right-5 z-30 bg-black/80 backdrop-blur-md hover:bg-[#ff6a00] text-[#ff6a00] hover:text-black border border-white/20 hover:border-[#ff6a00] p-3 rounded-2xl transition-all duration-300 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed group/btn cursor-pointer">
                             {cart.find(i => i.id === project.id) ? ( <CheckCircle2 className="w-5 h-5 text-emerald-500" /> ) : ( <Plus className="w-5 h-5" /> )}
@@ -663,7 +673,7 @@ const VaultGrid = () => {
                   <div className="absolute inset-0 bg-cyan-500 rounded-full blur-[40px] opacity-40 animate-pulse"></div>
                   <motion.div animate={{ rotate: 360 }} transition={{ duration: 10, repeat: Infinity, ease: "linear" }} className="absolute inset-[-15px] rounded-full border-[2px] border-cyan-500/20 border-t-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.5)]"></motion.div>
                   <motion.div animate={{ rotate: -360 }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }} className="absolute inset-[-30px] rounded-full border-[2px] border-dashed border-blue-500/30 border-b-cyan-400"></motion.div>
-                  <motion.div animate={{ y: [-8, 8, -8] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} className="relative z-10 w-24 h-24 bg-gradient-to-b from-slate-700 to-black rounded-[2rem] border border-slate-500 flex items-center justify-center shadow-[inset_0_2px_8px_rgba(255,255,255,0.3),_0_20px_30px_rgba(0,0,0,0.8)] transform -rotate-3">
+                  <motion.div animate={{ y: [-8, 8, -8] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} className="relative z-10 w-24 h-24 bg-gradient-to-b from-slate-700 to-black rounded-[2rem] border border-slate-50 flex items-center justify-center shadow-[inset_0_2px_8px_rgba(255,255,255,0.3),_0_20px_30px_rgba(0,0,0,0.8)] transform -rotate-3">
                     <Lock className="w-12 h-12 text-emerald-400 drop-shadow-[0_0_15px_rgba(16,185,129,0.9)]" />
                   </motion.div>
                 </div>
@@ -733,8 +743,9 @@ const VaultGrid = () => {
                     <label className="block text-cyan-400 text-[10px] font-black uppercase tracking-widest mb-2">Image Format (Ratio)</label>
                     <div className="relative">
                       <select value={newProject.ratio} onChange={(e) => setNewProject({ ...newProject, ratio: e.target.value })} className="w-full bg-[#020617] border border-slate-700 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-cyan-400 transition-colors appearance-none cursor-pointer shadow-inner">
-                        <option value="aspect-video">16:9 (Cinematic / Landscape)</option>
+                        <option value="aspect-[3/1]">3:1 (Panoramic / Storytelling)</option>
                         <option value="aspect-[21/9]">21:9 (Ultrawide / Hero)</option>
+                        <option value="aspect-video">16:9 (Cinematic / Landscape)</option>
                         <option value="aspect-[3/2]">3:2 (Classic Photo)</option>
                         <option value="aspect-square">1:1 (Square Product)</option>
                         <option value="aspect-[4/5]">4:5 (Portrait / IG)</option>
