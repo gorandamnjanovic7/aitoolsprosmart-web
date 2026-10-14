@@ -65,15 +65,15 @@ const V10UltraPrintAssets = ({ paketi, isAdmin, getGlobalCena, getAspectClass, p
                     </motion.div>
                  </div>
 
-                 {/* THUMBNAILS - Prilagođen razmak */}
+                 {/* THUMBNAILS - Prilagođen razmak i NOVI ZOOM EFEKAT */}
                  {paket.primeri && paket.primeri.length > 0 && (
                     <div className="grid grid-cols-5 gap-1.5 md:gap-2 mt-2 md:mt-3">
                        {paket.primeri.slice(0, 5).map((thumb, idx) => (
                           <div key={idx} className="aspect-square rounded-lg md:rounded-xl overflow-hidden cursor-pointer relative group border border-slate-200 v8-glass-container bg-slate-50" onClick={() => setFullScreenImageUrl(thumb)}>
                              <motion.img 
-                               src={thumb} alt={`Preview ${idx}`} className="w-full h-full transform-gpu v8-glass-image" 
-                               animate={{ scale: [1, 1.15, 1] }}
-                               transition={{ duration: 5 + idx, repeat: Infinity, ease: "easeInOut" }}
+                               src={thumb} alt={`Preview ${idx}`} className="w-full h-full object-cover transform-gpu v8-glass-image" 
+                               animate={{ scale: [1, 1.2, 1] }}
+                               transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: (idx % 3) * 0.4 }}
                              />
                              <div className="absolute inset-0 bg-white/30 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                           </div>

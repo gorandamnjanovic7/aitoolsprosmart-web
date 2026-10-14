@@ -12,7 +12,6 @@ import { doc, getDoc, setDoc, updateDoc, serverTimestamp, onSnapshot } from 'fir
 import { v8Toast } from './v8Utils';
 import * as data from './data';
 import navBg from './navbar-bg.webp';
-import MagneticButton from './MagneticButton';
 
 // 🔥 GA4 ANALITIKA 🔥
 import { trackV8Action } from './utils/analytics';
@@ -225,7 +224,7 @@ const V8Navbar = ({ handleHomeClick }) => {
         <div className="mx-auto flex w-full max-w-[1600px] min-w-0 items-center justify-between gap-2 px-3 sm:gap-4 sm:px-4 md:px-8">
           
           {/* LOGO */}
-          <Link to="/" onClick={() => { handleHomeClick(); setIsMobileMenuOpen(false); }} className="group flex min-w-0 max-w-[calc(100%_-_3.25rem)] flex-1 items-center gap-2 overflow-hidden pr-1 sm:max-w-[calc(100%_-_3.75rem)] sm:gap-3 sm:pr-4 xl:max-w-none xl:flex-none">
+          <Link to="/" onClick={() => { if (typeof handleHomeClick === 'function') handleHomeClick(); setIsMobileMenuOpen(false); }} className="group flex min-w-0 max-w-[calc(100%_-_3.25rem)] flex-1 items-center gap-2 overflow-hidden pr-1 sm:max-w-[calc(100%_-_3.75rem)] sm:gap-3 sm:pr-4 xl:max-w-none xl:flex-none">
             <img src={data.logoUrl} className={`object-contain transition-all duration-500 shrink-0 ${scrolled ? 'h-8 md:h-10' : 'h-9 md:h-12'} animate-pulse group-hover:scale-105`} alt="logo" />
             <div className="flex flex-col justify-center overflow-hidden min-w-0">
               <span className={`font-black uppercase tracking-[0.1em] text-blue-500 italic group-hover:text-orange-500 transition-all duration-500 truncate w-full leading-none ${scrolled ? 'text-[11px] md:text-[12px]' : 'text-[12px] md:text-[14px]'} mb-0.5`}>AI TOOLS</span>
@@ -238,13 +237,11 @@ const V8Navbar = ({ handleHomeClick }) => {
             
             {/* HOME DUGME */}
             <div className="relative group">
-              <MagneticButton>
-                 <Link to="/" onClick={handleHomeClick} className="flex items-center gap-1 xl:gap-1.5 px-2.5 xl:px-3 py-2 rounded-full bg-emerald-900/30 border border-emerald-500/40 text-emerald-400 text-[9px] xl:text-[10px] hover:text-white hover:bg-emerald-800/50 hover:border-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] cursor-pointer whitespace-nowrap">
-                   <Globe className="w-3.5 h-3.5 shrink-0" /> 
-                   <span>HOME</span>
-                   <ChevronDown className="w-3 h-3 group-hover:rotate-180 transition-transform duration-300 shrink-0" />
-                 </Link>
-              </MagneticButton>
+              <Link to="/" onClick={() => { if (typeof handleHomeClick === 'function') handleHomeClick(); }} className="flex items-center gap-1 xl:gap-1.5 px-2.5 xl:px-3 py-2 rounded-full bg-emerald-900/30 border border-emerald-500/40 text-emerald-400 text-[9px] xl:text-[10px] hover:text-white hover:bg-emerald-800/50 hover:border-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] cursor-pointer whitespace-nowrap">
+                <Globe className="w-3.5 h-3.5 shrink-0" /> 
+                <span>HOME</span>
+                <ChevronDown className="w-3 h-3 group-hover:rotate-180 transition-transform duration-300 shrink-0" />
+              </Link>
               <div className="absolute top-full left-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-400 z-[9999]">
                 <div className="bg-black/90 backdrop-blur-2xl border border-white/10 border-t-emerald-500 border-b-emerald-500/30 rounded-2xl p-2 w-52 shadow-[0_30px_60px_rgba(0,0,0,0.9)] flex flex-col gap-1 relative overflow-hidden">
                   <div className="absolute -top-12 -left-12 w-32 h-32 bg-emerald-600/20 rounded-full blur-[40px] pointer-events-none z-0"></div>
@@ -263,13 +260,11 @@ const V8Navbar = ({ handleHomeClick }) => {
 
             {/* MASTER UPSCALERS */}
             <div className="relative group">
-              <MagneticButton>
-                <button className="flex items-center gap-1 xl:gap-1.5 px-2.5 xl:px-3 py-2 rounded-full bg-gradient-to-r from-yellow-900/30 to-amber-900/30 border border-yellow-500/50 text-yellow-500 text-[9px] xl:text-[10px] hover:text-white hover:border-yellow-400 transition-all shadow-[0_0_15px_rgba(234,179,8,0.15)] cursor-pointer whitespace-nowrap">
-                  <Maximize className="w-3.5 h-3.5 text-yellow-400 drop-shadow-[0_0_8px_rgba(234,179,8,0.8)] shrink-0" /> 
-                  <span>MASTER UPSCALERS</span>
-                  <ChevronDown className="w-3 h-3 text-yellow-400 group-hover:rotate-180 transition-transform duration-300 shrink-0" />
-                </button>
-              </MagneticButton>
+              <button className="flex items-center gap-1 xl:gap-1.5 px-2.5 xl:px-3 py-2 rounded-full bg-gradient-to-r from-yellow-900/30 to-amber-900/30 border border-yellow-500/50 text-yellow-500 text-[9px] xl:text-[10px] hover:text-white hover:border-yellow-400 transition-all shadow-[0_0_15px_rgba(234,179,8,0.15)] cursor-pointer whitespace-nowrap">
+                <Maximize className="w-3.5 h-3.5 text-yellow-400 drop-shadow-[0_0_8px_rgba(234,179,8,0.8)] shrink-0" /> 
+                <span>MASTER UPSCALERS</span>
+                <ChevronDown className="w-3 h-3 text-yellow-400 group-hover:rotate-180 transition-transform duration-300 shrink-0" />
+              </button>
               <div className="absolute top-full right-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-400 z-[9999]">
                 <div className="bg-black/90 backdrop-blur-2xl border border-white/10 border-t-yellow-500 border-b-yellow-500/30 rounded-2xl p-2 w-64 shadow-[0_30px_60px_rgba(0,0,0,0.9)] flex flex-col gap-1 relative overflow-hidden">
                   <div className="absolute -top-12 -right-12 w-32 h-32 bg-yellow-600/30 rounded-full blur-[40px] pointer-events-none z-0"></div>
@@ -318,13 +313,11 @@ const V8Navbar = ({ handleHomeClick }) => {
 
             {/* V8 MASTER TOOLS */}
             <div className="relative group">
-              <MagneticButton>
-                <button className="flex items-center gap-1 xl:gap-1.5 px-2.5 xl:px-3 py-2 rounded-full bg-gradient-to-r from-red-600/90 via-orange-600/90 to-red-600/90 border border-orange-400 text-white text-[9px] xl:text-[10px] transition-all shadow-[0_0_15px_rgba(249,115,22,0.4)] hover:shadow-[0_0_25px_rgba(249,115,22,0.8)] cursor-pointer relative overflow-hidden whitespace-nowrap">
-                  <Zap className="w-3.5 h-3.5 text-yellow-300 animate-pulse drop-shadow-[0_0_8px_rgba(253,224,71,1)] shrink-0" strokeWidth={2.5} /> 
-                  <span>V8 MASTER TOOLS</span>
-                  <ChevronDown className="w-3 h-3 text-yellow-300 group-hover:rotate-180 transition-transform duration-300 shrink-0" />
-                </button>
-              </MagneticButton>
+              <button className="flex items-center gap-1 xl:gap-1.5 px-2.5 xl:px-3 py-2 rounded-full bg-gradient-to-r from-red-600/90 via-orange-600/90 to-red-600/90 border border-orange-400 text-white text-[9px] xl:text-[10px] transition-all shadow-[0_0_15px_rgba(249,115,22,0.4)] hover:shadow-[0_0_25px_rgba(249,115,22,0.8)] cursor-pointer relative overflow-hidden whitespace-nowrap">
+                <Zap className="w-3.5 h-3.5 text-yellow-300 animate-pulse drop-shadow-[0_0_8px_rgba(253,224,71,1)] shrink-0" strokeWidth={2.5} /> 
+                <span>V8 MASTER TOOLS</span>
+                <ChevronDown className="w-3 h-3 text-yellow-300 group-hover:rotate-180 transition-transform duration-300 shrink-0" />
+              </button>
               <div className="absolute top-full right-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-400 z-[9999]">
                 <div className="bg-black/90 backdrop-blur-2xl border border-white/10 border-t-orange-500 border-b-orange-500/30 rounded-2xl p-2 w-72 shadow-[0_30px_60px_rgba(0,0,0,0.9)] flex flex-col gap-1 relative overflow-hidden">
                   <div className="absolute -top-12 -right-12 w-32 h-32 bg-orange-600/30 rounded-full blur-[40px] pointer-events-none z-0"></div>
@@ -407,13 +400,11 @@ const V8Navbar = ({ handleHomeClick }) => {
 
             {/* PREMIUM STOCK */}
             <div className="relative group">
-              <MagneticButton>
-                <button className="flex items-center gap-1 xl:gap-1.5 px-3 xl:px-4 py-2 rounded-full bg-blue-600 border-2 border-blue-400 text-white font-black text-[9px] xl:text-[10px] hover:bg-blue-500 hover:scale-105 transition-all shadow-[0_0_20px_rgba(37,99,235,0.6)] cursor-pointer whitespace-nowrap">
-                  <ImageIcon className="w-3.5 h-3.5 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] shrink-0" /> 
-                  <span>PREMIUM STOCK</span>
-                  <ChevronDown className="w-3 h-3 text-white group-hover:rotate-180 transition-transform duration-300 shrink-0" />
-                </button>
-              </MagneticButton>
+              <button className="flex items-center gap-1 xl:gap-1.5 px-3 xl:px-4 py-2 rounded-full bg-blue-600 border-2 border-blue-400 text-white font-black text-[9px] xl:text-[10px] hover:bg-blue-500 hover:scale-105 transition-all shadow-[0_0_20px_rgba(37,99,235,0.6)] cursor-pointer whitespace-nowrap">
+                <ImageIcon className="w-3.5 h-3.5 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] shrink-0" /> 
+                <span>PREMIUM STOCK</span>
+                <ChevronDown className="w-3 h-3 text-white group-hover:rotate-180 transition-transform duration-300 shrink-0" />
+              </button>
               <div className="absolute top-full right-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-400 z-[9999]">
                 <div className="bg-black/80 backdrop-blur-2xl border border-white/10 border-t-blue-500/60 border-b-purple-500/30 rounded-2xl p-2 w-72 shadow-[0_30px_60px_rgba(0,0,0,0.8)] flex flex-col gap-1 relative overflow-hidden">
                   <div className="absolute -top-12 -right-12 w-32 h-32 bg-blue-600/20 rounded-full blur-[40px] pointer-events-none z-0"></div>
@@ -450,61 +441,53 @@ const V8Navbar = ({ handleHomeClick }) => {
           </div>
 
           {/* 🔥 B2B SERVISI: QR, SAAS & NOVO UI/UX DUGME 🔥 */}
-          <div className="hidden xl:flex items-center gap-1.5 xl:gap-2 ml-1 border-l border-white/10 pl-2 xl:pl-3 shrink-0">
+          <div className="relative z-50 hidden xl:flex items-center gap-1.5 xl:gap-2 ml-1 border-l border-white/10 pl-2 xl:pl-3 shrink-0">
             
             {/* QR BUILDER */}
-            <MagneticButton>
-              <Link to="/premium-menu" onClick={() => window.scrollTo(0,0)} className="flex items-center gap-1 xl:gap-1.5 px-3 xl:px-4 py-2 rounded-full bg-purple-600 border-2 border-purple-400 text-white font-black hover:bg-purple-500 hover:scale-105 transition-all shadow-[0_0_20px_rgba(168,85,247,0.6)] whitespace-nowrap cursor-pointer">
-                <ScanLine className="w-3.5 h-3.5 shrink-0 drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
-                <span className="text-[9px] xl:text-[10px] uppercase tracking-widest">QR BUILDER</span>
-              </Link>
-            </MagneticButton>
+            <Link to="/premium-menu" onClick={() => window.scrollTo(0,0)} className="flex items-center gap-1 xl:gap-1.5 px-3 xl:px-4 py-2 rounded-full bg-purple-600 border-2 border-purple-400 text-white font-black hover:bg-purple-500 hover:scale-105 transition-all shadow-[0_0_20px_rgba(168,85,247,0.6)] whitespace-nowrap cursor-pointer">
+              <ScanLine className="w-3.5 h-3.5 shrink-0 drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
+              <span className="text-[9px] xl:text-[10px] uppercase tracking-widest">QR BUILDER</span>
+            </Link>
 
-            {/* SaaS MOCKUPS */}
-            <MagneticButton>
-              <Link to="/saas-protocol" onClick={() => window.scrollTo(0,0)} className="flex items-center gap-1 xl:gap-1.5 px-3 xl:px-4 py-2 rounded-full bg-orange-500 border-2 border-orange-400 text-white font-black hover:bg-orange-400 hover:scale-105 transition-all shadow-[0_0_20px_rgba(249,115,22,0.6)] whitespace-nowrap cursor-pointer">
-                <MonitorPlay className="w-3.5 h-3.5 shrink-0 drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
-                <span className="text-[9px] xl:text-[10px] uppercase tracking-widest">SaaS MOCKUPS</span>
-              </Link>
-            </MagneticButton>
+            {/* 🔥 SaaS MOCKUPS - PREUSMERENO DIREKTNO NA /standard-mocup 🔥 */}
+            <Link to="/standard-mocup" onClick={() => window.scrollTo(0,0)} className="flex items-center gap-1 xl:gap-1.5 px-3 xl:px-4 py-2 rounded-full bg-orange-500 border-2 border-orange-400 text-white font-black hover:bg-orange-400 hover:scale-105 transition-all shadow-[0_0_20px_rgba(249,115,22,0.6)] whitespace-nowrap cursor-pointer">
+              <MonitorPlay className="w-3.5 h-3.5 shrink-0 drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
+              <span className="text-[9px] xl:text-[10px] uppercase tracking-widest">SaaS MOCKUPS</span>
+            </Link>
 
-            {/* 🔥 NOVO: UI/UX INŽENJERING (KONDICIONALNI LINK - SAMO ADMIN IDE NA /ui-ux) 🔥 */}
-            <MagneticButton>
-              <Link 
-                to={isAdmin ? "/ui-ux" : "/ui-ux/vault"} 
-                onClick={() => window.scrollTo(0,0)} 
-                className="flex items-center gap-1 xl:gap-1.5 px-3 xl:px-4 py-2 rounded-full bg-black border-2 border-orange-500 text-orange-500 font-black hover:bg-orange-500 hover:text-black transition-colors duration-150 shadow-[0_0_15px_rgba(249,115,22,0.4)] hover:shadow-[0_0_25px_rgba(249,115,22,0.8)] whitespace-nowrap cursor-pointer"
-              >
-                <LayoutGrid className="w-3.5 h-3.5 shrink-0" />
-                <span className="text-[9px] xl:text-[10px] uppercase tracking-widest">UI/UX</span>
-              </Link>
-            </MagneticButton>
+            {/* 🔥 UI/UX INŽENJERING (KONDICIONALNI LINK - SAMO ADMIN IDE NA /ui-ux) 🔥 */}
+            <Link 
+              to={isAdmin ? "/ui-ux" : "/ui-ux/vault"} 
+              onClick={() => window.scrollTo(0,0)} 
+              className="flex items-center gap-1 xl:gap-1.5 px-3 xl:px-4 py-2 rounded-full bg-black border-2 border-orange-500 text-orange-500 font-black hover:bg-orange-500 hover:text-black transition-colors duration-150 shadow-[0_0_15px_rgba(249,115,22,0.4)] hover:shadow-[0_0_25px_rgba(249,115,22,0.8)] whitespace-nowrap cursor-pointer"
+            >
+              <LayoutGrid className="w-3.5 h-3.5 shrink-0" />
+              <span className="text-[9px] xl:text-[10px] uppercase tracking-widest">UI/UX</span>
+            </Link>
 
           </div>
 
           {/* AUTH SYSTEM */}
           {user ? (
              <div className="flex items-center gap-2 ml-1 lg:border-l lg:border-white/10 lg:pl-2 xl:pl-3 relative group shrink-0">
-                 <MagneticButton>
-                   <button className="flex items-center gap-2 px-2.5 xl:px-3 py-2 rounded-full bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-700/50 text-white transition-all shadow-md cursor-pointer whitespace-nowrap">
-                     {userCredits?.trialClaimed === false && !isAdmin ? (
-                       <>
-                          <Gift className="w-3.5 h-3.5 text-fuchsia-400 animate-pulse shrink-0" /> 
-                          <span className="font-black text-[9px] xl:text-[10px] tracking-widest uppercase">CLAIM TRIAL</span>
-                       </>
-                     ) : (
-                       <>
-                          {user.photoURL ? (
-                             <img src={user.photoURL} alt="User Avatar" className="w-4 h-4 xl:w-5 xl:h-5 rounded-full object-cover border border-white/20 shrink-0" referrerPolicy="no-referrer" />
-                          ) : (
-                             <Zap className="w-3.5 h-3.5 text-emerald-400 animate-pulse shrink-0" />
-                          )}
-                          <span className="font-black text-[9px] xl:text-[10px] tracking-widest uppercase">{isAdmin ? 'ADMIN' : 'ACCOUNT'}</span>
-                       </>
-                     )}
-                     <ChevronDown className="w-3 h-3 text-zinc-400 group-hover:rotate-180 transition-transform duration-300 shrink-0" />
-                   </button>
-                 </MagneticButton>
+                 <button className="flex items-center gap-2 px-2.5 xl:px-3 py-2 rounded-full bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-700/50 text-white transition-all shadow-md cursor-pointer whitespace-nowrap">
+                   {userCredits?.trialClaimed === false && !isAdmin ? (
+                     <>
+                        <Gift className="w-3.5 h-3.5 text-fuchsia-400 animate-pulse shrink-0" /> 
+                        <span className="font-black text-[9px] xl:text-[10px] tracking-widest uppercase">CLAIM TRIAL</span>
+                     </>
+                   ) : (
+                     <>
+                        {user.photoURL ? (
+                           <img src={user.photoURL} alt="User Avatar" className="w-4 h-4 xl:w-5 xl:h-5 rounded-full object-cover border border-white/20 shrink-0" referrerPolicy="no-referrer" />
+                        ) : (
+                           <Zap className="w-3.5 h-3.5 text-emerald-400 animate-pulse shrink-0" />
+                        )}
+                        <span className="font-black text-[9px] xl:text-[10px] tracking-widest uppercase">{isAdmin ? 'ADMIN' : 'ACCOUNT'}</span>
+                     </>
+                   )}
+                   <ChevronDown className="w-3 h-3 text-zinc-400 group-hover:rotate-180 transition-transform duration-300 shrink-0" />
+                 </button>
 
                  <div className="absolute top-full right-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-400 z-[9999]">
                    <div className="bg-black/95 backdrop-blur-2xl border border-white/10 border-t-emerald-500 rounded-2xl p-4 w-64 shadow-2xl flex flex-col gap-2 relative overflow-hidden">
@@ -577,11 +560,9 @@ const V8Navbar = ({ handleHomeClick }) => {
                </div>
           ) : (
              <div className="ml-1 border-l border-white/10 pl-2 xl:pl-3 shrink-0">
-               <MagneticButton>
-                 <button type="button" onClick={handleLogin} className="bg-zinc-800 px-2.5 xl:px-3 py-2 rounded-full text-zinc-400 shadow-xl hover:bg-zinc-700 hover:text-white transition-all border border-white/5 cursor-pointer whitespace-nowrap text-[9px] xl:text-[10px] shrink-0">
-                   <User className="w-3.5 h-3.5 inline mr-1 xl:mr-1.5 shrink-0" /> LOGIN
-                 </button>
-               </MagneticButton>
+               <button type="button" onClick={handleLogin} className="bg-zinc-800 px-2.5 xl:px-3 py-2 rounded-full text-zinc-400 shadow-xl hover:bg-zinc-700 hover:text-white transition-all border border-white/5 cursor-pointer whitespace-nowrap text-[9px] xl:text-[10px] shrink-0">
+                 <User className="w-3.5 h-3.5 inline mr-1 xl:mr-1.5 shrink-0" /> LOGIN
+               </button>
              </div>
           )}
 
@@ -732,7 +713,8 @@ const V8Navbar = ({ handleHomeClick }) => {
                     <span className="text-[7px] bg-white text-purple-600 px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 ml-2 shadow-md">B2B</span>
                   </Link>
 
-                  <Link to="/saas-protocol" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-orange-600 border-2 border-orange-500 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0 shadow-[0_0_20px_rgba(249,115,22,0.4)]">
+                  {/* 🔥 SaaS MOCKUPS MOBILE - PREUSMERENO DIREKTNO NA /standard-mocup 🔥 */}
+                  <Link to="/standard-mocup" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-orange-600 border-2 border-orange-500 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0 shadow-[0_0_20px_rgba(249,115,22,0.4)]">
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0 w-full">
                       <div className="bg-white/20 p-2.5 sm:p-3 rounded-xl shrink-0"><MonitorPlay className="w-5 h-5 sm:w-6 sm:h-6 text-white" /></div>
                       <div className="flex flex-col min-w-0">
@@ -820,9 +802,9 @@ const V8Navbar = ({ handleHomeClick }) => {
                   <Link to="/raw-reality" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border border-orange-500/30 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                       <div className="bg-orange-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><Aperture className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" /></div>
-                      <div className="flex flex-col min-w-0">
+                      <div className="flex flex-col text-left overflow-hidden">
                         <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full">Raw Reality Engine</span>
-                        <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">Anti-Aesthetic</span>
+                        <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">Anti-Aesthetic Generator</span>
                       </div>
                     </div>
                     <span className="text-[7px] bg-orange-600 text-white px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 ml-2">HOT</span>
@@ -833,7 +815,7 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <div className="bg-yellow-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><Clapperboard className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" /></div>
                       <div className="flex flex-col min-w-0">
                         <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full">V8 Cinematik System</span>
-                        <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">Cinematic Gen</span>
+                        <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">Cinematic Matrix Gen</span>
                       </div>
                     </div>
                   </Link>
@@ -843,17 +825,17 @@ const V8Navbar = ({ handleHomeClick }) => {
                       <div className="bg-cyan-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><Code className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-500" /></div>
                       <div className="flex flex-col min-w-0">
                         <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full">JSON Extractor</span>
-                        <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">Visual DNA</span>
+                        <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">Visual DNA Reverse Engine</span>
                       </div>
                     </div>
                   </Link>
 
-                  <Link to="/v8-debranding-extractor" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border border-white/5 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
+                  <Link to="/v8-debranding-extractor" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border border-emerald-500/30 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                       <div className="bg-emerald-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-500" /></div>
-                      <div className="flex flex-col min-w-0">
+                      <div className="flex flex-col text-left overflow-hidden">
                         <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full">DE-BRANDING DNA</span>
-                        <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">White-Label Engine</span>
+                        <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">Clean White-Label Engine</span>
                       </div>
                     </div>
                     <span className="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded font-black tracking-widest shadow-[0_0_8px_rgba(16,185,129,0.5)] shrink-0">NEW</span>
