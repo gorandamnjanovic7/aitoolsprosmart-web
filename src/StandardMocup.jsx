@@ -1,9 +1,9 @@
-// POČETAK FAJLA: src/V8StockBerza.jsx
+// POČETAK FAJLA: StandardMocup.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Helmet } from 'react-helmet-async'; 
 import { CLOUDINARY_UPLOAD_PRESET, CLOUDINARY_CLOUD_NAME } from './data';
-import { Zap, X, Image as ImageIcon, Images, DownloadCloud, Crown, AlertCircle, Type, Layers, FolderArchive, FileText, Wallet, MonitorPlay, Link as LinkIcon, Diamond, RefreshCcw, Aperture, Trash2, Upload, Briefcase, Monitor, LayoutGrid, ShieldCheck, Edit, Award, CheckCircle2, Smartphone, Maximize, ArrowLeft, Clapperboard } from 'lucide-react';
+import { Zap, X, Image as ImageIcon, Images, DownloadCloud, Crown, AlertCircle, Type, Layers, FolderArchive, FileText, Wallet, MonitorPlay, Link as LinkIcon, Diamond, RefreshCcw, Aperture, Trash2, Upload, Briefcase, Monitor, LayoutGrid, ShieldCheck, Edit, Award, CheckCircle2, Smartphone, Maximize, ArrowLeft } from 'lucide-react';
 import { db, auth } from './firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, serverTimestamp, query, orderBy, getDoc, setDoc, where, onSnapshot } from 'firebase/firestore';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
@@ -132,7 +132,10 @@ export default function StandardMocup() {
     else if (activeTab === 'ultra5') setNoviFormat('150MP EXECUTIVE PLAQUES EXTIME');
   }, [activeTab]);
 
+  // 🔥 OVO JE BILA GREŠKA: Logika koja proverava i postavlja opise zavisno od izabranog TAB-a i formata 🔥
   useEffect(() => {
+    if (editingPaketId) return; // Ne diraj opis ako smo u Edit modu
+
     if (noviFormat === '150MP STANDARD DEVICE MOCKUPS') { 
       setNoviOpisEn("V10 ULTRA MOCKUPS BUNDLE: MASSIVE 150MP RESOLUTION FOR ELITE PRESENTATION & COMMERCIAL WORK. INCLUDES A CURATED 10-FILE COLLECTION: 16:9 ASPECT RATIO. Processed through the V10 Master Engine utilizing precision LANCZOS interpolation. Includes advanced UnsharpMask micro-contrast, custom NumPy matrix processing for highlight rolloff and shadow depth, and organic anti-plastic grain. Strict sRGB ICC profile embedding. Perfect for high-visibility billboards, museum-grade fine-art printing, and extreme macro cropping. Zero text, watermarks, or logos. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Fully production-ready.\n\n■ 10 hyper-realistic 150MP renders\n■ Custom Cinematic Environments engineered for your brand\n■ Full marketing toolkit (Web, Investor Decks)"); 
     }
@@ -140,15 +143,12 @@ export default function StandardMocup() {
       setNoviOpisEn("V10 LUXURY MOCKUPS BUNDLE: THE PINNACLE OF 150MP RESOLUTION FOR HIGH-END PRESENTATION & ENTERPRISE COMMERCIAL WORK. INCLUDES A CURATED 5-FILE COLLECTION OF ULTRA-PREMIUM DEVICES: 16:9 ASPECT RATIO. Processed through the V10 Master Engine utilizing precision LANCZOS interpolation. Includes advanced UnsharpMask micro-contrast, custom NumPy matrix processing for flawless glass/metal reflections, and deep shadow profiling. Strict sRGB ICC profile embedding. Perfect for high-visibility luxury campaigns, elegant enterprise showcases, and extreme macro cropping. Zero text, watermarks, or logos. INCLUDES FULL COMMERCIAL RIGHTS LICENSE AND 100% IP-SAFE METADATA CLEANUP. Fully production-ready.\n\n■ 5 ultra-luxury 150MP renders\n■ Executive Cinematic Environments engineered for top-tier brands\n■ Full premium marketing toolkit (Web, Investor Decks)"); 
     }
     else if (noviFormat === '150MP BILLBOARD MOCKUPS') { 
-      // 🔥 AŽURIRANI TEKST ZA BILLBOARD MOCKUP (20 VISUALS) 🔥
-      setNoviOpisEn("V10 EXECUTIVE BILLBORS BUNDLE — 150 MP MASTER + 4K UHD\nA premium collection of 20 renders featuring prestigious corporate awards and executive plaques in a 16:9 aspect ratio. Each visual is available in two resolutions: 150 MP for large-format applications and detailed presentations, and 4K UHD (3840 × 2160 px) for digital presentations, websites, and displays.\nProcessed through the V10 Master Engine using precision LANCZOS interpolation, UnsharpMask micro-contrast enhancement, custom NumPy processing of glass and metal reflections, and detailed shadow profiling. An sRGB ICC profile is embedded in every image. Tech Insight: Extra protection around high-contrast bright edges to reduce ugly glow/outline artifacts.Tech Insight: Fine dithering in dark gradients, smoke, mist, and sky areas to reduce banding.\nIdeal for showcasing business achievements, prestigious certifications, and executive portfolios. No text, watermarks, or logos. Includes a license granting full commercial usage rights and cleaned metadata.\n- 20 premium visuals, each available in 150 MP and 4K UHD versions.\n- Prestigious corporate and executive environments.\n- Ready for websites, portfolios, investor decks, and corporate displays."); 
+      setNoviOpisEn("V10 EXECUTIVE BILLBOARD BUNDLE — 150 MP MASTER + 4K UHD\nA premium collection of 20 renders featuring mega-scale outdoor displays and urban billboards in a 16:9 aspect ratio. Each visual is available in two resolutions: 150 MP for large-format applications and detailed presentations, and 4K UHD (3840 × 2160 px) for digital presentations, websites, and displays.\nProcessed through the V10 Master Engine using precision LANCZOS interpolation, UnsharpMask micro-contrast enhancement, custom NumPy processing for flawless environmental integration, and detailed shadow profiling. An sRGB ICC profile is embedded in every image. Tech Insight: Extra protection around high-contrast bright edges to reduce ugly glow/outline artifacts. Tech Insight: Fine dithering in dark gradients, smoke, mist, and sky areas to reduce banding.\nIdeal for high-visibility luxury ad campaigns, epic city-scale showcases, and extreme macro cropping. No text, watermarks, or logos. Includes a license granting full commercial usage rights and cleaned metadata.\n- 20 premium visuals, each available in 150 MP and 4K UHD versions.\n- Epic City & Urban Environments engineered for mega-scale brands.\n- Ready for websites, portfolios, investor decks, and advertising campaigns."); 
     }
     else if (noviFormat === '150MP WALL MOCKUPS') { 
-      // 🔥 AŽURIRANI TEKST ZA WALL MOCKUP 🔥
-      setNoviOpisEn("V10 EXECUTIVE WALL MOCUP BUNDLE — 150 MP MASTER + 4K UHD\nA premium collection of 20 renders featuring prestigious corporate awards and executive plaques in a 16:9 aspect ratio. Each visual is available in two resolutions: 150 MP for large-format applications and detailed presentations, and 4K UHD (3840 × 2160 px) for digital presentations, websites, and displays.\nProcessed through the V10 Master Engine using precision LANCZOS interpolation, UnsharpMask micro-contrast enhancement, custom NumPy processing of glass and metal reflections, and detailed shadow profiling. An sRGB ICC profile is embedded in every image. Tech Insight: Extra protection around high-contrast bright edges to reduce ugly glow/outline artifacts.Tech Insight: Fine dithering in dark gradients, smoke, mist, and sky areas to reduce banding.\nIdeal for showcasing business achievements, prestigious certifications, and executive portfolios. No text, watermarks, or logos. Includes a license granting full commercial usage rights and cleaned metadata.\n- 20 premium visuals, each available in 150 MP and 4K UHD versions.\n- Prestigious corporate and executive environments.\n- Ready for websites, portfolios, investor decks, and corporate displays."); 
+      setNoviOpisEn("V10 EXECUTIVE WALL MOCKUPS BUNDLE — 150 MP MASTER + 4K UHD\nA premium collection of 20 renders featuring high-end exterior & interior architectural wall displays in a 16:9 aspect ratio. Each visual is available in two resolutions: 150 MP for large-format applications and detailed presentations, and 4K UHD (3840 × 2160 px) for digital presentations, websites, and displays.\nProcessed through the V10 Master Engine using precision LANCZOS interpolation, UnsharpMask micro-contrast enhancement, custom NumPy processing for flawless indoor/outdoor lighting reflection, and detailed shadow profiling. An sRGB ICC profile is embedded in every image. Tech Insight: Extra protection around high-contrast bright edges to reduce ugly glow/outline artifacts. Tech Insight: Fine dithering in dark gradients, smoke, mist, and sky areas to reduce banding.\nIdeal for luxury retail exhibitions, boutique showcases, and premium waterfront branding. No text, watermarks, or logos. Includes a license granting full commercial usage rights and cleaned metadata.\n- 20 premium visuals, each available in 150 MP and 4K UHD versions.\n- Luxury Retail & Boutique Environments engineered for prestige.\n- Ready for websites, portfolios, investor decks, and corporate displays."); 
     }
     else if (noviFormat === '150MP EXECUTIVE PLAQUES EXTIME' || noviFormat === '150MP EXECUTIVE PLAQUES') { 
-      // 🔥 AŽURIRANI TEKST NA DUGMETU TAMO GDE SE PRAVE PAKETI 🔥
       setNoviOpisEn("V10 EXECUTIVE PLAQUES BUNDLE — 150 MP MASTER + 4K UHD\nA premium collection of 10 renders featuring prestigious corporate awards and executive plaques in a 16:9 aspect ratio. Each visual is available in two resolutions: 150 MP for large-format applications and detailed presentations, and 4K UHD (3840 × 2160 px) for digital presentations, websites, and displays.\nProcessed through the V10 Master Engine using precision LANCZOS interpolation, UnsharpMask micro-contrast enhancement, custom NumPy processing of glass and metal reflections, and detailed shadow profiling. An sRGB ICC profile is embedded in every image.\nIdeal for showcasing business achievements, prestigious certifications, and executive portfolios. No text, watermarks, or logos. Includes a license granting full commercial usage rights and cleaned metadata.\n- 20 premium visuals, each available in 150 MP and 4K UHD versions.\n- Prestigious corporate and executive environments.\n- Ready for websites, portfolios, investor decks, and corporate displays."); 
     }
   }, [noviFormat, editingPaketId]); 
@@ -451,16 +451,16 @@ export default function StandardMocup() {
 
           <div className="text-zinc-300 text-[13px] md:text-sm leading-relaxed mb-6 font-medium text-justify space-y-3">
             <p className="text-white font-black">
-              V10 EXECUTIVE BILLBORS BUNDLE — 150 MP MASTER + 4K UHD
+              V10 EXECUTIVE BILLBOARD BUNDLE — 150 MP MASTER + 4K UHD
             </p>
             <p>
-              A premium collection of 20 renders featuring prestigious corporate awards and executive plaques in a 16:9 aspect ratio. Each visual is available in two resolutions: 150 MP for large-format applications and detailed presentations, and 4K UHD (3840 × 2160 px) for digital presentations, websites, and displays.
+              A premium collection of 20 renders featuring mega-scale outdoor displays and urban billboards in a 16:9 aspect ratio. Each visual is available in two resolutions: 150 MP for large-format applications and detailed presentations, and 4K UHD (3840 × 2160 px) for digital presentations, websites, and displays.
             </p>
             <p>
-              Processed through the V10 Master Engine using precision LANCZOS interpolation, UnsharpMask micro-contrast enhancement, custom NumPy processing of glass and metal reflections, and detailed shadow profiling. An sRGB ICC profile is embedded in every image. Tech Insight: Extra protection around high-contrast bright edges to reduce ugly glow/outline artifacts.Tech Insight: Fine dithering in dark gradients, smoke, mist, and sky areas to reduce banding.
+              Processed through the V10 Master Engine using precision LANCZOS interpolation, UnsharpMask micro-contrast enhancement, custom NumPy processing for flawless environmental integration, and detailed shadow profiling. An sRGB ICC profile is embedded in every image. Tech Insight: Extra protection around high-contrast bright edges to reduce ugly glow/outline artifacts. Tech Insight: Fine dithering in dark gradients, smoke, mist, and sky areas to reduce banding.
             </p>
             <p>
-              Ideal for showcasing business achievements, prestigious certifications, and executive portfolios. No text, watermarks, or logos. Includes a license granting full commercial usage rights and cleaned metadata.
+              Ideal for high-visibility luxury ad campaigns, epic city-scale showcases, and extreme macro cropping. No text, watermarks, or logos. Includes a license granting full commercial usage rights and cleaned metadata.
             </p>
           </div>
 
@@ -480,7 +480,7 @@ export default function StandardMocup() {
                 <CheckCircle2 className="w-3 h-3 text-blue-400" />
               </div>
               <span className="text-white text-xs md:text-sm font-bold tracking-wide">
-                Prestigious corporate and executive environments.
+                Epic City & Urban Environments engineered for mega-scale brands.
               </span>
             </li>
             <li className="flex items-start gap-3">
@@ -488,7 +488,7 @@ export default function StandardMocup() {
                 <CheckCircle2 className="w-3 h-3 text-blue-400" />
               </div>
               <span className="text-white text-xs md:text-sm font-bold tracking-wide">
-                Ready for websites, portfolios, investor decks, and corporate displays.
+                Ready for websites, portfolios, investor decks, and advertising campaigns.
               </span>
             </li>
           </ul>
@@ -540,7 +540,7 @@ export default function StandardMocup() {
           </div>
         </div>
 
-        {/* DESNA KOLONA: Glavni tekst i Specifikacije */}
+        {/* DESNA KOLONA: Glavni tekst i Specifikacije (SADA PRAVI WALL TEKST) */}
         <div className="w-full md:w-[65%] p-6 md:p-8 flex flex-col justify-center relative">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-900/20 border border-blue-500/30 w-fit mb-6">
             <ShieldCheck className="w-4 h-4 text-blue-400" />
@@ -549,16 +549,16 @@ export default function StandardMocup() {
 
           <div className="text-zinc-300 text-[13px] md:text-sm leading-relaxed mb-6 font-medium text-justify space-y-3">
             <p className="text-white font-black">
-              V10 EXECUTIVE WALL MOCUP BUNDLE — 150 MP MASTER + 4K UHD
+              V10 EXECUTIVE WALL MOCKUPS BUNDLE — 150 MP MASTER + 4K UHD
             </p>
             <p>
-              A premium collection of 20 renders featuring prestigious corporate awards and executive plaques in a 16:9 aspect ratio. Each visual is available in two resolutions: 150 MP for large-format applications and detailed presentations, and 4K UHD (3840 × 2160 px) for digital presentations, websites, and displays.
+              A premium collection of 20 renders featuring high-end exterior & interior architectural wall displays in a 16:9 aspect ratio. Each visual is available in two resolutions: 150 MP for large-format applications and detailed presentations, and 4K UHD (3840 × 2160 px) for digital presentations, websites, and displays.
             </p>
             <p>
-              Processed through the V10 Master Engine using precision LANCZOS interpolation, UnsharpMask micro-contrast enhancement, custom NumPy processing of glass and metal reflections, and detailed shadow profiling. An sRGB ICC profile is embedded in every image. Tech Insight: Extra protection around high-contrast bright edges to reduce ugly glow/outline artifacts.Tech Insight: Fine dithering in dark gradients, smoke, mist, and sky areas to reduce banding.
+              Processed through the V10 Master Engine using precision LANCZOS interpolation, UnsharpMask micro-contrast enhancement, custom NumPy processing for flawless indoor/outdoor lighting reflection, and detailed shadow profiling. An sRGB ICC profile is embedded in every image. Tech Insight: Extra protection around high-contrast bright edges to reduce ugly glow/outline artifacts. Tech Insight: Fine dithering in dark gradients, smoke, mist, and sky areas to reduce banding.
             </p>
             <p>
-              Ideal for showcasing business achievements, prestigious certifications, and executive portfolios. No text, watermarks, or logos. Includes a license granting full commercial usage rights and cleaned metadata.
+              Ideal for luxury retail exhibitions, boutique showcases, and premium waterfront branding. No text, watermarks, or logos. Includes a license granting full commercial usage rights and cleaned metadata.
             </p>
           </div>
 
@@ -578,7 +578,7 @@ export default function StandardMocup() {
                 <CheckCircle2 className="w-3 h-3 text-blue-400" />
               </div>
               <span className="text-white text-xs md:text-sm font-bold tracking-wide">
-                Prestigious corporate and executive environments.
+                Luxury Retail & Boutique Environments engineered for prestige.
               </span>
             </li>
             <li className="flex items-start gap-3">
