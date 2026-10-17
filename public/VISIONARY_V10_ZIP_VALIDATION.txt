@@ -1,0 +1,27 @@
+VISIONARY FACTORY V10 MASTER ENGINE — ZIP VALIDATION REPORT
+==============================================================================
+UTC time: 2026-10-16T13:39:06+00:00
+Status: PASS
+ZIP: E:\SKRIPTE\VISIONARY_V10_4K_CUSTOM_AR\OUTPUT\VISIONARY_V10_4K_OUTPUT.zip
+ZIP size: 7.649 MB
+Entries validated: 3
+CRC test: PASS
+ZIP SHA256: 6acc389e1fa63e181c5ba4d37a905128c75b465be81f44b20419b0d2a2a1825d
+Message: -
+
+14 diamonds: ACTIVE
+💎 1. LANCZOS UPSCALE — Premium LANCZOS interpolacija na 3840 px dužu stranicu.
+💎 2. sRGB CONVERSION + ICC EMBEDDING — Kontrolisana sRGB konverzija i ugrađivanje sRGB ICC profila.
+💎 3. MEDIANFILTER CONTRIBUTOR CLEANUP — Blago uklanjanje kompresione prljavštine bez uništavanja detalja.
+💎 4. UNSHARPMASK PREMIUM SHARPNESS — Blago mikrokontrastno oštrenje kalibrisano za 4K izlaz.
+💎 5. COLOR GRADING — Kontrolisana korekcija boje, kontrasta i svetline.
+💎 6. HIGHLIGHT ROLLOFF — Zaštita ekstremno svetlih tonova i svetlih ivica.
+💎 7. SHADOW DEPTH — Bogate crne vrednosti uz očuvanje detalja u senkama.
+💎 8. PRODUCT AD POLISH — Uzdržana završna komercijalna obrada.
+💎 9. ANTI-PLASTIC GRAIN — Veoma blag organski luminance micro-grain.
+💎 10. IP-SAFE METADATA CLEANUP — Brisanje EXIF, GPS i skrivenih podataka kamere.
+💎 11. ANTI-HALO PROTECTION — Zaštita kontrastnih ivica od svetlih i tamnih oreola.
+💎 12. SKY / SMOKE BANDING PROTECTION — Fini dithering za nebo, dim, maglu i tamne gradijente.
+💎 13. DETAIL-SAFE TEXTURE ENGINE — Očuvanje tekstura kože, tkanine, metala, vode i proizvoda.
+💎 14. FINAL 4K QUALITY GATE — Provera dimenzija, odnosa stranica, JPG-a, ICC-a, EXIF-a i ZIP-a.
+
