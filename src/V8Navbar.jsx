@@ -1,11 +1,9 @@
 // POČETAK FAJLA: V8Navbar.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-// 🔥 DODATA LayoutGrid IKONICA ZA UI/UX 🔥
-import { Globe, Award, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay, FileText, Code, ShieldCheck, LayoutGrid, Cpu, Maximize, Gift, Menu, X, Terminal, ScanLine, Briefcase, Sparkles, Aperture, Clapperboard } from 'lucide-react';
+import { Globe, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay, FileText, Code, ShieldCheck, LayoutGrid, Cpu, Maximize, Gift, Menu, X, Terminal, ScanLine, Briefcase, Sparkles, Aperture, Clapperboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// FIREBASE & TOOLS
 import { auth, provider, db } from './firebase';
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
@@ -13,10 +11,8 @@ import { v8Toast } from './v8Utils';
 import * as data from './data';
 import navBg from './navbar-bg.webp';
 
-// 🔥 GA4 ANALITIKA 🔥
 import { trackV8Action } from './utils/analytics';
 
-// POČETAK FUNKCIJE: V8Navbar
 const V8Navbar = ({ handleHomeClick }) => {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
@@ -31,108 +27,61 @@ const V8Navbar = ({ handleHomeClick }) => {
   const isAdmin = currentUserEmail === "damnjanovicgoran7@gmail.com" || currentUserEmail === "aitoolsprosmart@gmail.com";
   const isVIP = isAdmin || isVIPInDB;
 
-  // POČETAK FUNKCIJE: useEffect_Auth
   useEffect(() => {
     let unsubTrial = null;
-
     const unsubAuth = onAuthStateChanged(auth, async (currentUser) => {
-      if (unsubTrial) {
-        unsubTrial();
-        unsubTrial = null;
-      }
-
+      if (unsubTrial) { unsubTrial(); unsubTrial = null; }
       if (currentUser) {
         setUser(currentUser);
-        if (currentUser.email.toLowerCase() !== "damnjanovicgoran7@gmail.com" && 
-            currentUser.email.toLowerCase() !== "aitoolsprosmart@gmail.com") {
+        if (!isAdmin) {
           try {
             const docSnap = await getDoc(doc(db, "vip_users", currentUser.email.toLowerCase()));
             setIsVIPInDB(docSnap.exists());
-
             unsubTrial = onSnapshot(doc(db, "v8_users", currentUser.uid), (userSnap) => {
-              if (userSnap.exists()) {
-                setUserCredits(userSnap.data());
-              }
+              if (userSnap.exists()) setUserCredits(userSnap.data());
             });
-
           } catch (e) { setIsVIPInDB(false); }
         }
       } else {
         setUser(null); setIsVIPInDB(false); setUserCredits({ credits_16mp: 0, credits_33mp: 0, credits_45mp: 0, trialClaimed: true });
       }
     });
+    return () => { unsubAuth(); if (unsubTrial) unsubTrial(); };
+  }, [isAdmin]);
 
-    return () => { 
-      unsubAuth(); 
-      if (unsubTrial) unsubTrial(); 
-    };
-  }, []);
-  // KRAJ FUNKCIJE: useEffect_Auth
-
-  // POČETAK FUNKCIJE: useEffect_Scroll
   useEffect(() => {
     const handleScroll = () => { setScrolled(window.scrollY > 50); };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-  // KRAJ FUNKCIJE: useEffect_Scroll
 
-  // POČETAK FUNKCIJE: useEffect_HtmlOverflow
   useEffect(() => {
     const html = document.documentElement;
     const body = document.body;
     const previousHtmlOverflowX = html.style.overflowX;
     const previousBodyOverflowX = body.style.overflowX;
-
     html.style.overflowX = 'hidden';
     body.style.overflowX = 'hidden';
-
-    return () => {
-      html.style.overflowX = previousHtmlOverflowX;
-      body.style.overflowX = previousBodyOverflowX;
-    };
+    return () => { html.style.overflowX = previousHtmlOverflowX; body.style.overflowX = previousBodyOverflowX; };
   }, []);
-  // KRAJ FUNKCIJE: useEffect_HtmlOverflow
 
-  // POČETAK FUNKCIJE: useEffect_MobileMenuOverflow
   useEffect(() => {
     const html = document.documentElement;
     const body = document.body;
     const previousHtmlOverflow = html.style.overflow;
     const previousBodyOverflow = body.style.overflow;
-
-    if (isMobileMenuOpen) {
-      html.style.overflow = 'hidden';
-      body.style.overflow = 'hidden';
-    }
-
-    return () => {
-      html.style.overflow = previousHtmlOverflow;
-      body.style.overflow = previousBodyOverflow;
-    };
+    if (isMobileMenuOpen) { html.style.overflow = 'hidden'; body.style.overflow = 'hidden'; }
+    return () => { html.style.overflow = previousHtmlOverflow; body.style.overflow = previousBodyOverflow; };
   }, [isMobileMenuOpen]);
-  // KRAJ FUNKCIJE: useEffect_MobileMenuOverflow
 
-  // POČETAK FUNKCIJE: useEffect_RouteChange
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [location.pathname, location.hash]);
-  // KRAJ FUNKCIJE: useEffect_RouteChange
-
-  // POČETAK FUNKCIJE: useEffect_EscapeKey
+  useEffect(() => { setIsMobileMenuOpen(false); }, [location.pathname, location.hash]);
   useEffect(() => {
     if (!isMobileMenuOpen) return undefined;
-
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') setIsMobileMenuOpen(false);
-    };
-
+    const handleKeyDown = (event) => { if (event.key === 'Escape') setIsMobileMenuOpen(false); };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isMobileMenuOpen]);
-  // KRAJ FUNKCIJE: useEffect_EscapeKey
 
-  // POČETAK FUNKCIJE: handleLogout
   const handleLogout = async () => {
     trackV8Action("user_logout");
     await signOut(auth);
@@ -140,16 +89,13 @@ const V8Navbar = ({ handleHomeClick }) => {
     setIsMobileMenuOpen(false); 
     window.location.reload(); 
   };
-  // KRAJ FUNKCIJE: handleLogout
 
-  // POČETAK FUNKCIJE: handleLogin
   const handleLogin = async () => {
     trackV8Action("login_initiated");
     try {
       const result = await signInWithPopup(auth, provider);
       const loggedUser = result.user;
       trackV8Action("login_success");
-
       if(typeof v8Toast !== 'undefined') v8Toast.success("V8 IGNITED!");
       setIsMobileMenuOpen(false); 
 
@@ -175,34 +121,21 @@ const V8Navbar = ({ handleHomeClick }) => {
       }
     } catch (err) { console.error("[V8 AUTH ERROR]:", err); }
   };
-  // KRAJ FUNKCIJE: handleLogin
 
-  // POČETAK FUNKCIJE: handleClaimTrial
   const handleClaimTrial = async () => {
     if (!user) return;
     try {
       const userRef = doc(db, "v8_users", user.uid);
-      await updateDoc(userRef, {
-        credits_16mp: 5,
-        credits_33mp: 3,
-        credits_45mp: 3,
-        trialClaimed: true 
-      });
-
+      await updateDoc(userRef, { credits_16mp: 5, credits_33mp: 3, credits_45mp: 3, trialClaimed: true });
       trackV8Action("trial_claimed", { email: user.email });
       if(typeof v8Toast !== 'undefined') v8Toast.success("TRIAL UNLOCKED: 11 Premium Credits Added!");
-    } catch (error) {
-      console.error("Error claiming trial:", error);
-    }
+    } catch (error) { console.error("Error claiming trial:", error); }
   };
-  // KRAJ FUNKCIJE: handleClaimTrial
 
-  // POČETAK FUNKCIJE: handleMobileLinkClick
   const handleMobileLinkClick = () => {
     setIsMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-  // KRAJ FUNKCIJE: handleMobileLinkClick
 
   return (
     <div className="fixed inset-x-0 top-0 z-[1000] w-full max-w-[100vw]">
@@ -258,145 +191,11 @@ const V8Navbar = ({ handleHomeClick }) => {
               </div>
             </div>
 
-            {/* MASTER UPSCALERS */}
-            <div className="relative group">
-              <button className="flex items-center gap-1 xl:gap-1.5 px-2.5 xl:px-3 py-2 rounded-full bg-gradient-to-r from-yellow-900/30 to-amber-900/30 border border-yellow-500/50 text-yellow-500 text-[9px] xl:text-[10px] hover:text-white hover:border-yellow-400 transition-all shadow-[0_0_15px_rgba(234,179,8,0.15)] cursor-pointer whitespace-nowrap">
-                <Maximize className="w-3.5 h-3.5 text-yellow-400 drop-shadow-[0_0_8px_rgba(234,179,8,0.8)] shrink-0" /> 
-                <span>MASTER UPSCALERS</span>
-                <ChevronDown className="w-3 h-3 text-yellow-400 group-hover:rotate-180 transition-transform duration-300 shrink-0" />
-              </button>
-              <div className="absolute top-full right-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-400 z-[9999]">
-                <div className="bg-black/90 backdrop-blur-2xl border border-white/10 border-t-yellow-500 border-b-yellow-500/30 rounded-2xl p-2 w-64 shadow-[0_30px_60px_rgba(0,0,0,0.9)] flex flex-col gap-1 relative overflow-hidden">
-                  <div className="absolute -top-12 -right-12 w-32 h-32 bg-yellow-600/30 rounded-full blur-[40px] pointer-events-none z-0"></div>
-                  <Link to="/v8-standard-16mp" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-orange-500/30">
-                    <div className="bg-orange-500/20 p-2 rounded-lg group-hover/item:bg-orange-500/40 transition-colors shadow-[0_0_10px_rgba(249,115,22,0.3)] shrink-0">
-                      <ImageIcon className="w-5 h-5 text-orange-400 transition-transform group-hover/item:scale-110" />
-                    </div>
-                    <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-orange-400 transition-all drop-shadow-md truncate">16MP WORKSPACE</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Standard V8 Engine</span>
-                    </div>
-                  </Link>
-                  <Link to="/master-33mp" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-yellow-500/30 mt-1">
-                    <div className="bg-yellow-500/20 p-2 rounded-lg group-hover/item:bg-yellow-500/40 transition-colors shadow-[0_0_10px_rgba(234,179,8,0.3)] shrink-0">
-                      <Cpu className="w-5 h-5 text-yellow-400 transition-transform group-hover/item:scale-110" />
-                    </div>
-                    <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-yellow-400 transition-all drop-shadow-md truncate">33.2MP ENGINE</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Premium Upscaler</span>
-                    </div>
-                  </Link>
-                  <Link to="/master-45mp" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-amber-500/30 mt-1">
-                    <div className="bg-amber-500/20 p-2 rounded-lg group-hover/item:bg-amber-500/40 transition-colors shadow-[0_0_10px_rgba(245,158,11,0.3)] shrink-0">
-                      <Cpu className="w-5 h-5 text-amber-400 transition-transform group-hover/item:scale-110" />
-                    </div>
-                    <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-amber-400 transition-all drop-shadow-md truncate">45MP ENGINE</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Pro Marketplace</span>
-                    </div>
-                  </Link>
-                  <Link to="/master-60mp" className="flex items-center justify-between gap-2 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-rose-500/30 mt-1">
-                    <div className="flex items-center gap-4 overflow-hidden">
-                      <div className="bg-rose-500/20 p-2 rounded-lg group-hover/item:bg-rose-500/40 transition-colors shadow-[0_0_10px_rgba(244,63,94,0.3)] shrink-0">
-                        <Cpu className="w-5 h-5 text-rose-400 transition-transform group-hover/item:scale-110" />
-                      </div>
-                      <div className="flex flex-col text-left overflow-hidden">
-                        <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-rose-400 transition-all drop-shadow-md truncate">60MP ENGINE</span>
-                        <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">God Tier Resolution</span>
-                      </div>
-                    </div>
-                    <span className="text-[8px] bg-rose-600 text-white px-2 py-0.5 rounded font-black tracking-widest shadow-[0_0_8px_rgba(244,63,94,0.5)] shrink-0">MAX</span>
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            {/* V8 MASTER TOOLS */}
-            <div className="relative group">
-              <button className="flex items-center gap-1 xl:gap-1.5 px-2.5 xl:px-3 py-2 rounded-full bg-gradient-to-r from-red-600/90 via-orange-600/90 to-red-600/90 border border-orange-400 text-white text-[9px] xl:text-[10px] transition-all shadow-[0_0_15px_rgba(249,115,22,0.4)] hover:shadow-[0_0_25px_rgba(249,115,22,0.8)] cursor-pointer relative overflow-hidden whitespace-nowrap">
-                <Zap className="w-3.5 h-3.5 text-yellow-300 animate-pulse drop-shadow-[0_0_8px_rgba(253,224,71,1)] shrink-0" strokeWidth={2.5} /> 
-                <span>V8 MASTER TOOLS</span>
-                <ChevronDown className="w-3 h-3 text-yellow-300 group-hover:rotate-180 transition-transform duration-300 shrink-0" />
-              </button>
-              <div className="absolute top-full right-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-400 z-[9999]">
-                <div className="bg-black/90 backdrop-blur-2xl border border-white/10 border-t-orange-500 border-b-orange-500/30 rounded-2xl p-2 w-72 shadow-[0_30px_60px_rgba(0,0,0,0.9)] flex flex-col gap-1 relative overflow-hidden">
-                  <div className="absolute -top-12 -right-12 w-32 h-32 bg-orange-600/30 rounded-full blur-[40px] pointer-events-none z-0"></div>
-                  
-                  <Link to="/enxance" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-orange-500/30">
-                    <div className="bg-orange-500/20 p-2 rounded-lg group-hover/item:bg-orange-500/40 transition-colors shadow-[0_0_10px_rgba(249,115,22,0.3)] shrink-0"><Sparkles className="w-5 h-5 text-orange-400 transition-transform group-hover/item:scale-110" /></div>
-                    <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-orange-400 transition-all drop-shadow-md truncate">10X VIZION</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Premium AI Engine</span>
-                    </div>
-                  </Link>
-
-                  <Link to="/#marketplace" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-blue-500/30 mt-1">
-                    <div className="bg-blue-500/20 p-2 rounded-lg group-hover/item:bg-blue-500/40 transition-colors shadow-[0_0_10px_rgba(59,130,246,0.3)] shrink-0"><Award className="w-5 h-5 text-blue-400 transition-transform group-hover/item:scale-110" /></div>
-                    <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-blue-400 transition-all drop-shadow-md truncate">AI STORE</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Asset Marketplace</span>
-                    </div>
-                  </Link>
-
-                  <Link to="/neural-forge" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-cyan-500/30 mt-1">
-                    <div className="bg-cyan-500/20 p-2 rounded-lg group-hover/item:bg-cyan-500/40 transition-colors shadow-[0_0_10px_rgba(6,182,212,0.3)] shrink-0"><Terminal className="w-5 h-5 text-cyan-400 transition-transform group-hover/item:scale-110" /></div>
-                    <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-cyan-400 transition-all drop-shadow-md truncate">NEURAL FORGE</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Visual Synthesizer</span>
-                    </div>
-                  </Link>
-
-                  <Link to="/raw-reality" className="flex items-center justify-between gap-2 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-orange-500/30 mt-1">
-                    <div className="flex items-center gap-4 overflow-hidden">
-                      <div className="bg-orange-500/20 p-2 rounded-lg group-hover/item:bg-orange-500/40 transition-colors shadow-[0_0_10px_rgba(249,115,22,0.3)] shrink-0"><Aperture className="w-5 h-5 text-orange-400 transition-transform group-hover/item:scale-110" /></div>
-                      <div className="flex flex-col text-left overflow-hidden">
-                        <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-orange-400 transition-all drop-shadow-md truncate">RAW REALITY ENGINE</span>
-                        <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Anti-Aesthetic Generator</span>
-                      </div>
-                    </div>
-                    <span className="text-[8px] bg-orange-600 text-white px-2 py-0.5 rounded font-black tracking-widest shadow-[0_0_8px_rgba(234,88,12,0.5)] shrink-0">HOT</span>
-                  </Link>
-
-                  <Link to="/grid-system" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-yellow-500/30 mt-1">
-                    <div className="bg-yellow-500/20 p-2 rounded-lg group-hover/item:bg-yellow-500/40 transition-colors shadow-[0_0_10px_rgba(234,179,8,0.3)] shrink-0"><Clapperboard className="w-5 h-5 text-yellow-400 transition-transform group-hover/item:scale-110" /></div>
-                    <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-yellow-400 transition-all drop-shadow-md truncate">V8 CINEMATIK SYSTEM</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Cinematic Matrix Gen</span>
-                    </div>
-                  </Link>
-
-                  <Link to="/extractor" className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-cyan-500/30 mt-1">
-                    <div className="bg-cyan-500/20 p-2 rounded-lg group-hover/item:bg-cyan-500/40 transition-colors shadow-[0_0_10px_rgba(6,182,212,0.3)] shrink-0"><Code className="w-5 h-5 text-cyan-400 transition-transform group-hover/item:scale-110" /></div>
-                    <div className="flex flex-col text-left overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-cyan-400 transition-all drop-shadow-md truncate">JSON EXTRACTOR</span>
-                      <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Visual DNA Reverse Engine</span>
-                    </div>
-                  </Link>
-
-                  <Link to="/v8-debranding-extractor" className="flex items-center justify-between gap-2 px-4 py-3.5 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white transition-all group/item relative z-10 border border-transparent hover:border-emerald-500/30 mt-1">
-                    <div className="flex items-center gap-4 overflow-hidden">
-                      <div className="bg-emerald-500/20 p-2 rounded-lg group-hover/item:bg-emerald-500/40 transition-colors shadow-[0_0_10px_rgba(16,185,129,0.3)] shrink-0"><ShieldCheck className="w-5 h-5 text-emerald-400 transition-transform group-hover/item:scale-110" /></div>
-                      <div className="flex flex-col text-left overflow-hidden">
-                        <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-emerald-400 transition-all drop-shadow-md truncate">DE-BRANDING DNA</span>
-                        <span className="text-[9px] font-bold text-zinc-500 tracking-wider truncate">Clean White-Label Engine</span>
-                      </div>
-                    </div>
-                    <span className="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded font-black tracking-widest shadow-[0_0_8px_rgba(16,185,129,0.5)] shrink-0">NEW</span>
-                  </Link>
-
-                  <div className="mt-1 grid w-full min-w-0 grid-cols-2 gap-2 sm:gap-3">
-                    <Link to="/seedance" onClick={() => window.scrollTo(0,0)} className="bg-[#0a0a0a] border border-green-500/20 p-3 sm:p-4 rounded-2xl flex flex-col items-center text-center gap-2 w-full overflow-hidden">
-                      <MonitorPlay className="w-6 h-6 sm:w-8 sm:h-8 text-green-500 shrink-0" />
-                      <span className="text-[10px] sm:text-[11px] font-black text-white uppercase tracking-widest leading-tight truncate w-full">Seedance<br/>2.0</span>
-                    </Link>
-                    <Link to="/kling" onClick={() => window.scrollTo(0,0)} className="bg-[#0a0a0a] border border-red-500/20 p-3 sm:p-4 rounded-2xl flex flex-col items-center text-center gap-2 w-full overflow-hidden">
-                      <Video className="w-6 h-6 sm:w-8 sm:h-8 text-red-500 shrink-0" />
-                      <span className="text-[10px] sm:text-[11px] font-black text-white uppercase tracking-widest leading-tight truncate w-full">Kling<br/>3.0</span>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* 🔥 NOVO NEXT PAGE DUGME 🔥 */}
+            <Link to="/next-page" onClick={() => window.scrollTo(0,0)} className="flex items-center gap-1 xl:gap-1.5 px-3 xl:px-4 py-2 rounded-full bg-orange-600 border-2 border-orange-400 text-white font-black hover:bg-orange-500 hover:scale-105 transition-all shadow-[0_0_20px_rgba(249,115,22,0.6)] whitespace-nowrap cursor-pointer">
+              <LayoutGrid className="w-3.5 h-3.5 shrink-0 drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
+              <span className="text-[9px] xl:text-[10px] uppercase tracking-widest">NEXT PAGE</span>
+            </Link>
 
             {/* PREMIUM STOCK */}
             <div className="relative group">
@@ -440,22 +239,13 @@ const V8Navbar = ({ handleHomeClick }) => {
             </div>
           </div>
 
-          {/* 🔥 B2B SERVISI: QR, SAAS & NOVO UI/UX DUGME 🔥 */}
+          {/* 🔥 B2B SERVISI 🔥 */}
           <div className="relative z-50 hidden xl:flex items-center gap-1.5 xl:gap-2 ml-1 border-l border-white/10 pl-2 xl:pl-3 shrink-0">
-            
-            {/* QR BUILDER */}
-            <Link to="/premium-menu" onClick={() => window.scrollTo(0,0)} className="flex items-center gap-1 xl:gap-1.5 px-3 xl:px-4 py-2 rounded-full bg-purple-600 border-2 border-purple-400 text-white font-black hover:bg-purple-500 hover:scale-105 transition-all shadow-[0_0_20px_rgba(168,85,247,0.6)] whitespace-nowrap cursor-pointer">
-              <ScanLine className="w-3.5 h-3.5 shrink-0 drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
-              <span className="text-[9px] xl:text-[10px] uppercase tracking-widest">QR BUILDER</span>
-            </Link>
-
-            {/* 🔥 SaaS MOCKUPS - PREUSMERENO DIREKTNO NA /standard-mocup 🔥 */}
             <Link to="/standard-mocup" onClick={() => window.scrollTo(0,0)} className="flex items-center gap-1 xl:gap-1.5 px-3 xl:px-4 py-2 rounded-full bg-orange-500 border-2 border-orange-400 text-white font-black hover:bg-orange-400 hover:scale-105 transition-all shadow-[0_0_20px_rgba(249,115,22,0.6)] whitespace-nowrap cursor-pointer">
               <MonitorPlay className="w-3.5 h-3.5 shrink-0 drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
               <span className="text-[9px] xl:text-[10px] uppercase tracking-widest">SaaS MOCKUPS</span>
             </Link>
 
-            {/* 🔥 UI/UX INŽENJERING (KONDICIONALNI LINK - SAMO ADMIN IDE NA /ui-ux) 🔥 */}
             <Link 
               to={isAdmin ? "/ui-ux" : "/ui-ux/vault"} 
               onClick={() => window.scrollTo(0,0)} 
@@ -464,7 +254,6 @@ const V8Navbar = ({ handleHomeClick }) => {
               <LayoutGrid className="w-3.5 h-3.5 shrink-0" />
               <span className="text-[9px] xl:text-[10px] uppercase tracking-widest">UI/UX</span>
             </Link>
-
           </div>
 
           {/* AUTH SYSTEM */}
@@ -569,14 +358,8 @@ const V8Navbar = ({ handleHomeClick }) => {
           {/* HAMBURGER DUGME */}
           <button
             type="button"
-            aria-label={isMobileMenuOpen ? "Zatvori mobilni meni" : "Otvori mobilni meni"}
-            aria-expanded={isMobileMenuOpen}
-            aria-controls="v8-mobile-navigation"
-            onClick={() => {
-              setIsMobileMenuOpen((previous) => !previous);
-              if (!isMobileMenuOpen) trackV8Action("mobile_menu_opened");
-            }}
-            className="relative z-[1002] ml-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-orange-300/70 bg-orange-600 text-white shadow-[0_0_22px_rgba(249,115,22,0.55)] ring-1 ring-orange-500/30 transition-all hover:bg-orange-500 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300 sm:h-12 sm:w-12 xl:hidden"
+            onClick={() => { setIsMobileMenuOpen((previous) => !previous); if (!isMobileMenuOpen) trackV8Action("mobile_menu_opened"); }}
+            className="relative z-[1002] ml-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-orange-300/70 bg-orange-600 text-white shadow-[0_0_22px_rgba(249,115,22,0.55)] ring-1 ring-orange-500/30 transition-all hover:bg-orange-500 active:scale-95 sm:h-12 sm:w-12 xl:hidden"
           >
             {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
@@ -589,9 +372,6 @@ const V8Navbar = ({ handleHomeClick }) => {
         {isMobileMenuOpen && (
           <motion.div
             id="v8-mobile-navigation"
-            role="dialog"
-            aria-modal="true"
-            aria-label="V8 mobilna navigacija"
             initial={{ opacity: 0, x: 24 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 24 }}
@@ -604,14 +384,13 @@ const V8Navbar = ({ handleHomeClick }) => {
                 <img src={data.logoUrl} className="h-8 object-contain shrink-0" alt="logo" />
                 <span className="font-black uppercase tracking-[0.1em] text-orange-500 italic text-[12px] truncate w-full">V8 NAV SYSTEM</span>
               </div>
-              <button type="button" aria-label="Zatvori mobilni meni" onClick={() => setIsMobileMenuOpen(false)} className="ml-2 flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-zinc-900 text-zinc-300 transition-all hover:bg-zinc-800 hover:text-white active:scale-95">
+              <button type="button" onClick={() => setIsMobileMenuOpen(false)} className="ml-2 flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-zinc-900 text-zinc-300 transition-all hover:bg-zinc-800 hover:text-white active:scale-95">
                 <X className="w-6 h-6" />
               </button>
             </div>
 
             <div className="flex w-full max-w-full min-w-0 flex-col gap-6 overflow-x-hidden px-3 py-4 pb-[calc(5rem+env(safe-area-inset-bottom))] sm:p-6 sm:pb-24">
               
-              {/* KORISNIČKI BLOK U MOBILNOM MENIJU */}
               {user ? (
                 <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-5 flex flex-col gap-4 w-full max-w-full">
                   <div className="flex items-center gap-3 pb-4 border-b border-white/10 min-w-0">
@@ -702,161 +481,42 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   </Link>
 
-                  <Link to="/premium-menu" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-purple-600 border-2 border-purple-500 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0 shadow-[0_0_20px_rgba(168,85,247,0.4)]">
-                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 w-full">
-                      <div className="bg-white/20 p-2.5 sm:p-3 rounded-xl shrink-0"><ScanLine className="w-5 h-5 sm:w-6 sm:h-6 text-white" /></div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-[12px] sm:text-[14px] font-black uppercase tracking-widest text-white truncate w-full drop-shadow-md">QR Builder</span>
-                        <span className="text-[9px] sm:text-[10px] text-purple-200 font-bold uppercase truncate w-full">Premium Menu System</span>
-                      </div>
+                  {/* 🔥 NOVO: NEXT PAGE HUB MOBILNO DUGME 🔥 */}
+                  <Link to="/next-page" onClick={handleMobileLinkClick} className="flex items-center gap-3 sm:gap-4 bg-orange-600 border border-orange-500 p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0 shadow-[0_0_20px_rgba(249,115,22,0.4)]">
+                    <div className="bg-white/20 p-3 rounded-xl shrink-0"><LayoutGrid className="w-6 h-6 text-white" /></div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-[13px] sm:text-[14px] font-black uppercase tracking-widest text-white truncate w-full">NEXT PAGE</span>
+                      <span className="text-[9px] sm:text-[10px] text-orange-200 font-bold uppercase truncate w-full">Master Hub</span>
                     </div>
-                    <span className="text-[7px] bg-white text-purple-600 px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 ml-2 shadow-md">B2B</span>
                   </Link>
 
-                  {/* 🔥 SaaS MOCKUPS MOBILE - PREUSMERENO DIREKTNO NA /standard-mocup 🔥 */}
-                  <Link to="/standard-mocup" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-orange-600 border-2 border-orange-500 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0 shadow-[0_0_20px_rgba(249,115,22,0.4)]">
+                  <Link to="/standard-mocup" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border border-white/5 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0 w-full">
-                      <div className="bg-white/20 p-2.5 sm:p-3 rounded-xl shrink-0"><MonitorPlay className="w-5 h-5 sm:w-6 sm:h-6 text-white" /></div>
+                      <div className="bg-orange-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><MonitorPlay className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" /></div>
                       <div className="flex flex-col min-w-0">
-                        <span className="text-[12px] sm:text-[14px] font-black uppercase tracking-widest text-white truncate w-full drop-shadow-md">SaaS Mockups</span>
-                        <span className="text-[9px] sm:text-[10px] text-orange-200 font-bold uppercase truncate w-full">B2B Visual Protocol</span>
+                        <span className="text-[12px] sm:text-[14px] font-black uppercase tracking-widest text-white truncate w-full">SaaS Mockups</span>
+                        <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">B2B Visual Protocol</span>
                       </div>
                     </div>
-                    <span className="text-[7px] bg-white text-orange-600 px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 ml-2 shadow-md">HOT</span>
                   </Link>
 
-                  {/* 🔥 UI/UX MOBILE (KONDICIONALNI LINK - SAMO ADMIN IDE NA /ui-ux) 🔥 */}
                   <Link 
                     to={isAdmin ? "/ui-ux" : "/ui-ux/vault"} 
                     onClick={handleMobileLinkClick} 
-                    className="flex items-center justify-between bg-black border-2 border-orange-500 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0 shadow-[0_0_20px_rgba(249,115,22,0.4)]"
+                    className="flex items-center justify-between bg-black border border-white/5 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0"
                   >
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0 w-full">
-                      <div className="bg-orange-500/20 p-2.5 sm:p-3 rounded-xl shrink-0"><LayoutGrid className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" /></div>
+                      <div className="bg-orange-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><LayoutGrid className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" /></div>
                       <div className="flex flex-col min-w-0">
-                        <span className="text-[12px] sm:text-[14px] font-black uppercase tracking-widest text-white truncate w-full drop-shadow-md">UI/UX Inženjering</span>
-                        <span className="text-[9px] sm:text-[10px] text-orange-400 font-bold uppercase truncate w-full">Premium Web Systems</span>
+                        <span className="text-[12px] sm:text-[14px] font-black uppercase tracking-widest text-white truncate w-full">UI/UX Inženjering</span>
+                        <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">Premium Web Systems</span>
                       </div>
                     </div>
-                    <span className="text-[7px] bg-orange-600 text-black px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 ml-2 shadow-md">V10</span>
                   </Link>
-
                 </div>
 
                 <div className="flex flex-col gap-3 w-full">
-                  <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2 truncate w-full">Master Upscalers</h4>
-                  <div className="grid w-full min-w-0 grid-cols-2 gap-2 sm:gap-3">
-                    <Link to="/v8-standard-16mp" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-blue-500/20 p-3 sm:p-4 rounded-2xl flex flex-col items-center gap-2 sm:gap-3 w-full overflow-hidden">
-                      <ImageIcon className="w-6 h-6 sm:w-8 sm:h-8 text-blue-500 shrink-0" />
-                      <span className="text-[10px] sm:text-[11px] font-black text-white tracking-widest truncate w-full text-center">16MP</span>
-                    </Link>
-                    <Link to="/master-33mp" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-yellow-500/20 p-3 sm:p-4 rounded-2xl flex flex-col items-center gap-2 sm:gap-3 w-full overflow-hidden">
-                      <Cpu className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-500 shrink-0" />
-                      <span className="text-[10px] sm:text-[11px] font-black text-white tracking-widest truncate w-full text-center">33MP</span>
-                    </Link>
-                    <Link to="/master-45mp" onClick={handleMobileLinkClick} className="bg-[#0a0a0a] border border-amber-500/20 p-3 sm:p-4 rounded-2xl flex flex-col items-center gap-2 sm:gap-3 w-full overflow-hidden">
-                      <Zap className="w-6 h-6 sm:w-8 sm:h-8 text-amber-500 shrink-0" />
-                      <span className="text-[10px] sm:text-[11px] font-black text-white tracking-widest truncate w-full text-center">45MP</span>
-                    </Link>
-                    <Link to="/master-60mp" onClick={handleMobileLinkClick} className="bg-rose-950/20 border border-rose-500/40 p-3 sm:p-4 rounded-2xl flex flex-col items-center gap-2 sm:gap-3 shadow-[0_0_15px_rgba(244,63,94,0.1)] w-full overflow-hidden">
-                      <Cpu className="w-6 h-6 sm:w-8 sm:h-8 text-rose-500 shrink-0" />
-                      <span className="text-[9px] sm:text-[11px] font-black text-white tracking-widest text-center leading-tight truncate w-full">60MP<br/>MAX</span>
-                    </Link>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-3 w-full">
-                  <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2 truncate w-full">V8 Premium Tools</h4>
-                  
-                  <Link to="/enxance" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border border-white/5 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
-                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 w-full">
-                      <div className="bg-orange-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" /></div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full">10X VIZION</span>
-                        <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">AI Engine</span>
-                      </div>
-                    </div>
-                  </Link>
-
-                  <Link to="/#marketplace" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border border-white/5 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
-                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 w-full">
-                      <div className="bg-blue-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><Award className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" /></div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full">AI Store</span>
-                        <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">Marketplace</span>
-                      </div>
-                    </div>
-                  </Link>
-
-                  <Link to="/neural-forge" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border border-cyan-500/30 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
-                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                      <div className="bg-cyan-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><Terminal className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-500" /></div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full">NEURAL FORGE</span>
-                        <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">Visual Synthesizer</span>
-                      </div>
-                    </div>
-                    <span className="text-[7px] bg-cyan-600 text-white px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 ml-2">NEW</span>
-                  </Link>
-
-                  <Link to="/raw-reality" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border border-orange-500/30 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
-                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                      <div className="bg-orange-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><Aperture className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" /></div>
-                      <div className="flex flex-col text-left overflow-hidden">
-                        <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full">Raw Reality Engine</span>
-                        <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">Anti-Aesthetic Generator</span>
-                      </div>
-                    </div>
-                    <span className="text-[7px] bg-orange-600 text-white px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 ml-2">HOT</span>
-                  </Link>
-
-                  <Link to="/grid-system" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border border-white/5 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
-                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 w-full">
-                      <div className="bg-yellow-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><Clapperboard className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" /></div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full">V8 Cinematik System</span>
-                        <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">Cinematic Matrix Gen</span>
-                      </div>
-                    </div>
-                  </Link>
-
-                  <Link to="/extractor" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border border-white/5 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
-                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 w-full">
-                      <div className="bg-cyan-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><Code className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-500" /></div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full">JSON Extractor</span>
-                        <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">Visual DNA Reverse Engine</span>
-                      </div>
-                    </div>
-                  </Link>
-
-                  <Link to="/v8-debranding-extractor" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border border-emerald-500/30 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
-                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                      <div className="bg-emerald-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-500" /></div>
-                      <div className="flex flex-col text-left overflow-hidden">
-                        <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full">DE-BRANDING DNA</span>
-                        <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase truncate w-full">Clean White-Label Engine</span>
-                      </div>
-                    </div>
-                    <span className="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded font-black tracking-widest shadow-[0_0_8px_rgba(16,185,129,0.5)] shrink-0">NEW</span>
-                  </Link>
-
-                  <div className="mt-1 grid w-full min-w-0 grid-cols-2 gap-2 sm:gap-3">
-                    <Link to="/seedance" onClick={() => window.scrollTo(0,0)} className="bg-[#0a0a0a] border border-green-500/20 p-3 sm:p-4 rounded-2xl flex flex-col items-center text-center gap-2 w-full overflow-hidden">
-                      <MonitorPlay className="w-6 h-6 sm:w-8 sm:h-8 text-green-500 shrink-0" />
-                      <span className="text-[10px] sm:text-[11px] font-black text-white uppercase tracking-widest leading-tight truncate w-full">Seedance<br/>2.0</span>
-                    </Link>
-                    <Link to="/kling" onClick={() => window.scrollTo(0,0)} className="bg-[#0a0a0a] border border-red-500/20 p-3 sm:p-4 rounded-2xl flex flex-col items-center text-center gap-2 w-full overflow-hidden">
-                      <Video className="w-6 h-6 sm:w-8 sm:h-8 text-red-500 shrink-0" />
-                      <span className="text-[10px] sm:text-[11px] font-black text-white uppercase tracking-widest leading-tight truncate w-full">Kling<br/>3.0</span>
-                    </Link>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-3 w-full">
-                  <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2 truncate w-full">
-                    Premium Visuals
-                  </h4>
+                  <h4 className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em] border-b border-white/5 pb-2 truncate w-full">Premium Visuals</h4>
                   
                   <Link to="/stock" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-blue-600 border-2 border-blue-500 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0 shadow-[0_0_20px_rgba(37,99,235,0.4)]">
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0 w-full">
@@ -885,7 +545,6 @@ const V8Navbar = ({ handleHomeClick }) => {
     </div>
   );
 };
-// KRAJ FUNKCIJE: V8Navbar
 
 export default V8Navbar;
 // KRAJ FAJLA: V8Navbar.jsx

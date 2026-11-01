@@ -55,6 +55,7 @@ import V8NeuralForge from './V8NeuralForge';
 import V8RawRealityEngine from './V8RawRealityEngine';
 import SaaSProtocolPage from './SaaSProtocolPage';
 import StandardMocup from './StandardMocup';
+import NextPageHub from './NextPageHub'
 
 import { NotificationListener, NotificationModal } from './NotificationSystem';
 
@@ -686,6 +687,7 @@ function AppContent({ appsData, refreshData }) {
           <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
            <Routes location={location} key={location.pathname}>
               <Route path="/" element={<V8PageWrapper><HomePage apps={appsData} openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+              <Route path="/next-page" element={<V8PageWrapper><NextPageHub /></V8PageWrapper>} />
               <Route path="/v8-standard-16mp" element={<V8PageWrapper><V8Standard16MPWorkspace openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               
               <Route path="/master-33mp" element={<V8PageWrapper><V8MasterEngine33MP openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
