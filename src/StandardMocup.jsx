@@ -150,8 +150,8 @@ export default function StandardMocup() {
       setNoviOpisEn("V10 EXECUTIVE PLAQUES BUNDLE — 150 MP MASTER + 4K UHD\nA premium collection of 10 renders featuring prestigious corporate awards and executive plaques in a 16:9 aspect ratio. Each visual is available in two resolutions: 150 MP for large-format applications and detailed presentations, and 4K UHD (3840 × 2160 px) for digital presentations, websites, and displays.\nProcessed through the V10 Master Engine using precision LANCZOS interpolation, UnsharpMask micro-contrast enhancement, custom NumPy processing of glass and metal reflections, and detailed shadow profiling. An sRGB ICC profile is embedded in every image.\nIdeal for showcasing business achievements, prestigious certifications, and executive portfolios. No text, watermarks, or logos. Includes a license granting full commercial usage rights and cleaned metadata.\n- 10 premium visuals, each available in 150 MP and 4K UHD versions.\n- Prestigious corporate and executive environments.\n- Ready for websites, portfolios, investor decks, and corporate displays."); 
     }
     else if (noviFormat === '150MP UI/UX DESIGN') { 
-      // 🔥 NOVI DEFAULT OPIS ZA UI/UX 🔥
-      setNoviOpisEn("V10 UI/UX DESIGN BUNDLE — 150 MP MASTER + 4K UHD\nA premium collection of 20 high-end UI/UX application interfaces and digital product environments in a 16:9 aspect ratio. Each visual is available in two resolutions: 150 MP for large-format applications and detailed presentations, and 4K UHD (3840 × 2160 px) for digital presentations, websites, and displays.\nProcessed through the V10 Master Engine using precision LANCZOS interpolation, UnsharpMask micro-contrast enhancement, custom NumPy processing of glassmorphism elements, and detailed shadow profiling. An sRGB ICC profile is embedded in every image. Tech Insight: Extra protection around high-contrast bright edges to reduce ugly glow/outline artifacts. Tech Insight: Fine dithering in dark gradients to reduce banding.\nIdeal for showcasing SaaS products, mobile apps, and digital portfolios. No text, watermarks, or logos. Includes a license granting full commercial usage rights and cleaned metadata.\n- 20 premium visuals, each available in 150 MP and 4K UHD versions.\n- High-end digital environments engineered for tech brands.\n- Ready for websites, portfolios, investor decks, and agencies."); 
+      // 🔥 NOVI DEFAULT OPIS ZA IMAGES 🔥
+      setNoviOpisEn("V10 IMAGES BUNDLE — 150 MP MASTER + 4K UHD\nA premium collection of 20 high-end IMAGES and digital product environments in a 16:9 aspect ratio. Each visual is available in two resolutions: 150 MP for large-format applications and detailed presentations, and 4K UHD (3840 × 2160 px) for digital presentations, websites, and displays.\nProcessed through the V10 Master Engine using precision LANCZOS interpolation, UnsharpMask micro-contrast enhancement, custom NumPy processing of glassmorphism elements, and detailed shadow profiling. An sRGB ICC profile is embedded in every image. Tech Insight: Extra protection around high-contrast bright edges to reduce ugly glow/outline artifacts. Tech Insight: Fine dithering in dark gradients to reduce banding.\nIdeal for showcasing SaaS products, mobile apps, and digital portfolios. No text, watermarks, or logos. Includes a license granting full commercial usage rights and cleaned metadata.\n- 20 premium visuals, each available in 150 MP and 4K UHD versions.\n- High-end digital environments engineered for tech brands.\n- Ready for websites, portfolios, investor decks, and agencies."); 
     }
   }, [noviFormat, editingPaketId]); 
 
@@ -307,7 +307,7 @@ export default function StandardMocup() {
   const ultra150_3Paketi = paketi.filter(p => (p.format || "").toUpperCase().includes('150MP BILLBOARD MOCKUPS'));
   const ultra150_4Paketi = paketi.filter(p => (p.format || "").toUpperCase().includes('150MP WALL MOCKUPS'));
   const ultra150_5Paketi = paketi.filter(p => (p.format || "").toUpperCase().includes('EXECUTIVE PLAQUES'));
-  const uiuxPaketi = paketi.filter(p => (p.format || "").toUpperCase().includes('UI/UX')); // 🔥 NOVI FILTER ZA UI/UX 🔥
+  const uiuxPaketi = paketi.filter(p => (p.format || "").toUpperCase().includes('UI/UX')); // Ostavljeno uiux zbog baze
 
   // POČETAK FUNKCIJE: renderV8Manifest
   const renderV8Manifest = () => {
@@ -332,8 +332,8 @@ export default function StandardMocup() {
         glowClass = "shadow-[0_0_15px_rgba(139,92,246,0.1)] border-violet-500/50"; primaryText = "text-fuchsia-400";
         secondaryText = "text-violet-500"; dropShadow = "drop-shadow-[0_0_8px_rgba(139,92,246,0.8)]";
     } else if (activeTab === 'uiux') {
-        // 🔥 BOJE ZA UI/UX MANIFEST 🔥
-        title = "V10 UI/UX ENGINE"; subtitleClass = "text-cyan-500"; borderClass = "border-cyan-500/20";
+        // 🔥 BOJE ZA IMAGES MANIFEST 🔥
+        title = "V10 IMAGES ENGINE"; subtitleClass = "text-cyan-500"; borderClass = "border-cyan-500/20";
         glowClass = "shadow-[0_0_15px_rgba(6,182,212,0.1)] border-cyan-500/50"; primaryText = "text-cyan-400";
         secondaryText = "text-blue-500"; dropShadow = "drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]";
     }
@@ -461,7 +461,7 @@ export default function StandardMocup() {
                 <Monitor className="text-blue-400 w-7 h-7 shrink-0 mt-1 drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
                 <div>
                   <p className="text-white text-sm md:text-base font-black tracking-wider leading-relaxed uppercase">
-                    10 files in 150MP & 10 files in 4 UHD all 20 files in 16:9 Aspect Ratio
+                    20 files in 150MP & 20 files in 4K UHD all 40 files in 16:9 Aspect Ratio
                   </p>
                 </div>
               </div>
@@ -642,7 +642,7 @@ export default function StandardMocup() {
             </div>
             
             <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-widest leading-tight mb-2">
-              V10 UI/UX Design Bundle
+              V10 Images Bundle
             </h2>
             <p className="text-blue-400 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-8">
               The Pinnacle of 150MP Resolution
@@ -672,10 +672,10 @@ export default function StandardMocup() {
 
           <div className="text-zinc-300 text-[13px] md:text-sm leading-relaxed mb-6 font-medium text-justify space-y-3">
             <p className="text-white font-black">
-              V10 UI/UX DESIGN BUNDLE — 150 MP MASTER + 4K UHD
+              V10 IMAGES BUNDLE — 150 MP MASTER + 4K UHD
             </p>
             <p>
-              A premium collection of 20 high-end UI/UX application interfaces and digital product presentations in a 16:9 aspect ratio. Each visual is available in two resolutions: 150 MP for large-format applications and detailed presentations, and 4K UHD (3840 × 2160 px) for digital presentations, websites, and displays.
+              A premium collection of 20 high-end IMAGES and digital product presentations in a 16:9 aspect ratio. Each visual is available in two resolutions: 150 MP for large-format applications and detailed presentations, and 4K UHD (3840 × 2160 px) for digital presentations, websites, and displays.
             </p>
             <p>
               Processed through the V10 Master Engine using precision LANCZOS interpolation, UnsharpMask micro-contrast enhancement, custom NumPy processing of glassmorphism UI elements, and detailed shadow profiling. An sRGB ICC profile is embedded in every image. Tech Insight: Extra protection around high-contrast bright edges to reduce ugly glow/outline artifacts. Tech Insight: Fine dithering in dark UI gradients to reduce banding.
@@ -701,7 +701,7 @@ export default function StandardMocup() {
                 <CheckCircle2 className="w-3 h-3 text-cyan-400" />
               </div>
               <span className="text-white text-xs md:text-sm font-bold tracking-wide">
-                High-end digital product and UI/UX environments.
+                High-end digital product and IMAGES environments.
               </span>
             </li>
             <li className="flex items-start gap-3">
@@ -861,14 +861,14 @@ export default function StandardMocup() {
         badgeText = "150MP EXECUTIVE EXTIME";
         hoverBorder = "hover:border-violet-500/50";
     } else if (tabId === 'uiux') {
-        // 🔥 STILOVI ZA UI/UX KARTICE 🔥
+        // 🔥 STILOVI ZA IMAGES KARTICE (ZADRZAN UIUX KAO ID) 🔥
         mainColorClass = "text-cyan-400";
         borderClass = "border-cyan-500/20";
         hoverShadow = "hover:shadow-[0_0_40px_rgba(6,182,212,0.15)]";
         cardShadow = "shadow-[0_0_30px_rgba(6,182,212,0.05)]";
         gradientBg = "bg-gradient-to-r from-cyan-600 to-blue-500";
         btnBg = "bg-gradient-to-r from-cyan-600 to-blue-500 text-white";
-        badgeText = "150MP UI/UX";
+        badgeText = "150MP IMAGES";
         hoverBorder = "hover:border-cyan-500/50";
     }
 
@@ -1034,8 +1034,8 @@ export default function StandardMocup() {
     seoTitle = "Executive Plaques Extime | V10 Engine";
     seoDesc = "150MP Executive Plaques for corporate achievements and prestigious portfolio showcases.";
   } else if (activeTab === 'uiux') {
-    seoTitle = "UI/UX Design Mockups | V10 Engine";
-    seoDesc = "150MP UI/UX Mockups for digital applications and SaaS environments.";
+    seoTitle = "Images Mockups | V10 Engine";
+    seoDesc = "150MP Images Mockups for digital applications and SaaS environments.";
   } 
 
   return (
@@ -1059,7 +1059,7 @@ export default function StandardMocup() {
         <meta name="description" content={seoDesc} />
       </Helmet>
 
-      {/* 🌟 POZADINE DINAMIČKE (Uklonjene stare, dodata UI/UX) 🌟 */}
+      {/* 🌟 POZADINE DINAMIČKE 🌟 */}
       {activeTab === 'ultra3' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/vertical_trece_dugme.mp4" />)}
       {activeTab === 'ultra4' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/vertical_cetvrto_dugme.mp4" />)}
       {activeTab === 'ultra5' && (<video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 opacity-40" src="/VERTIKAL_GLASS.mp4" />)}
@@ -1121,13 +1121,13 @@ export default function StandardMocup() {
                       {activeTab === 'ultra3' && (<>V10 150MP ULTRA <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-500 drop-shadow-none">COLLECTION OF BILLBOARD MOCKUPS</span></>)}
                       {activeTab === 'ultra4' && (<>V10 150MP ULTRA <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-500 drop-shadow-none">COLLECTION OF WALL MOCKUPS</span></>)}
                       {activeTab === 'ultra5' && (<>V10 150MP ULTRA <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-500 drop-shadow-none">COLLECTION OF EXECUTIVE PLAQUES EXTIME</span></>)}
-                      {activeTab === 'uiux' && (<>V10 150MP ULTRA <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 drop-shadow-none">COLLECTION OF UI/UX DESIGNS</span></>)}
+                      {activeTab === 'uiux' && (<>V10 150MP ULTRA <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 drop-shadow-none">COLLECTION OF IMAGES</span></>)}
                   </h1>
                  <p className="text-zinc-200 font-bold uppercase tracking-[0.2em] text-[10px] md:text-[12px] max-w-4xl mx-auto leading-relaxed mb-10 drop-shadow-lg bg-black/30 p-4 rounded-lg backdrop-blur-sm transition-all">
                   {activeTab === 'ultra3' && "THE ULTIMATE OUT-OF-HOME PRESTIGE. 150 MEGAPIXELS OF FLAWLESS OUTDOOR REALITY—ENGINEERED FOR MEGA-SCALE CAMPAIGNS, URBAN BILLBOARDS, AND ELITE ADVERTISING AGENCIES."}
                   {activeTab === 'ultra4' && "THE APEX OF INTERIOR SHOWCASING. 150 MEGAPIXELS OF ARCHITECTURAL PERFECTION—CRAFTED FOR GALLERY DISPLAYS, MUSEUM EXHIBITIONS, AND PREMIUM INDOOR BRANDING."}
                   {activeTab === 'ultra5' && "THE PINNACLE OF CORPORATE PRESTIGE. 150 MEGAPIXELS OF LUXURY AWARD SHOWCASES—CRAFTED STRICTLY FOR EXECUTIVE PORTFOLIOS, ENTERPRISE ACHIEVEMENTS, AND ELITE BRAND RECOGNITION."}
-                  {activeTab === 'uiux' && "THE NEW STANDARD IN DIGITAL PRESENTATION. 150 MEGAPIXELS OF PREMIUM UI/UX ENVIRONMENTS—ENGINEERED STRICTLY FOR TOP-TIER SAAS PORTFOLIOS AND DIGITAL PRODUCT ARCHITECTURE."}
+                  {activeTab === 'uiux' && "THE NEW STANDARD IN DIGITAL PRESENTATION. 150 MEGAPIXELS OF PREMIUM IMAGES ENVIRONMENTS—ENGINEERED STRICTLY FOR TOP-TIER SAAS PORTFOLIOS AND DIGITAL PRODUCT ARCHITECTURE."}
                  </p>
                   
                   {/* 🔥 DUGMIĆI ZA 4 TABA (Bez Standard i Premium) 🔥 */}
@@ -1146,9 +1146,9 @@ export default function StandardMocup() {
                             <Award className="w-4 h-4 md:w-5 md:h-5" /> EXECUTIVE PLAQUES EXTIME
                           </button>
 
-                          {/* 🔥 NOVO UI/UX DUGME 🔥 */}
+                          {/* 🔥 DUGME JE VIZUELNO 'IMAGES', SISTEMSKI OSTAJE 'uiux' 🔥 */}
                           <button onClick={() => setActiveTab('uiux')} className={`px-5 py-4 md:px-6 md:py-4 rounded-full font-black text-[11px] md:text-[13px] uppercase tracking-widest transition-all duration-300 flex items-center gap-2 drop-shadow-[0_3px_5px_rgba(0,0,0,1)] ${activeTab === 'uiux' ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-[0_0_25px_rgba(6,182,212,0.8)] border-2 border-cyan-400 scale-105' : 'text-zinc-400 bg-black/60 hover:bg-cyan-900/30 hover:text-white border border-white/20 hover:border-cyan-500/50'}`}>
-                            <LayoutGrid className="w-4 h-4 md:w-5 md:h-5" /> UI/UX DESIGN
+                            <LayoutGrid className="w-4 h-4 md:w-5 md:h-5" /> IMAGES
                           </button>
                       </div>
                   </div>
@@ -1229,7 +1229,6 @@ export default function StandardMocup() {
 
                     <div className="flex flex-col gap-2">
                         <label className="flex items-center gap-2 text-[#FF8C00] font-black text-[11px] tracking-widest uppercase"><MonitorPlay size={14} /> FORMAT</label>
-                        {/* 🔥 SVIH 4 PODEBLJANIH DUGMIĆA ZA FORMAT SA UI/UX 🔥 */}
                         <div className="flex flex-wrap gap-2.5">
                             {['150MP BILLBOARD MOCKUPS', '150MP WALL MOCKUPS', '150MP EXECUTIVE PLAQUES EXTIME', '150MP UI/UX DESIGN'].map((fmt) => {
                                 let styleClass = 'bg-black border-white/10 text-zinc-400 hover:border-[#FF8C00]/50 hover:text-white';
@@ -1242,7 +1241,7 @@ export default function StandardMocup() {
                                 return (
                                 <label key={fmt} className={`cursor-pointer py-3.5 md:py-4 px-3 rounded-xl border-2 transition-all text-center font-black text-[10px] md:text-[11px] tracking-wider uppercase flex items-center justify-center flex-1 min-w-[130px] min-h-[52px] ${styleClass}`}>
                                     <input type="radio" name="format" value={fmt} checked={noviFormat === fmt} onChange={(e) => setNoviFormat(e.target.value)} className="hidden" />
-                                    {fmt.replace('150MP ', '')}
+                                    {fmt === '150MP UI/UX DESIGN' ? 'IMAGES' : fmt.replace('150MP ', '')}
                                 </label>
                             )})}
                         </div>
