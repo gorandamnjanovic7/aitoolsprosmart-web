@@ -191,7 +191,7 @@ const V8Navbar = ({ handleHomeClick }) => {
               </div>
             </div>
 
-            {/* 🔥 NOVO NEXT PAGE DUGME 🔥 */}
+            {/* 🔥 NEXT PAGE DUGME 🔥 */}
             <Link to="/next-page" onClick={() => window.scrollTo(0,0)} className="flex items-center gap-1 xl:gap-1.5 px-3 xl:px-4 py-2 rounded-full bg-orange-600 border-2 border-orange-400 text-white font-black hover:bg-orange-500 hover:scale-105 transition-all shadow-[0_0_20px_rgba(249,115,22,0.6)] whitespace-nowrap cursor-pointer">
               <LayoutGrid className="w-3.5 h-3.5 shrink-0 drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
               <span className="text-[9px] xl:text-[10px] uppercase tracking-widest">NEXT PAGE</span>
@@ -253,6 +253,16 @@ const V8Navbar = ({ handleHomeClick }) => {
             >
               <LayoutGrid className="w-3.5 h-3.5 shrink-0" />
               <span className="text-[9px] xl:text-[10px] uppercase tracking-widest">UI/UX</span>
+            </Link>
+
+            {/* 🔥 NOVO: PDF TRANSLATOR DUGME (Desktop) 🔥 */}
+            <Link 
+              to="/pdf-translator" 
+              onClick={() => window.scrollTo(0,0)} 
+              className="flex items-center gap-1 xl:gap-1.5 px-3 xl:px-4 py-2 rounded-full bg-emerald-950/50 border-2 border-emerald-500 text-emerald-400 font-black hover:bg-emerald-500 hover:text-white transition-colors duration-150 shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.6)] whitespace-nowrap cursor-pointer"
+            >
+              <FileText className="w-3.5 h-3.5 shrink-0" />
+              <span className="text-[9px] xl:text-[10px] uppercase tracking-widest">PDF TRANS</span>
             </Link>
           </div>
 
@@ -481,7 +491,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   </Link>
 
-                  {/* 🔥 NOVO: NEXT PAGE HUB MOBILNO DUGME 🔥 */}
                   <Link to="/next-page" onClick={handleMobileLinkClick} className="flex items-center gap-3 sm:gap-4 bg-orange-600 border border-orange-500 p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0 shadow-[0_0_20px_rgba(249,115,22,0.4)]">
                     <div className="bg-white/20 p-3 rounded-xl shrink-0"><LayoutGrid className="w-6 h-6 text-white" /></div>
                     <div className="flex flex-col min-w-0">
@@ -513,6 +522,22 @@ const V8Navbar = ({ handleHomeClick }) => {
                       </div>
                     </div>
                   </Link>
+
+                  {/* 🔥 NOVO: PDF TRANSLATOR MOBILNO DUGME 🔥 */}
+                  <Link 
+                    to="/pdf-translator" 
+                    onClick={handleMobileLinkClick} 
+                    className="flex items-center justify-between bg-emerald-950/20 border border-emerald-500/30 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0"
+                  >
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 w-full">
+                      <div className="bg-emerald-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><FileText className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-500" /></div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[12px] sm:text-[14px] font-black uppercase tracking-widest text-emerald-400 truncate w-full">PDF Translator</span>
+                        <span className="text-[9px] sm:text-[10px] text-emerald-500/60 font-bold uppercase truncate w-full">Enterprise AI Prevodi</span>
+                      </div>
+                    </div>
+                  </Link>
+                  
                 </div>
 
                 <div className="flex flex-col gap-3 w-full">

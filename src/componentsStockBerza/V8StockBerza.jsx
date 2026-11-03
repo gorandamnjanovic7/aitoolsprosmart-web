@@ -1,3 +1,4 @@
+// ============================================================================
 // POČETAK FAJLA: src/V8StockBerza.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
@@ -233,7 +234,7 @@ const V8StockBerzaBase = () => {
                 trackV8Action('purchase', { transaction_id: `V8_TX_${Date.now()}`, value: Number(trazeniPaket.cena), currency: 'USD', items: [{ item_id: trazeniPaket.id, item_name: trazeniPaket.nazivEn, price: Number(trazeniPaket.cena) }] });
                 if (trazeniPaket.paddleLink && trazeniPaket.paddleLink.trim() !== "") { window.location.href = trazeniPaket.paddleLink; } 
                 else { 
-                  const fullName = trazeniPaket.volume ? `${trazeniPaket.nazivEn} - ${trazeniPaket.volume}` : trazeniPaket.nazivEn; 
+                  const fullName = trazeniPaket.volume ? `${trazeniPaket.nazivEn}\n${trazeniPaket.volume}` : trazeniPaket.nazivEn; 
                   setCheckoutData({ isOpen: true, name: fullName, price: getGlobalCena(trazeniPaket.cena), zipLink: trazeniPaket.zipLink }); 
                 }
             } catch (err) { console.error(err); }
@@ -283,7 +284,7 @@ const V8StockBerzaBase = () => {
 
   const otvoriCheckoutIliPaddle = async (user, paket) => {
     if (!user || !paket) return;
-    const fullName = paket.volume ? `${paket.nazivEn} - ${paket.volume}` : paket.nazivEn;
+    const fullName = paket.volume ? `${paket.nazivEn}\n${paket.volume}` : paket.nazivEn;
     const finalPrice = getGlobalCena(paket.cena);
     await snimiKupcaUPayoneerBazu(user, paket);
     if (paket.paddleLink && paket.paddleLink.trim() !== "") { window.location.href = paket.paddleLink; return; }
@@ -303,7 +304,7 @@ const V8StockBerzaBase = () => {
         window.open(paket.zipLink, '_blank');
         return;
     }
-    const fullName = paket.volume ? `${paket.nazivEn} - ${paket.volume}` : paket.nazivEn;
+    const fullName = paket.volume ? `${paket.nazivEn}\n${paket.volume}` : paket.nazivEn;
     const finalPrice = getGlobalCena(paket.cena);
     const userNow = currentUser || auth.currentUser;
     trackV8Action('checkout_initiated', { event_category: 'B2B_Sales', item_name: fullName, value: Number(finalPrice), currency: 'USD' });
@@ -471,7 +472,7 @@ const V8StockBerzaBase = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-gray-100 font-sans text-slate-900 relative transition-all duration-1000 ease-in-out">
+    <div className="min-h-screen font-sans text-slate-900 relative transition-all duration-1000 ease-in-out" style={{ background: '#020024', background: 'linear-gradient(173deg,rgba(2, 0, 36, 1) 0%, rgba(9, 9, 121, 1) 35%, rgba(0, 212, 255, 1) 100%)' }}>
       <style>{`
         /* 🔥 TAČNA GEMINI ANIMACIJA IZ VIDEA 🔥 */
         @keyframes ai-spin {

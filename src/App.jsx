@@ -56,6 +56,7 @@ import V8RawRealityEngine from './V8RawRealityEngine';
 import SaaSProtocolPage from './SaaSProtocolPage';
 import StandardMocup from './StandardMocup';
 import NextPageHub from './NextPageHub'
+import V10PdfTranslator from './pdf/V10PdfTranslator'
 
 import { NotificationListener, NotificationModal } from './NotificationSystem';
 
@@ -730,6 +731,7 @@ function AppContent({ appsData, refreshData }) {
 
               {/* 🔥 ISPRAVLJENE RUTE: UI/UX V10 INŽENJERING 🔥 */}
               <Route path="/ui-ux" element={<V8PageWrapper><UiUxHub /></V8PageWrapper>} />
+              <Route path="/pdf-translator" element={<V8PageWrapper><V10PdfTranslator /></V8PageWrapper>} />
               <Route path="/ui-ux/vault" element={<V8PageWrapper><VaultGrid /></V8PageWrapper>} />
               <Route path="/ui-ux/commercial" element={<V8PageWrapper><CommercialOps /></V8PageWrapper>} /> 
               <Route path="/ui-ux/project/:projectId" element={<V8PageWrapper><V10SplitScreen /></V8PageWrapper>} />

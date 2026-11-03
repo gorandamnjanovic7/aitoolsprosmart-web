@@ -26,79 +26,30 @@ export const logoUrl = mojLogo;
 // POČETAK: BANNER_DATA NIZ
 // ============================================================================
 export const BANNER_DATA = [
+  
   { 
-    // 1. MESTO
-    image: godTierFistImg, 
-    badge: "150MP UNYIELDING SUPREMACY", 
-    title: "150MP UNYIELDING SUPREMACY", 
-    subtitle: "Upgrade your visual authority instantly. The V10 Master Engine provides elite agencies and solo creators with 150-Megapixel, photorealistic mockups and digital assets. No rendering times. No compromise. Inject pure commercial perfection into your UI showcases, global campaigns, and large-scale print production.",
-    duration: 168000, 
+    video: "/videos/v10-glass-plaque.webm", 
+    badge: "V10 KINETIC PROTOCOL", 
+    title: "PREMIUM GLASS PLAQUE MOCKUPS", 
+    subtitle: "Experience flawless 3D UI motion tracking and absolute material realism. Engineered exclusively for elite corporate branding and architectural presentations.",
+    duration: 30000, 
   },
   { 
-    // 2. MESTO
-    image: v10UltraImg, 
-    badge: "GOD TIER // 60MP MAXIMUM PROTOCOL", 
-    title: "60MP UNCOMPROMISED SUPREMACY", 
-    subtitle: "The absolute zenith of digital asset engineering. Flawless macro-resolution, extreme textural protection, and real sRGB hardware color locking, tailored exclusively for ultra-premium corporations.",
-    duration: 168000, 
+    video: "/videos/v10-food-ui.webm", 
+    badge: "MICHELIN STAR DIGITAL ASSETS", 
+    title: "GOURMET UI/UX INTEGRATION", 
+    subtitle: "Micro-macro cinematography meets holographic UI design. Flawless digital menu integrations for luxury high-end Food & Beverage commercial assets.",
+    duration: 30000, 
   },
   { 
-    // 3. MESTO
-    image: macroHelmet, 
-    badge: "LANCZOS 45MP MACRO-PROTOCOL", 
-    title: "45MP CINEMATIC SUPREMACY", 
-    subtitle: "Experience absolute textural fidelity. Extreme macro-resolution and perfect sRGB grading, engineered for elite Hollywood-tier visual assets.",
-    duration: 168000,
-  },
-  { 
-    // 4. MESTO
-    image: sl2Img, 
-    badge: "HISTORICAL MASTERWORK", 
-    title: "CINEMATIC 33.2MP REALISM", 
-    subtitle: "Unleash Hollywood-grade historical textures. Perfect lighting and material accuracy for elite visual storytelling.",
-    duration: 168000 
-  },
-  { 
-    // 5. MESTO
-    image: superCarImg, 
-    badge: "VELOCITY & POWER", 
-    title: "ENGINEERED FOR DOMINANCE", 
-    subtitle: "The ultimate fusion of aerodynamic carbon and V8 energy. Supreme automotive rendering capabilities.",
-    duration: 168000, 
-  },
-  { 
-    // 6. MESTO
-    image: uiuxImg, 
-    badge: "[ V10 PREMIUM UI/UX PROTOCOL ]", 
-    title: "UNCOMPROMISING DESIGN FOR ELITE BRANDS", 
-    subtitle: "Forget generic templates. We engineer luxury digital interfaces that fuse flawless aesthetics with the raw power of React and Vite architecture. Absolute visual dominance, designed exclusively to convert your most demanding high-end clients.",
-    duration: 168000 
-  },
-  { 
-    // 7. MESTO
-    image: sl1Img, 
-    badge: "V8 CORE ARCHITECTURE", 
-    title: "OBSIDIAN & GOLD: THE V8 STANDARD", 
-    subtitle: "Uncompromising aesthetic precision. Fluid dynamic rendering designed for ultra-luxury brand positioning.",
-    duration: 168000
-  },
-  { 
-    // 8. MESTO
-    image: sl6Img, 
-    badge: "COMMERCIAL PRECISION", 
-    title: "GOURMET KINETICS", 
-    subtitle: "Microsecond macro capture simulations. Absolute perfection for high-end Food & Beverage commercial assets.",
-    duration: 168000
-  },
-  {
-    // 9. MESTO
-    image: "/banner-v8-fluid.webp",
-    badge: "V8 MASTERWORK EDITION",
-    title: "BEYOND PIXELS",
-    subtitle: "Experience 33.2 Megapixel resolution and hyper-realistic cinematic motion. Designed exclusively for top-tier agencies.",
-    duration: 168000
+    video: "/videos/v10-billboard-ui.webm", 
+    badge: "GLOBAL CAMPAIGN ARCHITECTURE", 
+    title: "NEXT-GEN DIGITAL BILLBOARDS", 
+    subtitle: "Uncompromising outdoor and indoor display aesthetics. Fluid dynamic rendering with realistic environmental reflections for luxury brand positioning.",
+    duration: 30000,
   }
 ];
+
 // ============================================================================
 // KRAJ: BANNER_DATA NIZA
 // ============================================================================
