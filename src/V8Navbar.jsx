@@ -1,7 +1,7 @@
 // POČETAK FAJLA: V8Navbar.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Globe, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay, FileText, Code, ShieldCheck, LayoutGrid, Cpu, Maximize, Gift, Menu, X, Terminal, ScanLine, Briefcase, Sparkles, Aperture, Clapperboard } from 'lucide-react';
+import { Globe, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay, FileText, Code, ShieldCheck, LayoutGrid, Cpu, Maximize, Gift, Menu, X, Terminal, ScanLine, Briefcase, Sparkles, Aperture, Clapperboard, Bot } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { auth, provider, db } from './firebase';
@@ -191,10 +191,10 @@ const V8Navbar = ({ handleHomeClick }) => {
               </div>
             </div>
 
-            {/* 🔥 NEXT PAGE DUGME 🔥 */}
-            <Link to="/next-page" onClick={() => window.scrollTo(0,0)} className="flex items-center gap-1 xl:gap-1.5 px-3 xl:px-4 py-2 rounded-full bg-orange-600 border-2 border-orange-400 text-white font-black hover:bg-orange-500 hover:scale-105 transition-all shadow-[0_0_20px_rgba(249,115,22,0.6)] whitespace-nowrap cursor-pointer">
-              <LayoutGrid className="w-3.5 h-3.5 shrink-0 drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
-              <span className="text-[9px] xl:text-[10px] uppercase tracking-widest">NEXT PAGE</span>
+            {/* 🔥 NOVO: AI AGENTS DUGME (zamijenjeno sa APPS) 🔥 */}
+            <Link to="/ai-agents" onClick={() => window.scrollTo(0,0)} className="flex items-center gap-1 xl:gap-1.5 px-3 xl:px-4 py-2 rounded-full bg-cyan-600 border-2 border-cyan-400 text-white font-black hover:bg-cyan-500 hover:scale-105 transition-all shadow-[0_0_20px_rgba(8,145,178,0.6)] whitespace-nowrap cursor-pointer">
+              <Bot className="w-3.5 h-3.5 shrink-0 drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
+              <span className="text-[9px] xl:text-[10px] uppercase tracking-widest">AI AGENTS</span>
             </Link>
 
             {/* PREMIUM STOCK */}
@@ -255,7 +255,6 @@ const V8Navbar = ({ handleHomeClick }) => {
               <span className="text-[9px] xl:text-[10px] uppercase tracking-widest">UI/UX</span>
             </Link>
 
-            {/* 🔥 NOVO: PDF TRANSLATOR DUGME (Desktop) 🔥 */}
             <Link 
               to="/pdf-translator" 
               onClick={() => window.scrollTo(0,0)} 
@@ -293,10 +292,10 @@ const V8Navbar = ({ handleHomeClick }) => {
                      
                      {userCredits?.trialClaimed === false && !isAdmin && (
                         <div className="mb-2 border-b border-white/10 pb-3">
-                           <p className="text-zinc-400 text-[10px] font-bold mb-2">Unlock the Master Engines for free.</p>
-                           <button type="button" onClick={handleClaimTrial} className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-black uppercase text-[11px] py-3 rounded-xl hover:scale-[1.02] transition-all shadow-[0_0_15px_rgba(168,85,247,0.5)]">
-                             CLAIM 11 CREDITS NOW
-                           </button>
+                            <p className="text-zinc-400 text-[10px] font-bold mb-2">Unlock the Master Engines for free.</p>
+                            <button type="button" onClick={handleClaimTrial} className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-black uppercase text-[11px] py-3 rounded-xl hover:scale-[1.02] transition-all shadow-[0_0_15px_rgba(168,85,247,0.5)]">
+                              CLAIM 11 CREDITS NOW
+                            </button>
                         </div>
                      )}
 
@@ -326,24 +325,24 @@ const V8Navbar = ({ handleHomeClick }) => {
 
                      {(isAdmin || isVIP) && (
                         <>
-                           <div className="text-left border-b border-white/10 pb-2 mt-2 mb-1">
-                              <h4 className="text-zinc-400 font-bold uppercase tracking-widest text-[10px]">Portal Access</h4>
-                           </div>
-                           {isAdmin && (
-                              <>
-                                 <Link to="/admin" className="flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-xl text-red-400 transition-all">
-                                    <Settings className="w-3.5 h-3.5 shrink-0" /> <span className="font-black text-[10px] uppercase tracking-widest">CMS DB</span>
-                                 </Link>
-                                 <Link to="/dashboard" className="flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-xl text-yellow-400 transition-all mt-1">
-                                    <ShieldAlert className="w-3.5 h-3.5 shrink-0" /> <span className="font-black text-[10px] uppercase tracking-widest">DASHBOARD</span>
-                                 </Link>
-                              </>
-                           )}
-                           {isVIP && (
-                              <Link to="/trezor" className="flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-xl text-orange-400 transition-all mt-1">
-                                 <Lock className="w-3.5 h-3.5 shrink-0" /> <span className="font-black text-[10px] uppercase tracking-widest">VAULT</span>
-                              </Link>
-                           )}
+                            <div className="text-left border-b border-white/10 pb-2 mt-2 mb-1">
+                                <h4 className="text-zinc-400 font-bold uppercase tracking-widest text-[10px]">Portal Access</h4>
+                            </div>
+                            {isAdmin && (
+                                <>
+                                   <Link to="/admin" className="flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-xl text-red-400 transition-all">
+                                      <Settings className="w-3.5 h-3.5 shrink-0" /> <span className="font-black text-[10px] uppercase tracking-widest">CMS DB</span>
+                                   </Link>
+                                   <Link to="/dashboard" className="flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-xl text-yellow-400 transition-all mt-1">
+                                      <ShieldAlert className="w-3.5 h-3.5 shrink-0" /> <span className="font-black text-[10px] uppercase tracking-widest">DASHBOARD</span>
+                                   </Link>
+                                </>
+                            )}
+                            {isVIP && (
+                                <Link to="/trezor" className="flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-xl text-orange-400 transition-all mt-1">
+                                   <Lock className="w-3.5 h-3.5 shrink-0" /> <span className="font-black text-[10px] uppercase tracking-widest">VAULT</span>
+                                </Link>
+                            )}
                         </>
                      )}
 
@@ -491,11 +490,12 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   </Link>
 
-                  <Link to="/next-page" onClick={handleMobileLinkClick} className="flex items-center gap-3 sm:gap-4 bg-orange-600 border border-orange-500 p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0 shadow-[0_0_20px_rgba(249,115,22,0.4)]">
-                    <div className="bg-white/20 p-3 rounded-xl shrink-0"><LayoutGrid className="w-6 h-6 text-white" /></div>
+                  {/* 🔥 NOVO: AI AGENTS DUGME ZA MOBILNI 🔥 */}
+                  <Link to="/ai-agents" onClick={handleMobileLinkClick} className="flex items-center gap-3 sm:gap-4 bg-cyan-600 border border-cyan-500 p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0 shadow-[0_0_20px_rgba(8,145,178,0.4)]">
+                    <div className="bg-white/20 p-3 rounded-xl shrink-0"><Bot className="w-6 h-6 text-white" /></div>
                     <div className="flex flex-col min-w-0">
-                      <span className="text-[13px] sm:text-[14px] font-black uppercase tracking-widest text-white truncate w-full">NEXT PAGE</span>
-                      <span className="text-[9px] sm:text-[10px] text-orange-200 font-bold uppercase truncate w-full">Master Hub</span>
+                      <span className="text-[13px] sm:text-[14px] font-black uppercase tracking-widest text-white truncate w-full">AI AGENTS</span>
+                      <span className="text-[9px] sm:text-[10px] text-cyan-200 font-bold uppercase truncate w-full">Sales & Support</span>
                     </div>
                   </Link>
 
@@ -523,7 +523,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   </Link>
 
-                  {/* 🔥 NOVO: PDF TRANSLATOR MOBILNO DUGME 🔥 */}
                   <Link 
                     to="/pdf-translator" 
                     onClick={handleMobileLinkClick} 

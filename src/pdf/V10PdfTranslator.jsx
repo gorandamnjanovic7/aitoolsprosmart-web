@@ -1,397 +1,767 @@
-// ============================================================================
-// POČETAK FAJLA: src/pdf/V10PdfTranslator.jsx
-// ============================================================================
-import React, { useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  UploadCloud, FileText, ArrowRight, Loader2, ShieldCheck, 
-  CheckCircle, Image as ImageIcon, Layers, Lock, Zap, Crown, LayoutGrid, ChevronDown
-} from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { FileText, Download, ShieldCheck, Globe, Loader2, Play, Layers, Cpu, Zap, LayoutTemplate, Image as ImageIcon, PenTool, CreditCard, RotateCcw } from 'lucide-react';
+import LoginRequiredModal from './LoginRequiredModal'; 
+import V8SecureCheckout from '../V8SecureCheckout'; 
+import { auth } from '../firebase'; 
 
-const LANGUAGES = [
-  { code: 'auto', name: 'Auto-Detect Language' },
-  { code: 'en', name: 'English' },
-  { code: 'es', name: 'Spanish' },
-  { code: 'fr', name: 'French' },
-  { code: 'de', name: 'German' },
-  { code: 'it', name: 'Italian' },
-  { code: 'pt', name: 'Portuguese' },
-  { code: 'nl', name: 'Dutch' },
-  { code: 'ru', name: 'Russian' },
-  { code: 'zh-CN', name: 'Chinese (Simplified)' },
-  { code: 'zh-TW', name: 'Chinese (Traditional)' },
-  { code: 'ja', name: 'Japanese' },
-  { code: 'ko', name: 'Korean' },
-  { code: 'ar', name: 'Arabic' },
-  { code: 'tr', name: 'Turkish' },
-  { code: 'sr-Latn', name: 'Serbian (Latin)' },
-  { code: 'sr-Cyrl', name: 'Serbian (Cyrillic)' },
-  { code: 'hr', name: 'Croatian' }
+const SUPPORTED_LANGUAGES = [
+  { code: 'af', name: 'Afrikaans' },
+  { code: 'sq', name: 'Albanian (Shqip)' },
+  { code: 'am', name: 'Amharic (አማርኛ)' },
+  { code: 'ar', name: 'Arabic (Modern Standard)' },
+  { code: 'ar-dz', name: 'Arabic (Algeria)' },
+  { code: 'ar-eg', name: 'Arabic (Egypt)' },
+  { code: 'ar-iq', name: 'Arabic (Iraq)' },
+  { code: 'ar-sa', name: 'Arabic (Saudi Arabia)' },
+  { code: 'ar-ae', name: 'Arabic (UAE)' },
+  { code: 'hy', name: 'Armenian (Հայերեն)' },
+  { code: 'az', name: 'Azerbaijani (Azərbaycan)' },
+  { code: 'eu', name: 'Basque (Euskara)' },
+  { code: 'be', name: 'Belarusian (Беларуская)' },
+  { code: 'bn', name: 'Bengali (বাংলা)' },
+  { code: 'bs', name: 'Bosnian (Bosanski)' },
+  { code: 'bg', name: 'Bulgarian (Български)' },
+  { code: 'my', name: 'Burmese (မြန်မာ)' },
+  { code: 'ca', name: 'Catalan (Català)' },
+  { code: 'ceb', name: 'Cebuano' },
+  { code: 'ny', name: 'Chichewa' },
+  { code: 'zh-cn', name: 'Chinese (Simplified, PRC)' },
+  { code: 'zh-tw', name: 'Chinese (Traditional, Taiwan)' },
+  { code: 'zh-hk', name: 'Chinese (Cantonese, HK)' },
+  { code: 'co', name: 'Corsican (Corsu)' },
+  { code: 'hr', name: 'Croatian (Hrvatski)' },
+  { code: 'cs', name: 'Czech (Čeština)' },
+  { code: 'da', name: 'Danish (Dansk)' },
+  { code: 'nl', name: 'Dutch (Nederlands)' },
+  { code: 'nl-be', name: 'Dutch (Flemish, Belgium)' },
+  { code: 'en-us', name: 'English (United States)' },
+  { code: 'en-gb', name: 'English (United Kingdom)' },
+  { code: 'en-au', name: 'English (Australia)' },
+  { code: 'en-ca', name: 'English (Canada)' },
+  { code: 'en-in', name: 'English (India)' },
+  { code: 'en-nz', name: 'English (New Zealand)' },
+  { code: 'en-za', name: 'English (South Africa)' },
+  { code: 'eo', name: 'Esperanto' },
+  { code: 'et', name: 'Estonian (Eesti)' },
+  { code: 'fi', name: 'Finnish (Suomi)' },
+  { code: 'fr-fr', name: 'French (France)' },
+  { code: 'fr-ca', name: 'French (Canada)' },
+  { code: 'fr-ch', name: 'French (Switzerland)' },
+  { code: 'fr-be', name: 'French (Belgium)' },
+  { code: 'fy', name: 'Frisian' },
+  { code: 'gl', name: 'Galician (Galego)' },
+  { code: 'ka', name: 'Georgian (ქართული)' },
+  { code: 'de-de', name: 'German (Germany)' },
+  { code: 'de-at', name: 'German (Austria)' },
+  { code: 'de-ch', name: 'German (Switzerland)' },
+  { code: 'el', name: 'Greek (Ελληνικά)' },
+  { code: 'gu', name: 'Gujarati (ગુજરાતી)' },
+  { code: 'ht', name: 'Haitian Creole' },
+  { code: 'ha', name: 'Hausa' },
+  { code: 'haw', name: 'Hawaiian' },
+  { code: 'he', name: 'Hebrew (Israel / עברית)' },
+  { code: 'hi', name: 'Hindi (हिन्दी)' },
+  { code: 'hmn', name: 'Hmong' },
+  { code: 'hu', name: 'Hungarian (Magyar)' },
+  { code: 'is', name: 'Icelandic (Íslenska)' },
+  { code: 'ig', name: 'Igbo' },
+  { code: 'id', name: 'Indonesian (Bahasa Indonesia)' },
+  { code: 'ga', name: 'Irish (Gaeilge)' },
+  { code: 'it', name: 'Italian (Italiano)' },
+  { code: 'ja', name: 'Japanese (日本語)' },
+  { code: 'jw', name: 'Javanese' },
+  { code: 'kn', name: 'Kannada (ಕನ್ನಡ)' },
+  { code: 'kk', name: 'Kazakh (Қазақ)' },
+  { code: 'km', name: 'Khmer (ខ្មែរ)' },
+  { code: 'rw', name: 'Kinyarwanda' },
+  { code: 'ko', name: 'Korean (한국어)' },
+  { code: 'ku', name: 'Kurdish (Kurmanji)' },
+  { code: 'ky', name: 'Kyrgyz (Кыргызча)' },
+  { code: 'lo', name: 'Lao (ລາວ)' },
+  { code: 'la', name: 'Latin' },
+  { code: 'lv', name: 'Latvian (Latviešu)' },
+  { code: 'lt', name: 'Lithuanian (Lietuvių)' },
+  { code: 'lb', name: 'Luxembourgish' },
+  { code: 'mk', name: 'Macedonian (Македонски)' },
+  { code: 'mg', name: 'Malagasy' },
+  { code: 'ms', name: 'Malay (Bahasa Melayu)' },
+  { code: 'ml', name: 'Malayalam (മലയാളം)' },
+  { code: 'mt', name: 'Maltese (Malti)' },
+  { code: 'mi', name: 'Maori' },
+  { code: 'mr', name: 'Marathi (मराठी)' },
+  { code: 'mn', name: 'Mongolian (Монгол)' },
+  { code: 'ne', name: 'Nepali (नेपाली)' },
+  { code: 'no', name: 'Norwegian (Norsk)' },
+  { code: 'or', name: 'Odia (Oriya)' },
+  { code: 'ps', name: 'Pashto (پښتو)' },
+  { code: 'fa', name: 'Persian / Farsi (فارسی)' },
+  { code: 'pl', name: 'Polish (Polski)' },
+  { code: 'pt-pt', name: 'Portuguese (Portugal)' },
+  { code: 'pt-br', name: 'Portuguese (Brazil)' },
+  { code: 'pa', name: 'Punjabi (ਪੰਜਾਬੀ)' },
+  { code: 'ro', name: 'Romanian (Română)' },
+  { code: 'ru', name: 'Russian (Русский)' },
+  { code: 'sm', name: 'Samoan' },
+  { code: 'gd', name: 'Scots Gaelic' },
+  { code: 'sr-cyrl', name: 'Serbian (Cyrillic / Српски)' },
+  { code: 'sr-latn', name: 'Serbian (Latin / Srpski)' },
+  { code: 'st', name: 'Sesotho' },
+  { code: 'sn', name: 'Shona' },
+  { code: 'sd', name: 'Sindhi' },
+  { code: 'si', name: 'Sinhala (සිංහල)' },
+  { code: 'sk', name: 'Slovak (Slovenčina)' },
+  { code: 'sl', name: 'Slovenian (Slovenščina)' },
+  { code: 'so', name: 'Somali' },
+  { code: 'es-es', name: 'Spanish (Spain)' },
+  { code: 'es-mx', name: 'Spanish (Mexico)' },
+  { code: 'es-ar', name: 'Spanish (Argentina)' },
+  { code: 'es-co', name: 'Spanish (Colombia)' },
+  { code: 'su', name: 'Sundanese' },
+  { code: 'sw', name: 'Swahili' },
+  { code: 'sv', name: 'Swedish (Svenska)' },
+  { code: 'tg', name: 'Tajik (Тоҷикӣ)' },
+  { code: 'ta', name: 'Tamil (தமிழ்)' },
+  { code: 'tt', name: 'Tatar' },
+  { code: 'te', name: 'Telugu (తెలుగు)' },
+  { code: 'th', name: 'Thai (ไทย)' },
+  { code: 'tr', name: 'Turkish (Türkçe)' },
+  { code: 'tk', name: 'Turkmen' },
+  { code: 'uk', name: 'Ukrainian (Українська)' },
+  { code: 'ur', name: 'Urdu (اردو)' },
+  { code: 'ug', name: 'Uyghur' },
+  { code: 'uz', name: 'Uzbek' },
+  { code: 'vi', name: 'Vietnamese (Tiếng Việt)' },
+  { code: 'cy', name: 'Welsh (Cymraeg)' },
+  { code: 'xh', name: 'Xhosa' },
+  { code: 'yi', name: 'Yiddish (ייִדיש)' },
+  { code: 'yo', name: 'Yoruba' },
+  { code: 'zu', name: 'Zulu' }
 ];
 
-// 🔥 CUSTOM V10 DROPDOWN KOMPONENTA 🔥
-const V10Dropdown = ({ value, onChange, options, disabled }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const selectedOption = options.find(opt => opt.code === value);
+const V10PdfTranslator = () => {
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [sourceLang, setSourceLang] = useState('auto');
+  const [targetLang, setTargetLang] = useState('en-us');
+  
+  const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0); 
+  const [statusMessage, setStatusMessage] = useState('');
+  
+  const [downloadUrl, setDownloadUrl] = useState(null);
+  const [downloadFilename, setDownloadFilename] = useState('');
+
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [isPreviewRequest, setIsPreviewRequest] = useState(false); 
+  
+  // LOGIKA 1: Pamćenje besplatnog testa
+  const [freeTestUsed, setFreeTestUsed] = useState(false);
+  
+  // LOGIKA 2: State za praćenje korisničke kvote (Usage Progress Bar)
+  const [userQuota, setUserQuota] = useState({ isPaid: false, used: 0, total: 1000, isUnlimited: false });
+  const [authInitialized, setAuthInitialized] = useState(false);
+
+  useEffect(() => {
+    // Provera da li je besplatni test već iskorišćen
+    if (typeof window !== 'undefined') {
+      const used = localStorage.getItem('v10_free_test_used');
+      if (used === 'true') {
+        setFreeTestUsed(true);
+      }
+    }
+
+    // Slušamo promene logovanja i vučemo podatke o kvoti
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setAuthInitialized(true);
+      if (user) {
+        fetchUserQuota(user);
+      } else {
+        setUserQuota({ isPaid: false, used: 0, total: 1000, isUnlimited: false });
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const getApiBase = () => {
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+      return 'http://localhost:8000';
+    }
+    return 'https://aitoolsprosmart-becend-production.up.railway.app';
+  };
+
+  // Funkcija koja vuče podatke o plaćenom paketu i stranicama sa tvog backenda
+  const fetchUserQuota = async (user) => {
+    try {
+      const token = await user.getIdToken();
+      // Očekuje se da backend ima ovu rutu koja čita iz /pdf_translator_entitlements/{uid}
+      const response = await fetch(`${getApiBase()}/api/user-quota`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setUserQuota({
+          isPaid: data.isPaid || false,
+          used: data.used || 0,
+          total: data.total || 1000,
+          isUnlimited: data.isUnlimited || false
+        });
+      }
+    } catch (error) {
+      console.log("Could not fetch quota details yet or endpoint not ready.");
+    }
+  };
+
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+      setStatusMessage(`Selected file: ${e.target.files[0].name}`);
+      setDownloadUrl(null);
+      setProgress(0);
+    }
+  };
+
+  const handleResetForNewTranslation = () => {
+    setSelectedFile(null);
+    setDownloadUrl(null);
+    setProgress(0);
+    setStatusMessage('');
+  };
+
+  const handleTranslateClick = async (isTestMode) => {
+    if (!selectedFile) {
+      alert("Please select a PDF file for translation.");
+      return;
+    }
+
+    setIsPreviewRequest(isTestMode); 
+    setDownloadUrl(null);
+    const currentUser = auth.currentUser;
+
+    // Ako nije ulogovan, a klikne Full Translation ili je iskoristio free test
+    if (!currentUser && (!isTestMode || freeTestUsed)) {
+      setIsLoginModalOpen(true);
+      return;
+    }
+    
+    // Besplatan test prolazi ako nije iskorišćen i bez logovanja
+    if (!currentUser && isTestMode && !freeTestUsed) {
+       proceedWithTranslation(isTestMode, null);
+       return;
+    }
+
+    proceedWithTranslation(isTestMode, currentUser?.email);
+  };
+
+  const proceedWithTranslation = async (isTestMode, userEmail) => {
+    if (isTestMode) {
+      executeTranslation(true);
+      return;
+    }
+
+    // Zaštita za admine (vlasnike)
+    const adminEmails = [
+      'damnjanovicgoran7@gmail.com',
+      'historical.stories7972@gmail.com',
+      'aitoolsprosmart@gmail.com'
+    ];
+
+    if (userEmail && adminEmails.includes(userEmail.toLowerCase())) {
+      console.log("[V10 ADMIN BYPASS] System owner executing full translation for free.");
+      executeTranslation(false);
+      return;
+    }
+
+    // LOGIKA 3: AKO JE KORISNIK VEĆ PLATIO (i ima kvotu), PREVODI ODMAH, PRESKAČE NAPLATU
+    if (userQuota.isUnlimited || (userQuota.isPaid && userQuota.used < userQuota.total)) {
+      console.log("[V10 QUOTA SYSTEM] User has active paid quota. Proceeding to translation.");
+      executeTranslation(false);
+      return;
+    }
+
+    // Ako nista od ovoga nije tačno (nije admin, nije platio, ili je potrošio kvotu) - izbacuje naplatu!
+    try {
+      const response = await fetch(`${getApiBase()}/api/check-admin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: userEmail })
+      });
+      const data = await response.json();
+
+      if (data.isAdmin) {
+        executeTranslation(false);
+      } else {
+        setIsCheckoutOpen(true); 
+      }
+    } catch (error) {
+      setIsCheckoutOpen(true);
+    }
+  };
+
+  const handleLoginSuccess = (user) => {
+    console.log("[V10 AUTH] User successfully signed in:", user.email);
+    // Posle uspešnog logovanja, skidamo stanje test modala i preusmeravamo ga
+    // direktno u tok za prevod (koji će okinuti checkout ako nije platio)
+    fetchUserQuota(user).then(() => {
+      proceedWithTranslation(isPreviewRequest, user.email);
+    });
+  };
+
+  const handlePaymentSuccess = () => {
+    console.log("[V10 PAYMENT SUCCESS] Payment verified, executing full translation.");
+    setIsCheckoutOpen(false);
+    
+    // Ažuriramo stanje kvote lokalno da korisnik odmah vidi Progress Bar
+    setUserQuota(prev => ({ ...prev, isPaid: true, total: 1000, used: 0 }));
+    executeTranslation(false); 
+  };
+
+  const executeTranslation = async (isTestMode) => {
+    setLoading(true);
+    setProgress(10); 
+    setDownloadUrl(null);
+    setStatusMessage(isTestMode ? "Initializing preview test (max 3 pages)..." : "Initializing V10 DTP Neural Engine...");
+
+    const progressInterval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 90) {
+          clearInterval(progressInterval);
+          return 90;
+        }
+        return prev + 15;
+      });
+    }, 600);
+
+    const formData = new FormData();
+    formData.append('pdfFile', selectedFile);
+    formData.append('sourceLang', sourceLang);
+    formData.append('targetLang', targetLang);
+    formData.append('isPreview', isTestMode ? 'true' : 'false'); 
+
+    try {
+      const headers = {};
+      if (auth.currentUser) {
+         headers['Authorization'] = `Bearer ${await auth.currentUser.getIdToken()}`;
+      }
+
+      const response = await fetch(`${getApiBase()}/api/pdf-translate`, {
+        method: 'POST',
+        headers: headers,
+        body: formData,
+      });
+
+      clearInterval(progressInterval);
+
+      if (!response.ok) {
+        throw new Error("Server error during PDF document processing.");
+      }
+
+      setProgress(100);
+      setStatusMessage("Translation and DTP reconstruction successfully completed!");
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      const safeLangCode = targetLang.replace(/[^a-zA-Z0-9]/g, '_').toUpperCase();
+      const filename = `Translated_${isTestMode ? 'PREVIEW_' : ''}${safeLangCode}_${selectedFile.name}`;
+      
+      setDownloadUrl(url);
+      setDownloadFilename(filename);
+
+      // KADA SE BESPLATNI TEST ZAVRŠI, ZATAMNJUJEMO DUGME I OTVARAMO LOGIN MODAL
+      if (isTestMode) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('v10_free_test_used', 'true');
+        }
+        setFreeTestUsed(true);
+        
+        if (!auth.currentUser) {
+          setTimeout(() => {
+            setIsPreviewRequest(false); // Spremamo ga za Full Translation levak
+            setIsLoginModalOpen(true);
+          }, 1500);
+        }
+      } else if (auth.currentUser) {
+        // Ako je odradio FULL prevod, osvežavamo kvotu sa servera da bi Progress Bar pokazao promenu
+        fetchUserQuota(auth.currentUser);
+      }
+
+    } catch (error) {
+      clearInterval(progressInterval);
+      console.error("[V10 ERROR]", error);
+      alert("An error occurred during PDF translation.");
+      setStatusMessage("Translation error encountered.");
+      setProgress(0);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="relative w-full z-[100]">
-      <div 
-        onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`w-full bg-black/50 border ${isOpen ? 'border-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.2)]' : 'border-zinc-800'} text-white px-5 py-4 rounded-xl text-sm font-semibold flex items-center justify-between transition-all ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-orange-500'}`}
-      >
-        <span>{selectedOption ? selectedOption.name : 'Select Language'}</span>
-        <ChevronDown size={16} className={`text-zinc-500 transition-transform duration-300 ${isOpen ? 'rotate-180 text-orange-500' : ''}`} />
+    <div className="min-h-screen bg-gradient-to-b from-[#02040a] via-[#050914] to-[#02040a] pt-12 pb-24 px-4 sm:px-6 relative overflow-hidden">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none"></div>
+
+      <div className="max-w-[1600px] mx-auto relative z-10">
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
+          
+          {/* LEFT COLUMN: ALAT ZA PREVOĐENJE + PROGRESS BAR */}
+          <div className="w-full flex flex-col gap-8">
+            
+            <div className="w-full bg-[#080d1a] border border-blue-900/50 rounded-[2.5rem] p-6 sm:p-10 shadow-[0_0_50px_rgba(37,99,235,0.2)] text-white">
+              
+              <div className="flex items-center justify-between mb-8 pb-6 border-b border-blue-900/40">
+                <div>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-950/60 border border-blue-500/30 text-blue-300 text-[10px] font-black uppercase tracking-widest mb-3">
+                    <ShieldCheck size={14} /> V10 Enterprise DTP Engine
+                  </div>
+                  <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-wider">
+                    Massive Document<br />Neural Translation
+                  </h1>
+                  <p className="mt-4 text-zinc-300 text-xs sm:text-sm font-bold leading-relaxed max-w-2xl">
+                    Designed for corporate systems, publishers, and engineers. Our engine translates up to 1000 pages simultaneously without disrupting original DTP layouts, technical vectors, or graphics.
+                  </p>
+                </div>
+              </div>
+
+              {/* LOGIKA 4: USAGE PROGRESS BAR (Prikazuje se samo onima koji su platili paket) */}
+              {auth.currentUser && (userQuota.isPaid || userQuota.isUnlimited) && (
+                <div className="mb-8 bg-[#050914] border border-emerald-500/40 rounded-2xl p-5 shadow-[0_0_25px_rgba(16,185,129,0.15)] relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-[40px] rounded-full pointer-events-none"></div>
+                  <div className="relative z-10">
+                    <div className="flex justify-between items-end mb-3">
+                       <div className="flex items-center gap-2">
+                         <ShieldCheck className="text-emerald-400 w-5 h-5" />
+                         <span className="text-[11px] font-black text-emerald-400 uppercase tracking-widest">Active Enterprise Quota</span>
+                       </div>
+                       <span className="text-base font-black text-white">
+                         {userQuota.isUnlimited ? '∞' : `${userQuota.used} / ${userQuota.total}`} Pages
+                       </span>
+                    </div>
+                    
+                    {!userQuota.isUnlimited && (
+                      <>
+                        <div className="w-full bg-emerald-950/40 rounded-full h-3 overflow-hidden border border-emerald-900/50 mb-2">
+                           <div 
+                             className="bg-gradient-to-r from-emerald-600 to-teal-400 h-3 rounded-full transition-all duration-1000 ease-out" 
+                             style={{ width: `${Math.min((userQuota.used / userQuota.total) * 100, 100)}%` }}
+                           ></div>
+                        </div>
+                        <p className="text-[10px] text-emerald-300/80 font-bold tracking-widest uppercase">
+                          {userQuota.total - userQuota.used} pages remaining in your plan
+                        </p>
+                      </>
+                    )}
+                    {userQuota.isUnlimited && (
+                      <p className="text-[10px] text-emerald-300/80 font-bold tracking-widest uppercase">
+                         Admin Bypass: Unlimited Pages Active
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 gap-6 mb-8">
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-zinc-300 mb-2">
+                    Select PDF Document
+                  </label>
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    onChange={handleFileChange}
+                    disabled={loading}
+                    className="w-full text-sm text-zinc-300 font-bold file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer bg-[#050914] border border-blue-900/40 rounded-xl p-2 transition-colors disabled:opacity-50"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-wider text-zinc-300 mb-2">
+                      Source Language
+                    </label>
+                    <select
+                      value={sourceLang}
+                      onChange={(e) => setSourceLang(e.target.value)}
+                      disabled={loading}
+                      className="w-full bg-[#050914] border border-blue-900/40 rounded-xl p-3 text-sm font-bold text-white focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-50"
+                    >
+                      <option value="auto">Auto Detect Language</option>
+                      {SUPPORTED_LANGUAGES.map(lang => (
+                        <option key={`src-${lang.code}`} value={lang.name}>
+                          {lang.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-wider text-zinc-300 mb-2">
+                      Target Language
+                    </label>
+                    <select
+                      value={targetLang}
+                      onChange={(e) => setTargetLang(e.target.value)}
+                      disabled={loading}
+                      className="w-full bg-[#050914] border border-blue-900/40 rounded-xl p-3 text-sm font-bold text-white focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-50"
+                    >
+                      {SUPPORTED_LANGUAGES.map(lang => (
+                        <option key={`tgt-${lang.code}`} value={lang.name}>
+                          {lang.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-[#050914] border border-blue-900/40 rounded-2xl p-6">
+                {statusMessage && (
+                  <p className="text-xs sm:text-sm text-blue-300 font-bold mb-4 text-center">
+                    {statusMessage}
+                  </p>
+                )}
+
+                {loading ? (
+                  <div className="flex flex-col items-center justify-center p-6 gap-4">
+                    <div className="flex items-center gap-3">
+                      <Loader2 className="animate-spin text-blue-500" size={32} /> 
+                      <span className="text-lg font-black text-white tracking-wider">{progress}%</span>
+                    </div>
+                    <div className="w-full bg-blue-950/60 rounded-full h-2.5 overflow-hidden border border-blue-900/40">
+                      <div 
+                        className="bg-gradient-to-r from-blue-600 to-cyan-400 h-2.5 rounded-full transition-all duration-500" 
+                        style={{ width: `${progress}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-[10px] text-zinc-300 uppercase tracking-widest font-bold">Neural Engine processing document...</span>
+                  </div>
+                ) : downloadUrl ? (
+                  <div className="flex flex-col items-center justify-center gap-4 p-4 bg-emerald-950/20 border border-emerald-500/30 rounded-2xl">
+                    <p className="text-emerald-400 text-xs font-bold uppercase tracking-wider">Your document is ready for download!</p>
+                    
+                    <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
+                      <a
+                        href={downloadUrl}
+                        download={downloadFilename}
+                        className="flex-1 px-6 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black rounded-xl text-xs tracking-widest uppercase transition-all shadow-[0_0_25px_rgba(16,185,129,0.4)] flex items-center justify-center gap-2"
+                      >
+                        <Download size={16} /> DOWNLOAD TRANSLATED PDF
+                      </a>
+
+                      <button
+                        type="button"
+                        onClick={handleResetForNewTranslation}
+                        className="px-5 py-3.5 bg-[#080d1a] border border-zinc-700 hover:border-zinc-500 text-zinc-300 font-bold rounded-xl text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-2"
+                      >
+                        <RotateCcw size={14} /> New Translation
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    
+                    {/* DUGME ZA BESPLATNI TEST - ZATAMNJENO AKO JE ISKORIŠĆENO */}
+                    <button
+                      type="button"
+                      disabled={freeTestUsed}
+                      onClick={() => handleTranslateClick(true)}
+                      className={`flex-1 px-4 py-4 rounded-xl text-[11px] tracking-widest uppercase transition-all duration-300 flex flex-col items-center justify-center gap-1 group ${
+                        freeTestUsed 
+                          ? 'bg-[#03050a] border-2 border-zinc-800 text-zinc-600 cursor-not-allowed opacity-60 shadow-none'
+                          : 'bg-[#080d1a] border-2 border-blue-600 hover:bg-blue-600 hover:text-white text-blue-400 shadow-[0_0_15px_rgba(37,99,235,0.15)]'
+                      }`}
+                    >
+                      <span className="flex items-center justify-center gap-2">
+                        <Play size={16} className={freeTestUsed ? '' : 'group-hover:scale-110 transition-transform'} /> 
+                        {freeTestUsed ? 'FREE TEST USED' : 'FREE TEST'}
+                      </span>
+                      <span className="text-[9px] font-bold opacity-80">
+                        {freeTestUsed ? 'Limit reached' : 'Translate first 3 pages'}
+                      </span>
+                    </button>
+
+                    {/* DUGME ZA FULL TRANSLATION - UVEK AKTIVNO */}
+                    <button
+                      type="button"
+                      onClick={() => handleTranslateClick(false)}
+                      className="flex-1 px-4 py-4 bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-600 hover:to-cyan-400 text-white font-black rounded-xl text-[11px] tracking-widest uppercase transition-all duration-300 shadow-[0_0_30px_rgba(37,99,235,0.4)] flex flex-col items-center justify-center gap-1 group"
+                    >
+                      <span className="flex items-center justify-center gap-2">
+                        <Globe size={16} className="group-hover:rotate-12 transition-transform" /> FULL TRANSLATION
+                      </span>
+                      <span className="text-[9px] font-bold opacity-90">Unlock full format ($399)</span>
+                    </button>
+
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN: HOW IT WORKS */}
+          <div className="w-full flex flex-col pt-4 lg:pt-0">
+            <div className="text-left mb-8">
+              <h2 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-wider mb-4">
+                How Our Layout Protector Works
+              </h2>
+              <p className="text-zinc-300 text-sm font-bold leading-relaxed">
+                Standard translators ruin PDF document formatting. Our V10 DTP (Desktop Publishing) AI Engine reads documents on a layered level, translating text exclusively while structure, fonts, graphics, and margins remain perfectly intact.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-6">
+              <div className="bg-[#080d1a]/80 backdrop-blur-sm border border-blue-900/30 p-6 rounded-[2rem] hover:border-blue-500/50 transition-colors group flex gap-5 items-start">
+                <div className="w-12 h-12 shrink-0 rounded-full bg-blue-950/50 border border-blue-500/30 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Layers className="text-blue-400 w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-white font-black uppercase tracking-wider text-sm mb-2">
+                    1. Deep PDF Analysis
+                  </h3>
+                  <p className="text-zinc-300 text-xs font-bold leading-relaxed">
+                    The system analyzes your document and isolates graphic elements from text. Tables, headers, images, and complex margins are frozen to protect them from damage during processing.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-[#080d1a]/80 backdrop-blur-sm border border-blue-900/30 p-6 rounded-[2rem] hover:border-blue-500/50 transition-colors group relative overflow-hidden flex gap-5 items-start">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/5 blur-[50px] rounded-full pointer-events-none"></div>
+                <div className="w-12 h-12 shrink-0 rounded-full bg-blue-950/50 border border-blue-500/30 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Cpu className="text-blue-400 w-5 h-5" />
+                </div>
+                <div className="relative z-10">
+                  <h3 className="text-white font-black uppercase tracking-wider text-sm mb-2">
+                    2. Localization & Translation
+                  </h3>
+                  <p className="text-zinc-300 text-xs font-bold leading-relaxed">
+                    Text blocks are sent to our elite language model translating content into 160+ target languages, preserving cultural context, formal tone, and regional market idioms.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-[#080d1a]/80 backdrop-blur-sm border border-blue-900/30 p-6 rounded-[2rem] hover:border-blue-500/50 transition-colors group flex gap-5 items-start">
+                <div className="w-12 h-12 shrink-0 rounded-full bg-blue-950/50 border border-blue-500/30 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Zap className="text-blue-400 w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-white font-black uppercase tracking-wider text-sm mb-2">
+                    3. Perfect Reconstruction
+                  </h3>
+                  <p className="text-zinc-300 text-xs font-bold leading-relaxed">
+                    Translated text is returned with surgical precision to exact PDF coordinates. You receive an identical document ready for professional print or global corporate presentation.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-8 pt-8 border-t border-blue-900/30">
+              <div className="bg-[#080d1a] border-2 border-blue-900/50 p-6 rounded-3xl text-center hover:border-blue-500/60 transition-colors shadow-lg flex flex-col items-center justify-center">
+                <LayoutTemplate className="text-blue-400 w-8 h-8 mx-auto mb-3" />
+                <h4 className="text-white font-black text-xs uppercase tracking-wider">Preserve DTP Layout</h4>
+                <p className="text-zinc-300 text-[11px] font-bold mt-2 leading-snug">Maintains absolute structural integrity across pages.</p>
+              </div>
+
+              <div className="bg-[#080d1a] border-2 border-blue-900/50 p-6 rounded-3xl text-center hover:border-blue-500/60 transition-colors shadow-lg flex flex-col items-center justify-center">
+                <ImageIcon className="text-blue-400 w-8 h-8 mx-auto mb-3" />
+                <h4 className="text-white font-black text-xs uppercase tracking-wider">Retain Images & Covers</h4>
+                <p className="text-zinc-300 text-[11px] font-bold mt-2 leading-snug">Keeps all embedded artwork and cover designs intact.</p>
+              </div>
+
+              <div className="bg-[#080d1a] border-2 border-blue-900/50 p-6 rounded-3xl text-center hover:border-blue-500/60 transition-colors shadow-lg flex flex-col items-center justify-center">
+                <PenTool className="text-blue-400 w-8 h-8 mx-auto mb-3" />
+                <h4 className="text-white font-black text-xs uppercase tracking-wider">Protect CAD / Vectors</h4>
+                <p className="text-zinc-300 text-[11px] font-bold mt-2 leading-snug">Secures engineering vectors and technical lines.</p>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+
+        {/* DONJI DEO: HORIZONTALNI FULL-WIDTH BILLING BOX */}
+        <div className="w-full mt-12 lg:mt-16 bg-[#080d1a]/90 backdrop-blur-xl border-2 border-blue-500/60 rounded-[2.5rem] p-8 sm:p-12 shadow-[0_0_50px_rgba(37,99,235,0.25)] text-white">
+          <div className="flex flex-col sm:flex-row items-center gap-5 mb-10 border-b border-blue-500/40 pb-8 text-center sm:text-left">
+            <div className="w-14 h-14 rounded-full bg-blue-600 border-2 border-blue-400 flex items-center justify-center shadow-[0_0_20px_rgba(37,99,235,0.6)]">
+              <CreditCard className="w-7 h-7 text-white" />
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-black uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-cyan-300">
+              Billing & Quota System
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="bg-[#050914] border border-blue-800/60 hover:border-blue-500/80 transition-all p-6 rounded-2xl flex items-start gap-5 shadow-lg">
+              <div className="w-8 h-8 mt-1 rounded-full bg-blue-900/80 border border-blue-400/60 flex items-center justify-center shrink-0 text-blue-200 text-sm font-black shadow-[0_0_10px_rgba(37,99,235,0.3)]">1</div>
+              <p className="text-zinc-200 text-sm font-bold leading-relaxed">
+                <strong className="text-blue-200 uppercase tracking-wider text-xs block mb-1.5">Free Test:</strong> 
+                Translate the first 3 pages of any PDF file completely free to evaluate translation quality and layout preservation.
+              </p>
+            </div>
+            
+            <div className="bg-[#050914] border border-blue-800/60 hover:border-blue-500/80 transition-all p-6 rounded-2xl flex items-start gap-5 shadow-lg">
+              <div className="w-8 h-8 mt-1 rounded-full bg-blue-900/80 border border-blue-400/60 flex items-center justify-center shrink-0 text-blue-200 text-sm font-black shadow-[0_0_10px_rgba(37,99,235,0.3)]">2</div>
+              <p className="text-zinc-200 text-sm font-bold leading-relaxed">
+                <strong className="text-blue-200 uppercase tracking-wider text-xs block mb-1.5">Flexibility:</strong> 
+                Supports massive document translation up to 1000 pages per PDF, or distributing quota across multiple smaller files.
+              </p>
+            </div>
+
+            <div className="bg-[#050914] border-2 border-emerald-800/60 hover:border-emerald-500/80 transition-all p-6 rounded-2xl flex items-start gap-5 shadow-[0_0_15px_rgba(16,185,129,0.15)] relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 blur-[30px] rounded-full"></div>
+              <div className="w-8 h-8 mt-1 rounded-full bg-emerald-900/80 border border-emerald-400/60 flex items-center justify-center shrink-0 text-emerald-200 text-sm font-black shadow-[0_0_10px_rgba(16,185,129,0.3)] relative z-10">3</div>
+              <p className="text-zinc-200 text-sm font-bold leading-relaxed relative z-10">
+                <strong className="text-emerald-300 uppercase tracking-wider text-xs block mb-1.5">Package Activation:</strong> 
+                After the free test, full licensing is <span className="text-emerald-400 font-black text-base">$399</span>, granting an exact quota of 1000 pages.
+              </p>
+            </div>
+
+            <div className="bg-[#050914] border border-blue-800/60 hover:border-blue-500/80 transition-all p-6 rounded-2xl flex items-start gap-5 shadow-lg">
+              <div className="w-8 h-8 mt-1 rounded-full bg-blue-900/80 border border-blue-400/60 flex items-center justify-center shrink-0 text-blue-200 text-sm font-black shadow-[0_0_10px_rgba(37,99,235,0.3)]">4</div>
+              <p className="text-zinc-200 text-sm font-bold leading-relaxed">
+                <strong className="text-blue-200 uppercase tracking-wider text-xs block mb-1.5">Quota Renewal:</strong> 
+                Only after reaching the 1000-page limit will a new charge of $399 occur if you choose to continue translating.
+              </p>
+            </div>
+
+            <div className="bg-[#050914] border border-blue-800/60 hover:border-blue-500/80 transition-all p-6 rounded-2xl flex items-start gap-5 shadow-lg">
+              <div className="w-8 h-8 mt-1 rounded-full bg-blue-900/80 border border-blue-400/60 flex items-center justify-center shrink-0 text-blue-200 text-sm font-black shadow-[0_0_10px_rgba(37,99,235,0.3)]">5</div>
+              <p className="text-zinc-200 text-sm font-bold leading-relaxed">
+                <strong className="text-blue-200 uppercase tracking-wider text-xs block mb-1.5">No Expiration Date:</strong> 
+                Rolling Quota with no time limits. Use your 1000 pages in one hour or consume them indefinitely over time.
+              </p>
+            </div>
+
+            <div className="bg-[#050914] border border-blue-800/60 hover:border-blue-500/80 transition-all p-6 rounded-2xl flex items-start gap-5 shadow-lg">
+              <div className="w-8 h-8 mt-1 rounded-full bg-blue-900/80 border border-blue-400/60 flex items-center justify-center shrink-0 text-blue-200 text-sm font-black shadow-[0_0_10px_rgba(37,99,235,0.3)]">6</div>
+              <p className="text-zinc-200 text-sm font-bold leading-relaxed">
+                <strong className="text-blue-200 uppercase tracking-wider text-xs block mb-1.5">Support:</strong> 
+                For inquiries or enterprise custom requests, reach out at <a href="mailto:aitoolsprosmart@gmail.com" className="text-blue-400 hover:text-blue-300 font-black transition-colors underline decoration-blue-500/50 underline-offset-4">aitoolsprosmart@gmail.com</a>.
+              </p>
+            </div>
+          </div>
+        </div>
+
       </div>
 
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            {/* Nevidljivi overlay koji zatvara meni na klik van njega */}
-            <div className="fixed inset-0 z-[90]" onClick={() => setIsOpen(false)}></div>
-            
-            {/* Padajuća lista (Sada savršeno preklapa sve ispod) */}
-            <motion.div 
-              initial={{ opacity: 0, y: -10 }} 
-              animate={{ opacity: 1, y: 0 }} 
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="absolute left-0 right-0 top-[calc(100%+8px)] bg-[#0a0a0a] border border-zinc-700 rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.9)] z-[100] max-h-64 overflow-y-auto overflow-x-hidden"
-              style={{ scrollbarWidth: 'thin', scrollbarColor: '#3f3f46 transparent' }}
-            >
-              <div className="flex flex-col p-1.5">
-                {options.map((lang) => (
-                  <div
-                    key={lang.code}
-                    onClick={() => {
-                      onChange(lang.code);
-                      setIsOpen(false);
-                    }}
-                    className={`px-4 py-3 text-sm font-medium rounded-lg cursor-pointer transition-colors flex items-center gap-2 ${value === lang.code ? 'bg-orange-500/10 text-orange-500' : 'text-zinc-400 hover:bg-white/5 hover:text-white'}`}
-                  >
-                    {value === lang.code && <div className="w-1.5 h-1.5 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,1)]"></div>}
-                    <span className={value === lang.code ? 'ml-0' : 'ml-3'}>{lang.name}</span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      <LoginRequiredModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onLoginSuccess={handleLoginSuccess}
+        packageName="V10 Enterprise PDF Translator"
+        price={399}
+      />
+
+      <V8SecureCheckout
+        isOpen={isCheckoutOpen}
+        onClose={() => setIsCheckoutOpen(false)}
+        productName="V10 Enterprise PDF Translator"
+        price={399}
+        onPaymentSuccess={handlePaymentSuccess} 
+        zipLink="" 
+      />
     </div>
   );
 };
 
-export default function V10PdfTranslator() {
-  const [file, setFile] = useState(null);
-  const [sourceLang, setSourceLang] = useState('auto');
-  const [targetLang, setTargetLang] = useState('en');
-  
-  const [preserveLayout, setPreserveLayout] = useState(true);
-  const [preserveImages, setPreserveImages] = useState(true);
-  const [preserveVectors, setPreserveVectors] = useState(true);
-
-  const [isTranslating, setIsTranslating] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  
-  const fileInputRef = useRef(null);
-
-  const handleFileChange = (e) => {
-    const selected = e.target.files[0];
-    if (selected && selected.type === 'application/pdf') {
-      setFile(selected);
-      setIsCompleted(false);
-    }
-  };
-
-  const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
-  const handleDragLeave = (e) => { e.preventDefault(); setIsDragging(false); };
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const dropped = e.dataTransfer.files[0];
-    if (dropped && dropped.type === 'application/pdf') {
-      setFile(dropped);
-      setIsCompleted(false);
-    }
-  };
-
-  const startTranslation = async () => {
-    if (!file) return;
-    setIsTranslating(true);
-    setProgress(0);
-
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 95) { clearInterval(interval); return 95; }
-        return prev + 1.2;
-      });
-    }, 400);
-
-    setTimeout(() => {
-      clearInterval(interval);
-      setProgress(100);
-      setTimeout(() => { setIsTranslating(false); setIsCompleted(true); }, 1000);
-    }, 12000);
-  };
-
-  return (
-    <div className="min-h-screen pt-28 pb-20 px-4 md:px-8 relative flex flex-col items-center justify-start font-sans bg-[#050505] text-zinc-300 overflow-hidden">
-      
-      {/* Ambient Background Glows */}
-      <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-orange-600/10 rounded-full blur-[150px] pointer-events-none"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-emerald-600/10 rounded-full blur-[150px] pointer-events-none"></div>
-
-      <div className="w-full max-w-7xl mx-auto z-10 relative">
-        
-        {/* HEADER */}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
-          className="mb-12 border-b border-white/5 pb-8 relative z-10"
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <Crown size={14} className="text-orange-500" />
-            <span className="text-orange-500 text-[10px] font-black uppercase tracking-[0.3em]">V10 Enterprise PDF Engine</span>
-          </div>
-          <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter mb-4 uppercase">
-            Massive Document <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500">Neural Translation</span>
-          </h1>
-          <p className="text-zinc-500 text-sm max-w-2xl leading-relaxed uppercase tracking-widest font-bold">
-            Designed for corporate systems, publishers, and engineers. Our engine translates up to 1000 pages simultaneously without disrupting original DTP layouts, technical vectors, or graphics.
-          </p>
-        </motion.div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
-          {/* LEFT SIDE: CONFIGURATION */}
-          <motion.div 
-            initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
-            className="lg:col-span-5 flex flex-col gap-6"
-          >
-            
-            {/* Language Settings - Z-INDEX HIERARHIJA DODATA OVDE (z-30) */}
-            <div className="bg-white/[0.02] backdrop-blur-xl border border-white/5 rounded-2xl p-7 shadow-2xl relative z-30">
-              <h3 className="text-white text-xs font-black uppercase tracking-widest mb-6 flex items-center gap-2">
-                <ArrowRight size={16} className="text-orange-500"/> Language Configuration
-              </h3>
-              
-              <div className="flex flex-col gap-6">
-                <div className="relative z-[60]">
-                  <label className="block text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-2">Source Language</label>
-                  <V10Dropdown 
-                    value={sourceLang} 
-                    onChange={setSourceLang} 
-                    options={LANGUAGES} 
-                    disabled={isTranslating} 
-                  />
-                </div>
-
-                <div className="relative z-[50]">
-                  <label className="block text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-2">Target Language</label>
-                  <V10Dropdown 
-                    value={targetLang} 
-                    onChange={setTargetLang} 
-                    options={LANGUAGES.filter(l => l.code !== 'auto')} 
-                    disabled={isTranslating} 
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Document Architecture - (z-20) da bi padajući meni išao PREKO ove sekcije */}
-            <div className="bg-white/[0.02] backdrop-blur-xl border border-white/5 rounded-2xl p-7 shadow-2xl relative z-20">
-              <h3 className="text-white text-xs font-black uppercase tracking-widest mb-4">Document Architecture</h3>
-              <p className="text-[11px] text-zinc-500 mb-6 leading-relaxed font-medium">
-                V10 semantic chunking isolates text from graphical assets, ensuring flawless output formats even for highly technical literature.
-              </p>
-
-              <div className="space-y-4">
-                <label className="flex items-center gap-4 cursor-pointer group">
-                  <div className={`w-5 h-5 flex items-center justify-center rounded-md border transition-all duration-300 ${preserveLayout ? 'bg-orange-500 border-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.5)]' : 'bg-black/50 border-zinc-700 group-hover:border-zinc-500'}`} onClick={() => !isTranslating && setPreserveLayout(!preserveLayout)}>
-                    {preserveLayout && <CheckCircle size={14} className="text-white" />}
-                  </div>
-                  <span className="text-xs font-bold text-zinc-400 group-hover:text-white transition-colors flex items-center gap-2 uppercase tracking-wider">
-                    <Layers size={14} className="text-zinc-500" /> Preserve DTP Layout
-                  </span>
-                </label>
-
-                <label className="flex items-center gap-4 cursor-pointer group">
-                  <div className={`w-5 h-5 flex items-center justify-center rounded-md border transition-all duration-300 ${preserveImages ? 'bg-orange-500 border-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.5)]' : 'bg-black/50 border-zinc-700 group-hover:border-zinc-500'}`} onClick={() => !isTranslating && setPreserveImages(!preserveImages)}>
-                    {preserveImages && <CheckCircle size={14} className="text-white" />}
-                  </div>
-                  <span className="text-xs font-bold text-zinc-400 group-hover:text-white transition-colors flex items-center gap-2 uppercase tracking-wider">
-                    <ImageIcon size={14} className="text-zinc-500" /> Retain Images & Covers
-                  </span>
-                </label>
-
-                <label className="flex items-center gap-4 cursor-pointer group">
-                  <div className={`w-5 h-5 flex items-center justify-center rounded-md border transition-all duration-300 ${preserveVectors ? 'bg-orange-500 border-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.5)]' : 'bg-black/50 border-zinc-700 group-hover:border-zinc-500'}`} onClick={() => !isTranslating && setPreserveVectors(!preserveVectors)}>
-                    {preserveVectors && <CheckCircle size={14} className="text-white" />}
-                  </div>
-                  <span className="text-xs font-bold text-zinc-400 group-hover:text-white transition-colors flex items-center gap-2 uppercase tracking-wider">
-                    <LayoutGrid size={14} className="text-zinc-500" /> Protect CAD / Vectors
-                  </span>
-                </label>
-              </div>
-            </div>
-
-            {/* Security Notice - Najniži z-index na panelu (z-10) */}
-            <div className="flex items-start gap-4 p-5 rounded-2xl bg-emerald-950/20 border border-emerald-900/30 backdrop-blur-md relative z-10">
-              <Lock size={20} className="text-emerald-500 flex-shrink-0 mt-0.5 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-              <div>
-                <p className="text-xs text-emerald-400 font-black uppercase tracking-widest mb-1.5">End-to-End Encryption</p>
-                <p className="text-[10px] text-zinc-500 font-medium leading-relaxed uppercase tracking-wider">
-                  Files are routed through a secure SSL tunnel. Upon completion, the entire document is instantly wiped from V10 servers without backups.
-                </p>
-              </div>
-            </div>
-
-          </motion.div>
-
-          {/* RIGHT SIDE: UPLOAD & PROCESSING */}
-          <motion.div 
-            initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.4 }}
-            className="lg:col-span-7 h-full min-h-[550px] relative z-20"
-          >
-            <AnimatePresence mode="wait">
-              
-              {/* STAGE 1: UPLOAD */}
-              {!file && (
-                <motion.div 
-                  key="upload" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                  onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
-                  onClick={() => fileInputRef.current.click()}
-                  className={`w-full h-full min-h-[550px] border-2 border-dashed rounded-[2rem] flex flex-col items-center justify-center cursor-pointer transition-all duration-300 group p-10 text-center relative overflow-hidden ${isDragging ? 'border-orange-500 bg-orange-500/10' : 'border-white/10 bg-white/[0.01] hover:border-orange-500/50 hover:bg-white/[0.03]'}`}
-                >
-                  <div className="w-20 h-20 rounded-full bg-black/50 border border-white/5 flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-orange-500/10 group-hover:border-orange-500/30 transition-all duration-500 shadow-xl">
-                    <UploadCloud size={32} className="text-zinc-500 group-hover:text-orange-500 transition-colors" />
-                  </div>
-                  <h3 className="text-white text-lg font-black uppercase tracking-widest mb-3">Drag & Drop PDF Here</h3>
-                  <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-8">Maximum Supported Length: 1000 Pages</p>
-                  
-                  <div className="px-8 py-3.5 bg-white text-black text-xs font-black uppercase tracking-widest rounded-xl hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-                    Browse Local Files
-                  </div>
-                  <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".pdf" className="hidden" />
-                </motion.div>
-              )}
-
-              {/* STAGE 2: READY FOR PROCESSING */}
-              {file && !isTranslating && !isCompleted && (
-                <motion.div 
-                  key="ready" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                  className="w-full h-full min-h-[550px] border border-white/10 bg-white/[0.02] backdrop-blur-xl rounded-[2rem] flex flex-col items-center justify-center p-10 text-center relative shadow-2xl"
-                >
-                  <button onClick={() => setFile(null)} className="absolute top-8 right-8 text-zinc-500 hover:text-red-500 text-[10px] font-black uppercase tracking-widest transition-colors cursor-pointer z-50">
-                    Cancel Session
-                  </button>
-                  
-                  <FileText size={64} className="text-orange-500 mb-8 drop-shadow-[0_0_20px_rgba(249,115,22,0.4)]" />
-                  <h3 className="text-white text-xl font-black tracking-wider break-all max-w-[80%] mb-3">{file.name}</h3>
-                  <p className="text-emerald-400/80 text-[10px] font-bold uppercase tracking-[0.2em] mb-12 flex items-center gap-2">
-                    <ShieldCheck size={14} /> Document loaded & verified
-                  </p>
-                  
-                  <div className="w-full max-w-sm flex flex-col gap-6">
-                    <div className="flex justify-between items-end pb-4 border-b border-white/5">
-                      <div className="flex flex-col text-left">
-                        <span className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">Processing Fee</span>
-                        <span className="text-zinc-400 text-xs font-bold">Enterprise API Protocol</span>
-                      </div>
-                      <span className="text-white font-black text-2xl drop-shadow-md">$399.00</span>
-                    </div>
-                    
-                    <button 
-                      onClick={startTranslation}
-                      className="w-full py-5 rounded-xl font-black text-xs text-white uppercase tracking-[0.2em] bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 transition-all cursor-pointer shadow-[0_10px_30px_rgba(249,115,22,0.3)] hover:shadow-[0_10px_40px_rgba(249,115,22,0.5)] hover:-translate-y-1 flex items-center justify-center gap-3 z-50"
-                    >
-                      <Zap size={16} /> Initialize Translation
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* STAGE 3: PROCESSING / SCANNER EFFECT */}
-              {file && isTranslating && (
-                <motion.div 
-                  key="translating" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  className="w-full h-full min-h-[550px] border border-cyan-500/20 bg-cyan-950/10 backdrop-blur-xl rounded-[2rem] flex flex-col items-center justify-center p-10 text-center relative overflow-hidden"
-                >
-                  <motion.div 
-                    animate={{ top: ['0%', '100%', '0%'] }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                    className="absolute left-0 right-0 h-[2px] bg-cyan-400 shadow-[0_0_20px_rgba(34,211,238,1)] z-0"
-                  />
-                  
-                  <Loader2 size={56} className="text-cyan-400 animate-spin mb-8 drop-shadow-[0_0_15px_rgba(34,211,238,0.5)] relative z-10" />
-                  
-                  <h3 className="text-white text-xl font-black uppercase tracking-[0.1em] mb-3 relative z-10">Neural Processing</h3>
-                  <p className="text-cyan-500/80 text-[10px] font-bold uppercase tracking-[0.2em] mb-12 relative z-10">
-                    Executing Contextual Analysis & Chunking
-                  </p>
-                  
-                  <div className="w-full max-w-md relative z-10">
-                    <div className="flex justify-between text-[10px] text-zinc-400 mb-3 font-black uppercase tracking-widest">
-                      <span>{progress < 30 ? 'EXTRACTING METADATA...' : progress < 70 ? 'TRANSLATING VECTORS...' : 'RECONSTRUCTING DOCUMENT...'}</span>
-                      <span className="text-cyan-400">{Math.round(progress)}%</span>
-                    </div>
-                    <div className="w-full bg-black/50 border border-white/5 rounded-full h-2 overflow-hidden shadow-inner">
-                      <motion.div 
-                        className="bg-gradient-to-r from-cyan-500 to-blue-600 h-full rounded-full" 
-                        style={{ width: `${progress}%` }}
-                        layout
-                      />
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* STAGE 4: COMPLETED */}
-              {file && isCompleted && (
-                <motion.div 
-                  key="completed" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-                  className="w-full h-full min-h-[550px] border border-emerald-500/30 bg-emerald-950/20 backdrop-blur-xl rounded-[2rem] flex flex-col items-center justify-center p-10 text-center shadow-[0_0_50px_rgba(16,185,129,0.1)]"
-                >
-                  <div className="w-24 h-24 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-8 relative">
-                    <div className="absolute inset-0 rounded-full border border-emerald-400 animate-ping opacity-20"></div>
-                    <ShieldCheck size={48} className="text-emerald-400 drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
-                  </div>
-                  
-                  <h3 className="text-white text-2xl font-black uppercase tracking-[0.1em] mb-3">Translation Successful</h3>
-                  <p className="text-emerald-400/80 text-[10px] font-bold uppercase tracking-[0.2em] mb-12">
-                    Document structure preserved. File ready for output.
-                  </p>
-                  
-                  <div className="flex flex-col sm:flex-row gap-5 w-full max-w-md">
-                    <motion.button 
-                      whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                      className="flex-1 py-4 rounded-xl font-black text-[11px] uppercase tracking-widest bg-emerald-500 text-black shadow-[0_10px_20px_rgba(16,185,129,0.3)] transition-all cursor-pointer z-50"
-                    >
-                      Download PDF
-                    </motion.button>
-                    
-                    <motion.button 
-                      onClick={() => { setFile(null); setIsCompleted(false); }}
-                      whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                      className="flex-1 py-4 rounded-xl font-black text-[11px] uppercase tracking-widest border border-white/10 text-zinc-300 hover:bg-white/5 hover:text-white transition-all cursor-pointer z-50"
-                    >
-                      New Translation
-                    </motion.button>
-                  </div>
-                </motion.div>
-              )}
-              
-            </AnimatePresence>
-          </motion.div>
-
-        </div>
-      </div>
-    </div>
-  );
-}
-// ============================================================================
-// KRAJ FAJLA: src/pdf/V10PdfTranslator.jsx
-// ============================================================================
+export default V10PdfTranslator;

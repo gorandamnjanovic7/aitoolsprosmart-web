@@ -55,8 +55,11 @@ import V8NeuralForge from './V8NeuralForge';
 import V8RawRealityEngine from './V8RawRealityEngine';
 import SaaSProtocolPage from './SaaSProtocolPage';
 import StandardMocup from './StandardMocup';
-import NextPageHub from './NextPageHub'
-import V10PdfTranslator from './pdf/V10PdfTranslator'
+import V10PdfTranslator from './pdf/V10PdfTranslator';
+
+// 🔥 NOVI 3-U-1 WIDGET I SHOWCASE (aiagents folder) 🔥
+import AIAgentsShowcase from './aiagents/AIAgentsShowcase';
+import V103in1Widget from './aiagents/V103in1Widget';
 
 import { NotificationListener, NotificationModal } from './NotificationSystem';
 
@@ -65,12 +68,12 @@ import Portfolio from './Portfolio';
 import V8PremiumTestMenu from './qrcode/V8PremiumTestMenu';
 import PublicMenuTestQRMenu from './qrcode/PublicMenuTestQRMenu';
 
-// 🔥 NOVI IMPORTI: UI/UX V10 INŽENJERING 🔥
+// 🔥 UI/UX V10 INŽENJERING 🔥
 import UiUxHub from './ux/UiUxHub';
 import VaultGrid from './ux/VaultGrid';
 import V10SplitScreen from './ux/V10SplitScreen';
-import CommercialOps from './ux/CommercialOps'; // NOVI B2B PANEL
-import V10MyVault from './ux/V10MyVault'; // KLIJENTSKI PORTAL
+import CommercialOps from './ux/CommercialOps'; 
+import V10MyVault from './ux/V10MyVault'; 
 
 if (typeof window !== 'undefined') {
   if ('scrollRestoration' in window.history) { window.history.scrollRestoration = 'manual'; }
@@ -80,7 +83,6 @@ if (typeof window !== 'undefined') {
 
 let currentAudio = null; 
 
-// POČETAK FUNKCIJE playV8Sound
 export const playV8Sound = (type) => {
   try {
     if (currentAudio) {
@@ -100,9 +102,7 @@ export const playV8Sound = (type) => {
     }
   } catch (err) {}
 };
-// KRAJ FUNKCIJE playV8Sound
 
-// POČETAK FUNKCIJE stopV8Sound
 export const stopV8Sound = () => {
   try {
     if (currentAudio) {
@@ -112,7 +112,6 @@ export const stopV8Sound = () => {
     }
   } catch (err) {}
 };
-// KRAJ FUNKCIJE stopV8Sound
 
 export const v8AlertModal = {
   listeners: [],
@@ -132,7 +131,6 @@ const MOJA_IP = "213.196.99.2";
 let globalUserIp = "";
 const currentSessionId = Math.random().toString(36).substring(2, 15);
 
-// POČETAK FUNKCIJE fetchUserIp
 const fetchUserIp = async () => {
   try {
     const res = await fetch('https://api.ipify.org?format=json');
@@ -140,9 +138,7 @@ const fetchUserIp = async () => {
   } catch (err) {}
 };
 fetchUserIp();
-// KRAJ FUNKCIJE fetchUserIp
 
-// POČETAK FUNKCIJE logAnalyticsEvent
 export const logAnalyticsEvent = async (type, details) => {
   const currentUser = auth.currentUser;
   if (!currentUser) return; 
@@ -160,7 +156,6 @@ export const logAnalyticsEvent = async (type, details) => {
     }); 
   } catch (err) {}
 };
-// KRAJ FUNKCIJE logAnalyticsEvent
 
 export const v8Toast = {
   listeners: [],
@@ -175,7 +170,6 @@ export const v8Toast = {
   subscribe: (l) => { v8Toast.listeners.push(l); return () => v8Toast.listeners = v8Toast.listeners.filter(cb => cb !== l); }
 };
 
-// POČETAK FUNKCIJE V8ToastContainer
 const V8ToastContainer = () => {
   const [toasts, setToasts] = useState([]);
   useEffect(() => {
@@ -197,9 +191,7 @@ const V8ToastContainer = () => {
     </div>
   );
 };
-// KRAJ FUNKCIJE V8ToastContainer
 
-// POČETAK FUNKCIJE V8AlertModalContainer
 const V8AlertModalContainer = () => {
   const [modalData, setModalData] = useState(null);
 
@@ -302,10 +294,7 @@ const V8AlertModalContainer = () => {
     </AnimatePresence>
   );
 };
-// KRAJ FUNKCIJE V8AlertModalContainer
 
-// POČETAK FUNKCIJE AdminLiveSalesTracker
-// 🔥 RADAR SADA PRATI I UI/UX PAYONEER BAZE I SVE OSTALE KANALE 🔥
 const AdminLiveSalesTracker = () => {
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -328,7 +317,6 @@ const AdminLiveSalesTracker = () => {
     let isFirstPaypal = true;
     let isFirstPayoneer = true;
 
-    // 1. STARI KUPCI BAZA
     const unsubKupci = onSnapshot(query(collection(db, "v8_kupci"), orderBy("vreme", "desc"), limit(1)), (snap) => {
       if (isFirstKupci) { isFirstKupci = false; return; }
       snap.docChanges().forEach(change => {
@@ -348,7 +336,6 @@ const AdminLiveSalesTracker = () => {
       });
     });
 
-    // 2. KRIPTO BAZA (Sa UI/UX proverom)
     const unsubCrypto = onSnapshot(query(collection(db, "v8_crypto_requests"), orderBy("requestDate", "desc"), limit(1)), (snap) => {
       if (isFirstCrypto) { isFirstCrypto = false; return; }
       snap.docChanges().forEach(change => {
@@ -369,7 +356,6 @@ const AdminLiveSalesTracker = () => {
       });
     });
 
-    // 3. PAYPAL BAZA (Sa UI/UX i Card proverom)
     const unsubPaypal = onSnapshot(query(collection(db, "v8_paypal_requests"), orderBy("requestDate", "desc"), limit(1)), (snap) => {
       if (isFirstPaypal) { isFirstPaypal = false; return; }
       snap.docChanges().forEach(change => {
@@ -391,7 +377,6 @@ const AdminLiveSalesTracker = () => {
       });
     });
 
-    // 4. NOVA UI/UX PAYONEER (B2B) BAZA
     const unsubPayoneer = onSnapshot(query(collection(db, "v8_payoneer_requests"), orderBy("requestDate", "desc"), limit(1)), (snap) => {
       if (isFirstPayoneer) { isFirstPayoneer = false; return; }
       snap.docChanges().forEach(change => {
@@ -404,7 +389,7 @@ const AdminLiveSalesTracker = () => {
             timestamp: new Date().toLocaleString('sr-RS'),
             amount: d.price || 0, 
             type: 'success',
-            icon: 'uiux', // Payoneer na checkoutu je uvek UI/UX
+            icon: 'uiux',
             methodLabel: 'PAYONEER / B2B'
           });
         }
@@ -416,9 +401,7 @@ const AdminLiveSalesTracker = () => {
 
   return null;
 };
-// KRAJ FUNKCIJE AdminLiveSalesTracker
 
-// POČETAK FUNKCIJE V8PageWrapper
 const V8PageWrapper = ({ children }) => {
   return (
     <>
@@ -429,9 +412,7 @@ const V8PageWrapper = ({ children }) => {
     </>
   );
 };
-// KRAJ FUNKCIJE V8PageWrapper
 
-// POČETAK FUNKCIJE FullScreenBoot
 const FullScreenBoot = ({ onComplete }) => {
   const [progress, setProgress] = useState(0);
   const [isIgniting, setIsIgniting] = useState(false);
@@ -475,9 +456,7 @@ const FullScreenBoot = ({ onComplete }) => {
     </motion.div>
   );
 };
-// KRAJ FUNKCIJE FullScreenBoot
 
-// POČETAK FUNKCIJE SmartScrollButton
 const SmartScrollButton = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   
@@ -500,9 +479,7 @@ const SmartScrollButton = () => {
     </button>
   );
 };
-// KRAJ FUNKCIJE SmartScrollButton
 
-// POČETAK FUNKCIJE AppContent
 function AppContent({ appsData, refreshData }) {
   const IS_MAINTENANCE = false;
 
@@ -519,7 +496,6 @@ function AppContent({ appsData, refreshData }) {
 
   const [isDesktop, setIsDesktop] = useState(true);
 
-  // 🔥 LOGIKA ZA SKRIVANJE MENIJA KADA SE OTVORI PUBLIC QR MENI 🔥
   const isPublicMenuRoute = location.pathname.startsWith('/m/');
 
   useEffect(() => {
@@ -577,10 +553,10 @@ function AppContent({ appsData, refreshData }) {
        logAnalyticsEvent('page_view', { path: location.pathname });
 
        if (typeof window !== 'undefined' && window.gtag) {
-           window.gtag('event', 'page_view', {
-               page_path: location.pathname,
-               page_location: window.location.href
-           });
+            window.gtag('event', 'page_view', {
+                page_path: location.pathname,
+                page_location: window.location.href
+            });
        }
     }
   }, [location.pathname]);
@@ -638,11 +614,9 @@ function AppContent({ appsData, refreshData }) {
     );
   }
 
-  // 🟢 HARDVERSKI OPTIMIZOVAN ROOT ELEMENT BEZ ZAKUCAVANJA SCROLLA 🟢
   return (
     <div key={authVersion} className="min-h-screen text-zinc-100 font-sans relative text-left">
       
-      {/* ODVOJENA FIKSNA POZADINA ZA MAKSIMALAN FPS */}
       <div className="fixed inset-0 z-[-2] bg-[url('/v8-supercomputer-bg.jpg')] bg-cover bg-center bg-no-repeat pointer-events-none transform-gpu" />
       <div className="fixed inset-0 z-[-1] bg-[radial-gradient(circle_at_center,_rgba(5,5,5,0.95)_30%,_rgba(5,5,5,0.4)_100%)] pointer-events-none transform-gpu" />
       
@@ -678,17 +652,15 @@ function AppContent({ appsData, refreshData }) {
           {isBooting && <FullScreenBoot key="boot" onComplete={() => { setIsBooting(false); window.scrollTo(0,0); }} />}
         </AnimatePresence>
         
-        {/* SAKRIVAMO GLAVNE KOMPONENTE SAJTA AKO SMO U QR MENIJU */}
         {!isPublicMenuRoute && <V8Navbar handleHomeClick={handleHomeClick} />}
         {!isPublicMenuRoute && <V8AdminLiveNotifier />}
         {!isPublicMenuRoute && <V8UnlockModal />}
         
-        {/* SKIDAMO TOP PADDING KAKO BI MENI IŠAO DO KRAJA EKRANA GORE */}
         <div className={`flex-1 text-left ${isPublicMenuRoute ? '' : 'pt-20'}`}>
           <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
            <Routes location={location} key={location.pathname}>
               <Route path="/" element={<V8PageWrapper><HomePage apps={appsData} openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
-              <Route path="/next-page" element={<V8PageWrapper><NextPageHub /></V8PageWrapper>} />
+              
               <Route path="/v8-standard-16mp" element={<V8PageWrapper><V8Standard16MPWorkspace openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               
               <Route path="/master-33mp" element={<V8PageWrapper><V8MasterEngine33MP openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
@@ -729,7 +701,8 @@ function AppContent({ appsData, refreshData }) {
               <Route path="/premium-menu" element={<V8PageWrapper><V8PremiumTestMenu /></V8PageWrapper>} />
               <Route path="/m/:menuId" element={<PublicMenuTestQRMenu />} />
 
-              {/* 🔥 ISPRAVLJENE RUTE: UI/UX V10 INŽENJERING 🔥 */}
+              {/* 🔥 RUTE ZA AI AGENTE I UI/UX V10 🔥 */}
+              <Route path="/ai-agents" element={<V8PageWrapper><AIAgentsShowcase /></V8PageWrapper>} />
               <Route path="/ui-ux" element={<V8PageWrapper><UiUxHub /></V8PageWrapper>} />
               <Route path="/pdf-translator" element={<V8PageWrapper><V10PdfTranslator /></V8PageWrapper>} />
               <Route path="/ui-ux/vault" element={<V8PageWrapper><VaultGrid /></V8PageWrapper>} />
@@ -741,10 +714,12 @@ function AppContent({ appsData, refreshData }) {
           </AnimatePresence>
         </div>
         
-        {/* SAKRIVAMO DONJE KOMPONENTE SAJTA AKO SMO U QR MENIJU */}
         {!isPublicMenuRoute && <SmartScrollButton />}
         {!isPublicMenuRoute && <V8ContactWidget />}
         
+        {/* 🔥 NOVI 3-U-1 FLOATING AI WIDGET (Radi na svakoj stranici) 🔥 */}
+        {!isPublicMenuRoute && <V103in1Widget mode="floating" />}
+
         {!isPublicMenuRoute && isDesktop && (
           <div id="v8-counter-container">
             <VisitorCounter />
@@ -785,9 +760,7 @@ function AppContent({ appsData, refreshData }) {
     </div>
   );
 }
-// KRAJ FUNKCIJE AppContent
 
-// POČETAK FUNKCIJE App
 export default function App() {
   const [appsData, setAppsData] = useState([]);
 
@@ -812,5 +785,4 @@ export default function App() {
     </HelmetProvider>
   );
 }
-// KRAJ FUNKCIJE App
 // KRAJ FAJLA: App.jsx

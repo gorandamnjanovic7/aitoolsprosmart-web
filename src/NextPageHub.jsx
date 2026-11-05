@@ -1,7 +1,14 @@
-// POČETAK FAJLA: NextPageHub.jsx
+// START OF FILE: NextPageHub.jsx
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Maximize, Zap, ScanLine, Sparkles, Award, Terminal, Aperture, Clapperboard, Code, ShieldCheck, MonitorPlay, Video, Cpu, Image as ImageIcon, LayoutGrid } from 'lucide-react';
+import { Maximize, Zap, ScanLine, Sparkles, Award, Terminal, Aperture, Clapperboard, Code, ShieldCheck, MonitorPlay, Video, Cpu, Image as ImageIcon, LayoutGrid, Bot, Briefcase } from 'lucide-react';
+
+// 3 Separate AI Agents for the Sales Dashboard
+const aiAgents = [
+  { path: '/ai-agents', name: 'VISUAL CONCIERGE', desc: 'Mockups & UI/UX Routing', icon: Bot, color: 'text-cyan-400', bg: 'bg-cyan-500/20', hover: 'group-hover:bg-cyan-500/40', border: 'border-cyan-500/40' },
+  { path: '/ai-agents', name: 'B2B SALES SCOPER', desc: 'Automated Project Quotes', icon: Briefcase, color: 'text-emerald-500', bg: 'bg-emerald-500/20', hover: 'group-hover:bg-emerald-500/40', border: 'border-emerald-500/40' },
+  { path: '/ai-agents', name: 'TECH 24/7 ENGINEER', desc: 'Dev & Infrastructure Support', icon: Cpu, color: 'text-indigo-400', bg: 'bg-indigo-500/20', hover: 'group-hover:bg-indigo-500/40', border: 'border-indigo-500/40' }
+];
 
 const upscalers = [
   { path: '/v8-standard-16mp', name: '16MP Standard', desc: 'V8 Engine', icon: ImageIcon, color: 'text-blue-500', bg: 'bg-blue-500/20', hover: 'group-hover:bg-blue-500/40', border: 'border-blue-500/30' },
@@ -46,16 +53,28 @@ export default function NextPageHub() {
     <div className="min-h-screen pt-32 pb-24 px-6 relative z-10 font-sans text-white">
       <div className="max-w-[1200px] mx-auto">
         
+        {/* Header Section */}
         <div className="text-center mb-16 relative">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-orange-600/20 blur-[100px] pointer-events-none z-0"></div>
           <h1 className="relative z-10 text-4xl md:text-6xl font-black uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-600 drop-shadow-[0_0_20px_rgba(234,88,12,0.5)]">
             NEXT PAGE HUB
           </h1>
           <p className="relative z-10 text-zinc-400 mt-4 text-xs md:text-sm font-bold tracking-[0.3em] uppercase">
-            Centralizovani pristup Master alatima
+            Centralized Access to Master Tools
           </p>
         </div>
 
+        {/* AI AGENTS SECTION */}
+        <div className="mb-16">
+          <h2 className="text-sm font-black uppercase tracking-[0.3em] text-cyan-400 mb-6 border-b border-white/10 pb-3 flex items-center gap-2">
+            <Bot className="w-5 h-5 text-cyan-400"/> AI SALES & SUPPORT AGENTS
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {aiAgents.map(renderCard)}
+          </div>
+        </div>
+
+        {/* V8 MASTER TOOLS SECTION */}
         <div className="mb-16">
           <h2 className="text-sm font-black uppercase tracking-[0.3em] text-zinc-500 mb-6 border-b border-white/10 pb-3 flex items-center gap-2"><LayoutGrid className="w-5 h-5"/> V8 MASTER TOOLS</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -63,6 +82,7 @@ export default function NextPageHub() {
           </div>
         </div>
 
+        {/* MASTER UPSCALERS SECTION */}
         <div className="mb-16">
           <h2 className="text-sm font-black uppercase tracking-[0.3em] text-zinc-500 mb-6 border-b border-white/10 pb-3 flex items-center gap-2"><Maximize className="w-5 h-5"/> MASTER UPSCALERS</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -70,6 +90,7 @@ export default function NextPageHub() {
           </div>
         </div>
 
+        {/* B2B SYSTEMS SECTION */}
         <div className="mb-16">
           <h2 className="text-sm font-black uppercase tracking-[0.3em] text-zinc-500 mb-6 border-b border-white/10 pb-3 flex items-center gap-2"><ScanLine className="w-5 h-5"/> B2B SYSTEMS</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -89,4 +110,4 @@ export default function NextPageHub() {
     </div>
   );
 }
-// KRAJ FAJLA: NextPageHub.jsx
+// END OF FILE: NextPageHub.jsx
