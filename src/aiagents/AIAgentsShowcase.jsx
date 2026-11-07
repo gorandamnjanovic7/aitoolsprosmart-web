@@ -1,10 +1,10 @@
 // START OF FILE: AIAgentsShowcase.jsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Bot, Briefcase, Cpu, Maximize, Zap, ScanLine, Sparkles, Award, 
   Terminal, Aperture, Clapperboard, Code, ShieldCheck, MonitorPlay, 
-  Video, Image as ImageIcon, LayoutGrid 
+  Video, Image as ImageIcon, LayoutGrid, X
 } from 'lucide-react';
 
 // Data from NextPageHub
@@ -28,6 +28,8 @@ const masterTools = [
 ];
 
 export default function AIAgentsShowcase() {
+  const [isVisualModalOpen, setIsVisualModalOpen] = useState(false);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -49,10 +51,103 @@ export default function AIAgentsShowcase() {
 
   return (
     <div className="min-h-screen bg-[#02040a] text-white py-24 px-4 sm:px-6 font-sans relative z-10">
+      
+      {/* ========================================= */}
+      {/* COMPACT NO-SCROLL MODAL: VISUAL CONCIERGE   */}
+      {/* ========================================= */}
+      {isVisualModalOpen && (
+        <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4 backdrop-blur-md">
+          <div className="bg-[#06142e] border-2 border-blue-500/60 rounded-3xl max-w-2xl w-full relative shadow-[0_0_80px_rgba(37,99,235,0.5)] animate-in fade-in zoom-in duration-300 p-6 md:p-8">
+            
+            <button 
+              onClick={() => setIsVisualModalOpen(false)}
+              className="absolute top-5 right-5 text-blue-300 hover:text-white transition-colors bg-blue-900/40 p-2 rounded-full hover:bg-blue-800"
+            >
+              <X size={24} />
+            </button>
+            
+            <div className="flex items-center gap-4 mb-6 border-b border-blue-500/30 pb-4">
+              <div className="w-14 h-14 rounded-2xl bg-blue-600/30 flex items-center justify-center text-blue-300 border border-blue-400/50 shadow-inner">
+                <Bot size={32} />
+              </div>
+              <div>
+                <h2 className="text-xl md:text-3xl font-black uppercase tracking-wider text-white drop-shadow-md">Visual Concierge</h2>
+                <p className="text-blue-300 text-[10px] md:text-xs font-bold uppercase tracking-widest mt-1">Mockups & UI/UX Routing</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              
+              {/* 1. White-label Buyout */}
+              <div className="bg-blue-900/50 border border-blue-400/60 rounded-xl p-4 md:p-5 hover:bg-blue-800/60 transition-colors">
+                <h4 className="text-sm md:text-base font-black text-white uppercase tracking-wider mb-2 flex items-center gap-2">
+                  <Award className="w-5 h-5 text-blue-400" />
+                  1. Full Buyout (White-Label)
+                </h4>
+                <p className="text-blue-100 text-xs md:text-sm font-medium mb-2">
+                  Custom-built AI agent with full transfer of ownership and infrastructure, with no ongoing monthly maintenance fees.
+                </p>
+                <p className="text-blue-300 font-black text-2xl md:text-3xl">
+                  $4,000 – $7,000 <span className="text-blue-200/70 text-[10px] md:text-xs font-bold uppercase tracking-wider">/ one-time</span>
+                </p>
+              </div>
+
+              {/* 2. One-Time Setup */}
+              <div className="bg-blue-950/60 border border-blue-500/40 rounded-xl p-4 md:p-5 hover:bg-blue-900/70 transition-colors">
+                <h4 className="text-sm md:text-base font-black text-white uppercase tracking-wider mb-2 flex items-center gap-2">
+                  <Cpu className="w-4 h-4 text-emerald-400" />
+                  2. One-Time Setup
+                </h4>
+                <p className="text-blue-200 text-xs md:text-sm font-medium mb-2">
+                  Expert integration and implementation directly into your existing website and database architecture.
+                </p>
+                <p className="text-emerald-400 font-black text-xl md:text-2xl">
+                  $1,000 – $1,500 <span className="text-emerald-500/70 text-[10px] md:text-xs font-bold uppercase tracking-wider">/ one-time</span>
+                </p>
+              </div>
+
+              {/* 3 & 4. Monthly Options */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* Monthly Maintenance */}
+                <div className="bg-[#030b1c] border border-blue-800/80 rounded-xl p-4 hover:border-emerald-500/50 transition-colors">
+                  <h4 className="text-[11px] md:text-xs font-black text-blue-100 uppercase tracking-wider mb-1">3. Monthly Maintenance</h4>
+                  <p className="text-blue-300/80 text-[10px] md:text-xs mb-2">
+                    System monitoring and API coverage.
+                  </p>
+                  <p className="text-emerald-400 font-black text-lg md:text-xl">
+                    $299 – $499 <span className="text-slate-500 text-[9px] md:text-[10px] font-bold uppercase">/ mo</span>
+                  </p>
+                </div>
+
+                {/* Cloud Access */}
+                <div className="bg-[#030b1c] border border-blue-800/80 rounded-xl p-4 hover:border-cyan-400/50 transition-colors">
+                  <h4 className="text-[11px] md:text-xs font-black text-blue-100 uppercase tracking-wider mb-1">4. Cloud Access</h4>
+                  <p className="text-blue-300/80 text-[10px] md:text-xs mb-2">
+                    Use via our secure platform environment.
+                  </p>
+                  <p className="text-cyan-400 font-black text-lg md:text-xl">
+                    $39 <span className="text-slate-500 text-[9px] md:text-[10px] font-bold uppercase">/ mo</span>
+                  </p>
+                </div>
+              </div>
+
+            </div>
+            
+            <button 
+              onClick={() => setIsVisualModalOpen(false)}
+              className="w-full mt-6 bg-blue-600 hover:bg-blue-500 text-white text-sm font-black uppercase tracking-widest py-3 md:py-4 rounded-xl transition shadow-[0_0_20px_rgba(37,99,235,0.4)]"
+            >
+              Close Pricing
+            </button>
+
+          </div>
+        </div>
+      )}
+
       <div className="max-w-[1200px] mx-auto space-y-24">
         
         {/* ========================================= */}
-        {/* TOP SECTION: AI AGENTS                    */}
+        {/* TOP SECTION: AI AGENTS SALES & EMBED      */}
         {/* ========================================= */}
         <section>
           <div className="text-center max-w-3xl mx-auto mb-16 relative">
@@ -66,60 +161,69 @@ export default function AIAgentsShowcase() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
-            {/* Agent 1: Visual Concierge (Jednostavna kartica) */}
+            {/* Agent 1: Visual Concierge */}
             <div className="flex flex-col gap-4">
               <div className="bg-[#050914] border border-cyan-500/30 rounded-3xl p-6 flex flex-col items-center text-center shadow-[0_0_30px_rgba(8,145,178,0.15)] h-full justify-center">
                  <div className="w-16 h-16 rounded-2xl bg-cyan-600/20 flex items-center justify-center text-cyan-400 mb-4">
                     <Bot size={32} />
                  </div>
-                 <h3 className="text-white font-black text-lg uppercase mb-2">Visual Concierge</h3>
-                 <p className="text-slate-400 text-sm font-bold">Mockups & UI/UX Routing</p>
+                 <h3 className="text-white font-black text-lg uppercase mb-1">Visual Concierge</h3>
+                 <p className="text-cyan-400 text-xs font-bold uppercase tracking-widest mb-4">Mockups & UI/UX Routing</p>
+                 <p className="text-slate-400 text-xs font-medium leading-relaxed">
+                   Transforms raw product photos, logos, or UI designs into photorealistic commercial mockups in high resolution across multiple aspect ratios. Eliminates manual Photoshop rendering.
+                 </p>
               </div>
-              <div className="flex gap-2 mt-auto">
-                <button className="flex-1 bg-slate-900 border border-slate-700 hover:bg-slate-800 text-white text-xs font-bold uppercase py-3 rounded-xl transition">
-                  Use Cloud ($29/mo)
-                </button>
-                <button className="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black uppercase py-3 rounded-xl transition shadow-lg shadow-cyan-600/30">
-                  Buy & Embed ($990)
+              <div className="mt-auto">
+                <button 
+                  onClick={() => setIsVisualModalOpen(true)}
+                  className="w-full text-center bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black uppercase tracking-widest py-4 rounded-xl transition shadow-lg shadow-cyan-600/30"
+                >
+                  View Options & Pricing
                 </button>
               </div>
             </div>
 
-            {/* Agent 2: B2B Scoper (Jednostavna kartica) */}
+            {/* Agent 2: B2B Sales Scoper */}
             <div className="flex flex-col gap-4">
                <div className="bg-[#050914] border border-emerald-500/30 rounded-3xl p-6 flex flex-col items-center text-center shadow-[0_0_30px_rgba(16,185,129,0.15)] h-full justify-center">
-                 <div className="w-16 h-16 rounded-2xl bg-emerald-600/20 flex items-center justify-center text-emerald-400 mb-4">
-                    <Briefcase size={32} />
-                 </div>
-                 <h3 className="text-white font-black text-lg uppercase mb-2">B2B Sales Scoper</h3>
-                 <p className="text-slate-400 text-sm font-bold">Automated Project Quotes</p>
-              </div>
-              <div className="flex gap-2 mt-auto">
-                <button className="flex-1 bg-slate-900 border border-slate-700 hover:bg-slate-800 text-white text-xs font-bold uppercase py-3 rounded-xl transition">
+                  <div className="w-16 h-16 rounded-2xl bg-emerald-600/20 flex items-center justify-center text-emerald-400 mb-4">
+                     <Briefcase size={32} />
+                  </div>
+                  <h3 className="text-white font-black text-lg uppercase mb-1">B2B Sales Scoper</h3>
+                  <p className="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-4">Automated Project Quotes</p>
+                  <p className="text-slate-400 text-xs font-medium leading-relaxed">
+                    An intelligent agent deployed on client websites that conducts deep contextual conversations, qualifies leads, answers complex product queries, and books appointments automatically.
+                  </p>
+               </div>
+               <div className="flex gap-2 mt-auto">
+                <Link to="/cloud-agent-scoper" className="flex-1 text-center bg-slate-900 border border-slate-700 hover:bg-slate-800 text-white text-[10px] sm:text-xs font-bold uppercase py-4 rounded-xl transition">
                   Use Cloud ($79/mo)
-                </button>
-                <button className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black uppercase py-3 rounded-xl transition shadow-lg shadow-emerald-600/30">
+                </Link>
+                <Link to="/checkout-embed-scoper" className="flex-1 text-center bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] sm:text-xs font-black uppercase py-4 rounded-xl transition shadow-lg shadow-emerald-600/30">
                   Buy & Embed ($1,490)
-                </button>
+                </Link>
               </div>
             </div>
 
-            {/* Agent 3: Tech Engineer (Jednostavna kartica) */}
+            {/* Agent 3: Tech Engineer */}
             <div className="flex flex-col gap-4">
                <div className="bg-[#050914] border border-indigo-500/30 rounded-3xl p-6 flex flex-col items-center text-center shadow-[0_0_30px_rgba(79,70,229,0.15)] h-full justify-center">
-                 <div className="w-16 h-16 rounded-2xl bg-indigo-600/20 flex items-center justify-center text-indigo-400 mb-4">
-                    <Cpu size={32} />
-                 </div>
-                 <h3 className="text-white font-black text-lg uppercase mb-2">Tech 24/7 Engineer</h3>
-                 <p className="text-slate-400 text-sm font-bold">Dev & Infrastructure Support</p>
-              </div>
-              <div className="flex gap-2 mt-auto">
-                <button className="flex-1 bg-slate-900 border border-slate-700 hover:bg-slate-800 text-white text-xs font-bold uppercase py-3 rounded-xl transition">
+                  <div className="w-16 h-16 rounded-2xl bg-indigo-600/20 flex items-center justify-center text-indigo-400 mb-4">
+                     <Cpu size={32} />
+                  </div>
+                  <h3 className="text-white font-black text-lg uppercase mb-1">Tech 24/7 Engineer</h3>
+                  <p className="text-indigo-400 text-xs font-bold uppercase tracking-widest mb-4">Dev & Infrastructure Support</p>
+                  <p className="text-slate-400 text-xs font-medium leading-relaxed">
+                    Provides round-the-clock autonomous infrastructure support, resolving technical queries, diagnosing errors, and assisting with development workflows seamlessly.
+                  </p>
+               </div>
+               <div className="flex gap-2 mt-auto">
+                <Link to="/cloud-agent-tech" className="flex-1 text-center bg-slate-900 border border-slate-700 hover:bg-slate-800 text-white text-[10px] sm:text-xs font-bold uppercase py-4 rounded-xl transition">
                   Use Cloud ($49/mo)
-                </button>
-                <button className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black uppercase py-3 rounded-xl transition shadow-lg shadow-indigo-600/30">
+                </Link>
+                <Link to="/checkout-embed-tech" className="flex-1 text-center bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] sm:text-xs font-black uppercase py-4 rounded-xl transition shadow-lg shadow-indigo-600/30">
                   Buy & Embed ($1,200)
-                </button>
+                </Link>
               </div>
             </div>
           </div>

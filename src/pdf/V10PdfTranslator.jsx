@@ -155,15 +155,11 @@ const V10PdfTranslator = () => {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isPreviewRequest, setIsPreviewRequest] = useState(false); 
   
-  // LOGIKA 1: Pamćenje besplatnog testa
   const [freeTestUsed, setFreeTestUsed] = useState(false);
-  
-  // LOGIKA 2: State za praćenje korisničke kvote (Usage Progress Bar)
   const [userQuota, setUserQuota] = useState({ isPaid: false, used: 0, total: 1000, isUnlimited: false });
   const [authInitialized, setAuthInitialized] = useState(false);
 
   useEffect(() => {
-    // Provera da li je besplatni test već iskorišćen
     if (typeof window !== 'undefined') {
       const used = localStorage.getItem('v10_free_test_used');
       if (used === 'true') {
@@ -171,7 +167,6 @@ const V10PdfTranslator = () => {
       }
     }
 
-    // Slušamo promene logovanja i vučemo podatke o kvoti
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setAuthInitialized(true);
       if (user) {
@@ -191,11 +186,9 @@ const V10PdfTranslator = () => {
     return 'https://aitoolsprosmart-becend-production.up.railway.app';
   };
 
-  // Funkcija koja vuče podatke o plaćenom paketu i stranicama sa tvog backenda
   const fetchUserQuota = async (user) => {
     try {
       const token = await user.getIdToken();
-      // Očekuje se da backend ima ovu rutu koja čita iz /pdf_translator_entitlements/{uid}
       const response = await fetch(`${getApiBase()}/api/user-quota`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -239,13 +232,11 @@ const V10PdfTranslator = () => {
     setDownloadUrl(null);
     const currentUser = auth.currentUser;
 
-    // Ako nije ulogovan, a klikne Full Translation ili je iskoristio free test
     if (!currentUser && (!isTestMode || freeTestUsed)) {
       setIsLoginModalOpen(true);
       return;
     }
     
-    // Besplatan test prolazi ako nije iskorišćen i bez logovanja
     if (!currentUser && isTestMode && !freeTestUsed) {
        proceedWithTranslation(isTestMode, null);
        return;
@@ -260,7 +251,6 @@ const V10PdfTranslator = () => {
       return;
     }
 
-    // Zaštita za admine (vlasnike)
     const adminEmails = [
       'damnjanovicgoran7@gmail.com',
       'historical.stories7972@gmail.com',
@@ -273,14 +263,12 @@ const V10PdfTranslator = () => {
       return;
     }
 
-    // LOGIKA 3: AKO JE KORISNIK VEĆ PLATIO (i ima kvotu), PREVODI ODMAH, PRESKAČE NAPLATU
     if (userQuota.isUnlimited || (userQuota.isPaid && userQuota.used < userQuota.total)) {
       console.log("[V10 QUOTA SYSTEM] User has active paid quota. Proceeding to translation.");
       executeTranslation(false);
       return;
     }
 
-    // Ako nista od ovoga nije tačno (nije admin, nije platio, ili je potrošio kvotu) - izbacuje naplatu!
     try {
       const response = await fetch(`${getApiBase()}/api/check-admin`, {
         method: 'POST',
@@ -301,8 +289,6 @@ const V10PdfTranslator = () => {
 
   const handleLoginSuccess = (user) => {
     console.log("[V10 AUTH] User successfully signed in:", user.email);
-    // Posle uspešnog logovanja, skidamo stanje test modala i preusmeravamo ga
-    // direktno u tok za prevod (koji će okinuti checkout ako nije platio)
     fetchUserQuota(user).then(() => {
       proceedWithTranslation(isPreviewRequest, user.email);
     });
@@ -311,8 +297,6 @@ const V10PdfTranslator = () => {
   const handlePaymentSuccess = () => {
     console.log("[V10 PAYMENT SUCCESS] Payment verified, executing full translation.");
     setIsCheckoutOpen(false);
-    
-    // Ažuriramo stanje kvote lokalno da korisnik odmah vidi Progress Bar
     setUserQuota(prev => ({ ...prev, isPaid: true, total: 1000, used: 0 }));
     executeTranslation(false); 
   };
@@ -321,7 +305,7 @@ const V10PdfTranslator = () => {
     setLoading(true);
     setProgress(10); 
     setDownloadUrl(null);
-    setStatusMessage(isTestMode ? "Initializing preview test (max 3 pages)..." : "Initializing V10 DTP Neural Engine...");
+    setStatusMessage(isTestMode ? "Initializing free 1-page preview test..." : "Initializing V10 DTP Neural Engine...");
 
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
@@ -364,12 +348,11 @@ const V10PdfTranslator = () => {
       const url = window.URL.createObjectURL(blob);
       
       const safeLangCode = targetLang.replace(/[^a-zA-Z0-9]/g, '_').toUpperCase();
-      const filename = `Translated_${isTestMode ? 'PREVIEW_' : ''}${safeLangCode}_${selectedFile.name}`;
+      const filename = `Translated_${isTestMode ? 'FREE_1_PAGE_' : ''}${safeLangCode}_${selectedFile.name}`;
       
       setDownloadUrl(url);
       setDownloadFilename(filename);
 
-      // KADA SE BESPLATNI TEST ZAVRŠI, ZATAMNJUJEMO DUGME I OTVARAMO LOGIN MODAL
       if (isTestMode) {
         if (typeof window !== 'undefined') {
           localStorage.setItem('v10_free_test_used', 'true');
@@ -378,12 +361,11 @@ const V10PdfTranslator = () => {
         
         if (!auth.currentUser) {
           setTimeout(() => {
-            setIsPreviewRequest(false); // Spremamo ga za Full Translation levak
+            setIsPreviewRequest(false);
             setIsLoginModalOpen(true);
           }, 1500);
         }
       } else if (auth.currentUser) {
-        // Ako je odradio FULL prevod, osvežavamo kvotu sa servera da bi Progress Bar pokazao promenu
         fetchUserQuota(auth.currentUser);
       }
 
@@ -425,7 +407,6 @@ const V10PdfTranslator = () => {
                 </div>
               </div>
 
-              {/* LOGIKA 4: USAGE PROGRESS BAR (Prikazuje se samo onima koji su platili paket) */}
               {auth.currentUser && (userQuota.isPaid || userQuota.isUnlimited) && (
                 <div className="mb-8 bg-[#050914] border border-emerald-500/40 rounded-2xl p-5 shadow-[0_0_25px_rgba(16,185,129,0.15)] relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-[40px] rounded-full pointer-events-none"></div>
@@ -455,7 +436,7 @@ const V10PdfTranslator = () => {
                     )}
                     {userQuota.isUnlimited && (
                       <p className="text-[10px] text-emerald-300/80 font-bold tracking-widest uppercase">
-                         Admin Bypass: Unlimited Pages Active
+                          Admin Bypass: Unlimited Pages Active
                       </p>
                     )}
                   </div>
@@ -562,7 +543,7 @@ const V10PdfTranslator = () => {
                 ) : (
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     
-                    {/* DUGME ZA BESPLATNI TEST - ZATAMNJENO AKO JE ISKORIŠĆENO */}
+                    {/* BESPLATAN TEST - 1 STRANICA */}
                     <button
                       type="button"
                       disabled={freeTestUsed}
@@ -578,11 +559,11 @@ const V10PdfTranslator = () => {
                         {freeTestUsed ? 'FREE TEST USED' : 'FREE TEST'}
                       </span>
                       <span className="text-[9px] font-bold opacity-80">
-                        {freeTestUsed ? 'Limit reached' : 'Translate first 3 pages'}
+                        {freeTestUsed ? 'Limit reached' : 'Translate first 1 page'}
                       </span>
                     </button>
 
-                    {/* DUGME ZA FULL TRANSLATION - UVEK AKTIVNO */}
+                    {/* FULL TRANSLATION */}
                     <button
                       type="button"
                       onClick={() => handleTranslateClick(false)}
@@ -695,7 +676,7 @@ const V10PdfTranslator = () => {
               <div className="w-8 h-8 mt-1 rounded-full bg-blue-900/80 border border-blue-400/60 flex items-center justify-center shrink-0 text-blue-200 text-sm font-black shadow-[0_0_10px_rgba(37,99,235,0.3)]">1</div>
               <p className="text-zinc-200 text-sm font-bold leading-relaxed">
                 <strong className="text-blue-200 uppercase tracking-wider text-xs block mb-1.5">Free Test:</strong> 
-                Translate the first 3 pages of any PDF file completely free to evaluate translation quality and layout preservation.
+                Translate the first 1 page of any PDF file completely free to evaluate translation quality and layout preservation.
               </p>
             </div>
             

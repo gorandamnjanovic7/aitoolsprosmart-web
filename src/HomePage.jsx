@@ -6,6 +6,7 @@ import { Helmet } from 'react-helmet-async';
 // V8 BLOCKS
 import HeroBanner from './HeroBanner';
 import TechSlant from './TechSlant';
+import AiAgentsHeroBanner from "./aiagents/AiAgentsHeroBanner";
 import B2BProtocols from './B2BProtocols';
 import VerticalCardsBox from './VerticalCardsBox';
 import QRMenuPromo from './QRMenuPromo';
@@ -36,6 +37,9 @@ export default function HomePage({ apps = [] }) {
       <Helmet><title>AI TOOLS PRO SMART | GLOBAL</title></Helmet>
       
       <HeroBanner />
+      
+      {/* 🚀 OVDE SMO UBACILI NAŠ NOVI BANER ZA AI AGENTE */}
+      <AiAgentsHeroBanner />
       
       <TechSlant />
       
