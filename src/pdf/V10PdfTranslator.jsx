@@ -543,11 +543,20 @@ const V10PdfTranslator = () => {
                 ) : (
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     
-                    {/* BESPLATAN TEST - 1 STRANICA */}
+                    {/* DUGME ZA BESPLATNI TEST SA GA4 EVENT-OM */}
                     <button
                       type="button"
                       disabled={freeTestUsed}
-                      onClick={() => handleTranslateClick(true)}
+                      onClick={() => {
+                        // GA4 Custom Event Tracking
+                        if (typeof window !== 'undefined' && window.gtag) {
+                          window.gtag('event', 'pdf_free_test_click', {
+                            event_category: 'Engagement',
+                            event_label: 'Free 1-Page PDF Test'
+                          });
+                        }
+                        handleTranslateClick(true);
+                      }}
                       className={`flex-1 px-4 py-4 rounded-xl text-[11px] tracking-widest uppercase transition-all duration-300 flex flex-col items-center justify-center gap-1 group ${
                         freeTestUsed 
                           ? 'bg-[#03050a] border-2 border-zinc-800 text-zinc-600 cursor-not-allowed opacity-60 shadow-none'
