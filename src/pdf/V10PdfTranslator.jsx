@@ -139,6 +139,12 @@ const SUPPORTED_LANGUAGES = [
   { code: 'zu', name: 'Zulu' }
 ];
 
+const ADMIN_EMAILS = [
+  'damnjanovicgoran7@gmail.com',
+  'historical.stories7972@gmail.com',
+  'aitoolsprosmart@gmail.com'
+];
+
 const V10PdfTranslator = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [sourceLang, setSourceLang] = useState('auto');
@@ -157,7 +163,10 @@ const V10PdfTranslator = () => {
   
   const [freeTestUsed, setFreeTestUsed] = useState(false);
   const [userQuota, setUserQuota] = useState({ isPaid: false, used: 0, total: 1000, isUnlimited: false });
+  
+  // 🔥 NOVI STATE ZA ADMINA I UČITAVANJE
   const [authInitialized, setAuthInitialized] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -168,12 +177,16 @@ const V10PdfTranslator = () => {
     }
 
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      setAuthInitialized(true);
       if (user) {
+        // Provera da li je ulogovan admin
+        const isUserAdmin = ADMIN_EMAILS.includes(user.email.toLowerCase());
+        setIsAdmin(isUserAdmin);
         fetchUserQuota(user);
       } else {
+        setIsAdmin(false);
         setUserQuota({ isPaid: false, used: 0, total: 1000, isUnlimited: false });
       }
+      setAuthInitialized(true);
     });
 
     return () => unsubscribe();
@@ -251,13 +264,7 @@ const V10PdfTranslator = () => {
       return;
     }
 
-    const adminEmails = [
-      'damnjanovicgoran7@gmail.com',
-      'historical.stories7972@gmail.com',
-      'aitoolsprosmart@gmail.com'
-    ];
-
-    if (userEmail && adminEmails.includes(userEmail.toLowerCase())) {
+    if (userEmail && ADMIN_EMAILS.includes(userEmail.toLowerCase())) {
       console.log("[V10 ADMIN BYPASS] System owner executing full translation for free.");
       executeTranslation(false);
       return;
@@ -289,7 +296,12 @@ const V10PdfTranslator = () => {
 
   const handleLoginSuccess = (user) => {
     console.log("[V10 AUTH] User successfully signed in:", user.email);
+    const isUserAdmin = ADMIN_EMAILS.includes(user.email.toLowerCase());
+    setIsAdmin(isUserAdmin);
+    
     fetchUserQuota(user).then(() => {
+      // Ako je admin na maintenance modu logovan, ne želimo odmah prevod, nego ga pustimo na stranicu
+      if (isUserAdmin) return;
       proceedWithTranslation(isPreviewRequest, user.email);
     });
   };
@@ -380,6 +392,61 @@ const V10PdfTranslator = () => {
     }
   };
 
+  // 🔥 1. EKRAN ZA UČITAVANJE (Dok Firebase proverava ko si)
+  if (!authInitialized) {
+    return (
+      <div className="min-h-screen bg-[#02040a] flex flex-col items-center justify-center">
+        <Loader2 className="animate-spin text-blue-500 w-12 h-12 mb-4" />
+        <p className="text-zinc-400 text-sm font-bold uppercase tracking-widest">Initializing Neural Engine...</p>
+      </div>
+    );
+  }
+
+  // 🔥 2. MAINTENANCE MODAL (Blokira sve osim tebe)
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#02040a] via-[#050914] to-[#02040a] pt-12 pb-24 px-4 sm:px-6 relative overflow-hidden flex items-center justify-center">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none"></div>
+        
+        <div className="max-w-2xl w-full bg-[#080d1a]/90 backdrop-blur-xl border-2 border-blue-500/60 rounded-[2.5rem] p-10 sm:p-16 shadow-[0_0_50px_rgba(37,99,235,0.25)] text-center relative z-10">
+          <Globe className="w-16 h-16 text-blue-400 mx-auto mb-6 animate-pulse" />
+          <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-cyan-300 mb-6">
+            System Upgrade in Progress
+          </h2>
+          <p className="text-zinc-300 text-sm sm:text-base font-bold leading-relaxed mb-6">
+            Due to the massive integration volume of 160+ supported translation languages, this neural engine module is currently undergoing core maintenance to ensure absolute layout precision.
+          </p>
+          <p className="text-zinc-400 text-xs sm:text-sm font-bold leading-relaxed mb-10">
+            We are specifically calibrating our DTP protection systems to flawlessly support complex regional dialects and writing systems such as 
+            <span className="text-blue-300"> Cantonese (HK), Kurdish (Kurmanji), Scots Gaelic, Hmong, and Uyghur</span>.
+          </p>
+          
+          <div className="inline-flex items-center gap-3 px-6 py-3 rounded-xl bg-blue-950/40 border border-blue-900/50 text-blue-400 text-xs font-black uppercase tracking-widest">
+            <Loader2 className="animate-spin w-4 h-4" /> Optimization in progress...
+          </div>
+
+          {/* TAJNO DUGME ZA ADMIN LOGIN (Samo ti znaš da je tu) */}
+          <button 
+            onClick={() => setIsLoginModalOpen(true)}
+            className="absolute bottom-4 right-6 text-[10px] font-bold tracking-widest uppercase text-[#080d1a] hover:text-zinc-500 transition-colors"
+          >
+            Admin Access
+          </button>
+        </div>
+
+        {/* Da bi admin mogao da se uloguje iz Maintenance ekrana */}
+        <LoginRequiredModal
+          isOpen={isLoginModalOpen}
+          onClose={() => setIsLoginModalOpen(false)}
+          onLoginSuccess={handleLoginSuccess}
+          packageName="V10 Admin Authentication"
+          price={0}
+        />
+      </div>
+    );
+  }
+
+  // 🔥 3. GLAVNA STRANICA (Samo ako si Admin)
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#02040a] via-[#050914] to-[#02040a] pt-12 pb-24 px-4 sm:px-6 relative overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none"></div>
@@ -407,7 +474,7 @@ const V10PdfTranslator = () => {
                 </div>
               </div>
 
-              {auth.currentUser && (userQuota.isPaid || userQuota.isUnlimited) && (
+              {auth.currentUser && (userQuota.isPaid || userQuota.isUnlimited || isAdmin) && (
                 <div className="mb-8 bg-[#050914] border border-emerald-500/40 rounded-2xl p-5 shadow-[0_0_25px_rgba(16,185,129,0.15)] relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-[40px] rounded-full pointer-events-none"></div>
                   <div className="relative z-10">
@@ -417,11 +484,11 @@ const V10PdfTranslator = () => {
                          <span className="text-[11px] font-black text-emerald-400 uppercase tracking-widest">Active Enterprise Quota</span>
                        </div>
                        <span className="text-base font-black text-white">
-                         {userQuota.isUnlimited ? '∞' : `${userQuota.used} / ${userQuota.total}`} Pages
+                         {isAdmin || userQuota.isUnlimited ? '∞' : `${userQuota.used} / ${userQuota.total}`} Pages
                        </span>
                     </div>
                     
-                    {!userQuota.isUnlimited && (
+                    {!(isAdmin || userQuota.isUnlimited) && (
                       <>
                         <div className="w-full bg-emerald-950/40 rounded-full h-3 overflow-hidden border border-emerald-900/50 mb-2">
                            <div 
@@ -434,7 +501,7 @@ const V10PdfTranslator = () => {
                         </p>
                       </>
                     )}
-                    {userQuota.isUnlimited && (
+                    {(isAdmin || userQuota.isUnlimited) && (
                       <p className="text-[10px] text-emerald-300/80 font-bold tracking-widest uppercase">
                           Admin Bypass: Unlimited Pages Active
                       </p>
@@ -543,12 +610,10 @@ const V10PdfTranslator = () => {
                 ) : (
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     
-                    {/* DUGME ZA BESPLATNI TEST SA GA4 EVENT-OM */}
                     <button
                       type="button"
-                      disabled={freeTestUsed}
+                      disabled={freeTestUsed && !isAdmin}
                       onClick={() => {
-                        // GA4 Custom Event Tracking
                         if (typeof window !== 'undefined' && window.gtag) {
                           window.gtag('event', 'pdf_free_test_click', {
                             event_category: 'Engagement',
@@ -558,21 +623,20 @@ const V10PdfTranslator = () => {
                         handleTranslateClick(true);
                       }}
                       className={`flex-1 px-4 py-4 rounded-xl text-[11px] tracking-widest uppercase transition-all duration-300 flex flex-col items-center justify-center gap-1 group ${
-                        freeTestUsed 
+                        freeTestUsed && !isAdmin
                           ? 'bg-[#03050a] border-2 border-zinc-800 text-zinc-600 cursor-not-allowed opacity-60 shadow-none'
                           : 'bg-[#080d1a] border-2 border-blue-600 hover:bg-blue-600 hover:text-white text-blue-400 shadow-[0_0_15px_rgba(37,99,235,0.15)]'
                       }`}
                     >
                       <span className="flex items-center justify-center gap-2">
-                        <Play size={16} className={freeTestUsed ? '' : 'group-hover:scale-110 transition-transform'} /> 
-                        {freeTestUsed ? 'FREE TEST USED' : 'FREE TEST'}
+                        <Play size={16} className={(freeTestUsed && !isAdmin) ? '' : 'group-hover:scale-110 transition-transform'} /> 
+                        {(freeTestUsed && !isAdmin) ? 'FREE TEST USED' : 'FREE TEST'}
                       </span>
                       <span className="text-[9px] font-bold opacity-80">
-                        {freeTestUsed ? 'Limit reached' : 'Translate first 1 page'}
+                        {(freeTestUsed && !isAdmin) ? 'Limit reached' : 'Translate first 1 page'}
                       </span>
                     </button>
 
-                    {/* FULL TRANSLATION */}
                     <button
                       type="button"
                       onClick={() => handleTranslateClick(false)}

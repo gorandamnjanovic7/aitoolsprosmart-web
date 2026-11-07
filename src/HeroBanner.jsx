@@ -3,13 +3,14 @@
 // ============================================================================
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Volume2, VolumeX } from 'lucide-react';
-import { MatrixRain, BANNER_DATA } from './data';
+import { MatrixRain } from './data'; // MatrixRain importujemo
 
 const HeroBanner = ({ setIsBannerHovered }) => {
   const [activeSlide, setActiveSlide] = useState(0); 
   const [isHovered, setIsHovered] = useState(false);
-  const [isMuted, setIsMuted] = useState(false); // Omogućava kontrolu zvuka
-  const timerRef = useRef(null);
+  
+  // Vraćeno na false po tvom zahtevu (zvuk je odmah uključen)
+  const [isMuted, setIsMuted] = useState(false); 
   const videoRefs = useRef([]);
 
   const nextSlide = useCallback(() => {
@@ -20,40 +21,24 @@ const HeroBanner = ({ setIsBannerHovered }) => {
     setActiveSlide(s => (s - 1 + (BANNER_DATA?.length || 1)) % (BANNER_DATA?.length || 1));
   }, []);
   
-  // Sinhronizacija videa i tačno 30 sekundi trajanja po slajdu
+  // Sinhronizacija videa
   useEffect(() => {
     videoRefs.current.forEach((vid, idx) => {
       if (vid) {
         if (idx === activeSlide) {
-          vid.currentTime = 0;
-          vid.play().catch(() => {});
+          vid.currentTime = 0; // Kreni ispočetka
+          const playPromise = vid.play();
+          if (playPromise !== undefined) {
+             playPromise.catch(error => {
+                console.log("Pretraživač blokira autoplay sa zvukom. Čeka se interakcija korisnika.", error);
+             });
+          }
         } else {
           vid.pause();
         }
       }
     });
   }, [activeSlide]);
-
-  useEffect(() => { 
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-
-    if (!isHovered) {
-      // Uzima trajanje iz data.js (podrazumevano 30000ms = 30 sekundi)
-      const slideDuration = BANNER_DATA[activeSlide]?.duration || 30000;
-      timerRef.current = setTimeout(() => {
-        nextSlide();
-      }, slideDuration); 
-    }
-
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-    };
-  }, [isHovered, activeSlide, nextSlide]);
 
   const handleMouseEnter = () => { 
     setIsHovered(true); 
@@ -68,12 +53,11 @@ const HeroBanner = ({ setIsBannerHovered }) => {
   return (
     <div 
       id="home-banner" 
-      // Povećana visina i korišćenje flexbox-a da se ceo baner vidi u celosti bez kropovanja
       className="relative w-full h-[70vh] md:h-[88vh] lg:h-[95vh] flex items-center justify-center overflow-hidden bg-black text-white border-b border-orange-500/40 shadow-[0_20px_50px_rgba(234,88,12,0.15)]"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {/* Video Pozadina - Korišćenje object-contain da se vidi CEO video bez sečenja */}
+      {/* Video Pozadina */}
       <div className="absolute inset-0 z-0 bg-black flex items-center justify-center">
         {(BANNER_DATA || []).map((item, idx) => (
           <div key={idx} className={`absolute inset-0 transition-opacity duration-1000 ${idx === activeSlide ? 'opacity-100' : 'opacity-0'} z-0 flex items-center justify-center`}>
@@ -82,9 +66,9 @@ const HeroBanner = ({ setIsBannerHovered }) => {
                 ref={el => videoRefs.current[idx] = el}
                 src={item.video} 
                 autoPlay 
-                loop 
                 playsInline
                 muted={isMuted}
+                onEnded={nextSlide} // Okida prelazak na sledeći kada se video završi
                 className="w-full h-full object-contain object-center"
               />
             )}
@@ -95,7 +79,7 @@ const HeroBanner = ({ setIsBannerHovered }) => {
       {/* Gradijent na dnu za tekst */}
       <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black via-black/50 to-transparent z-10" />
       
-      {/* Matrix kiša sa slabim opacitirom */}
+      {/* Matrix kiša sa slabim opacitetom */}
       <div className="absolute inset-0 z-20 w-full h-full pointer-events-none opacity-10"><MatrixRain /></div>
       
       {/* Dugme za zvuk (Mute / Unmute) */}
@@ -147,3 +131,30 @@ export default HeroBanner;
 // ============================================================================
 // KRAJ FAJLA: HeroBanner.jsx
 // ============================================================================
+
+// ============================================================================
+// POČETAK: BANNER_DATA NIZ
+// ============================================================================
+export const BANNER_DATA = [
+  { 
+    video: "/videos/v10-glass-plaque.webm", 
+    badge: "V10 KINETIC PROTOCOL", 
+    title: "PREMIUM GLASS PLAQUE MOCKUPS", 
+    subtitle: "Experience flawless 3D UI motion tracking and absolute material realism. Engineered exclusively for elite corporate branding and architectural presentations.",
+    duration: 30000, 
+  },
+  { 
+    video: "/videos/v10-food-ui.webm", 
+    badge: "MICHELIN STAR DIGITAL ASSETS", 
+    title: "GOURMET UI/UX INTEGRATION", 
+    subtitle: "Micro-macro cinematography meets holographic UI design. Flawless digital menu integrations for luxury high-end Food & Beverage commercial assets.",
+    duration: 30000, 
+  },
+  { 
+    video: "/videos/v10-billboard-ui.webm", 
+    badge: "GLOBAL CAMPAIGN ARCHITECTURE", 
+    title: "NEXT-GEN DIGITAL BILLBOARDS", 
+    subtitle: "Uncompromising outdoor and indoor display aesthetics. Fluid dynamic rendering with realistic environmental reflections for luxury brand positioning.",
+    duration: 30000,
+  }
+];
