@@ -57,10 +57,8 @@ import SaaSProtocolPage from './SaaSProtocolPage';
 import StandardMocup from './StandardMocup';
 import V10PdfTranslator from './pdf/V10PdfTranslator';
 
-
-// 🔥 NOVI 3-U-1 WIDGET I SHOWCASE (aiagents folder) 🔥
+// 🔥 SHOWCASE (aiagents folder) 🔥
 import AIAgentsShowcase from './aiagents/AIAgentsShowcase';
-import V103in1Widget from './aiagents/V103in1Widget';
 
 import { NotificationListener, NotificationModal } from './NotificationSystem';
 
@@ -717,9 +715,6 @@ function AppContent({ appsData, refreshData }) {
         
         {!isPublicMenuRoute && <SmartScrollButton />}
         {!isPublicMenuRoute && <V8ContactWidget />}
-        
-        {/* 🔥 NOVI 3-U-1 FLOATING AI WIDGET (Radi na svakoj stranici) 🔥 */}
-        {!isPublicMenuRoute && <V103in1Widget mode="floating" />}
 
         {!isPublicMenuRoute && isDesktop && (
           <div id="v8-counter-container">

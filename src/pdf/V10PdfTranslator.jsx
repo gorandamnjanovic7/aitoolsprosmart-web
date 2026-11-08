@@ -164,7 +164,6 @@ const V10PdfTranslator = () => {
   const [freeTestUsed, setFreeTestUsed] = useState(false);
   const [userQuota, setUserQuota] = useState({ isPaid: false, used: 0, total: 1000, isUnlimited: false });
   
-  // 🔥 NOVI STATE ZA ADMINA I UČITAVANJE
   const [authInitialized, setAuthInitialized] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -178,7 +177,6 @@ const V10PdfTranslator = () => {
 
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
-        // Provera da li je ulogovan admin
         const isUserAdmin = ADMIN_EMAILS.includes(user.email.toLowerCase());
         setIsAdmin(isUserAdmin);
         fetchUserQuota(user);
@@ -236,23 +234,21 @@ const V10PdfTranslator = () => {
   };
 
   const handleTranslateClick = async (isTestMode) => {
-    if (!selectedFile) {
-      alert("Please select a PDF file for translation.");
-      return;
-    }
-
     setIsPreviewRequest(isTestMode); 
     setDownloadUrl(null);
     const currentUser = auth.currentUser;
 
-    if (!currentUser && (!isTestMode || freeTestUsed)) {
+    // 🔥 AKO NIJE ULOGOVAN, OBAVEZNO OTVARAJ MODAL (Bez obzira na fajl)
+    if (!currentUser) {
       setIsLoginModalOpen(true);
       return;
     }
-    
-    if (!currentUser && isTestMode && !freeTestUsed) {
-       proceedWithTranslation(isTestMode, null);
-       return;
+
+    // Ako je ulogovan, tek sad proveravamo da li je ubacio PDF fajl
+    if (!selectedFile) {
+      setStatusMessage("⚠️ Please select a PDF document first.");
+      setTimeout(() => setStatusMessage(""), 3000);
+      return;
     }
 
     proceedWithTranslation(isTestMode, currentUser?.email);
@@ -300,8 +296,13 @@ const V10PdfTranslator = () => {
     setIsAdmin(isUserAdmin);
     
     fetchUserQuota(user).then(() => {
-      // Ako je admin na maintenance modu logovan, ne želimo odmah prevod, nego ga pustimo na stranicu
-      if (isUserAdmin) return;
+      // Ako je zaboravio fajl, izbacićemo mu message tek kad se uloguje i opet klikne 
+      // Zato proveravamo odmah posle logina da li fali fajl.
+      if (!selectedFile) {
+         setStatusMessage("⚠️ Please select a PDF document first to proceed with translation.");
+         setIsLoginModalOpen(false);
+         return;
+      }
       proceedWithTranslation(isPreviewRequest, user.email);
     });
   };
@@ -317,7 +318,7 @@ const V10PdfTranslator = () => {
     setLoading(true);
     setProgress(10); 
     setDownloadUrl(null);
-    setStatusMessage(isTestMode ? "Initializing free 1-page preview test..." : "Initializing V10 DTP Neural Engine...");
+    setStatusMessage(isTestMode ? "Initializing free 3-page preview test..." : "Initializing V10 DTP Neural Engine...");
 
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
@@ -360,7 +361,7 @@ const V10PdfTranslator = () => {
       const url = window.URL.createObjectURL(blob);
       
       const safeLangCode = targetLang.replace(/[^a-zA-Z0-9]/g, '_').toUpperCase();
-      const filename = `Translated_${isTestMode ? 'FREE_1_PAGE_' : ''}${safeLangCode}_${selectedFile.name}`;
+      const filename = `Translated_${isTestMode ? 'FREE_3_PAGES_' : ''}${safeLangCode}_${selectedFile.name}`;
       
       setDownloadUrl(url);
       setDownloadFilename(filename);
@@ -370,13 +371,6 @@ const V10PdfTranslator = () => {
           localStorage.setItem('v10_free_test_used', 'true');
         }
         setFreeTestUsed(true);
-        
-        if (!auth.currentUser) {
-          setTimeout(() => {
-            setIsPreviewRequest(false);
-            setIsLoginModalOpen(true);
-          }, 1500);
-        }
       } else if (auth.currentUser) {
         fetchUserQuota(auth.currentUser);
       }
@@ -384,7 +378,6 @@ const V10PdfTranslator = () => {
     } catch (error) {
       clearInterval(progressInterval);
       console.error("[V10 ERROR]", error);
-      alert("An error occurred during PDF translation.");
       setStatusMessage("Translation error encountered.");
       setProgress(0);
     } finally {
@@ -392,7 +385,6 @@ const V10PdfTranslator = () => {
     }
   };
 
-  // 🔥 1. EKRAN ZA UČITAVANJE (Dok Firebase proverava ko si)
   if (!authInitialized) {
     return (
       <div className="min-h-screen bg-[#02040a] flex flex-col items-center justify-center">
@@ -402,51 +394,6 @@ const V10PdfTranslator = () => {
     );
   }
 
-  // 🔥 2. MAINTENANCE MODAL (Blokira sve osim tebe)
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-[#02040a] via-[#050914] to-[#02040a] pt-12 pb-24 px-4 sm:px-6 relative overflow-hidden flex items-center justify-center">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none"></div>
-        
-        <div className="max-w-2xl w-full bg-[#080d1a]/90 backdrop-blur-xl border-2 border-blue-500/60 rounded-[2.5rem] p-10 sm:p-16 shadow-[0_0_50px_rgba(37,99,235,0.25)] text-center relative z-10">
-          <Globe className="w-16 h-16 text-blue-400 mx-auto mb-6 animate-pulse" />
-          <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-cyan-300 mb-6">
-            System Upgrade in Progress
-          </h2>
-          <p className="text-zinc-300 text-sm sm:text-base font-bold leading-relaxed mb-6">
-            Due to the massive integration volume of 160+ supported translation languages, this neural engine module is currently undergoing core maintenance to ensure absolute layout precision.
-          </p>
-          <p className="text-zinc-400 text-xs sm:text-sm font-bold leading-relaxed mb-10">
-            We are specifically calibrating our DTP protection systems to flawlessly support complex regional dialects and writing systems such as 
-            <span className="text-blue-300"> Cantonese (HK), Kurdish (Kurmanji), Scots Gaelic, Hmong, and Uyghur</span>.
-          </p>
-          
-          <div className="inline-flex items-center gap-3 px-6 py-3 rounded-xl bg-blue-950/40 border border-blue-900/50 text-blue-400 text-xs font-black uppercase tracking-widest">
-            <Loader2 className="animate-spin w-4 h-4" /> Optimization in progress...
-          </div>
-
-          {/* TAJNO DUGME ZA ADMIN LOGIN (Samo ti znaš da je tu) */}
-          <button 
-            onClick={() => setIsLoginModalOpen(true)}
-            className="absolute bottom-4 right-6 text-[10px] font-bold tracking-widest uppercase text-[#080d1a] hover:text-zinc-500 transition-colors"
-          >
-            Admin Access
-          </button>
-        </div>
-
-        {/* Da bi admin mogao da se uloguje iz Maintenance ekrana */}
-        <LoginRequiredModal
-          isOpen={isLoginModalOpen}
-          onClose={() => setIsLoginModalOpen(false)}
-          onLoginSuccess={handleLoginSuccess}
-          packageName="V10 Admin Authentication"
-          price={0}
-        />
-      </div>
-    );
-  }
-
-  // 🔥 3. GLAVNA STRANICA (Samo ako si Admin)
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#02040a] via-[#050914] to-[#02040a] pt-12 pb-24 px-4 sm:px-6 relative overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none"></div>
@@ -566,7 +513,7 @@ const V10PdfTranslator = () => {
 
               <div className="bg-[#050914] border border-blue-900/40 rounded-2xl p-6">
                 {statusMessage && (
-                  <p className="text-xs sm:text-sm text-blue-300 font-bold mb-4 text-center">
+                  <p className="text-xs sm:text-sm text-blue-300 font-bold mb-4 text-center bg-blue-900/20 py-2 rounded-lg">
                     {statusMessage}
                   </p>
                 )}
@@ -617,7 +564,7 @@ const V10PdfTranslator = () => {
                         if (typeof window !== 'undefined' && window.gtag) {
                           window.gtag('event', 'pdf_free_test_click', {
                             event_category: 'Engagement',
-                            event_label: 'Free 1-Page PDF Test'
+                            event_label: 'Free 3-Page PDF Test'
                           });
                         }
                         handleTranslateClick(true);
@@ -633,7 +580,7 @@ const V10PdfTranslator = () => {
                         {(freeTestUsed && !isAdmin) ? 'FREE TEST USED' : 'FREE TEST'}
                       </span>
                       <span className="text-[9px] font-bold opacity-80">
-                        {(freeTestUsed && !isAdmin) ? 'Limit reached' : 'Translate first 1 page'}
+                        {(freeTestUsed && !isAdmin) ? 'Limit reached' : 'Translate first 3 pages'}
                       </span>
                     </button>
 
@@ -749,7 +696,7 @@ const V10PdfTranslator = () => {
               <div className="w-8 h-8 mt-1 rounded-full bg-blue-900/80 border border-blue-400/60 flex items-center justify-center shrink-0 text-blue-200 text-sm font-black shadow-[0_0_10px_rgba(37,99,235,0.3)]">1</div>
               <p className="text-zinc-200 text-sm font-bold leading-relaxed">
                 <strong className="text-blue-200 uppercase tracking-wider text-xs block mb-1.5">Free Test:</strong> 
-                Translate the first 1 page of any PDF file completely free to evaluate translation quality and layout preservation.
+                Translate the first 3 pages of any PDF file completely free to evaluate translation quality and layout preservation.
               </p>
             </div>
             
