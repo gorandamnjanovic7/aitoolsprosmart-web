@@ -3,15 +3,41 @@
 // ============================================================================
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Volume2, VolumeX } from 'lucide-react';
-import { MatrixRain } from './data'; // MatrixRain importujemo
+import { MatrixRain } from './data';
+
+// ============================================================================
+// POČETAK: BANNER_DATA NIZ
+// ============================================================================
+export const BANNER_DATA = [
+  { 
+    video: "/videos/v10-glass-plaque.webm", 
+    badge: "V10 KINETIC PROTOCOL", 
+    title: "PREMIUM GLASS PLAQUE MOCKUPS", 
+    subtitle: "Experience flawless 3D UI motion tracking and absolute material realism. Engineered exclusively for elite corporate branding and architectural presentations.",
+    duration: 30000, 
+  },
+  { 
+    video: "/videos/v10-food-ui.webm", 
+    badge: "MICHELIN STAR DIGITAL ASSETS", 
+    title: "GOURMET UI/UX INTEGRATION", 
+    subtitle: "Micro-macro cinematography meets holographic UI design. Flawless digital menu integrations for luxury high-end Food & Beverage commercial assets.",
+    duration: 30000, 
+  },
+  { 
+    video: "/videos/v10-billboard-ui.webm", 
+    badge: "GLOBAL CAMPAIGN ARCHITECTURE", 
+    title: "NEXT-GEN DIGITAL BILLBOARDS", 
+    subtitle: "Uncompromising outdoor and indoor display aesthetics. Fluid dynamic rendering with realistic environmental reflections for luxury brand positioning.",
+    duration: 30000,
+  }
+];
 
 const HeroBanner = ({ setIsBannerHovered }) => {
   const [activeSlide, setActiveSlide] = useState(0); 
   const [isHovered, setIsHovered] = useState(false);
-  
-  // Vraćeno na false po tvom zahtevu (zvuk je odmah uključen)
-  const [isMuted, setIsMuted] = useState(false); 
+  const [isMuted, setIsMuted] = useState(true); // START MUTED TO ALLOW AUTOPLAY
   const videoRefs = useRef([]);
+  const timeoutRef = useRef(null);
 
   const nextSlide = useCallback(() => {
     setActiveSlide(s => (s + 1) % (BANNER_DATA?.length || 1));
@@ -20,17 +46,34 @@ const HeroBanner = ({ setIsBannerHovered }) => {
   const prevSlide = useCallback(() => {
     setActiveSlide(s => (s - 1 + (BANNER_DATA?.length || 1)) % (BANNER_DATA?.length || 1));
   }, []);
-  
+
+  // Handle Autoplay timer
+  useEffect(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    
+    if (!isHovered) {
+      const currentDuration = BANNER_DATA[activeSlide]?.duration || 30000;
+      timeoutRef.current = setTimeout(() => {
+        nextSlide();
+      }, currentDuration);
+    }
+
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [activeSlide, isHovered, nextSlide]);
+
   // Sinhronizacija videa
   useEffect(() => {
     videoRefs.current.forEach((vid, idx) => {
       if (vid) {
         if (idx === activeSlide) {
-          vid.currentTime = 0; // Kreni ispočetka
+          vid.currentTime = 0;
           const playPromise = vid.play();
           if (playPromise !== undefined) {
              playPromise.catch(error => {
-                console.log("Pretraživač blokira autoplay sa zvukom. Čeka se interakcija korisnika.", error);
+                console.log("Autoplay is waiting for user interaction.", error);
+                setIsMuted(true); // Force mute if browser blocks unmuted autoplay
              });
           }
         } else {
@@ -38,7 +81,7 @@ const HeroBanner = ({ setIsBannerHovered }) => {
         }
       }
     });
-  }, [activeSlide]);
+  }, [activeSlide, isMuted]);
 
   const handleMouseEnter = () => { 
     setIsHovered(true); 
@@ -68,7 +111,7 @@ const HeroBanner = ({ setIsBannerHovered }) => {
                 autoPlay 
                 playsInline
                 muted={isMuted}
-                onEnded={nextSlide} // Okida prelazak na sledeći kada se video završi
+                onEnded={nextSlide}
                 className="w-full h-full object-contain object-center"
               />
             )}
@@ -95,7 +138,7 @@ const HeroBanner = ({ setIsBannerHovered }) => {
       <button type="button" onClick={prevSlide} className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-40 text-white/80 hover:text-orange-500 transition-all p-3 bg-black/40 rounded-full backdrop-blur-sm">
         <ChevronLeft className="w-6 h-6 md:w-8 md:h-8" strokeWidth={3} />
       </button>
-      <button type="button" onClick={nextSlide} className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-40 text-white/80 hover:text-orange-500 transition-all p-3 bg-black/40 rounded-full backdrop-blur-sm">
+      <button type="button" onClick={nextSlide} className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-40 text-white/80 hover:text-white transition-all p-3 bg-black/40 rounded-full backdrop-blur-sm">
         <ChevronRight className="w-6 h-6 md:w-8 md:h-8" strokeWidth={3} />
       </button>
       
@@ -131,30 +174,3 @@ export default HeroBanner;
 // ============================================================================
 // KRAJ FAJLA: HeroBanner.jsx
 // ============================================================================
-
-// ============================================================================
-// POČETAK: BANNER_DATA NIZ
-// ============================================================================
-export const BANNER_DATA = [
-  { 
-    video: "/videos/v10-glass-plaque.webm", 
-    badge: "V10 KINETIC PROTOCOL", 
-    title: "PREMIUM GLASS PLAQUE MOCKUPS", 
-    subtitle: "Experience flawless 3D UI motion tracking and absolute material realism. Engineered exclusively for elite corporate branding and architectural presentations.",
-    duration: 30000, 
-  },
-  { 
-    video: "/videos/v10-food-ui.webm", 
-    badge: "MICHELIN STAR DIGITAL ASSETS", 
-    title: "GOURMET UI/UX INTEGRATION", 
-    subtitle: "Micro-macro cinematography meets holographic UI design. Flawless digital menu integrations for luxury high-end Food & Beverage commercial assets.",
-    duration: 30000, 
-  },
-  { 
-    video: "/videos/v10-billboard-ui.webm", 
-    badge: "GLOBAL CAMPAIGN ARCHITECTURE", 
-    title: "NEXT-GEN DIGITAL BILLBOARDS", 
-    subtitle: "Uncompromising outdoor and indoor display aesthetics. Fluid dynamic rendering with realistic environmental reflections for luxury brand positioning.",
-    duration: 30000,
-  }
-];
