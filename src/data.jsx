@@ -26,7 +26,13 @@ export const logoUrl = mojLogo;
 // POČETAK: BANNER_DATA NIZ
 // ============================================================================
 export const BANNER_DATA = [
-  
+  { 
+    video: "/videos/v10-ai-agents.webm", 
+    badge: "24/7 AUTONOMOUS AGENCY", 
+    title: "AI WORKFORCE ECOSYSTEM", 
+    subtitle: "Deploy an elite executive core that never sleeps. Automate visual asset routing, B2B deal scoping, and technical infrastructure 24/7.",
+    duration: 30000, 
+  },
   { 
     video: "/videos/v10-glass-plaque.webm", 
     badge: "V10 KINETIC PROTOCOL", 
@@ -49,6 +55,9 @@ export const BANNER_DATA = [
     duration: 30000,
   }
 ];
+// ============================================================================
+// KRAJ: BANNER_DATA NIZ
+// ============================================================================
 
 // ============================================================================
 // KRAJ: BANNER_DATA NIZA
