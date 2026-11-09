@@ -9,8 +9,8 @@ const HeroBanner = ({ setIsBannerHovered }) => {
   const [activeSlide, setActiveSlide] = useState(0); 
   const [isHovered, setIsHovered] = useState(false);
   
-  // Vraćeno na false po tvom zahtevu (zvuk je odmah uključen)
-  const [isMuted, setIsMuted] = useState(false); 
+  // PROMENJENO: Mora biti 'true' da bi browser dozvolio autoplay pri učitavanju!
+  const [isMuted, setIsMuted] = useState(true); 
   const videoRefs = useRef([]);
 
   const nextSlide = useCallback(() => {
