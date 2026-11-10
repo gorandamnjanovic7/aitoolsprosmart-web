@@ -7,7 +7,8 @@ import {
   Video, Image as ImageIcon, LayoutGrid, X, Megaphone, Users, 
   Mail, Search, Globe, LineChart, MessageCircle, Phone, FileText, CheckCircle,
   ShoppingCart, RefreshCw, MessageSquare, Instagram, Receipt, PenTool, 
-  Database, PhoneCall, Headphones, Building, Lock, KeyRound, Download, Printer
+  Database, PhoneCall, Headphones, Building, Lock, KeyRound, Download, Printer, Copy,
+  Flame, Rocket, Calculator, Crosshair
 } from 'lucide-react';
 
 // Data from NextPageHub
@@ -30,9 +31,65 @@ const masterTools = [
   { path: '/kling', name: 'KLING 3.0', desc: 'Motion Engine', icon: Video, color: 'text-red-500', bg: 'bg-red-500/20', hover: 'group-hover:bg-red-500/40', border: 'border-red-500/30' },
 ];
 
+// ============================================================================
+// 🔥 4 HIGH-PRIORITY FLAGSHIP B2B SYSTEMS (TOP REVENUE GENERATORS)
+// ============================================================================
+const priorityFlagshipSystems = [
+  {
+    id: 'priority-project-scoper',
+    badge: '🔥 TOP AGENCY CLOSER',
+    roiTag: 'Closes $5k–$25k Deals 24/7',
+    name: 'B2B Project Scoper & AI Quote Calculator',
+    shortDesc: 'Autonomous Proposal & SOW Generator',
+    longDesc: 'Eliminates hours of manual proposal writing. Prospective clients input their project requirements, timeline, and budget on your site, and the AI instantly calculates an itemized quote, technical roadmap, phased deliverables, and PDF Scope of Work while alerting your sales team.',
+    deliverables: 'Interactive Calculator UI (React/HTML) + n8n Quote Synthesis Engine (.JSON)',
+    whiteLabelPrice: '$4,500 – $8,500',
+    icon: Calculator,
+    colorTheme: 'amber'
+  },
+  {
+    id: 'priority-lead-harvester',
+    badge: '⚡ HIGH-TICKET OUTREACH ENGINE',
+    roiTag: '10x Cold Email Conversion',
+    name: 'Autonomous B2B Lead Harvester & Outreach Engine',
+    shortDesc: 'Live Website Scraper + Hyper-Personalized Cold Emailer',
+    longDesc: 'Input any prospect URL and let the engine crawl their live website, detect specific SEO/UX/conversion gaps, and draft a hyper-personalized executive outreach email that proves you researched their business. Built for agencies looking to fill their calendar on autopilot.',
+    deliverables: 'Lead Harvester Dashboard UI + n8n DOM Scraper & Outreach Workflow (.JSON)',
+    whiteLabelPrice: '$5,000 – $9,000',
+    icon: Crosshair,
+    colorTheme: 'cyan'
+  },
+  {
+    id: 'priority-saas-launch-kit',
+    badge: '💎 EXECUTIVE VISUAL + AI SUITE',
+    roiTag: 'Instant $10M Enterprise Positioning',
+    name: 'Executive SaaS Launch & 150MP Rebranding Kit',
+    shortDesc: 'UI/UX Vault + 150MP Mockup Engine + AI Sales Concierge',
+    longDesc: 'The ultimate turnkey package for SaaS founders and software studios. Combines ultra-high-resolution 150MP dark-obsidian device mockups, commercial UI/UX presentation templates, and a pre-trained B2B AI Sales Concierge ready to convert enterprise investors and buyers.',
+    deliverables: '150MP Visual Asset Pack + UI/UX Frontend Templates + n8n AI Concierge (.JSON)',
+    whiteLabelPrice: '$3,500 – $6,500',
+    icon: Sparkles,
+    colorTheme: 'emerald',
+    hasLiveStudio: true
+  },
+  {
+    id: 'priority-micro-saas-box',
+    badge: '🚀 TURNKEY BUSINESS IN A BOX',
+    roiTag: 'Ready for $99–$299/mo Subscriptions',
+    name: 'Micro-SaaS in a Box — Turnkey AI Business',
+    shortDesc: 'Complete Multi-Studio AI Platform Ready to Launch',
+    longDesc: 'Designed for entrepreneurs and investors who want to launch their own profitable AI software company without writing code. Includes the complete multi-tool Studio Portal (Mockup Engine + SEO Auditor + Campaign Synthesizer), sales landing page, and full commercial resale rights.',
+    deliverables: 'Full Multi-Studio Web Platform + 3 Production n8n Engines (.JSON) + Launch Guide',
+    whiteLabelPrice: '$6,000 – $10,000',
+    icon: Rocket,
+    colorTheme: 'indigo',
+    hasSeoStudio: true
+  }
+];
+
 // KATALOG AGENATA (WHITE-LABEL BUYOUT MODEL)
 const aiAgentsList = [
-  { id: 'campaign-agent', name: 'Omnichannel Campaign & Content Agent', shortDesc: 'Marketing Automation', longDesc: 'Automatically generates complete marketing campaigns (ads, posts, blogs, emails) from a single brief, reducing writing time by 80%.', whiteLabelPrice: '$3,000 – $5,000', icon: Megaphone, colorTheme: 'cyan' },
+  { id: 'campaign-agent', name: 'Omnichannel Campaign & Content Agent', shortDesc: 'Turnkey Marketing Synthesizer', longDesc: 'Automatically generates synchronized B2B LinkedIn posts, cold outreach emails, Meta/Google ad copy, and short-form video scripts from a single brief.', whiteLabelPrice: '$3,000 – $5,000', icon: Megaphone, colorTheme: 'cyan', hasCampaignStudio: true },
   { id: 'b2b-lead-agent', name: 'Smart B2B Lead Generator & Chatbot', shortDesc: 'Lead Qualification & Booking', longDesc: 'Conducts deep contextual conversations on your site, qualifies leads, and automatically schedules client meetings 24/7.', whiteLabelPrice: '$4,000 – $7,000', icon: Users, colorTheme: 'emerald' },
   { id: 'mockup-agent', name: 'AI Mockup & Visual Asset Generator', shortDesc: 'Turnkey White-Label Studio', longDesc: 'Transforms raw concepts, logos, and product descriptions into photorealistic 8K commercial mockups across 16:9, 9:16, and 21:9 aspect ratios without Photoshop.', whiteLabelPrice: '$5,500 – $8,500', icon: ImageIcon, colorTheme: 'cyan', hasLiveStudio: true },
   { id: 'seo-auditor-agent', name: 'SEO & CRO Website Auditor', shortDesc: 'Live Technical & Conversion Scanner', longDesc: 'Scans live client URLs for technical SEO bottlenecks, meta structure, and conversion barriers, generating an executive B2B report with 0–100 scores and PDF export.', whiteLabelPrice: '$3,500 – $5,000', icon: Search, colorTheme: 'emerald', hasSeoStudio: true },
@@ -61,6 +118,28 @@ const STUDIO_ENVIRONMENTS = [
   { label: '🏛️ Marble Podium', sub: 'Luxury product stage', value: 'Luxury black marble product podium with dramatic rim lighting and studio shadows' },
   { label: '💻 MacBook Studio', sub: 'Executive SaaS desk', value: 'MacBook Pro 16-inch screen on a minimalist dark carbon executive desk' },
   { label: '🌆 Cyber Billboard', sub: 'Night city reflections', value: 'Urban 4K illuminated digital billboard at night with wet pavement reflections' }
+];
+
+// B2B AGENCY CASE STUDIES & SOCIAL PROOF
+const b2bCaseStudies = [
+  {
+    agency: "Apex Digital Group (Austin, TX)",
+    system: "SEO & CRO Website Auditor Buyout",
+    metric: "+340% Qualified B2B Leads",
+    quote: "Instead of spending 8 weeks building an audit tool in-house, we deployed the V10 White-Label Auditor under our agency brand in 20 minutes. It closed 4 enterprise retainers in the first month."
+  },
+  {
+    agency: "Nordic Studio Labs (Stockholm)",
+    system: "AI Mockup & Visual Asset Studio",
+    metric: "$14,200 Saved in Production",
+    quote: "Having full HTML and n8n JSON ownership with zero monthly SaaS fees is a game changer. Our designers generate 8K client presentation mockups in seconds using our own OpenAI API key."
+  },
+  {
+    agency: "ScaleFlow Automation (London)",
+    system: "Omnichannel Campaign & Content Agent",
+    metric: "80% Faster Client Copywriting",
+    quote: "We use the V10 Campaign Synthesizer to onboard new B2B clients in 5 minutes—generating LinkedIn posts, cold outreach sequences, and ad copy from a single intake brief."
+  }
 ];
 
 export default function AIAgentsShowcase() {
@@ -92,14 +171,43 @@ export default function AIAgentsShowcase() {
   const [auditStatus, setAuditStatus] = useState('Scanner Standby');
   const [showSeoLockedNotice, setShowSeoLockedNotice] = useState(false);
 
+  // =========================================================
+  // 3. LIVE OMNICHANNEL CAMPAIGN STUDIO STATE (VIP DEMO)
+  // =========================================================
+  const [isCampaignStudioOpen, setIsCampaignStudioOpen] = useState(false);
+  const [campProduct, setCampProduct] = useState('AI Tools Pro Smart — V10 White-Label AI Systems');
+  const [campAudience, setCampAudience] = useState('Digital Marketing Agencies, Web Studios & B2B Consultants');
+  const [campOffer, setCampOffer] = useState('Acquire 100% source code ownership of turnkey AI systems (HTML/React Frontend + n8n Backend Workflows) for a one-time buyout ($3,000–$8,500) with zero monthly SaaS fees.');
+  const [campTone, setCampTone] = useState('Executive B2B, Authoritative & High-ROI Focused');
+  const [campVipKey, setCampVipKey] = useState('');
+  const [isSynthesizingCamp, setIsSynthesizingCamp] = useState(false);
+  const [campResult, setCampResult] = useState(null);
+  const [campStatus, setCampStatus] = useState('Synthesizer Standby');
+  const [showCampLockedNotice, setShowCampLockedNotice] = useState(false);
+
   const N8N_MOCKUP_WEBHOOK = 'https://aitools-n8n.app.n8n.cloud/webhook/mockup-engine';
   const N8N_SEO_WEBHOOK = 'https://aitools-n8n.app.n8n.cloud/webhook/seo-auditor';
+  const N8N_CAMPAIGN_WEBHOOK = 'https://aitools-n8n.app.n8n.cloud/webhook/campaign-engine';
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  // HANDLER: Mockup Studio Render
+  // ESCAPE KEY LISTENER ZA ZATVARANJE SVIH MODALA
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setActiveModalAgent(null);
+        setIsMockupStudioOpen(false);
+        setIsSeoStudioOpen(false);
+        setIsCampaignStudioOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // HANDLER 1: Mockup Studio Render
   const handleStudioRender = async (e) => {
     e.preventDefault();
     setShowLockedNotice(false);
@@ -139,7 +247,7 @@ export default function AIAgentsShowcase() {
     }
   };
 
-  // HANDLER: SEO & CRO Live Audit
+  // HANDLER 2: SEO & CRO Live Audit
   const handleSeoAudit = async (e) => {
     e.preventDefault();
     setShowSeoLockedNotice(false);
@@ -180,6 +288,55 @@ export default function AIAgentsShowcase() {
     }
   };
 
+  // HANDLER 3: Omnichannel Campaign Synthesis
+  const handleCampaignSynthesis = async (e) => {
+    e.preventDefault();
+    setShowCampLockedNotice(false);
+
+    if (campVipKey.trim().toUpperCase() !== 'V10VIP') {
+      setShowCampLockedNotice(true);
+      setCampStatus('Public Preview Mode (Locked)');
+      return;
+    }
+
+    setIsSynthesizingCamp(true);
+    setCampResult(null);
+    setCampStatus('Synthesizing 4 Channels...');
+
+    try {
+      const response = await fetch(N8N_CAMPAIGN_WEBHOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          product: campProduct.trim(),
+          audience: campAudience.trim(),
+          offer: campOffer.trim(),
+          tone: campTone
+        })
+      });
+
+      if (!response.ok) throw new Error('Campaign request failed');
+
+      const rawText = await response.text();
+      const cleanedJson = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+      const data = JSON.parse(cleanedJson);
+
+      setCampResult(data);
+      setCampStatus('Campaign Ready');
+    } catch (err) {
+      alert('Connection error: Ensure the Omnichannel Campaign workflow is Published in n8n.');
+      setCampStatus('Synthesis Failed');
+    } finally {
+      setIsSynthesizingCamp(false);
+    }
+  };
+
+  const copyToClipboard = (text) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    alert('Copied to clipboard!');
+  };
+
   const renderCard = (item, idx) => {
     const Icon = item.icon;
     return (
@@ -196,10 +353,11 @@ export default function AIAgentsShowcase() {
   };
 
   const getColorClasses = (theme) => {
-    if (theme === 'cyan') return { text: 'text-cyan-400', bg: 'bg-cyan-600/20', border: 'border-cyan-500/30', shadow: 'shadow-[0_0_30px_rgba(8,145,178,0.15)]', button: 'bg-cyan-600 hover:bg-cyan-500 shadow-cyan-600/30', modalBg: 'bg-cyan-900/50', modalBorder: 'border-cyan-400/60', modalHover: 'hover:bg-cyan-800/60' };
-    if (theme === 'emerald') return { text: 'text-emerald-400', bg: 'bg-emerald-600/20', border: 'border-emerald-500/30', shadow: 'shadow-[0_0_30px_rgba(16,185,129,0.15)]', button: 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/30', modalBg: 'bg-emerald-900/50', modalBorder: 'border-emerald-400/60', modalHover: 'hover:bg-emerald-800/60' };
-    if (theme === 'indigo') return { text: 'text-indigo-400', bg: 'bg-indigo-600/20', border: 'border-indigo-500/30', shadow: 'shadow-[0_0_30px_rgba(79,70,229,0.15)]', button: 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/30', modalBg: 'bg-indigo-900/50', modalBorder: 'border-indigo-400/60', modalHover: 'hover:bg-indigo-800/60' };
-    return { text: 'text-blue-400', bg: 'bg-blue-600/20', border: 'border-blue-500/30', shadow: 'shadow-[0_0_30px_rgba(37,99,235,0.15)]', button: 'bg-blue-600 hover:bg-blue-500 shadow-blue-600/30', modalBg: 'bg-blue-900/50', modalBorder: 'border-blue-400/60', modalHover: 'hover:bg-blue-800/60' };
+    if (theme === 'amber') return { text: 'text-amber-400', bg: 'bg-amber-500/20', border: 'border-amber-500/40', shadow: 'shadow-[0_0_35px_rgba(245,158,11,0.18)]', button: 'bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-black shadow-amber-500/30', modalBg: 'bg-amber-950/40', modalBorder: 'border-amber-400/60', modalHover: 'hover:bg-amber-900/50' };
+    if (theme === 'cyan') return { text: 'text-cyan-400', bg: 'bg-cyan-600/20', border: 'border-cyan-500/30', shadow: 'shadow-[0_0_30px_rgba(8,145,178,0.15)]', button: 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-cyan-600/30', modalBg: 'bg-cyan-900/50', modalBorder: 'border-cyan-400/60', modalHover: 'hover:bg-cyan-800/60' };
+    if (theme === 'emerald') return { text: 'text-emerald-400', bg: 'bg-emerald-600/20', border: 'border-emerald-500/30', shadow: 'shadow-[0_0_30px_rgba(16,185,129,0.15)]', button: 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/30', modalBg: 'bg-emerald-900/50', modalBorder: 'border-emerald-400/60', modalHover: 'hover:bg-emerald-800/60' };
+    if (theme === 'indigo') return { text: 'text-indigo-400', bg: 'bg-indigo-600/20', border: 'border-indigo-500/30', shadow: 'shadow-[0_0_30px_rgba(79,70,229,0.15)]', button: 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/30', modalBg: 'bg-indigo-900/50', modalBorder: 'border-indigo-400/60', modalHover: 'hover:bg-indigo-800/60' };
+    return { text: 'text-blue-400', bg: 'bg-blue-600/20', border: 'border-blue-500/30', shadow: 'shadow-[0_0_30px_rgba(37,99,235,0.15)]', button: 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/30', modalBg: 'bg-blue-900/50', modalBorder: 'border-blue-400/60', modalHover: 'hover:bg-blue-800/60' };
   };
 
   // 3 MAIN AGENTS (WHITE-LABEL BUYOUT)
@@ -238,9 +396,14 @@ export default function AIAgentsShowcase() {
       {/* 1. INTERACTIVE WHITE-LABEL MOCKUP STUDIO MODAL            */}
       {/* ========================================================= */}
       {isMockupStudioOpen && (
-        <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-3 sm:p-6 backdrop-blur-xl overflow-y-auto">
-          <div className="bg-[#070911] border border-cyan-500/30 rounded-3xl max-w-6xl w-full relative shadow-[0_0_90px_rgba(6,182,212,0.18)] p-5 sm:p-8 my-auto">
-            
+        <div 
+          onClick={() => setIsMockupStudioOpen(false)}
+          className="fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-3 sm:p-6 backdrop-blur-xl overflow-y-auto pt-20"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-[#070911] border border-cyan-500/30 rounded-3xl max-w-6xl w-full relative shadow-[0_0_90px_rgba(6,182,212,0.18)] p-5 sm:p-8 my-auto"
+          >
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5 mb-6">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center font-black text-black text-sm shadow-lg shadow-cyan-500/20">
@@ -262,8 +425,13 @@ export default function AIAgentsShowcase() {
               </div>
 
               <button 
-                onClick={() => setIsMockupStudioOpen(false)}
-                className="text-slate-300 hover:text-white bg-slate-800/60 hover:bg-slate-700 p-2.5 rounded-full transition-colors"
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsMockupStudioOpen(false);
+                }}
+                aria-label="Close Mockup Studio Modal"
+                className="relative z-50 text-white bg-red-500/20 hover:bg-red-500 border border-red-500/40 p-2.5 rounded-full transition-all cursor-pointer"
               >
                 <X size={22} />
               </button>
@@ -446,7 +614,11 @@ export default function AIAgentsShowcase() {
                 {renderedImageUrl && !isRendering && (
                   <div className="my-auto pt-3">
                     <div className="rounded-xl overflow-hidden border border-white/15 bg-black shadow-2xl">
-                      <img src={renderedImageUrl} alt="Commercial Mockup" className="w-full max-h-[360px] object-contain mx-auto" />
+                      <img 
+                        src={renderedImageUrl} 
+                        alt="Generated 8K B2B Commercial Mockup by AI Tools Pro Smart V10 Studio" 
+                        className="w-full max-h-[360px] object-contain mx-auto" 
+                      />
                     </div>
                     <div className="mt-4 flex flex-wrap items-center justify-between gap-3 bg-white/5 p-3.5 rounded-xl border border-white/10">
                       <div>
@@ -478,9 +650,14 @@ export default function AIAgentsShowcase() {
       {/* 2. INTERACTIVE WHITE-LABEL SEO & CRO AUDITOR MODAL        */}
       {/* ========================================================= */}
       {isSeoStudioOpen && (
-        <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-3 sm:p-6 backdrop-blur-xl overflow-y-auto">
-          <div className="bg-[#070b10] border border-emerald-500/30 rounded-3xl max-w-6xl w-full relative shadow-[0_0_90px_rgba(16,185,129,0.18)] p-5 sm:p-8 my-auto">
-            
+        <div 
+          onClick={() => setIsSeoStudioOpen(false)}
+          className="fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-3 sm:p-6 backdrop-blur-xl overflow-y-auto pt-20"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-[#070b10] border border-emerald-500/30 rounded-3xl max-w-6xl w-full relative shadow-[0_0_90px_rgba(16,185,129,0.18)] p-5 sm:p-8 my-auto"
+          >
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5 mb-6">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center font-black text-black text-sm shadow-lg shadow-emerald-500/20">
@@ -502,8 +679,13 @@ export default function AIAgentsShowcase() {
               </div>
 
               <button 
-                onClick={() => setIsSeoStudioOpen(false)}
-                className="text-slate-300 hover:text-white bg-slate-800/60 hover:bg-slate-700 p-2.5 rounded-full transition-colors"
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsSeoStudioOpen(false);
+                }}
+                aria-label="Close SEO Auditor Modal"
+                className="relative z-50 text-white bg-red-500/20 hover:bg-red-500 border border-red-500/40 p-2.5 rounded-full transition-all cursor-pointer"
               >
                 <X size={22} />
               </button>
@@ -511,7 +693,6 @@ export default function AIAgentsShowcase() {
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
               
-              {/* Left Column: Audit Controls (4 Cols) */}
               <form onSubmit={handleSeoAudit} className="lg:col-span-4 space-y-5 bg-black/50 border border-white/10 rounded-2xl p-5">
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-2">
@@ -573,7 +754,6 @@ export default function AIAgentsShowcase() {
                 </button>
               </form>
 
-              {/* Right Column: Executive Report Viewport (8 Cols) */}
               <div className="lg:col-span-8 bg-black/60 border border-white/10 rounded-2xl p-5 min-h-[460px] flex flex-col justify-between">
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
                   <div className="flex items-center gap-2">
@@ -635,19 +815,19 @@ export default function AIAgentsShowcase() {
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       <div className="bg-black/60 border border-white/10 p-3.5 rounded-xl text-center">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Overall Score</span>
-                        <div className="text-2xl font-black text-emerald-400 mt-1">{auditResult.overall_score || 82}/100</div>
+                        <div className="text-2xl font-black text-emerald-400 mt-1">{auditResult.overall_score ?? '--'}/100</div>
                       </div>
                       <div className="bg-black/60 border border-white/10 p-3.5 rounded-xl text-center">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Technical SEO</span>
-                        <div className="text-2xl font-black text-cyan-400 mt-1">{auditResult.seo_score || 78}/100</div>
+                        <div className="text-2xl font-black text-cyan-400 mt-1">{auditResult.seo_score ?? '--'}/100</div>
                       </div>
                       <div className="bg-black/60 border border-white/10 p-3.5 rounded-xl text-center">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">CRO Readiness</span>
-                        <div className="text-2xl font-black text-amber-400 mt-1">{auditResult.cro_score || 85}/100</div>
+                        <div className="text-2xl font-black text-amber-400 mt-1">{auditResult.cro_score ?? '--'}/100</div>
                       </div>
                       <div className="bg-black/60 border border-white/10 p-3.5 rounded-xl text-center">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">UX & Copy</span>
-                        <div className="text-2xl font-black text-indigo-400 mt-1">{auditResult.ux_copy_score || 83}/100</div>
+                        <div className="text-2xl font-black text-indigo-400 mt-1">{auditResult.ux_copy_score ?? '--'}/100</div>
                       </div>
                     </div>
 
@@ -691,23 +871,313 @@ export default function AIAgentsShowcase() {
       )}
 
       {/* ========================================================= */}
+      {/* 3. INTERACTIVE OMNICHANNEL CAMPAIGN STUDIO MODAL          */}
+      {/* ========================================================= */}
+      {isCampaignStudioOpen && (
+        <div 
+          onClick={() => setIsCampaignStudioOpen(false)}
+          className="fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-3 sm:p-6 backdrop-blur-xl overflow-y-auto pt-20"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-[#070912] border border-cyan-500/30 rounded-3xl max-w-6xl w-full relative shadow-[0_0_90px_rgba(6,182,212,0.18)] p-5 sm:p-8 my-auto"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-indigo-500 flex items-center justify-center font-black text-black text-sm shadow-lg shadow-cyan-500/20">
+                  V10
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-lg sm:text-xl font-black uppercase tracking-tight text-white">
+                      Omnichannel Campaign Synthesizer
+                    </h2>
+                    <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-full">
+                      White-Label Buyout ($3,000 – $5,000)
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    4-Channel B2B Marketing Engine (LinkedIn, Cold Email, Ads & Video Scripts)
+                  </p>
+                </div>
+              </div>
+
+              <button 
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsCampaignStudioOpen(false);
+                }}
+                aria-label="Close Campaign Studio Modal"
+                className="relative z-50 text-white bg-red-500/20 hover:bg-red-500 border border-red-500/40 p-2.5 rounded-full transition-all cursor-pointer"
+              >
+                <X size={22} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              
+              <form onSubmit={handleCampaignSynthesis} className="lg:col-span-4 space-y-4 bg-black/50 border border-white/10 rounded-2xl p-5">
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+                    1. Product / Brand Name
+                  </label>
+                  <input 
+                    type="text"
+                    required
+                    value={campProduct}
+                    onChange={(e) => setCampProduct(e.target.value)}
+                    placeholder="e.g. AI Tools Pro Smart"
+                    className="w-full bg-[#05070f] border border-white/15 rounded-xl p-2.5 text-xs text-white placeholder-slate-600 focus:border-cyan-400 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+                    2. Target B2B Audience
+                  </label>
+                  <input 
+                    type="text"
+                    required
+                    value={campAudience}
+                    onChange={(e) => setCampAudience(e.target.value)}
+                    placeholder="e.g. Digital Marketing Agencies & SaaS Founders"
+                    className="w-full bg-[#05070f] border border-white/15 rounded-xl p-2.5 text-xs text-white placeholder-slate-600 focus:border-cyan-400 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+                    3. Core Offer & Value Proposition
+                  </label>
+                  <textarea 
+                    rows="3"
+                    required
+                    value={campOffer}
+                    onChange={(e) => setCampOffer(e.target.value)}
+                    placeholder="Describe the main offer and ROI..."
+                    className="w-full bg-[#05070f] border border-white/15 rounded-xl p-2.5 text-xs text-white placeholder-slate-600 focus:border-cyan-400 focus:outline-none resize-none"
+                  />
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        setCampProduct('AI Tools Pro Smart — V10 White-Label AI Systems');
+                        setCampAudience('Digital Marketing Agencies, Web Studios & B2B Consultants');
+                        setCampOffer('Acquire 100% source code ownership of turnkey AI systems (HTML/React Frontend + n8n Backend Workflows) for a one-time buyout ($3,000–$8,500) with zero monthly SaaS fees.');
+                      }} 
+                      className="text-[10px] bg-white/5 hover:bg-white/10 text-slate-300 px-2 py-1 rounded border border-white/10 transition"
+                    >
+                      + Preset: White-Label Agents
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        setCampProduct('AI Tools Pro Smart — 150MP SaaS Mockups');
+                        setCampAudience('SaaS Founders, UI/UX Designers & Creative Directors');
+                        setCampOffer('Wrap your software in 150MP physical reality with hyper-realistic device mockups engineered for elite B2B presentations.');
+                      }} 
+                      className="text-[10px] bg-white/5 hover:bg-white/10 text-slate-300 px-2 py-1 rounded border border-white/10 transition"
+                    >
+                      + Preset: 150MP Mockups
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+                    4. Brand Tone & Style
+                  </label>
+                  <select 
+                    value={campTone}
+                    onChange={(e) => setCampTone(e.target.value)}
+                    className="w-full bg-[#05070f] border border-white/15 rounded-xl p-2.5 text-xs text-white focus:border-cyan-400 focus:outline-none"
+                  >
+                    <option value="Executive B2B, Authoritative & High-ROI Focused">Executive B2B & High-ROI</option>
+                    <option value="Direct-Response, Bold & Urgency-Driven">Direct-Response & Bold</option>
+                    <option value="Cyber-Luxury, Visionary & Elite Tech">Visionary Tech & Luxury</option>
+                  </select>
+                </div>
+
+                <div className="pt-2 border-t border-white/10">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1 mb-1">
+                    <KeyRound size={12} className="text-cyan-400" /> B2B Live Synthesizer Key (Optional for UI Preview)
+                  </label>
+                  <input 
+                    type="password"
+                    value={campVipKey}
+                    onChange={(e) => setCampVipKey(e.target.value)}
+                    placeholder="Enter VIP Demo Key for live generation..."
+                    className="w-full bg-[#05070f] border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:border-cyan-400 focus:outline-none"
+                  />
+                </div>
+
+                <button 
+                  type="submit"
+                  disabled={isSynthesizingCamp}
+                  className="w-full py-3.5 bg-gradient-to-r from-cyan-400 to-indigo-500 hover:from-cyan-300 hover:to-indigo-400 text-black font-black uppercase tracking-widest rounded-xl text-xs shadow-lg shadow-cyan-500/20 transition-all cursor-pointer disabled:opacity-50"
+                >
+                  {isSynthesizingCamp ? 'Synthesizing 4 Channels...' : '📣 Generate Omnichannel Campaign'}
+                </button>
+              </form>
+
+              <div className="lg:col-span-8 bg-black/60 border border-white/10 rounded-2xl p-5 min-h-[460px] flex flex-col justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2.5 h-2.5 rounded-full ${isSynthesizingCamp ? 'bg-cyan-400 animate-ping' : campResult ? 'bg-emerald-400' : 'bg-slate-600'}`}></span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-300">{campStatus}</span>
+                  </div>
+                  <span className="text-[10px] font-mono uppercase px-2.5 py-1 bg-white/5 text-slate-400 rounded border border-white/10">
+                    4 Channels Synchronized
+                  </span>
+                </div>
+
+                {showCampLockedNotice && !isSynthesizingCamp && (
+                  <div className="my-auto py-10 px-6 text-center max-w-md mx-auto bg-cyan-950/20 border border-cyan-500/30 rounded-2xl">
+                    <Lock className="w-10 h-10 text-cyan-400 mx-auto mb-3" />
+                    <h4 className="text-sm font-black uppercase tracking-wider text-white">
+                      Public Campaign Synthesis Locked
+                    </h4>
+                    <p className="text-xs text-slate-300 mt-2 leading-relaxed">
+                      You are previewing the White-Label Omnichannel Campaign Studio UI. Live AI campaign generation requires a <strong>VIP Demo Key</strong> or full <strong>White-Label Buyout ($3,000 – $5,000)</strong> with complete HTML + n8n JSON source code ownership.
+                    </p>
+                    <div className="mt-5 flex justify-center">
+                      <a 
+                        href="mailto:aitoolsprosmart@gmail.com?subject=White-Label%20Omnichannel%20Campaign%20Studio%20Acquisition%20($3,000)"
+                        className="px-4 py-2.5 bg-cyan-400 hover:bg-cyan-300 text-black font-black text-xs uppercase tracking-wider rounded-xl transition"
+                      >
+                        Request VIP Key / Buyout ($3,000)
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                {!showCampLockedNotice && !isSynthesizingCamp && !campResult && (
+                  <div className="my-auto py-16 text-center max-w-sm mx-auto">
+                    <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mx-auto mb-3 text-cyan-400">
+                      <Megaphone size={28} />
+                    </div>
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-white">Ready for Campaign Brief</h3>
+                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                      Configure your product, audience, and core offer on the left to generate synchronized LinkedIn posts, cold outreach emails, ad copy, and video scripts.
+                    </p>
+                  </div>
+                )}
+
+                {isSynthesizingCamp && (
+                  <div className="my-auto py-16 text-center">
+                    <div className="inline-block w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <h4 className="text-sm font-bold uppercase tracking-widest text-white">Synthesizing Multi-Channel Campaign Assets...</h4>
+                    <p className="text-xs text-slate-400 mt-1">Writing LinkedIn viral post, cold email, ad copy & video script (8–12s)</p>
+                  </div>
+                )}
+
+                {campResult && !isSynthesizingCamp && (
+                  <div className="space-y-4 py-4">
+                    <div className="bg-cyan-950/20 border border-cyan-500/30 rounded-xl p-3.5">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-cyan-400 block mb-1">Strategic Campaign Angle</span>
+                      <p className="text-xs font-semibold text-white leading-relaxed">{campResult.campaign_angle}</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="bg-black/60 border border-white/10 rounded-xl p-3.5">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[11px] font-black uppercase tracking-wider text-cyan-400">💼 LinkedIn Viral Post</span>
+                          <button onClick={() => copyToClipboard(campResult.linkedin_post)} className="text-[10px] bg-white/10 hover:bg-white/20 px-2 py-0.5 rounded text-white font-bold flex items-center gap-1 transition">
+                            <Copy size={11} /> Copy
+                          </button>
+                        </div>
+                        <pre className="text-xs text-slate-300 whitespace-pre-wrap font-sans leading-relaxed max-h-48 overflow-y-auto pr-1">
+                          {campResult.linkedin_post}
+                        </pre>
+                      </div>
+
+                      <div className="bg-black/60 border border-white/10 rounded-xl p-3.5">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[11px] font-black uppercase tracking-wider text-emerald-400">✉️ B2B Cold Outreach Email</span>
+                          <button onClick={() => copyToClipboard(`Subject: ${campResult.cold_email?.subject}\n\n${campResult.cold_email?.body}`)} className="text-[10px] bg-white/10 hover:bg-white/20 px-2 py-0.5 rounded text-white font-bold flex items-center gap-1 transition">
+                            <Copy size={11} /> Copy
+                          </button>
+                        </div>
+                        <div className="text-xs font-bold text-white bg-white/5 p-2 rounded mb-2 border border-white/5">
+                          Subject: {campResult.cold_email?.subject}
+                        </div>
+                        <pre className="text-xs text-slate-300 whitespace-pre-wrap font-sans leading-relaxed max-h-36 overflow-y-auto pr-1">
+                          {campResult.cold_email?.body}
+                        </pre>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="bg-black/60 border border-white/10 rounded-xl p-3.5">
+                        <span className="text-[11px] font-black uppercase tracking-wider text-amber-400 block mb-2">🎯 Meta & Google Ad Copy</span>
+                        <div className="space-y-1.5 text-xs">
+                          <div className="bg-white/5 p-2 rounded border border-white/5">
+                            <span className="text-[10px] uppercase text-slate-400 font-bold block">Headline:</span>
+                            <span className="font-bold text-white">{campResult.ad_copy?.headline}</span>
+                          </div>
+                          <div className="bg-white/5 p-2 rounded border border-white/5">
+                            <span className="text-[10px] uppercase text-slate-400 font-bold block">Primary Text:</span>
+                            <span className="text-slate-300 leading-relaxed">{campResult.ad_copy?.primary_text}</span>
+                          </div>
+                          <div className="bg-white/5 p-2 rounded border border-white/5 flex items-center justify-between">
+                            <span className="text-[10px] uppercase text-slate-400 font-bold">CTA Button:</span>
+                            <span className="text-[11px] font-black text-amber-400 uppercase">{campResult.ad_copy?.cta}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-black/60 border border-white/10 rounded-xl p-3.5">
+                        <span className="text-[11px] font-black uppercase tracking-wider text-indigo-400 block mb-2">🎬 Reels / TikTok / Shorts Script</span>
+                        <ul className="space-y-1.5 text-xs text-slate-300">
+                          {(campResult.video_script || []).map((line, i) => (
+                            <li key={i} className="bg-white/5 p-2 rounded border border-white/5">{line}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="border-t border-white/10 pt-3 mt-4 flex items-center justify-between text-[11px] text-slate-500">
+                  <span>Deliverables: Frontend Campaign UI (HTML/React) + n8n Workflow (.JSON)</span>
+                  <span className="text-cyan-400 font-bold">100% Client-Hosted White-Label</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
       {/* GLOBAL MODAL FOR ALL AGENTS (ONLY WHITE-LABEL BUYOUT)     */}
       {/* ========================================================= */}
       {activeModalAgent && (
-        <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4 backdrop-blur-md">
-          <div className={`bg-[#06142e] border-2 ${getColorClasses(activeModalAgent.colorTheme).border} rounded-3xl max-w-2xl w-full relative shadow-[0_0_80px_rgba(0,0,0,0.5)] animate-in fade-in zoom-in duration-300 p-6 md:p-8`}>
+        <div 
+          onClick={() => setActiveModalAgent(null)}
+          className="fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-4 backdrop-blur-md overflow-y-auto pt-20"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className={`bg-[#06142e] border-2 ${getColorClasses(activeModalAgent.colorTheme).border} rounded-3xl max-w-2xl w-full relative shadow-[0_0_80px_rgba(0,0,0,0.5)] p-6 md:p-8 my-auto`}
+          >
             <button 
-              onClick={() => setActiveModalAgent(null)}
-              className="absolute top-5 right-5 text-slate-300 hover:text-white transition-colors bg-slate-800/40 p-2 rounded-full hover:bg-slate-700"
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveModalAgent(null);
+              }}
+              aria-label="Close Agent Details Modal"
+              className="absolute top-5 right-5 z-50 text-white bg-red-500/20 hover:bg-red-500 border border-red-500/40 p-2.5 rounded-full transition-all cursor-pointer"
             >
               <X size={24} />
             </button>
-            <div className={`flex items-center gap-4 mb-6 border-b ${getColorClasses(activeModalAgent.colorTheme).border} pb-4`}>
-              <div className={`w-14 h-14 rounded-2xl ${getColorClasses(activeModalAgent.colorTheme).bg} flex items-center justify-center ${getColorClasses(activeModalAgent.colorTheme).text} border border-white/10 shadow-inner`}>
+            <div className={`flex items-center gap-4 mb-6 border-b ${getColorClasses(activeModalAgent.colorTheme).border} pb-4 pr-12`}>
+              <div className={`w-14 h-14 rounded-2xl ${getColorClasses(activeModalAgent.colorTheme).bg} flex items-center justify-center ${getColorClasses(activeModalAgent.colorTheme).text} border border-white/10 shadow-inner shrink-0`}>
                 <activeModalAgent.icon size={32} />
               </div>
               <div>
-                <h2 className="text-xl md:text-3xl font-black uppercase tracking-wider text-white drop-shadow-md">{activeModalAgent.name}</h2>
+                <h2 className="text-xl md:text-2xl font-black uppercase tracking-wider text-white drop-shadow-md">{activeModalAgent.name}</h2>
                 <p className={`${getColorClasses(activeModalAgent.colorTheme).text} text-[10px] md:text-xs font-bold uppercase tracking-widest mt-1`}>{activeModalAgent.shortDesc}</p>
               </div>
             </div>
@@ -732,15 +1202,15 @@ export default function AIAgentsShowcase() {
                   <div className="font-bold text-white uppercase tracking-wider text-[11px] mb-1">Included in Turnkey Package (.ZIP):</div>
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span><strong>Frontend Source Code:</strong> Custom-branded HTML/Tailwind/React interface</span>
+                    <span><strong>Deliverables:</strong> {activeModalAgent.deliverables || 'Custom-branded HTML/Tailwind/React interface + n8n Workflow (.JSON)'}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span><strong>Backend Automation Engine:</strong> Ready-to-import n8n workflow (.JSON)</span>
+                    <span><strong>Full IP Ownership:</strong> Rebrand, deploy for unlimited clients, or resell as your own SaaS</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span><strong>Self-Hosted Deployment Guide:</strong> Connect your own API keys in 5 minutes</span>
+                    <span><strong>Self-Hosted Deployment Guide:</strong> Connect your own API keys in 15 minutes</span>
                   </div>
                 </div>
 
@@ -756,32 +1226,53 @@ export default function AIAgentsShowcase() {
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
               {activeModalAgent.hasLiveStudio && (
                 <button 
+                  type="button"
                   onClick={() => {
                     setActiveModalAgent(null);
                     setIsMockupStudioOpen(true);
                   }}
-                  className="flex-1 bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-black text-xs sm:text-sm font-black uppercase tracking-widest py-3.5 md:py-4 rounded-xl transition shadow-lg"
+                  className="flex-1 bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-black text-xs sm:text-sm font-black uppercase tracking-widest py-3.5 md:py-4 rounded-xl transition shadow-lg cursor-pointer"
                 >
                   ⚡ Launch Mockup Studio
                 </button>
               )}
               {activeModalAgent.hasSeoStudio && (
                 <button 
+                  type="button"
                   onClick={() => {
                     setActiveModalAgent(null);
                     setIsSeoStudioOpen(true);
                   }}
-                  className="flex-1 bg-gradient-to-r from-emerald-400 to-cyan-500 hover:from-emerald-300 hover:to-cyan-400 text-black text-xs sm:text-sm font-black uppercase tracking-widest py-3.5 md:py-4 rounded-xl transition shadow-lg"
+                  className="flex-1 bg-gradient-to-r from-emerald-400 to-cyan-500 hover:from-emerald-300 hover:to-cyan-400 text-black text-xs sm:text-sm font-black uppercase tracking-widest py-3.5 md:py-4 rounded-xl transition shadow-lg cursor-pointer"
                 >
                   🔍 Launch SEO Auditor
                 </button>
               )}
+              {activeModalAgent.hasCampaignStudio && (
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setActiveModalAgent(null);
+                    setIsCampaignStudioOpen(true);
+                  }}
+                  className="flex-1 bg-gradient-to-r from-cyan-400 to-indigo-500 hover:from-cyan-300 hover:to-indigo-400 text-black text-xs sm:text-sm font-black uppercase tracking-widest py-3.5 md:py-4 rounded-xl transition shadow-lg cursor-pointer"
+                >
+                  📣 Launch Campaign Studio
+                </button>
+              )}
               <a 
-                href={`mailto:aitoolsprosmart@gmail.com?subject=White-Label%20Acquisition%20Inquiry:%20${encodeURIComponent(activeModalAgent.name)}`}
-                className={`flex-1 text-center ${getColorClasses(activeModalAgent.colorTheme).button} text-white text-xs sm:text-sm font-black uppercase tracking-widest py-3.5 md:py-4 rounded-xl transition shadow-lg`}
+                href={`mailto:aitoolsprosmart@gmail.com?subject=Priority%20White-Label%20Acquisition:%20${encodeURIComponent(activeModalAgent.name)}`}
+                className={`flex-1 text-center ${getColorClasses(activeModalAgent.colorTheme).button} text-xs sm:text-sm font-black uppercase tracking-widest py-3.5 md:py-4 rounded-xl transition shadow-lg`}
               >
                 Acquire White-Label License
               </a>
+              <button
+                type="button"
+                onClick={() => setActiveModalAgent(null)}
+                className="px-5 py-3.5 md:py-4 bg-white/10 hover:bg-white/20 text-white text-xs font-black uppercase tracking-widest rounded-xl transition cursor-pointer"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
@@ -805,25 +1296,31 @@ export default function AIAgentsShowcase() {
               Acquire production-ready AI architectures (HTML/React Frontend UI + Self-Hosted n8n Backend Workflows) for your agency or enterprise. One-time buyout, zero recurring license fees.
             </p>
 
-            {/* HIGH-CONVERSION ABOVE-THE-FOLD CTA BUTTONS */}
-            <div className="relative z-10 mt-8 flex flex-wrap items-center justify-center gap-4">
+            {/* HIGH-CONVERSION ABOVE-THE-FOLD CTA BUTTONS (3 LIVE STUDIOS) */}
+            <div className="relative z-10 mt-8 flex flex-wrap items-center justify-center gap-3.5">
               <button 
                 onClick={() => setIsMockupStudioOpen(true)}
-                className="px-6 py-4 bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-black font-black text-xs uppercase tracking-widest rounded-xl shadow-lg shadow-cyan-500/25 transition transform hover:scale-105"
+                className="px-6 py-4 bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-black font-black text-xs uppercase tracking-widest rounded-xl shadow-[0_0_25px_rgba(6,182,212,0.35)] transition transform hover:scale-105 cursor-pointer"
               >
-                ⚡ Test Live AI Mockup Studio
+                ⚡ Live Mockup Studio
               </button>
               <button 
                 onClick={() => setIsSeoStudioOpen(true)}
-                className="px-6 py-4 bg-gradient-to-r from-emerald-400 to-cyan-500 hover:from-emerald-300 hover:to-cyan-400 text-black font-black text-xs uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-500/25 transition transform hover:scale-105"
+                className="px-6 py-4 bg-gradient-to-r from-emerald-400 to-cyan-500 hover:from-emerald-300 hover:to-cyan-400 text-black font-black text-xs uppercase tracking-widest rounded-xl shadow-[0_0_25px_rgba(16,185,129,0.35)] transition transform hover:scale-105 cursor-pointer"
               >
-                🔍 Test Live SEO & CRO Auditor
+                🔍 Live SEO & CRO Auditor
+              </button>
+              <button 
+                onClick={() => setIsCampaignStudioOpen(true)}
+                className="px-6 py-4 bg-gradient-to-r from-indigo-400 to-cyan-400 hover:from-indigo-300 hover:to-cyan-300 text-black font-black text-xs uppercase tracking-widest rounded-xl shadow-[0_0_25px_rgba(99,102,241,0.35)] transition transform hover:scale-105 cursor-pointer"
+              >
+                📣 Live Campaign Studio
               </button>
               <a 
                 href="mailto:aitoolsprosmart@gmail.com?subject=Enterprise%20White-Label%20AI%20Bundle%20Inquiry"
-                className="px-6 py-4 bg-white/5 hover:bg-white/10 text-white border border-white/20 font-black text-xs uppercase tracking-widest rounded-xl transition"
+                className="px-6 py-4 bg-white hover:bg-slate-200 text-black font-black text-xs uppercase tracking-widest rounded-xl shadow-lg transition transform hover:scale-105"
               >
-                Request Custom Agency Bundle
+                Acquire Agency Bundle (.ZIP)
               </a>
             </div>
           </div>
@@ -860,6 +1357,120 @@ export default function AIAgentsShowcase() {
             </div>
           </div>
 
+          {/* ===================================================================== */}
+          {/* 🔥 HIGH-PRIORITY FLAGSHIP B2B ACQUISITIONS (FEATURED TOP SELLERS)     */}
+          {/* ===================================================================== */}
+          <div className="mb-16 relative z-10 rounded-3xl p-6 sm:p-10 bg-gradient-to-b from-amber-500/10 via-[#060b18] to-[#040711] border-2 border-amber-500/40 shadow-[0_0_70px_rgba(245,158,11,0.12)]">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6 mb-8">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[10px] sm:text-xs font-black uppercase tracking-widest mb-3">
+                  <Flame className="w-4 h-4 text-amber-400 animate-pulse" />
+                  Priority Tier 1 • Highest-Demand B2B Acquisitions
+                </div>
+                <h2 className="text-2xl sm:text-4xl font-black uppercase tracking-tight text-white">
+                  Flagship Revenue & Client-Acquisition Engines
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-3xl">
+                  Engineered specifically for digital agencies, SaaS founders, and B2B operators seeking immediate client acquisition, automated project quoting, or a complete turnkey AI business in a box.
+                </p>
+              </div>
+              <div className="shrink-0">
+                <a 
+                  href="mailto:aitoolsprosmart@gmail.com?subject=Priority%20Tier%201%20Flagship%20Acquisition%20Inquiry"
+                  className="inline-block px-5 py-3 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-black font-black text-xs uppercase tracking-widest rounded-xl shadow-lg shadow-amber-500/25 transition"
+                >
+                  ⚡ Priority VIP Inquiry
+                </a>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+              {priorityFlagshipSystems.map((item) => {
+                const theme = getColorClasses(item.colorTheme);
+                const Icon = item.icon;
+                return (
+                  <div 
+                    key={item.id} 
+                    className={`bg-[#040812]/90 border-2 ${theme.border} rounded-3xl p-6 sm:p-7 flex flex-col justify-between ${theme.shadow} hover:scale-[1.01] transition-all relative overflow-hidden`}
+                  >
+                    <div>
+                      <div className="flex flex-wrap items-center justify-between gap-2 mb-5">
+                        <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${theme.bg} ${theme.text} border ${theme.border}`}>
+                          {item.badge}
+                        </span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 bg-white/5 text-emerald-400 border border-emerald-500/30 rounded-lg">
+                          ROI: {item.roiTag}
+                        </span>
+                      </div>
+
+                      <div className="flex items-start gap-4 mb-4">
+                        <div className={`w-14 h-14 rounded-2xl ${theme.bg} border ${theme.border} flex items-center justify-center ${theme.text} shrink-0`}>
+                          <Icon size={28} />
+                        </div>
+                        <div>
+                          <h3 className="text-lg sm:text-xl font-black uppercase text-white leading-snug">
+                            {item.name}
+                          </h3>
+                          <p className={`text-xs font-bold uppercase tracking-wider ${theme.text} mt-0.5`}>
+                            {item.shortDesc}
+                          </p>
+                        </div>
+                      </div>
+
+                      <p className="text-slate-300 text-xs sm:text-sm leading-relaxed mb-5">
+                        {item.longDesc}
+                      </p>
+
+                      <div className="bg-black/60 border border-white/10 rounded-xl p-3.5 mb-6 text-xs text-slate-300 flex items-center gap-2.5">
+                        <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span><strong>Turnkey Package:</strong> {item.deliverables}</span>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-white/10 pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block">
+                          One-Time Turnkey Buyout
+                        </span>
+                        <span className={`text-xl sm:text-2xl font-black ${theme.text}`}>
+                          {item.whiteLabelPrice}
+                        </span>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        {item.hasLiveStudio && (
+                          <button 
+                            type="button"
+                            onClick={() => setIsMockupStudioOpen(true)}
+                            className="px-4 py-3 bg-white/10 hover:bg-white/20 text-white text-xs font-black uppercase tracking-wider rounded-xl transition cursor-pointer"
+                          >
+                            ⚡ Test Studio
+                          </button>
+                        )}
+                        {item.hasSeoStudio && (
+                          <button 
+                            type="button"
+                            onClick={() => setIsSeoStudioOpen(true)}
+                            className="px-4 py-3 bg-white/10 hover:bg-white/20 text-white text-xs font-black uppercase tracking-wider rounded-xl transition cursor-pointer"
+                          >
+                            🔍 Test Auditor
+                          </button>
+                        )}
+                        <button 
+                          type="button"
+                          onClick={() => setActiveModalAgent(item)}
+                          className={`px-5 py-3 ${theme.button} text-xs font-black uppercase tracking-wider rounded-xl transition shadow-lg cursor-pointer`}
+                        >
+                          Acquire System →
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           {/* 3 MAIN AGENTS GRID */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
             {/* Agent 1: Visual Concierge */}
@@ -876,16 +1487,18 @@ export default function AIAgentsShowcase() {
               </div>
               <div className="flex gap-2 mt-auto">
                 <button 
+                  type="button"
                   onClick={() => setIsMockupStudioOpen(true)}
-                  className="flex-1 text-center bg-cyan-500 hover:bg-cyan-400 text-black text-[10px] sm:text-xs font-black uppercase py-4 rounded-xl transition shadow-lg shadow-cyan-500/20"
+                  className="flex-1 text-center bg-cyan-400 hover:bg-cyan-300 text-black text-[10px] sm:text-xs font-black uppercase py-4 rounded-xl transition shadow-lg shadow-cyan-500/25 cursor-pointer"
                 >
                   ⚡ Launch Studio
                 </button>
                 <button 
+                  type="button"
                   onClick={() => setActiveModalAgent(visualConcierge)}
-                  className="flex-1 text-center bg-blue-600 hover:bg-blue-500 text-white text-[10px] sm:text-xs font-black uppercase py-4 rounded-xl transition shadow-lg shadow-blue-600/30"
+                  className="flex-1 text-center bg-blue-600 hover:bg-blue-500 text-white text-[10px] sm:text-xs font-black uppercase py-4 rounded-xl transition shadow-lg shadow-blue-600/30 cursor-pointer"
                 >
-                  White-Label ($5.5k)
+                  Buyout ($5.5k)
                 </button>
               </div>
             </div>
@@ -904,10 +1517,11 @@ export default function AIAgentsShowcase() {
                </div>
                <div className="mt-auto">
                  <button 
+                    type="button"
                     onClick={() => setActiveModalAgent(salesScoper)}
-                    className="w-full text-center bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black uppercase tracking-widest py-4 rounded-xl transition shadow-lg shadow-emerald-600/30"
+                    className="w-full text-center bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black uppercase tracking-widest py-4 rounded-xl transition shadow-lg shadow-emerald-500/25 cursor-pointer"
                  >
-                    White-Label Buyout ($4k – $8k)
+                    Acquire White-Label ($4k – $8k)
                  </button>
                </div>
             </div>
@@ -926,10 +1540,11 @@ export default function AIAgentsShowcase() {
                </div>
                <div className="mt-auto">
                  <button 
+                    type="button"
                     onClick={() => setActiveModalAgent(techEngineer)}
-                    className="w-full text-center bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black uppercase tracking-widest py-4 rounded-xl transition shadow-lg shadow-indigo-600/30"
+                    className="w-full text-center bg-indigo-500 hover:bg-indigo-400 text-white text-xs font-black uppercase tracking-widest py-4 rounded-xl transition shadow-lg shadow-indigo-500/30 cursor-pointer"
                  >
-                    White-Label Buyout ($5k – $10k)
+                    Acquire White-Label ($5k – $10k)
                  </button>
                </div>
             </div>
@@ -961,6 +1576,29 @@ export default function AIAgentsShowcase() {
               </div>
             </div>
           </div>
+
+          {/* VERIFIED B2B AGENCY CASE STUDIES & TESTIMONIALS (SOCIAL PROOF) */}
+          <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+            {b2bCaseStudies.map((study, idx) => (
+              <div key={idx} className="bg-[#050914] border border-white/10 rounded-2xl p-6 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full">
+                      {study.metric}
+                    </span>
+                    <span className="text-amber-400 text-xs font-bold">★★★★★</span>
+                  </div>
+                  <p className="text-slate-300 text-xs leading-relaxed italic mb-4">
+                    "{study.quote}"
+                  </p>
+                </div>
+                <div className="border-t border-white/10 pt-3">
+                  <div className="text-xs font-black uppercase text-white">{study.agency}</div>
+                  <div className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">{study.system}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
 
         <hr className="border-white/10" />
@@ -984,7 +1622,7 @@ export default function AIAgentsShowcase() {
               return (
                 <div key={agent.id} className="flex flex-col gap-4">
                   <div className={`bg-[#050914] border ${themeClasses.border} rounded-3xl p-6 flex flex-col items-center text-center ${themeClasses.shadow} h-full justify-center relative`}>
-                     {(agent.hasLiveStudio || agent.hasSeoStudio) && (
+                     {(agent.hasLiveStudio || agent.hasSeoStudio || agent.hasCampaignStudio) && (
                        <span className="absolute top-4 right-4 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 rounded-full">
                          Live Studio Ready
                        </span>
@@ -1001,23 +1639,35 @@ export default function AIAgentsShowcase() {
                   <div className="mt-auto flex flex-col gap-2">
                     {agent.hasLiveStudio && (
                       <button 
+                        type="button"
                         onClick={() => setIsMockupStudioOpen(true)}
-                        className="w-full text-center bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-black text-xs font-black uppercase tracking-widest py-3.5 rounded-xl transition shadow-lg shadow-cyan-500/20"
+                        className="w-full text-center bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-black text-xs font-black uppercase tracking-widest py-3.5 rounded-xl transition shadow-lg shadow-cyan-500/20 cursor-pointer"
                       >
                         ⚡ Launch Mockup Studio
                       </button>
                     )}
                     {agent.hasSeoStudio && (
                       <button 
+                        type="button"
                         onClick={() => setIsSeoStudioOpen(true)}
-                        className="w-full text-center bg-gradient-to-r from-emerald-400 to-cyan-500 hover:from-emerald-300 hover:to-cyan-400 text-black text-xs font-black uppercase tracking-widest py-3.5 rounded-xl transition shadow-lg shadow-emerald-500/20"
+                        className="w-full text-center bg-gradient-to-r from-emerald-400 to-cyan-500 hover:from-emerald-300 hover:to-cyan-400 text-black text-xs font-black uppercase tracking-widest py-3.5 rounded-xl transition shadow-lg shadow-emerald-500/20 cursor-pointer"
                       >
                         🔍 Launch SEO & CRO Auditor
                       </button>
                     )}
+                    {agent.hasCampaignStudio && (
+                      <button 
+                        type="button"
+                        onClick={() => setIsCampaignStudioOpen(true)}
+                        className="w-full text-center bg-gradient-to-r from-cyan-400 to-indigo-500 hover:from-cyan-300 hover:to-indigo-400 text-black text-xs font-black uppercase tracking-widest py-3.5 rounded-xl transition shadow-lg shadow-cyan-500/20 cursor-pointer"
+                      >
+                        📣 Launch Campaign Studio
+                      </button>
+                    )}
                     <button 
+                      type="button"
                       onClick={() => setActiveModalAgent(agent)}
-                      className={`w-full text-center ${themeClasses.button} text-white text-xs font-black uppercase tracking-widest py-4 rounded-xl transition shadow-lg`}
+                      className={`w-full text-center ${themeClasses.button} text-white text-xs font-black uppercase tracking-widest py-4 rounded-xl transition shadow-lg cursor-pointer`}
                     >
                       White-Label Buyout ({agent.whiteLabelPrice})
                     </button>

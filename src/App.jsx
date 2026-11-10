@@ -60,6 +60,9 @@ import V10PdfTranslator from './pdf/V10PdfTranslator';
 // 🔥 SHOWCASE (aiagents folder) 🔥
 import AIAgentsShowcase from './aiagents/AIAgentsShowcase';
 
+// 🔥 TURNKEY B2B BRAND & WEB KITS (pages folder) 🔥
+import PrivateAviationKit from './pages/PrivateAviationKit';
+
 import { NotificationListener, NotificationModal } from './NotificationSystem';
 
 import Portfolio from './Portfolio';
@@ -686,6 +689,9 @@ function AppContent({ appsData, refreshData }) {
               <Route path="/dashboard" element={<V8PageWrapper><V8AdminDashboard /></V8PageWrapper>} />
               <Route path="/admin-payoneer" element={<V8PageWrapper><V8PayoneerDashboard /></V8PageWrapper>} />
               
+              {/* 🔥 RUTA ZA TURNKEY PRIVATE AVIATION & SUPERYACHT KIT ($349 / $1,490) 🔥 */}
+              <Route path="/aviation-charter-kit" element={<V8PageWrapper><PrivateAviationKit /></V8PageWrapper>} />
+
               <Route path="/stock" element={<V8PageWrapper><V8StockBerza /></V8PageWrapper>} />
               <Route path="/stock-2" element={<V8PageWrapper><V8Stock2 /></V8PageWrapper>} /> 
               

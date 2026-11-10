@@ -1,7 +1,12 @@
 // POČETAK FAJLA: V8Navbar.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Globe, ChevronDown, Layers, Image as ImageIcon, Zap, Settings, ShieldAlert, Lock, LogOut, User, Video, MonitorPlay, FileText, Code, ShieldCheck, LayoutGrid, Cpu, Maximize, Gift, Menu, X, Terminal, ScanLine, Briefcase, Sparkles, Aperture, Clapperboard, Bot } from 'lucide-react';
+import {
+  Globe, ChevronDown, Layers, Image as ImageIcon, Zap, Settings,
+  ShieldAlert, Lock, LogOut, User, MonitorPlay, FileText, ShieldCheck,
+  LayoutGrid, Cpu, Gift, Menu, X, Briefcase, Sparkles, Bot,
+  Crown, Compass, Diamond, ShoppingBag
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { auth, provider, db } from './firebase';
@@ -12,6 +17,42 @@ import * as data from './data';
 import navBg from './navbar-bg.webp';
 
 import { trackV8Action } from './utils/analytics';
+
+// Sva 4 High-Ticket paketa u padajućem meniju
+const TURNKEY_KITS_MENU = [
+  {
+    title: 'Private Jets & Yachts Kit',
+    subtitle: 'React Code + 60 Files (WebP/4K/150MP) + 3 PSD',
+    price: '$349 / $1,490',
+    path: '/aviation-charter-kit',
+    icon: Compass,
+    status: 'LIVE'
+  },
+  {
+    title: 'Watches & Diamonds Kit',
+    subtitle: 'Horology Storefront + 20× 150MP + 3 PSD',
+    price: '$349 / $1,490',
+    path: '/stock',
+    icon: Diamond,
+    status: 'NEXT'
+  },
+  {
+    title: 'Handbags & Eyewear Kit',
+    subtitle: 'Couture E-Commerce + 20× 150MP + 3 PSD',
+    price: '$349 / $1,490',
+    path: '/stock',
+    icon: ShoppingBag,
+    status: 'NEXT'
+  },
+  {
+    title: 'Clinical Skincare & Beauty',
+    subtitle: 'IP-Safe Beauty Brand + 20× 150MP + 3 PSD',
+    price: '$349 / $1,490',
+    path: '/stock',
+    icon: Sparkles,
+    status: 'NEXT'
+  }
+];
 
 const V8Navbar = ({ handleHomeClick }) => {
   const location = useLocation();
@@ -154,23 +195,23 @@ const V8Navbar = ({ handleHomeClick }) => {
           backgroundRepeat: 'no-repeat'
         }}
       >
-        <div className="mx-auto flex w-full max-w-[1600px] min-w-0 items-center justify-between gap-2 px-3 sm:gap-4 sm:px-4 md:px-8">
+        <div className="mx-auto flex w-full max-w-[1600px] min-w-0 items-center justify-between gap-1.5 px-3 sm:gap-3 sm:px-4 md:px-6">
           
           {/* LOGO */}
-          <Link to="/" onClick={() => { if (typeof handleHomeClick === 'function') handleHomeClick(); setIsMobileMenuOpen(false); }} className="group flex min-w-0 max-w-[calc(100%_-_3.25rem)] flex-1 items-center gap-2 overflow-hidden pr-1 sm:max-w-[calc(100%_-_3.75rem)] sm:gap-3 sm:pr-4 xl:max-w-none xl:flex-none">
-            <img src={data.logoUrl} className={`object-contain transition-all duration-500 shrink-0 ${scrolled ? 'h-8 md:h-10' : 'h-9 md:h-12'} animate-pulse group-hover:scale-105`} alt="logo" />
+          <Link to="/" onClick={() => { if (typeof handleHomeClick === 'function') handleHomeClick(); setIsMobileMenuOpen(false); }} className="group flex min-w-0 max-w-[calc(100%_-_3.25rem)] flex-1 items-center gap-2 overflow-hidden pr-1 sm:max-w-[calc(100%_-_3.75rem)] sm:gap-2.5 sm:pr-2 xl:max-w-none xl:flex-none">
+            <img src={data.logoUrl} className={`object-contain transition-all duration-500 shrink-0 ${scrolled ? 'h-8 md:h-10' : 'h-9 md:h-11'} animate-pulse group-hover:scale-105`} alt="logo" />
             <div className="flex flex-col justify-center overflow-hidden min-w-0">
-              <span className={`font-black uppercase tracking-[0.1em] text-blue-500 italic group-hover:text-orange-500 transition-all duration-500 truncate w-full leading-none ${scrolled ? 'text-[11px] md:text-[12px]' : 'text-[12px] md:text-[14px]'} mb-0.5`}>AI TOOLS</span>
-              <span className={`font-black uppercase tracking-[0.1em] text-orange-500 italic group-hover:text-blue-500 transition-all duration-500 truncate w-full leading-none ${scrolled ? 'text-[11px] md:text-[12px]' : 'text-[12px] md:text-[14px]'}`}>PRO SMART</span>
+              <span className={`font-black uppercase tracking-[0.1em] text-blue-500 italic group-hover:text-orange-500 transition-all duration-500 truncate w-full leading-none ${scrolled ? 'text-[11px] md:text-[12px]' : 'text-[12px] md:text-[13px]'} mb-0.5`}>AI TOOLS</span>
+              <span className={`font-black uppercase tracking-[0.1em] text-orange-500 italic group-hover:text-blue-500 transition-all duration-500 truncate w-full leading-none ${scrolled ? 'text-[11px] md:text-[12px]' : 'text-[12px] md:text-[13px]'}`}>PRO SMART</span>
             </div>
           </Link>
 
           {/* Desktop navigacija */}
-          <div className="hidden xl:flex items-center justify-end gap-1.5 xl:gap-2 font-black uppercase tracking-widest shrink-0">
+          <div className="hidden xl:flex items-center justify-end gap-1.5 font-black uppercase tracking-widest shrink-0">
             
             {/* HOME DUGME */}
             <div className="relative group">
-              <Link to="/" onClick={() => { if (typeof handleHomeClick === 'function') handleHomeClick(); }} className="flex items-center gap-1 xl:gap-1.5 px-2.5 xl:px-3 py-2 rounded-full bg-emerald-900/30 border border-emerald-500/40 text-emerald-400 text-[9px] xl:text-[10px] hover:text-white hover:bg-emerald-800/50 hover:border-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] cursor-pointer whitespace-nowrap">
+              <Link to="/" onClick={() => { if (typeof handleHomeClick === 'function') handleHomeClick(); }} className="flex items-center gap-1 px-2.5 py-2 rounded-full bg-emerald-900/30 border border-emerald-500/40 text-emerald-400 text-[9px] xl:text-[10px] hover:text-white hover:bg-emerald-800/50 hover:border-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] cursor-pointer whitespace-nowrap">
                 <Globe className="w-3.5 h-3.5 shrink-0" /> 
                 <span>HOME</span>
                 <ChevronDown className="w-3 h-3 group-hover:rotate-180 transition-transform duration-300 shrink-0" />
@@ -191,15 +232,82 @@ const V8Navbar = ({ handleHomeClick }) => {
               </div>
             </div>
 
-            {/* 🔥 NOVO: AI AGENTS DUGME (zamijenjeno sa APPS) 🔥 */}
-            <Link to="/ai-agents" onClick={() => window.scrollTo(0,0)} className="flex items-center gap-1 xl:gap-1.5 px-3 xl:px-4 py-2 rounded-full bg-cyan-600 border-2 border-cyan-400 text-white font-black hover:bg-cyan-500 hover:scale-105 transition-all shadow-[0_0_20px_rgba(8,145,178,0.6)] whitespace-nowrap cursor-pointer">
+            {/* 🔥 POSEBNO DUGME: TURNKEY KITS SA SVA 4 PAKETA U DROPDOWNU 🔥 */}
+            <div className="relative group">
+              <Link
+                to="/aviation-charter-kit"
+                onClick={() => window.scrollTo(0, 0)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-black/90 hover:bg-zinc-900 border-2 border-amber-400 text-amber-400 hover:text-amber-300 font-black text-[9px] xl:text-[10px] hover:scale-105 transition-all shadow-[0_0_22px_rgba(245,158,11,0.45)] cursor-pointer whitespace-nowrap"
+              >
+                <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span>TURNKEY KITS</span>
+                <span className="bg-amber-400 text-black text-[8px] font-black px-1.5 py-0.5 rounded uppercase leading-none">
+                  NEW
+                </span>
+                <ChevronDown className="w-3 h-3 text-amber-400 group-hover:rotate-180 transition-transform duration-300 shrink-0" />
+              </Link>
+
+              <div className="absolute top-full left-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-400 z-[9999]">
+                <div className="bg-black/95 backdrop-blur-2xl border border-white/15 border-t-amber-400 border-b-amber-500/40 rounded-2xl p-2.5 w-[355px] shadow-[0_30px_70px_rgba(0,0,0,0.95)] flex flex-col gap-1.5 relative overflow-hidden">
+                  <div className="absolute -top-12 -right-12 w-36 h-36 bg-amber-500/15 rounded-full blur-[45px] pointer-events-none z-0"></div>
+
+                  <div className="px-3 py-1.5 border-b border-white/10 flex items-center justify-between relative z-10">
+                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-400">
+                      Complete React + 150MP Brand Systems
+                    </span>
+                    <span className="text-[8px] font-bold text-zinc-400 uppercase">B2B Licensing</span>
+                  </div>
+
+                  {TURNKEY_KITS_MENU.map((kit, idx) => {
+                    const Icon = kit.icon;
+                    return (
+                      <Link
+                        key={idx}
+                        to={kit.path}
+                        onClick={() => window.scrollTo(0, 0)}
+                        className="flex items-start gap-3 px-3 py-3 rounded-xl hover:bg-white/5 border border-transparent hover:border-amber-500/40 transition-all group/kit relative z-10"
+                      >
+                        <div className="bg-amber-500/15 border border-amber-500/30 text-amber-400 p-2.5 rounded-xl shrink-0 mt-0.5 group-hover/kit:bg-amber-400 group-hover/kit:text-black transition-colors">
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <div className="flex flex-col text-left min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-[11px] font-black uppercase tracking-wider text-white group-hover/kit:text-amber-300 truncate">
+                              {kit.title}
+                            </span>
+                            <span
+                              className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase shrink-0 ${
+                                kit.status === 'LIVE'
+                                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                                  : 'bg-white/10 text-zinc-400'
+                              }`}
+                            >
+                              {kit.status}
+                            </span>
+                          </div>
+                          <span className="text-[9px] font-semibold text-zinc-400 normal-case tracking-normal leading-snug mt-0.5">
+                            {kit.subtitle}
+                          </span>
+                          <span className="text-[9px] font-black text-amber-400 mt-1 tracking-wider">
+                            {kit.price}
+                          </span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* AI AGENTS DUGME */}
+            <Link to="/ai-agents" onClick={() => window.scrollTo(0,0)} className="flex items-center gap-1 px-2.5 xl:px-3 py-2 rounded-full bg-cyan-600 border-2 border-cyan-400 text-white font-black hover:bg-cyan-500 hover:scale-105 transition-all shadow-[0_0_20px_rgba(8,145,178,0.6)] whitespace-nowrap cursor-pointer">
               <Bot className="w-3.5 h-3.5 shrink-0 drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
               <span className="text-[9px] xl:text-[10px] uppercase tracking-widest">AI AGENTS</span>
             </Link>
 
             {/* PREMIUM STOCK */}
             <div className="relative group">
-              <button className="flex items-center gap-1 xl:gap-1.5 px-3 xl:px-4 py-2 rounded-full bg-blue-600 border-2 border-blue-400 text-white font-black text-[9px] xl:text-[10px] hover:bg-blue-500 hover:scale-105 transition-all shadow-[0_0_20px_rgba(37,99,235,0.6)] cursor-pointer whitespace-nowrap">
+              <button className="flex items-center gap-1 px-2.5 xl:px-3 py-2 rounded-full bg-blue-600 border-2 border-blue-400 text-white font-black text-[9px] xl:text-[10px] hover:bg-blue-500 hover:scale-105 transition-all shadow-[0_0_20px_rgba(37,99,235,0.6)] cursor-pointer whitespace-nowrap">
                 <ImageIcon className="w-3.5 h-3.5 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] shrink-0" /> 
                 <span>PREMIUM STOCK</span>
                 <ChevronDown className="w-3 h-3 text-white group-hover:rotate-180 transition-transform duration-300 shrink-0" />
@@ -240,8 +348,8 @@ const V8Navbar = ({ handleHomeClick }) => {
           </div>
 
           {/* 🔥 B2B SERVISI 🔥 */}
-          <div className="relative z-50 hidden xl:flex items-center gap-1.5 xl:gap-2 ml-1 border-l border-white/10 pl-2 xl:pl-3 shrink-0">
-            <Link to="/standard-mocup" onClick={() => window.scrollTo(0,0)} className="flex items-center gap-1 xl:gap-1.5 px-3 xl:px-4 py-2 rounded-full bg-orange-500 border-2 border-orange-400 text-white font-black hover:bg-orange-400 hover:scale-105 transition-all shadow-[0_0_20px_rgba(249,115,22,0.6)] whitespace-nowrap cursor-pointer">
+          <div className="relative z-50 hidden xl:flex items-center gap-1.5 ml-1 border-l border-white/10 pl-2 shrink-0">
+            <Link to="/standard-mocup" onClick={() => window.scrollTo(0,0)} className="flex items-center gap-1 px-2.5 xl:px-3 py-2 rounded-full bg-orange-500 border-2 border-orange-400 text-white font-black hover:bg-orange-400 hover:scale-105 transition-all shadow-[0_0_20px_rgba(249,115,22,0.6)] whitespace-nowrap cursor-pointer">
               <MonitorPlay className="w-3.5 h-3.5 shrink-0 drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
               <span className="text-[9px] xl:text-[10px] uppercase tracking-widest">SaaS MOCKUPS</span>
             </Link>
@@ -249,7 +357,7 @@ const V8Navbar = ({ handleHomeClick }) => {
             <Link 
               to={isAdmin ? "/ui-ux" : "/ui-ux/vault"} 
               onClick={() => window.scrollTo(0,0)} 
-              className="flex items-center gap-1 xl:gap-1.5 px-3 xl:px-4 py-2 rounded-full bg-black border-2 border-orange-500 text-orange-500 font-black hover:bg-orange-500 hover:text-black transition-colors duration-150 shadow-[0_0_15px_rgba(249,115,22,0.4)] hover:shadow-[0_0_25px_rgba(249,115,22,0.8)] whitespace-nowrap cursor-pointer"
+              className="flex items-center gap-1 px-2.5 xl:px-3 py-2 rounded-full bg-black border-2 border-orange-500 text-orange-500 font-black hover:bg-orange-500 hover:text-black transition-colors duration-150 shadow-[0_0_15px_rgba(249,115,22,0.4)] hover:shadow-[0_0_25px_rgba(249,115,22,0.8)] whitespace-nowrap cursor-pointer"
             >
               <LayoutGrid className="w-3.5 h-3.5 shrink-0" />
               <span className="text-[9px] xl:text-[10px] uppercase tracking-widest">UI/UX</span>
@@ -258,7 +366,7 @@ const V8Navbar = ({ handleHomeClick }) => {
             <Link 
               to="/pdf-translator" 
               onClick={() => window.scrollTo(0,0)} 
-              className="flex items-center gap-1 xl:gap-1.5 px-3 xl:px-4 py-2 rounded-full bg-emerald-950/50 border-2 border-emerald-500 text-emerald-400 font-black hover:bg-emerald-500 hover:text-white transition-colors duration-150 shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.6)] whitespace-nowrap cursor-pointer"
+              className="flex items-center gap-1 px-2.5 xl:px-3 py-2 rounded-full bg-emerald-950/50 border-2 border-emerald-500 text-emerald-400 font-black hover:bg-emerald-500 hover:text-white transition-colors duration-150 shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.6)] whitespace-nowrap cursor-pointer"
             >
               <FileText className="w-3.5 h-3.5 shrink-0" />
               <span className="text-[9px] xl:text-[10px] uppercase tracking-widest">PDF TRANS</span>
@@ -267,8 +375,8 @@ const V8Navbar = ({ handleHomeClick }) => {
 
           {/* AUTH SYSTEM */}
           {user ? (
-             <div className="flex items-center gap-2 ml-1 lg:border-l lg:border-white/10 lg:pl-2 xl:pl-3 relative group shrink-0">
-                 <button className="flex items-center gap-2 px-2.5 xl:px-3 py-2 rounded-full bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-700/50 text-white transition-all shadow-md cursor-pointer whitespace-nowrap">
+             <div className="flex items-center gap-2 ml-1 lg:border-l lg:border-white/10 lg:pl-2 relative group shrink-0">
+                 <button className="flex items-center gap-1.5 px-2.5 py-2 rounded-full bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-700/50 text-white transition-all shadow-md cursor-pointer whitespace-nowrap">
                    {userCredits?.trialClaimed === false && !isAdmin ? (
                      <>
                         <Gift className="w-3.5 h-3.5 text-fuchsia-400 animate-pulse shrink-0" /> 
@@ -357,9 +465,9 @@ const V8Navbar = ({ handleHomeClick }) => {
                  </div>
                </div>
           ) : (
-             <div className="ml-1 border-l border-white/10 pl-2 xl:pl-3 shrink-0">
-               <button type="button" onClick={handleLogin} className="bg-zinc-800 px-2.5 xl:px-3 py-2 rounded-full text-zinc-400 shadow-xl hover:bg-zinc-700 hover:text-white transition-all border border-white/5 cursor-pointer whitespace-nowrap text-[9px] xl:text-[10px] shrink-0">
-                 <User className="w-3.5 h-3.5 inline mr-1 xl:mr-1.5 shrink-0" /> LOGIN
+             <div className="ml-1 border-l border-white/10 pl-2 shrink-0">
+               <button type="button" onClick={handleLogin} className="bg-zinc-800 px-2.5 py-2 rounded-full text-zinc-400 shadow-xl hover:bg-zinc-700 hover:text-white transition-all border border-white/5 cursor-pointer whitespace-nowrap text-[9px] xl:text-[10px] shrink-0">
+                 <User className="w-3.5 h-3.5 inline mr-1 shrink-0" /> LOGIN
                </button>
              </div>
           )}
@@ -472,6 +580,55 @@ const V8Navbar = ({ handleHomeClick }) => {
               )}
 
               <div className="flex flex-col gap-6 w-full min-w-0">
+
+                {/* 🔥 SVA 4 TURNKEY BRAND PAKETA U MOBILNOM MENIJU 🔥 */}
+                <div className="flex flex-col gap-2.5 w-full">
+                  <h4 className="text-[10px] text-amber-400 font-black uppercase tracking-[0.2em] border-b border-amber-500/20 pb-2 truncate w-full flex items-center gap-1.5">
+                    <Crown className="w-3.5 h-3.5 shrink-0" /> Turnkey Brand Kits ($349 / $1,490)
+                  </h4>
+
+                  {TURNKEY_KITS_MENU.map((kit, idx) => {
+                    const Icon = kit.icon;
+                    return (
+                      <Link
+                        key={idx}
+                        to={kit.path}
+                        onClick={handleMobileLinkClick}
+                        className={`flex items-center justify-between p-3.5 rounded-2xl active:scale-95 transition-transform w-full min-w-0 border ${
+                          kit.status === 'LIVE'
+                            ? 'bg-amber-500/10 border-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.2)]'
+                            : 'bg-black border-white/10'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0 w-full">
+                          <div className="bg-amber-500/20 p-2.5 rounded-xl shrink-0">
+                            <Icon className="w-5 h-5 text-amber-400" />
+                          </div>
+                          <div className="flex flex-col min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-[12px] sm:text-[13px] font-black uppercase tracking-wider text-white truncate">
+                                {kit.title}
+                              </span>
+                              <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase shrink-0 ${
+                                kit.status === 'LIVE'
+                                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                                  : 'bg-white/10 text-zinc-400'
+                              }`}>
+                                {kit.status}
+                              </span>
+                            </div>
+                            <span className="text-[9px] text-zinc-400 font-bold truncate w-full mt-0.5">
+                              {kit.subtitle}
+                            </span>
+                            <span className="text-[9px] text-amber-400 font-black uppercase mt-0.5">
+                              {kit.price}
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
                 
                 {/* Glavni Meni */}
                 <div className="flex flex-col gap-3 w-full">
@@ -490,7 +647,6 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   </Link>
 
-                  {/* 🔥 NOVO: AI AGENTS DUGME ZA MOBILNI 🔥 */}
                   <Link to="/ai-agents" onClick={handleMobileLinkClick} className="flex items-center gap-3 sm:gap-4 bg-cyan-600 border border-cyan-500 p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0 shadow-[0_0_20px_rgba(8,145,178,0.4)]">
                     <div className="bg-white/20 p-3 rounded-xl shrink-0"><Bot className="w-6 h-6 text-white" /></div>
                     <div className="flex flex-col min-w-0">
