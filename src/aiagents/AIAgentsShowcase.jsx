@@ -8,7 +8,7 @@ import {
   Mail, Search, Globe, LineChart, MessageCircle, Phone, FileText, CheckCircle,
   ShoppingCart, RefreshCw, MessageSquare, Instagram, Receipt, PenTool, 
   Database, PhoneCall, Headphones, Building, Lock, KeyRound, Download, Printer, Copy,
-  Flame, Rocket, Calculator, Crosshair
+  Flame, Rocket, Calculator, Crosshair, Calendar, BookOpen, Languages, HelpCircle
 } from 'lucide-react';
 
 // Data from NextPageHub
@@ -87,12 +87,18 @@ const priorityFlagshipSystems = [
   }
 ];
 
-// KATALOG AGENATA (WHITE-LABEL BUYOUT MODEL)
+// ============================================================================
+// COMPLETE KATALOG AGENATA (26 WHITE-LABEL BUYOUT SYSTEMS)
+// ============================================================================
 const aiAgentsList = [
   { id: 'campaign-agent', name: 'Omnichannel Campaign & Content Agent', shortDesc: 'Turnkey Marketing Synthesizer', longDesc: 'Automatically generates synchronized B2B LinkedIn posts, cold outreach emails, Meta/Google ad copy, and short-form video scripts from a single brief.', whiteLabelPrice: '$3,000 – $5,000', icon: Megaphone, colorTheme: 'cyan', hasCampaignStudio: true },
-  { id: 'b2b-lead-agent', name: 'Smart B2B Lead Generator & Chatbot', shortDesc: 'Lead Qualification & Booking', longDesc: 'Conducts deep contextual conversations on your site, qualifies leads, and automatically schedules client meetings 24/7.', whiteLabelPrice: '$4,000 – $7,000', icon: Users, colorTheme: 'emerald' },
+  { id: 'b2b-lead-agent', name: 'Smart B2B Lead Generator & Chatbot', shortDesc: 'Lead Qualification & Booking', longDesc: 'Conducts deep contextual conversations on your site, qualifies leads, scores buyer intent, and routes high-value prospects to your sales team 24/7.', whiteLabelPrice: '$4,000 – $7,000', icon: Users, colorTheme: 'emerald' },
   { id: 'mockup-agent', name: 'AI Mockup & Visual Asset Generator', shortDesc: 'Turnkey White-Label Studio', longDesc: 'Transforms raw concepts, logos, and product descriptions into photorealistic 8K commercial mockups across 16:9, 9:16, and 21:9 aspect ratios without Photoshop.', whiteLabelPrice: '$5,500 – $8,500', icon: ImageIcon, colorTheme: 'cyan', hasLiveStudio: true },
   { id: 'seo-auditor-agent', name: 'SEO & CRO Website Auditor', shortDesc: 'Live Technical & Conversion Scanner', longDesc: 'Scans live client URLs for technical SEO bottlenecks, meta structure, and conversion barriers, generating an executive B2B report with 0–100 scores and PDF export.', whiteLabelPrice: '$3,500 – $5,000', icon: Search, colorTheme: 'emerald', hasSeoStudio: true },
+  { id: 'website-support-agent', name: 'AI Website Knowledge & Support Concierge', shortDesc: '24/7 Site Support & Escalation', longDesc: 'Trained directly on your website content and FAQs to resolve visitor inquiries instantaneously while escalating complex high-ticket requests to your human team.', whiteLabelPrice: '$2,500 – $4,500', icon: HelpCircle, colorTheme: 'indigo' },
+  { id: 'appointment-booking-agent', name: 'Autonomous Calendar & Appointment Setter', shortDesc: 'Live Availability & Booking Engine', longDesc: 'Checks real-time calendar availability, schedules discovery calls or consultations, sends automated email/SMS confirmations, and eliminates booking friction.', whiteLabelPrice: '$3,000 – $5,000', icon: Calendar, colorTheme: 'cyan' },
+  { id: 'pdf-translator-agent', name: 'Enterprise PDF & Document Translator', shortDesc: 'Multi-Language OCR & Layout Preservation', longDesc: 'Translates complex PDFs, contracts, and scanned documents into 30+ languages via OCR and LLM processing while preserving executive formatting and terminology.', whiteLabelPrice: '$3,500 – $6,000', icon: Languages, colorTheme: 'emerald' },
+  { id: 'rag-doc-assistant', name: 'RAG Document Q&A & Knowledge Base Agent', shortDesc: 'Instant Answers From PDFs & Manuals', longDesc: 'Allows users or internal teams to upload PDFs, SOPs, and technical guides and ask complex questions with instant, citation-backed answers extracted from your files.', whiteLabelPrice: '$4,500 – $7,500', icon: BookOpen, colorTheme: 'indigo' },
   { id: 'email-triage-agent', name: 'AI Email & CRM Triage Agent', shortDesc: 'Inbox Management', longDesc: 'Integrates into your inbox, filters spam, prioritizes urgent inquiries, and automatically drafts professional client replies.', whiteLabelPrice: '$3,000 – $5,000', icon: Mail, colorTheme: 'cyan' },
   { id: 'video-script-agent', name: 'AI Video & Film Script Agent', shortDesc: 'Content Creation', longDesc: 'Generates complete scripts, shot descriptions, voiceover copy, and video creation prompts for TikTok and Reels.', whiteLabelPrice: '$4,000 – $6,500', icon: Clapperboard, colorTheme: 'indigo' },
   { id: 'localization-agent', name: 'Multilingual Localization AI Agent', shortDesc: 'Global Reach', longDesc: 'Translates websites and marketing materials into over 30 languages with full cultural context and local slang adaptation.', whiteLabelPrice: '$3,500 – $6,000', icon: Globe, colorTheme: 'cyan' },
@@ -1521,7 +1527,7 @@ export default function AIAgentsShowcase() {
                     onClick={() => setActiveModalAgent(salesScoper)}
                     className="w-full text-center bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black uppercase tracking-widest py-4 rounded-xl transition shadow-lg shadow-emerald-500/25 cursor-pointer"
                  >
-                    Acquire White-Label ($4k – $8k)
+                   Acquire White-Label ($4k – $8k)
                  </button>
                </div>
             </div>
@@ -1544,7 +1550,7 @@ export default function AIAgentsShowcase() {
                     onClick={() => setActiveModalAgent(techEngineer)}
                     className="w-full text-center bg-indigo-500 hover:bg-indigo-400 text-white text-xs font-black uppercase tracking-widest py-4 rounded-xl transition shadow-lg shadow-indigo-500/30 cursor-pointer"
                  >
-                    Acquire White-Label ($5k – $10k)
+                   Acquire White-Label ($5k – $10k)
                  </button>
                </div>
             </div>
@@ -1571,7 +1577,7 @@ export default function AIAgentsShowcase() {
               </div>
               <div className="bg-black/60 border border-emerald-500/40 rounded-2xl p-4 text-center">
                 <div className="text-[10px] font-bold uppercase text-emerald-400">V10 Turnkey Buyout</div>
-                <div className="text-xl font-black text-white mt-0.5">$3,000 – $8,500</div>
+                <div className="text-xl font-black text-white mt-0.5">$2,500 – $8,500</div>
                 <div className="text-[10px] text-emerald-400 font-bold">Instant .ZIP Delivery</div>
               </div>
             </div>
@@ -1604,7 +1610,7 @@ export default function AIAgentsShowcase() {
         <hr className="border-white/10" />
 
         {/* ========================================= */}
-        {/* EXTENDED AGENT CATALOG (22 AGENTS)        */}
+        {/* EXTENDED AGENT CATALOG (26 AGENTS)        */}
         {/* ========================================= */}
         <section>
           <div className="text-center max-w-3xl mx-auto mb-16 relative">
