@@ -5,7 +5,7 @@ import {
   Globe, ChevronDown, Layers, Image as ImageIcon, Zap, Settings,
   ShieldAlert, Lock, LogOut, User, MonitorPlay, FileText, ShieldCheck,
   LayoutGrid, Cpu, Gift, Menu, X, Briefcase, Sparkles, Bot,
-  Crown, Compass, Diamond, ShoppingBag
+  Crown, Compass, Diamond, ShoppingBag, Plane, Anchor, Watch, Glasses, Droplets
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -18,37 +18,71 @@ import navBg from './navbar-bg.webp';
 
 import { trackV8Action } from './utils/analytics';
 
-// Sva 4 High-Ticket paketa u padajućem meniju
+// ============================================================================
+// 8 RAZDVOJENIH HIGH-TICKET TURNKEY BRAND PAKETA (SVAKA NIŠA ZASEBNO)
+// ============================================================================
 const TURNKEY_KITS_MENU = [
   {
-    title: 'Private Jets & Yachts Kit',
-    subtitle: 'React Code + 60 Files (WebP/4K/150MP) + 3 PSD',
+    title: 'Private Aviation Kit',
+    subtitle: 'Aero Privé React UI + 60 Jet Files + 3 PSD',
     price: '$349 / $1,490',
     path: '/aviation-charter-kit',
-    icon: Compass,
+    icon: Plane,
     status: 'LIVE'
   },
   {
-    title: 'Watches & Diamonds Kit',
-    subtitle: 'Horology Storefront + 20× 150MP + 3 PSD',
+    title: 'Superyacht Charter Kit',
+    subtitle: 'Mare Privé React UI + 60 Yacht Files + 3 PSD',
     price: '$349 / $1,490',
-    path: '/stock',
+    path: '/superyacht-charter-kit',
+    icon: Anchor,
+    status: 'LIVE'
+  },
+  {
+    title: 'Luxury Watches Kit',
+    subtitle: 'Haute Horlogerie UI + 20× 150MP + 3 PSD',
+    price: '$349 / $1,490',
+    path: '/luxury-watches-kit',
+    icon: Watch,
+    status: 'NEXT'
+  },
+  {
+    title: 'Diamonds & High Jewelry',
+    subtitle: 'Atelier Bijoux UI + 20× 150MP + 3 PSD',
+    price: '$349 / $1,490',
+    path: '/diamonds-jewelry-kit',
     icon: Diamond,
     status: 'NEXT'
   },
   {
-    title: 'Handbags & Eyewear Kit',
-    subtitle: 'Couture E-Commerce + 20× 150MP + 3 PSD',
+    title: 'Couture Handbags Kit',
+    subtitle: 'Maison Leather UI + 20× 150MP + 3 PSD',
     price: '$349 / $1,490',
-    path: '/stock',
+    path: '/luxury-handbags-kit',
     icon: ShoppingBag,
     status: 'NEXT'
   },
   {
-    title: 'Clinical Skincare & Beauty',
-    subtitle: 'IP-Safe Beauty Brand + 20× 150MP + 3 PSD',
+    title: 'Designer Eyewear Kit',
+    subtitle: 'Optical Flagship UI + 20× 150MP + 3 PSD',
     price: '$349 / $1,490',
-    path: '/stock',
+    path: '/designer-eyewear-kit',
+    icon: Glasses,
+    status: 'NEXT'
+  },
+  {
+    title: 'Clinical Skincare Kit',
+    subtitle: 'Cellular Lab UI + 20× 150MP + 3 PSD',
+    price: '$349 / $1,490',
+    path: '/clinical-skincare-kit',
+    icon: Droplets,
+    status: 'NEXT'
+  },
+  {
+    title: 'Haute Perfumery & Beauty',
+    subtitle: 'Extrait de Parfum UI + 20× 150MP + 3 PSD',
+    price: '$349 / $1,490',
+    path: '/luxury-beauty-kit',
     icon: Sparkles,
     status: 'NEXT'
   }
@@ -232,69 +266,71 @@ const V8Navbar = ({ handleHomeClick }) => {
               </div>
             </div>
 
-            {/* 🔥 POSEBNO DUGME: TURNKEY KITS SA SVA 4 PAKETA U DROPDOWNU 🔥 */}
+            {/* 🔥 POSEBNO DUGME: TURNKEY KITS - OTVORENIJE I SVETLIJE BOJE 🔥 */}
             <div className="relative group">
               <Link
                 to="/aviation-charter-kit"
                 onClick={() => window.scrollTo(0, 0)}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-black/90 hover:bg-zinc-900 border-2 border-amber-400 text-amber-400 hover:text-amber-300 font-black text-[9px] xl:text-[10px] hover:scale-105 transition-all shadow-[0_0_22px_rgba(245,158,11,0.45)] cursor-pointer whitespace-nowrap"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-black font-black text-[9px] xl:text-[10px] hover:scale-105 transition-all shadow-[0_0_25px_rgba(251,191,36,0.7)] border border-amber-200 cursor-pointer whitespace-nowrap"
               >
-                <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <Crown className="w-3.5 h-3.5 text-black shrink-0" />
                 <span>TURNKEY KITS</span>
-                <span className="bg-amber-400 text-black text-[8px] font-black px-1.5 py-0.5 rounded uppercase leading-none">
-                  NEW
+                <span className="bg-black text-amber-300 text-[8px] font-black px-1.5 py-0.5 rounded uppercase leading-none shadow-sm">
+                  8 NICHES
                 </span>
-                <ChevronDown className="w-3 h-3 text-amber-400 group-hover:rotate-180 transition-transform duration-300 shrink-0" />
+                <ChevronDown className="w-3 h-3 text-black group-hover:rotate-180 transition-transform duration-300 shrink-0" />
               </Link>
 
               <div className="absolute top-full left-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-400 z-[9999]">
-                <div className="bg-black/95 backdrop-blur-2xl border border-white/15 border-t-amber-400 border-b-amber-500/40 rounded-2xl p-2.5 w-[355px] shadow-[0_30px_70px_rgba(0,0,0,0.95)] flex flex-col gap-1.5 relative overflow-hidden">
-                  <div className="absolute -top-12 -right-12 w-36 h-36 bg-amber-500/15 rounded-full blur-[45px] pointer-events-none z-0"></div>
+                <div className="bg-[#0b0c10]/95 backdrop-blur-2xl border-2 border-amber-400/70 rounded-2xl p-3 w-[660px] shadow-[0_30px_70px_rgba(251,191,36,0.25)] flex flex-col gap-2 relative overflow-hidden">
+                  <div className="absolute -top-12 -right-12 w-48 h-48 bg-amber-400/20 rounded-full blur-[60px] pointer-events-none z-0"></div>
 
-                  <div className="px-3 py-1.5 border-b border-white/10 flex items-center justify-between relative z-10">
-                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-400">
-                      Complete React + 150MP Brand Systems
+                  <div className="px-3 py-2 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center justify-between relative z-10">
+                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-300">
+                      ✨ 8 Standalone React + 150MP Luxury Brand Kits ✨
                     </span>
-                    <span className="text-[8px] font-bold text-zinc-400 uppercase">B2B Licensing</span>
+                    <span className="text-[8px] font-black text-white bg-amber-500 px-2 py-0.5 rounded uppercase shadow">$349 Agency / $1,490 Buyout</span>
                   </div>
 
-                  {TURNKEY_KITS_MENU.map((kit, idx) => {
-                    const Icon = kit.icon;
-                    return (
-                      <Link
-                        key={idx}
-                        to={kit.path}
-                        onClick={() => window.scrollTo(0, 0)}
-                        className="flex items-start gap-3 px-3 py-3 rounded-xl hover:bg-white/5 border border-transparent hover:border-amber-500/40 transition-all group/kit relative z-10"
-                      >
-                        <div className="bg-amber-500/15 border border-amber-500/30 text-amber-400 p-2.5 rounded-xl shrink-0 mt-0.5 group-hover/kit:bg-amber-400 group-hover/kit:text-black transition-colors">
-                          <Icon className="w-4 h-4" />
-                        </div>
-                        <div className="flex flex-col text-left min-w-0 flex-1">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-[11px] font-black uppercase tracking-wider text-white group-hover/kit:text-amber-300 truncate">
-                              {kit.title}
+                  <div className="grid grid-cols-2 gap-2 relative z-10">
+                    {TURNKEY_KITS_MENU.map((kit, idx) => {
+                      const Icon = kit.icon;
+                      return (
+                        <Link
+                          key={idx}
+                          to={kit.path}
+                          onClick={() => window.scrollTo(0, 0)}
+                          className="flex items-start gap-3 px-3.5 py-3 rounded-xl bg-white/[0.04] hover:bg-amber-500/15 border border-white/10 hover:border-amber-400/70 transition-all group/kit shadow-sm"
+                        >
+                          <div className="bg-gradient-to-br from-amber-400 to-yellow-500 text-black p-2.5 rounded-xl shrink-0 mt-0.5 shadow-[0_0_12px_rgba(251,191,36,0.4)] group-hover/kit:scale-110 transition-transform">
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <div className="flex flex-col text-left min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-1.5">
+                              <span className="text-[10px] font-black uppercase tracking-wider text-amber-200 group-hover/kit:text-white truncate">
+                                {kit.title}
+                              </span>
+                              <span
+                                className={`text-[7px] font-black px-1.5 py-0.5 rounded uppercase shrink-0 ${
+                                  kit.status === 'LIVE'
+                                    ? 'bg-emerald-400 text-black font-extrabold shadow-[0_0_8px_rgba(52,211,153,0.5)]'
+                                    : 'bg-white/20 text-zinc-300'
+                                }`}
+                              >
+                                {kit.status}
+                              </span>
+                            </div>
+                            <span className="text-[9px] font-medium text-zinc-300 normal-case tracking-normal leading-snug mt-0.5 truncate">
+                              {kit.subtitle}
                             </span>
-                            <span
-                              className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase shrink-0 ${
-                                kit.status === 'LIVE'
-                                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                                  : 'bg-white/10 text-zinc-400'
-                              }`}
-                            >
-                              {kit.status}
+                            <span className="text-[9px] font-black text-amber-400 mt-1 tracking-wider drop-shadow-[0_0_5px_rgba(251,191,36,0.3)]">
+                              {kit.price}
                             </span>
                           </div>
-                          <span className="text-[9px] font-semibold text-zinc-400 normal-case tracking-normal leading-snug mt-0.5">
-                            {kit.subtitle}
-                          </span>
-                          <span className="text-[9px] font-black text-amber-400 mt-1 tracking-wider">
-                            {kit.price}
-                          </span>
-                        </div>
-                      </Link>
-                    );
-                  })}
+                        </Link>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
@@ -581,10 +617,10 @@ const V8Navbar = ({ handleHomeClick }) => {
 
               <div className="flex flex-col gap-6 w-full min-w-0">
 
-                {/* 🔥 SVA 4 TURNKEY BRAND PAKETA U MOBILNOM MENIJU 🔥 */}
+                {/* 🔥 SVIH 8 TURNKEY BRAND PAKETA U MOBILNOM MENIJU 🔥 */}
                 <div className="flex flex-col gap-2.5 w-full">
                   <h4 className="text-[10px] text-amber-400 font-black uppercase tracking-[0.2em] border-b border-amber-500/20 pb-2 truncate w-full flex items-center gap-1.5">
-                    <Crown className="w-3.5 h-3.5 shrink-0" /> Turnkey Brand Kits ($349 / $1,490)
+                    <Crown className="w-3.5 h-3.5 shrink-0" /> 8 Turnkey Brand Kits ($349 / $1,490)
                   </h4>
 
                   {TURNKEY_KITS_MENU.map((kit, idx) => {

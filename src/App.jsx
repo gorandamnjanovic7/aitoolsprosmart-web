@@ -60,8 +60,20 @@ import V10PdfTranslator from './pdf/V10PdfTranslator';
 // 🔥 SHOWCASE (aiagents folder) 🔥
 import AIAgentsShowcase from './aiagents/AIAgentsShowcase';
 
-// 🔥 TURNKEY B2B BRAND & WEB KITS (pages folder) 🔥
-import PrivateAviationKit from './pages/PrivateAviationKit';
+// 🔥 TURNKEY B2B BRAND & WEB KITS (pages/kits folder) 🔥
+import PrivateAviationKit from './pages/kits/aviation/PrivateAviationKit';
+import AeroPriveAtelier from './pages/kits/aviation/AeroPriveAtelier';
+import MidnightAltitude from './pages/kits/aviation/MidnightAltitude';
+import CloudlinePrestige from './pages/kits/aviation/CloudlinePrestige';
+import RunwayReserve from './pages/kits/aviation/RunwayReserve';
+import SkyglassAviation from './pages/kits/aviation/SkyglassAviation';
+
+// 🔥 SVIH 5 JAHTI (pages/kits/yachts folder) 🔥
+import AquaYachtCharterKit from './pages/kits/yachts/AquaYachtCharterKit';
+import AegeanYachtEscape from './pages/kits/yachts/AegeanYachtEscape';
+import NautilusNightCharter from './pages/kits/yachts/NautilusNightCharter';
+import SapphireVoyageYachts from './pages/kits/yachts/SapphireVoyageYachts';
+import TideglassYachtSociety from './pages/kits/yachts/TideglassYachtSociety';
 
 import { NotificationListener, NotificationModal } from './NotificationSystem';
 
@@ -689,8 +701,37 @@ function AppContent({ appsData, refreshData }) {
               <Route path="/dashboard" element={<V8PageWrapper><V8AdminDashboard /></V8PageWrapper>} />
               <Route path="/admin-payoneer" element={<V8PageWrapper><V8PayoneerDashboard /></V8PageWrapper>} />
               
-              {/* 🔥 RUTA ZA TURNKEY PRIVATE AVIATION & SUPERYACHT KIT ($349 / $1,490) 🔥 */}
+              {/* 🔥 SVIH 6 AVIO KITOVA 🔥 */}
               <Route path="/aviation-charter-kit" element={<V8PageWrapper><PrivateAviationKit /></V8PageWrapper>} />
+              <Route path="/aviation-atelier-kit" element={<V8PageWrapper><AeroPriveAtelier /></V8PageWrapper>} />
+              <Route path="/aviation-cloudline-kit" element={<V8PageWrapper><CloudlinePrestige /></V8PageWrapper>} />
+              <Route path="/aviation-page-4" element={<V8PageWrapper><MidnightAltitude /></V8PageWrapper>} />
+              <Route path="/aviation-midnight-kit" element={<V8PageWrapper><MidnightAltitude /></V8PageWrapper>} />
+              <Route path="/aviation-runway-kit" element={<V8PageWrapper><RunwayReserve /></V8PageWrapper>} />
+              <Route path="/aviation-skyglass-kit" element={<V8PageWrapper><SkyglassAviation /></V8PageWrapper>} />
+              <Route path="/aviation-page-5" element={<V8PageWrapper><SkyglassAviation /></V8PageWrapper>} />
+
+              {/* 🔥 SVIH 5 SUPERYACHT KITOVA (1 DO 5) 🔥 */}
+              {/* 1/5: Aqua */}
+              <Route path="/superyacht-charter-kit" element={<V8PageWrapper><AquaYachtCharterKit /></V8PageWrapper>} />
+              <Route path="/yacht-charter-kit" element={<V8PageWrapper><AquaYachtCharterKit /></V8PageWrapper>} />
+              <Route path="/yacht-page-1" element={<V8PageWrapper><AquaYachtCharterKit /></V8PageWrapper>} />
+
+              {/* 2/5: Aegean */}
+              <Route path="/yacht-page-2" element={<V8PageWrapper><AegeanYachtEscape /></V8PageWrapper>} />
+              <Route path="/aegean-yacht-kit" element={<V8PageWrapper><AegeanYachtEscape /></V8PageWrapper>} />
+
+              {/* 3/5: Nautilus */}
+              <Route path="/yacht-page-3" element={<V8PageWrapper><NautilusNightCharter /></V8PageWrapper>} />
+              <Route path="/nautilus-yacht-kit" element={<V8PageWrapper><NautilusNightCharter /></V8PageWrapper>} />
+
+              {/* 4/5: Sapphire */}
+              <Route path="/yacht-page-4" element={<V8PageWrapper><SapphireVoyageYachts /></V8PageWrapper>} />
+              <Route path="/sapphire-yacht-kit" element={<V8PageWrapper><SapphireVoyageYachts /></V8PageWrapper>} />
+
+              {/* 5/5: Tideglass */}
+              <Route path="/yacht-page-5" element={<V8PageWrapper><TideglassYachtSociety /></V8PageWrapper>} />
+              <Route path="/tideglass-yacht-kit" element={<V8PageWrapper><TideglassYachtSociety /></V8PageWrapper>} />
 
               <Route path="/stock" element={<V8PageWrapper><V8StockBerza /></V8PageWrapper>} />
               <Route path="/stock-2" element={<V8PageWrapper><V8Stock2 /></V8PageWrapper>} /> 

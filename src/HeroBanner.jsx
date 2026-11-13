@@ -3,13 +3,64 @@
 // ============================================================================
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Volume2, VolumeX } from 'lucide-react';
-import { MatrixRain } from './data'; // MatrixRain importujemo
+import { MatrixRain } from './data';
+
+// ============================================================================
+// POČETAK: BANNER_DATA NIZ
+// ============================================================================
+export const BANNER_DATA = [
+  { 
+    video: "/videos/v10-ai-agents.webm", 
+    badge: "24/7 AUTONOMOUS AGENCY", 
+    title: "AI WORKFORCE ECOSYSTEM", 
+    subtitle: "Deploy an elite executive core that never sleeps. Automate visual asset routing, B2B deal scoping, and technical infrastructure 24/7.",
+    duration: 30000, 
+  },
+  { 
+    video: "/videos/ai_agenti_2.webm", 
+    badge: "25 SPECIALIZED AI AGENTS", 
+    title: "OMNICHANNEL AI AUTOMATION", 
+    subtitle: "Synchronize e-commerce sales, WhatsApp & social DMs, legal contracts, brand inspection, and CRM billing in milliseconds. Ready for turnkey embedding or cloud deployment.",
+    duration: 30000, 
+  },
+  { 
+    video: "/videos/v10-glass-plaque.webm", 
+    badge: "V10 KINETIC PROTOCOL", 
+    title: "PREMIUM GLASS PLAQUE MOCKUPS", 
+    subtitle: "Experience flawless 3D UI motion tracking and absolute material realism. Engineered exclusively for elite corporate branding and architectural presentations.",
+    duration: 30000, 
+  },
+  { 
+    video: "/videos/coffe.webm", 
+    badge: "3D BEVERAGE & PRODUCT CINEMATOGRAPHY", 
+    title: "OBSIDIAN BREW — LUXURY PACKAGING", 
+    subtitle: "Hyper-realistic liquid splash dynamics, crystal ice refraction, and dark marble studio aesthetics engineered for high-converting commercial beverage campaigns.",
+    duration: 30000, 
+  },
+  { 
+    video: "/videos/v10-food-ui.webm", 
+    badge: "MICHELIN STAR DIGITAL ASSETS", 
+    title: "GOURMET UI/UX INTEGRATION", 
+    subtitle: "Micro-macro cinematography meets holographic UI design. Flawless digital menu integrations for luxury high-end Food & Beverage commercial assets.",
+    duration: 30000, 
+  },
+  { 
+    video: "/videos/v10-billboard-ui.webm", 
+    badge: "GLOBAL CAMPAIGN ARCHITECTURE", 
+    title: "NEXT-GEN DIGITAL BILLBOARDS", 
+    subtitle: "Uncompromising outdoor and indoor display aesthetics. Fluid dynamic rendering with realistic environmental reflections for luxury brand positioning.",
+    duration: 30000, 
+  }
+];
+// ============================================================================
+// KRAJ: BANNER_DATA NIZ
+// ============================================================================
 
 const HeroBanner = ({ setIsBannerHovered }) => {
   const [activeSlide, setActiveSlide] = useState(0); 
   const [isHovered, setIsHovered] = useState(false);
   
-  // Vraćeno na false po tvom zahtevu (zvuk je odmah uključen)
+  // Zvuk je odmah uključen (false)
   const [isMuted, setIsMuted] = useState(false); 
   const videoRefs = useRef([]);
 
@@ -26,7 +77,7 @@ const HeroBanner = ({ setIsBannerHovered }) => {
     videoRefs.current.forEach((vid, idx) => {
       if (vid) {
         if (idx === activeSlide) {
-          vid.currentTime = 0; // Kreni ispočetka
+          vid.currentTime = 0;
           const playPromise = vid.play();
           if (playPromise !== undefined) {
              playPromise.catch(error => {
@@ -68,7 +119,7 @@ const HeroBanner = ({ setIsBannerHovered }) => {
                 autoPlay 
                 playsInline
                 muted={isMuted}
-                onEnded={nextSlide} // Okida prelazak na sledeći kada se video završi
+                onEnded={nextSlide}
                 className="w-full h-full object-contain object-center"
               />
             )}
@@ -86,16 +137,16 @@ const HeroBanner = ({ setIsBannerHovered }) => {
       <button 
         type="button" 
         onClick={() => setIsMuted(!isMuted)} 
-        className="absolute top-6 right-6 z-50 bg-black/60 hover:bg-orange-500 text-white p-3 rounded-full transition-all border border-white/20 backdrop-blur-md"
+        className="absolute top-6 right-6 z-50 bg-black/60 hover:bg-orange-500 text-white p-3 rounded-full transition-all border border-white/20 backdrop-blur-md cursor-pointer"
       >
         {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5 text-orange-400" />}
       </button>
 
       {/* Navigacione strelice */}
-      <button type="button" onClick={prevSlide} className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-40 text-white/80 hover:text-orange-500 transition-all p-3 bg-black/40 rounded-full backdrop-blur-sm">
+      <button type="button" onClick={prevSlide} className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-40 text-white/80 hover:text-orange-500 transition-all p-3 bg-black/40 rounded-full backdrop-blur-sm cursor-pointer">
         <ChevronLeft className="w-6 h-6 md:w-8 md:h-8" strokeWidth={3} />
       </button>
-      <button type="button" onClick={nextSlide} className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-40 text-white/80 hover:text-orange-500 transition-all p-3 bg-black/40 rounded-full backdrop-blur-sm">
+      <button type="button" onClick={nextSlide} className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-40 text-white/80 hover:text-orange-500 transition-all p-3 bg-black/40 rounded-full backdrop-blur-sm cursor-pointer">
         <ChevronRight className="w-6 h-6 md:w-8 md:h-8" strokeWidth={3} />
       </button>
       
@@ -106,7 +157,7 @@ const HeroBanner = ({ setIsBannerHovered }) => {
             key={i} 
             type="button" 
             onClick={() => setActiveSlide(i)} 
-            className={`h-[3px] transition-all duration-500 rounded-full ${i === activeSlide ? 'w-8 bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.8)]' : 'w-2 bg-white/30 hover:bg-white/60'}`} 
+            className={`h-[3px] transition-all duration-500 rounded-full cursor-pointer ${i === activeSlide ? 'w-8 bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.8)]' : 'w-2 bg-white/30 hover:bg-white/60'}`} 
           />
         ))}
       </div>
@@ -130,41 +181,4 @@ const HeroBanner = ({ setIsBannerHovered }) => {
 export default HeroBanner;
 // ============================================================================
 // KRAJ FAJLA: HeroBanner.jsx
-// ============================================================================
-
-// ============================================================================
-// POČETAK: BANNER_DATA NIZ
-// ============================================================================
-export const BANNER_DATA = [
-  { 
-    video: "/videos/v10-ai-agents.webm", 
-    badge: "24/7 AUTONOMOUS AGENCY", 
-    title: "AI WORKFORCE ECOSYSTEM", 
-    subtitle: "Deploy an elite executive core that never sleeps. Automate visual asset routing, B2B deal scoping, and technical infrastructure 24/7.",
-    duration: 30000, 
-  },
-  { 
-    video: "/videos/v10-glass-plaque.webm", 
-    badge: "V10 KINETIC PROTOCOL", 
-    title: "PREMIUM GLASS PLAQUE MOCKUPS", 
-    subtitle: "Experience flawless 3D UI motion tracking and absolute material realism. Engineered exclusively for elite corporate branding and architectural presentations.",
-    duration: 30000, 
-  },
-  { 
-    video: "/videos/v10-food-ui.webm", 
-    badge: "MICHELIN STAR DIGITAL ASSETS", 
-    title: "GOURMET UI/UX INTEGRATION", 
-    subtitle: "Micro-macro cinematography meets holographic UI design. Flawless digital menu integrations for luxury high-end Food & Beverage commercial assets.",
-    duration: 30000, 
-  },
-  { 
-    video: "/videos/v10-billboard-ui.webm", 
-    badge: "GLOBAL CAMPAIGN ARCHITECTURE", 
-    title: "NEXT-GEN DIGITAL BILLBOARDS", 
-    subtitle: "Uncompromising outdoor and indoor display aesthetics. Fluid dynamic rendering with realistic environmental reflections for luxury brand positioning.",
-    duration: 30000,
-  }
-];
-// ============================================================================
-// KRAJ: BANNER_DATA NIZ
 // ============================================================================

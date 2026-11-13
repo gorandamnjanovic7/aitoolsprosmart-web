@@ -34,10 +34,24 @@ export const BANNER_DATA = [
     duration: 30000, 
   },
   { 
+    video: "/videos/ai_agenti_2.webm", 
+    badge: "25 SPECIALIZED AI AGENTS", 
+    title: "OMNICHANNEL AI AUTOMATION", 
+    subtitle: "Synchronize e-commerce sales, WhatsApp & social DMs, legal contracts, brand inspection, and CRM billing in milliseconds. Ready for turnkey embedding or cloud deployment.",
+    duration: 30000, 
+  },
+  { 
     video: "/videos/v10-glass-plaque.webm", 
     badge: "V10 KINETIC PROTOCOL", 
     title: "PREMIUM GLASS PLAQUE MOCKUPS", 
     subtitle: "Experience flawless 3D UI motion tracking and absolute material realism. Engineered exclusively for elite corporate branding and architectural presentations.",
+    duration: 30000, 
+  },
+  { 
+    video: "/videos/coffe.webm", 
+    badge: "3D BEVERAGE & PRODUCT CINEMATOGRAPHY", 
+    title: "OBSIDIAN BREW — LUXURY PACKAGING", 
+    subtitle: "Hyper-realistic liquid splash dynamics, crystal ice refraction, and dark marble studio aesthetics engineered for high-converting commercial beverage campaigns.",
     duration: 30000, 
   },
   { 
@@ -52,7 +66,7 @@ export const BANNER_DATA = [
     badge: "GLOBAL CAMPAIGN ARCHITECTURE", 
     title: "NEXT-GEN DIGITAL BILLBOARDS", 
     subtitle: "Uncompromising outdoor and indoor display aesthetics. Fluid dynamic rendering with realistic environmental reflections for luxury brand positioning.",
-    duration: 30000,
+    duration: 30000, 
   }
 ];
 // ============================================================================
