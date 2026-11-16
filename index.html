@@ -8,15 +8,15 @@
     
     <!-- PRIMARY B2B SEO META TAGS -->
     <title>AI Tools Pro Smart | White-Label AI Agents, 150MP Mockups & UI/UX Vault</title>
-    <meta name="description" content="Acquire turnkey White-Label AI Systems (HTML/React + n8n workflows) with zero monthly fees, 150MP Ultra-Print commercial SaaS mockups, and enterprise UI/UX design vaults." />
-    <meta name="keywords" content="White-Label AI Agents, Turnkey n8n Workflows, B2B AI Automation, 150MP SaaS Mockups, Commercial Mockup Generator, UI UX Design Vault, AI Tools Pro Smart, V10 Engine" />
+    <meta name="description" content="Acquire turnkey White-Label AI Systems (HTML/React + n8n workflows) with zero monthly fees, 150MP Ultra-Print commercial SaaS mockups, Turnkey B2B Landing Page Kits, and enterprise UI/UX design vaults." />
+    <meta name="keywords" content="White-Label AI Agents, Turnkey n8n Workflows, B2B AI Automation, 150MP SaaS Mockups, Commercial Mockup Generator, UI UX Design Vault, Turnkey B2B Landing Pages, AI Tools Pro Smart, V10 Engine" />
     <meta name="author" content="Goran Damnjanović" />
     <meta name="robots" content="index, follow" />
     
     <!-- OPEN GRAPH / LINKEDIN / SOCIAL SHARE -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="AI Tools Pro Smart | White-Label AI Systems & 150MP SaaS Mockups" />
-    <meta property="og:description" content="Turnkey White-Label AI Agents with full source code and n8n backend workflows, 150MP commercial mockups, and B2B UI/UX design systems." />
+    <meta property="og:description" content="Turnkey White-Label AI Agents with full source code and n8n backend workflows, 150MP commercial mockups, B2B Landing Page Kits, and UI/UX design systems." />
     <meta property="og:image" content="https://aitoolsprosmart.com/mocup_11.webp" />
     <meta property="og:url" content="https://aitoolsprosmart.com" />
     
@@ -39,13 +39,13 @@
         "@type": "Person",
         "name": "Goran Damnjanović"
       },
-      "description": "Enterprise B2B platform offering turnkey White-Label AI Agents (Frontend UI + n8n automation workflows), 150MP Ultra-Print commercial mockups, and UI/UX Design Vaults.",
+      "description": "Enterprise B2B platform offering turnkey White-Label AI Agents (Frontend UI + n8n automation workflows), Turnkey B2B Landing Page Kits, 150MP Ultra-Print commercial mockups, and UI/UX Design Vaults.",
       "offers": {
         "@type": "AggregateOffer",
         "lowPrice": "70",
         "highPrice": "10000",
         "priceCurrency": "USD",
-        "offerCount": "25"
+        "offerCount": "45"
       }
     }
     </script>
@@ -87,34 +87,61 @@
     <!-- ROOT CONTAINER WITH SEO H1 FALLBACK FOR CRAWLERS -->
     <div id="root">
       <header style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;">
-        <h1>AI Tools Pro Smart — Turnkey White-Label AI Agents, 150MP Commercial Mockups & Enterprise UI/UX Design Vault</h1>
+        <h1>AI Tools Pro Smart — Turnkey White-Label AI Agents, B2B Landing Page Kits, 150MP Commercial Mockups & Enterprise UI/UX Design Vault</h1>
         <h2>Acquire Full Source Code AI Automation Systems (React + n8n Workflows) with Zero Monthly Fees</h2>
-        <p>Explore 25+ autonomous B2B AI agents including the Visual Asset Studio, SEO & CRO Website Auditor, Smart B2B Lead Scoper, and 150MP Ultra-Print Mockup Packages. 100% source code ownership, verified commercial license, and instant deployment.</p>
+        <p>Explore 25+ autonomous B2B AI agents, 21 Turnkey B2B Landing Page Kits (Aviation, Yachts, Luxury Watches, Diamonds & High Jewelry), 150MP Stock Exchange, and Ultra-Print Mockup Packages. 100% source code ownership, verified commercial license, and instant deployment.</p>
         <a href="https://aitoolsprosmart.com/ai-agents">Explore White-Label AI Systems ($2,500 – $10,000 Buyout)</a>
         <a href="https://aitoolsprosmart.com/ui-ux/vault">Access UI/UX Design Vault</a>
         <a href="https://aitoolsprosmart.com/standard-mocup">View 150MP Commercial Mockups</a>
+        <a href="https://aitoolsprosmart.com/stock">Explore 150MP Stock Exchange</a>
       </header>
     </div>
 
     <script type="module" src="/src/main.jsx"></script>
     
+    <!-- 1. FLOATING CHAT WIDGET (Visual Concierge - Floating Chat Widget) -->
     <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
     <script type="module">
         import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
 
+        const activeWebhookUrl = 'http://localhost:5678/webhook/237acb8c-83c6-4f97-a800-1426e24e7993/chat';
+
         createChat({
-            webhookUrl: 'https://aitools-n8n.app.n8n.cloud/webhook/237acb8c-83c6-4f97-a800-1426e24e7993/chat',
+            webhookUrl: activeWebhookUrl,
+            mode: 'window',
+            showWelcomeScreen: false,
             initialMessages: [
-                '👋 Hi! I am your Master AI Concierge. Ask me about White-Label AI Agents, 150MP mockups, our UI/UX Design Vault, or the V10 PDF Translator!'
+                '👋 Hi! I am your Master AI Concierge. Ask me about our Turnkey B2B Landing Page Kits (Aviation, Yachts, Watches, High Jewelry), 150MP Stock Photos & Mockups, our UI/UX Design Vault, the V10 PDF Translator, or our V10 Software Ecosystem & White-Label AI Agents!'
             ],
             i18n: {
                 en: {
                     title: 'Visual Concierge',
                     subtitle: 'V10 AI Sales & Support Agent',
+                    inputPlaceholder: 'Ask about B2B Kits, 150MP Assets, or AI Agents...',
                     getStarted: 'New Conversation'
                 }
             }
         });
+    </script>
+
+    <!-- 2. B2B WEBHOOK HELPER FUNCTION (V10 B2B Webhook - NEW (Groq)) -->
+    <script>
+      window.sendV10ConciergeLead = async function (leadPayload) {
+        try {
+          const response = await fetch('https://n8n-production-720dcf20.up.railway.app/webhook/v10-concierge-webhook', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(leadPayload)
+          });
+          return await response.json();
+        } catch (error) {
+          console.error('V10 Webhook Error:', error);
+          return {
+            status: 'error',
+            whatsapp_direct_link: 'https://wa.me/381648201496'
+          };
+        }
+      };
     </script>
 
     <!-- V10 AI FLOATING TOOLTIP -->

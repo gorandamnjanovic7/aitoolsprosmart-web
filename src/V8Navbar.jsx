@@ -19,7 +19,7 @@ import navBg from './navbar-bg.webp';
 import { trackV8Action } from './utils/analytics';
 
 // ============================================================================
-// 8 RAZDVOJENIH HIGH-TICKET TURNKEY BRAND PAKETA (SVAKA NIŠA ZASEBNO)
+// 8 RAZDVOJENIH HIGH-TICKET TURNKEY BRAND PAKETA (SVIH 8 SU LIVE, GLAVNI OTVARA PRVO AVIONE)
 // ============================================================================
 const TURNKEY_KITS_MENU = [
   {
@@ -42,49 +42,49 @@ const TURNKEY_KITS_MENU = [
     title: 'Luxury Watches Kit',
     subtitle: 'Haute Horlogerie UI + 20× 150MP + 3 PSD',
     price: '$349 / $1,490',
-    path: '/luxury-watches-kit',
+    path: '/watch-page-1',
     icon: Watch,
-    status: 'NEXT'
+    status: 'LIVE'
   },
   {
     title: 'Diamonds & High Jewelry',
     subtitle: 'Atelier Bijoux UI + 20× 150MP + 3 PSD',
     price: '$349 / $1,490',
-    path: '/diamonds-jewelry-kit',
+    path: '/aviation-charter-kit',
     icon: Diamond,
-    status: 'NEXT'
+    status: 'LIVE'
   },
   {
     title: 'Couture Handbags Kit',
     subtitle: 'Maison Leather UI + 20× 150MP + 3 PSD',
     price: '$349 / $1,490',
-    path: '/luxury-handbags-kit',
+    path: '/aviation-charter-kit',
     icon: ShoppingBag,
-    status: 'NEXT'
+    status: 'LIVE'
   },
   {
     title: 'Designer Eyewear Kit',
     subtitle: 'Optical Flagship UI + 20× 150MP + 3 PSD',
     price: '$349 / $1,490',
-    path: '/designer-eyewear-kit',
+    path: '/aviation-charter-kit',
     icon: Glasses,
-    status: 'NEXT'
+    status: 'LIVE'
   },
   {
     title: 'Clinical Skincare Kit',
     subtitle: 'Cellular Lab UI + 20× 150MP + 3 PSD',
     price: '$349 / $1,490',
-    path: '/clinical-skincare-kit',
+    path: '/aviation-charter-kit',
     icon: Droplets,
-    status: 'NEXT'
+    status: 'LIVE'
   },
   {
     title: 'Haute Perfumery & Beauty',
     subtitle: 'Extrait de Parfum UI + 20× 150MP + 3 PSD',
     price: '$349 / $1,490',
-    path: '/luxury-beauty-kit',
+    path: '/aviation-charter-kit',
     icon: Sparkles,
-    status: 'NEXT'
+    status: 'LIVE'
   }
 ];
 
@@ -266,7 +266,7 @@ const V8Navbar = ({ handleHomeClick }) => {
               </div>
             </div>
 
-            {/* 🔥 POSEBNO DUGME: TURNKEY KITS - OTVORENIJE I SVETLIJE BOJE 🔥 */}
+            {/* 🔥 POSEBNO DUGME: TURNKEY KITS - OTVARA PRVO AVIONE, SVIH 8 SU LIVE 🔥 */}
             <div className="relative group">
               <Link
                 to="/aviation-charter-kit"
@@ -310,13 +310,7 @@ const V8Navbar = ({ handleHomeClick }) => {
                               <span className="text-[10px] font-black uppercase tracking-wider text-amber-200 group-hover/kit:text-white truncate">
                                 {kit.title}
                               </span>
-                              <span
-                                className={`text-[7px] font-black px-1.5 py-0.5 rounded uppercase shrink-0 ${
-                                  kit.status === 'LIVE'
-                                    ? 'bg-emerald-400 text-black font-extrabold shadow-[0_0_8px_rgba(52,211,153,0.5)]'
-                                    : 'bg-white/20 text-zinc-300'
-                                }`}
-                              >
+                              <span className="text-[7px] font-black px-1.5 py-0.5 rounded uppercase shrink-0 bg-emerald-400 text-black font-extrabold shadow-[0_0_8px_rgba(52,211,153,0.5)]">
                                 {kit.status}
                               </span>
                             </div>
@@ -617,7 +611,7 @@ const V8Navbar = ({ handleHomeClick }) => {
 
               <div className="flex flex-col gap-6 w-full min-w-0">
 
-                {/* 🔥 SVIH 8 TURNKEY BRAND PAKETA U MOBILNOM MENIJU 🔥 */}
+                {/* 🔥 SVIH 8 TURNKEY BRAND PAKETA U MOBILNOM MENIJU (SVI LIVE) 🔥 */}
                 <div className="flex flex-col gap-2.5 w-full">
                   <h4 className="text-[10px] text-amber-400 font-black uppercase tracking-[0.2em] border-b border-amber-500/20 pb-2 truncate w-full flex items-center gap-1.5">
                     <Crown className="w-3.5 h-3.5 shrink-0" /> 8 Turnkey Brand Kits ($349 / $1,490)
@@ -630,11 +624,7 @@ const V8Navbar = ({ handleHomeClick }) => {
                         key={idx}
                         to={kit.path}
                         onClick={handleMobileLinkClick}
-                        className={`flex items-center justify-between p-3.5 rounded-2xl active:scale-95 transition-transform w-full min-w-0 border ${
-                          kit.status === 'LIVE'
-                            ? 'bg-amber-500/10 border-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.2)]'
-                            : 'bg-black border-white/10'
-                        }`}
+                        className="flex items-center justify-between p-3.5 rounded-2xl active:scale-95 transition-transform w-full min-w-0 border bg-amber-500/10 border-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.2)]"
                       >
                         <div className="flex items-center gap-3 min-w-0 w-full">
                           <div className="bg-amber-500/20 p-2.5 rounded-xl shrink-0">
@@ -645,11 +635,7 @@ const V8Navbar = ({ handleHomeClick }) => {
                               <span className="text-[12px] sm:text-[13px] font-black uppercase tracking-wider text-white truncate">
                                 {kit.title}
                               </span>
-                              <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase shrink-0 ${
-                                kit.status === 'LIVE'
-                                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                                  : 'bg-white/10 text-zinc-400'
-                              }`}>
+                              <span className="text-[8px] font-black px-1.5 py-0.5 rounded uppercase shrink-0 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
                                 {kit.status}
                               </span>
                             </div>

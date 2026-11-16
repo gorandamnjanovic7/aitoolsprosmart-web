@@ -1,6 +1,6 @@
-// POČETAK FAJLA: App.jsx
-// Ne zaboravi React source code link u tvom repozitorijumu!
-
+// ============================================================================
+// POČETAK FAJLA: src/App.jsx
+// ============================================================================
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
@@ -75,10 +75,19 @@ import NautilusNightCharter from './pages/kits/yachts/NautilusNightCharter';
 import SapphireVoyageYachts from './pages/kits/yachts/SapphireVoyageYachts';
 import TideglassYachtSociety from './pages/kits/yachts/TideglassYachtSociety';
 
+// 🔥 SVIH 5 SATOVA (pages/kits/watches folder) 🔥
+import AbyssChronograph from './pages/kits/watches/AbyssChronograph';
+import AtelierHorology from './pages/kits/watches/AtelierHorology';
+import MeridianWatchHouse from './pages/kits/watches/MeridianWatchHouse';
+import LumenWatchCollective from './pages/kits/watches/LumenWatchCollective';
+import MonarchTimepieces from './pages/kits/watches/MonarchTimepieces';
+
+// 🔥 DIJAMANTI (pages/kits/diamonds folder) 🔥
+import VerdantOrangerieJewels from './pages/kits/diamonds/VerdantOrangerieJewels';
+import SolenneHighJewelry from './pages/kits/diamonds/SolenneHighJewelry';
+
 import { NotificationListener, NotificationModal } from './NotificationSystem';
-
 import Portfolio from './Portfolio';
-
 import V8PremiumTestMenu from './qrcode/V8PremiumTestMenu';
 import PublicMenuTestQRMenu from './qrcode/PublicMenuTestQRMenu';
 
@@ -103,7 +112,6 @@ export const playV8Sound = (type) => {
       currentAudio.pause();
       currentAudio.currentTime = 0;
     }
-
     let audioUrl = '';
     if (type === 'success') audioUrl = '/v8-success.mp3';
     else if (type === 'error' || type === 'alarm') audioUrl = '/v8-alarm.mp3';
@@ -156,7 +164,6 @@ fetchUserIp();
 export const logAnalyticsEvent = async (type, details) => {
   const currentUser = auth.currentUser;
   if (!currentUser) return; 
-
   const isAdmin = currentUser.email === "damnjanovicgoran7@gmail.com" || currentUser.email === "aitoolsprosmart@gmail.com";
   if (globalUserIp === MOJA_IP || isAdmin || globalUserIp === "") return; 
 
@@ -208,33 +215,23 @@ const V8ToastContainer = () => {
 
 const V8AlertModalContainer = () => {
   const [modalData, setModalData] = useState(null);
-
   useEffect(() => {
     return v8AlertModal.subscribe((data) => setModalData(data));
   }, []);
 
   if (!modalData) return null;
-
   const handleClose = () => {
     stopV8Sound();
     setModalData(null);
   };
 
   let themeBg = 'bg-zinc-800';
-  
-  if (modalData.icon === 'uiux') {
-    themeBg = 'bg-[#0a0a0a] shadow-[0_0_50px_rgba(234,88,12,0.4)] border border-orange-500/50';
-  } else if (modalData.icon === 'b2b') {
-    themeBg = 'bg-gradient-to-br from-blue-600 to-blue-900 shadow-blue-500/50';
-  } else if (modalData.icon === 'paypal') {
-    themeBg = 'bg-gradient-to-br from-[#003087] to-[#009cde] shadow-[#009cde]/50';
-  } else if (modalData.icon === 'card') {
-    themeBg = 'bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 shadow-purple-500/50';
-  } else if (modalData.icon === 'crypto') {
-    themeBg = 'bg-gradient-to-br from-[#F7931A] to-[#D97B16] shadow-[#F7931A]/50';
-  } else if (modalData.type === 'error' || modalData.type === 'alarm') {
-    themeBg = 'bg-gradient-to-br from-red-600 to-red-900 shadow-red-500/50';
-  }
+  if (modalData.icon === 'uiux') themeBg = 'bg-[#0a0a0a] shadow-[0_0_50px_rgba(234,88,12,0.4)] border border-orange-500/50';
+  else if (modalData.icon === 'b2b') themeBg = 'bg-gradient-to-br from-blue-600 to-blue-900 shadow-blue-500/50';
+  else if (modalData.icon === 'paypal') themeBg = 'bg-gradient-to-br from-[#003087] to-[#009cde] shadow-[#009cde]/50';
+  else if (modalData.icon === 'card') themeBg = 'bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 shadow-purple-500/50';
+  else if (modalData.icon === 'crypto') themeBg = 'bg-gradient-to-br from-[#F7931A] to-[#D97B16] shadow-[#F7931A]/50';
+  else if (modalData.type === 'error' || modalData.type === 'alarm') themeBg = 'bg-gradient-to-br from-red-600 to-red-900 shadow-red-500/50';
 
   return (
     <AnimatePresence>
@@ -248,7 +245,6 @@ const V8AlertModalContainer = () => {
           <button onClick={handleClose} className="absolute top-3 right-3 text-white/70 hover:text-white transition-colors cursor-pointer z-50">
             <X size={24} strokeWidth={3} />
           </button>
-
           <div className="mb-4 pr-6">
             <h3 className="font-black text-lg leading-tight uppercase">{modalData.customerName}</h3>
             <p className="text-white/80 text-[12px] font-medium tracking-wider">{modalData.email}</p>
@@ -256,7 +252,6 @@ const V8AlertModalContainer = () => {
               <p className="text-orange-400 text-[10px] font-black tracking-widest uppercase mt-1">PKG: {modalData.packageTitle}</p>
             )}
           </div>
-
           <div className="flex justify-center items-center py-6 bg-black/20 rounded-xl mb-4 border border-white/10 shadow-inner">
             {modalData.icon === 'uiux' && (
               <div className="flex flex-col items-center gap-2 drop-shadow-[0_0_15px_rgba(234,88,12,0.5)]">
@@ -292,7 +287,6 @@ const V8AlertModalContainer = () => {
               </div>
             )}
           </div>
-
           <div className="flex justify-between items-end mt-2">
             <div>
               <p className="text-[10px] text-white/60 uppercase font-black tracking-widest mb-1">Datum i Vreme</p>
@@ -325,7 +319,6 @@ const AdminLiveSalesTracker = () => {
 
   useEffect(() => {
     if (!isAdmin) return;
-
     let isFirstKupci = true;
     let isFirstCrypto = true;
     let isFirstPaypal = true;
@@ -338,12 +331,12 @@ const AdminLiveSalesTracker = () => {
           const d = change.doc.data();
           if (d.isPaid) {
              v8AlertModal.show({ 
-               customerName: d.ime || d.klijent || 'B2B Klijent',
-               email: d.email || 'Bez emaila',
-               timestamp: new Date().toLocaleString('sr-RS'),
-               amount: d.cenaPaketa ? Math.ceil(d.cenaPaketa/117) : (d.price || 0), 
-               type: 'success',
-               icon: 'b2b'
+              customerName: d.ime || d.klijent || 'B2B Klijent',
+              email: d.email || 'Bez emaila',
+              timestamp: new Date().toLocaleString('sr-RS'),
+              amount: d.cenaPaketa ? Math.ceil(d.cenaPaketa/117) : (d.price || 0), 
+              type: 'success',
+              icon: 'b2b'
              });
           }
         }
@@ -473,18 +466,15 @@ const FullScreenBoot = ({ onComplete }) => {
 
 const SmartScrollButton = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  
   useEffect(() => { 
     const checkScroll = () => setIsScrolled(window.scrollY > 400); 
     window.addEventListener('scroll', checkScroll); 
     return () => window.removeEventListener('scroll', checkScroll); 
   }, []);
-  
   const handleAction = () => { 
     const targetHeight = isScrolled ? 0 : Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
     window.scrollTo({ top: targetHeight, behavior: 'smooth' }); 
   };
-  
   return (
     <button onClick={handleAction} className="fixed bottom-[150px] right-6 z-[9999] flex flex-col items-center group transition-all duration-500">
       <div className={`w-1.5 rounded-full transition-all duration-700 flex items-center justify-center ${isScrolled ? 'bg-orange-500 shadow-[0_0_12px_rgba(249,115,22,0.8)] h-16' : 'bg-white/20 h-10 hover:bg-white/40'}`}>
@@ -496,20 +486,15 @@ const SmartScrollButton = () => {
 
 function AppContent({ appsData, refreshData }) {
   const IS_MAINTENANCE = false;
-
   const [isBooting, setIsBooting] = useState(true);
   const location = useLocation();
   const prevLocation = useRef(location.pathname);
   const entryTime = useRef(Date.now());
   const [authVersion, setAuthVersion] = useState(0); 
-
   const [notification, setNotification] = useState(null);
-
   const [checkoutData, setCheckoutData] = useState({ isOpen: false, name: '', price: '', zipLink: '' });
   const [loginRequiredData, setLoginRequiredData] = useState({ isOpen: false, name: '', price: '', zipLink: '' });
-
   const [isDesktop, setIsDesktop] = useState(true);
-
   const isPublicMenuRoute = location.pathname.startsWith('/m/');
 
   useEffect(() => {
@@ -545,7 +530,7 @@ function AppContent({ appsData, refreshData }) {
     const unsub = onAuthStateChanged(auth, (user) => { 
       setAuthVersion(v => v + 1); 
       if (user && typeof window !== 'undefined' && window.gtag) {
-          window.gtag('config', 'G-86XYNNT6H8', { 'user_id': user.uid });
+        window.gtag('config', 'G-86XYNNT6H8', { 'user_id': user.uid });
       }
     }); 
     return () => unsub();
@@ -565,12 +550,8 @@ function AppContent({ appsData, refreshData }) {
        logAnalyticsEvent('time_spent', { path: prevLocation.current, durationMS: timeSpent });
        prevLocation.current = location.pathname; entryTime.current = Date.now();
        logAnalyticsEvent('page_view', { path: location.pathname });
-
        if (typeof window !== 'undefined' && window.gtag) {
-            window.gtag('event', 'page_view', {
-                page_path: location.pathname,
-                page_location: window.location.href
-            });
+            window.gtag('event', 'page_view', { page_path: location.pathname, page_location: window.location.href });
        }
     }
   }, [location.pathname]);
@@ -578,10 +559,7 @@ function AppContent({ appsData, refreshData }) {
   useEffect(() => { 
       logAnalyticsEvent('page_view', { path: location.pathname }); 
       if (typeof window !== 'undefined' && window.gtag) {
-          window.gtag('event', 'page_view', {
-              page_path: location.pathname,
-              page_location: window.location.href
-          });
+          window.gtag('event', 'page_view', { page_path: location.pathname, page_location: window.location.href });
       }
   }, []);
 
@@ -589,10 +567,7 @@ function AppContent({ appsData, refreshData }) {
     const handleGlobalClick = (e) => { 
         const target = e.target.closest('button, a'); 
         if (target) {
-            logAnalyticsEvent('click', { 
-                elementText: target.innerText || target.getAttribute('aria-label') || 'Icon', 
-                path: window.location.pathname 
-            }); 
+            logAnalyticsEvent('click', { elementText: target.innerText || target.getAttribute('aria-label') || 'Icon', path: window.location.pathname }); 
         }
     };
     document.addEventListener('click', handleGlobalClick); return () => document.removeEventListener('click', handleGlobalClick);
@@ -603,26 +578,11 @@ function AppContent({ appsData, refreshData }) {
   if (IS_MAINTENANCE) {
     return (
       <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center relative overflow-hidden font-sans">
-        <Helmet>
-          <title>System Maintenance | V8 Engine</title>
-        </Helmet>
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-          <div className="w-[600px] h-[600px] bg-amber-600/10 rounded-full blur-[120px] transform-gpu" />
-        </div>
+        <Helmet><title>System Maintenance | V8 Engine</title></Helmet>
         <div className="relative z-10 text-center px-6 flex flex-col items-center">
-          <ShieldAlert className="w-24 h-24 text-amber-500 mb-8 animate-pulse drop-shadow-[0_0_20px_rgba(245,158,11,0.5)]" />
-          <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-600 uppercase tracking-tighter mb-4 drop-shadow-sm">
-            Server Maintenance
-          </h1>
-          <p className="text-lg md:text-2xl text-zinc-400 font-medium tracking-widest uppercase mb-10">
-            We will be back today
-          </p>
-          <div className="inline-block border border-amber-500/30 bg-black/50 backdrop-blur-md px-6 py-3 rounded-full shadow-[0_0_30px_rgba(245,158,11,0.15)]">
-             <span className="text-amber-500 text-xs md:text-sm font-mono font-black uppercase tracking-widest flex items-center gap-3">
-               <span className="w-2 h-2 bg-amber-500 rounded-full animate-ping"></span>
-               Upgrading V8 Core Architecture
-             </span>
-          </div>
+          <ShieldAlert className="w-24 h-24 text-amber-500 mb-8 animate-pulse" />
+          <h1 className="text-4xl md:text-6xl font-black text-amber-400 uppercase mb-4">Server Maintenance</h1>
+          <p className="text-lg md:text-2xl text-zinc-400 uppercase mb-10">We will be back today</p>
         </div>
       </div>
     );
@@ -630,65 +590,38 @@ function AppContent({ appsData, refreshData }) {
 
   return (
     <div key={authVersion} className="min-h-screen text-zinc-100 font-sans relative text-left">
-      
       <div className="fixed inset-0 z-[-2] bg-[url('/v8-supercomputer-bg.jpg')] bg-cover bg-center bg-no-repeat pointer-events-none transform-gpu" />
       <div className="fixed inset-0 z-[-1] bg-[radial-gradient(circle_at_center,_rgba(5,5,5,0.95)_30%,_rgba(5,5,5,0.4)_100%)] pointer-events-none transform-gpu" />
-      
       <style>{`
-        #v8-counter-container {
-          position: fixed !important;
-          bottom: 120px !important;
-          left: 1.5rem !important;
-          z-index: 9999 !important;
-          display: block !important;
-        }
-        #v8-counter-container > * {
-          position: relative !important;
-          right: auto !important;
-          left: auto !important;
-          bottom: auto !important;
-          top: auto !important;
-          margin: 0 !important;
-        }
+        #v8-counter-container { position: fixed !important; bottom: 120px !important; left: 1.5rem !important; z-index: 9999 !important; display: block !important; }
+        #v8-counter-container > * { position: relative !important; right: auto !important; left: auto !important; bottom: auto !important; top: auto !important; margin: 0 !important; }
       `}</style>
-
       <div className="relative z-10 flex flex-col min-h-screen w-full pb-20 lg:pb-0">
-        
         {isDesktop && <V8RadarCursor />}
-        
         <V8ToastContainer />
         <V8AlertModalContainer />
         <AdminLiveSalesTracker />
-        
         <NotificationListener setNotification={setNotification} />
-
         <AnimatePresence>
           {isBooting && <FullScreenBoot key="boot" onComplete={() => { setIsBooting(false); window.scrollTo(0,0); }} />}
         </AnimatePresence>
-        
         {!isPublicMenuRoute && <V8Navbar handleHomeClick={handleHomeClick} />}
         {!isPublicMenuRoute && <V8AdminLiveNotifier />}
         {!isPublicMenuRoute && <V8UnlockModal />}
-        
         <div className={`flex-1 text-left ${isPublicMenuRoute ? '' : 'pt-20'}`}>
           <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
            <Routes location={location} key={location.pathname}>
               <Route path="/" element={<V8PageWrapper><HomePage apps={appsData} openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
-              
               <Route path="/v8-standard-16mp" element={<V8PageWrapper><V8Standard16MPWorkspace openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
-              
               <Route path="/master-33mp" element={<V8PageWrapper><V8MasterEngine33MP openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               <Route path="/master-45mp" element={<V8PageWrapper><V8MasterEngine45MP openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               <Route path="/master-60mp" element={<V8PageWrapper><V8MasterEngine60MP openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
-              
               <Route path="/extractor" element={<V8PageWrapper><V8JsonDeExtractorPage openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               <Route path="/v8-debranding-extractor" element={<V8PageWrapper><V8JsonDeBrendingExtractorPage openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               <Route path="/grid-system" element={<V8PageWrapper><V8GridSystem openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
-              
               <Route path="/prompt-factory" element={<V8PageWrapper><V8NeuralForge openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               <Route path="/neural-forge" element={<V8PageWrapper><V8NeuralForge openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               <Route path="/raw-reality" element={<V8PageWrapper><V8RawRealityEngine /></V8PageWrapper>} />
-
               <Route path="/saas-protocol" element={<V8PageWrapper><SaaSProtocolPage openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               <Route path="/standard-mocup" element={<V8PageWrapper><StandardMocup /></V8PageWrapper>} />
               <Route path="/seedance" element={<V8PageWrapper><CinematikPromptEngine initialEngine="SEEDANCE 2.0" openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
@@ -712,42 +645,52 @@ function AppContent({ appsData, refreshData }) {
               <Route path="/aviation-page-5" element={<V8PageWrapper><SkyglassAviation /></V8PageWrapper>} />
 
               {/* 🔥 SVIH 5 SUPERYACHT KITOVA (1 DO 5) 🔥 */}
-              {/* 1/5: Aqua */}
               <Route path="/superyacht-charter-kit" element={<V8PageWrapper><AquaYachtCharterKit /></V8PageWrapper>} />
               <Route path="/yacht-charter-kit" element={<V8PageWrapper><AquaYachtCharterKit /></V8PageWrapper>} />
               <Route path="/yacht-page-1" element={<V8PageWrapper><AquaYachtCharterKit /></V8PageWrapper>} />
-
-              {/* 2/5: Aegean */}
               <Route path="/yacht-page-2" element={<V8PageWrapper><AegeanYachtEscape /></V8PageWrapper>} />
               <Route path="/aegean-yacht-kit" element={<V8PageWrapper><AegeanYachtEscape /></V8PageWrapper>} />
-
-              {/* 3/5: Nautilus */}
               <Route path="/yacht-page-3" element={<V8PageWrapper><NautilusNightCharter /></V8PageWrapper>} />
               <Route path="/nautilus-yacht-kit" element={<V8PageWrapper><NautilusNightCharter /></V8PageWrapper>} />
-
-              {/* 4/5: Sapphire */}
               <Route path="/yacht-page-4" element={<V8PageWrapper><SapphireVoyageYachts /></V8PageWrapper>} />
               <Route path="/sapphire-yacht-kit" element={<V8PageWrapper><SapphireVoyageYachts /></V8PageWrapper>} />
-
-              {/* 5/5: Tideglass */}
-              <Route path="/yacht-page-5" element={<V8PageWrapper><TideglassYachtSociety /></V8PageWrapper>} />
+              <Route path="/yacht-page-5" element={<TideglassYachtSociety />} />
               <Route path="/tideglass-yacht-kit" element={<V8PageWrapper><TideglassYachtSociety /></V8PageWrapper>} />
+              
+              {/* 🔥 SVIH 5 SATOVA (1 DO 5) 🔥 */}
+              <Route path="/abyss-chronograph" element={<AbyssChronograph />} />
+              <Route path="/watch-kit" element={<AbyssChronograph />} />
+              <Route path="/watch-page-1" element={<AbyssChronograph />} />
+
+              <Route path="/atelier-horology" element={<AtelierHorology />} />
+              <Route path="/watch-page-2" element={<AtelierHorology />} />
+
+              <Route path="/meridian-watch-house" element={<MeridianWatchHouse />} />
+              <Route path="/watch-page-3" element={<MeridianWatchHouse />} />
+
+              <Route path="/lumen-watch-collective" element={<LumenWatchCollective />} />
+              <Route path="/watch-page-4" element={<LumenWatchCollective />} />
+
+              <Route path="/monarch-timepieces" element={<MonarchTimepieces />} />
+              <Route path="/watch-page-5" element={<MonarchTimepieces />} />
+
+              {/* 🔥 DIJAMANTI (1 DO 5) 🔥 */}
+              <Route path="/diamonds-kit" element={<VerdantOrangerieJewels />} />
+              <Route path="/diamond-page-1" element={<VerdantOrangerieJewels />} />
+
+              <Route path="/solenne-high-jewelry" element={<SolenneHighJewelry />} />
+              <Route path="/diamond-page-2" element={<SolenneHighJewelry />} />
 
               <Route path="/stock" element={<V8PageWrapper><V8StockBerza /></V8PageWrapper>} />
               <Route path="/stock-2" element={<V8PageWrapper><V8Stock2 /></V8PageWrapper>} /> 
-              
               <Route path="/showroom" element={<V8PageWrapper><V8Showroom /></V8PageWrapper>} />
               <Route path="/terms" element={<V8PageWrapper><V8Terms /></V8PageWrapper>} />
               <Route path="/privacy" element={<V8PageWrapper><V8Privacy /></V8PageWrapper>} />
               <Route path="/refund" element={<V8PageWrapper><V8Refund /></V8PageWrapper>} />
               <Route path="/media" element={<V8PageWrapper><V8MediaViewer /></V8PageWrapper>} />
-
               <Route path="/portfolio" element={<V8PageWrapper><Portfolio /></V8PageWrapper>} />
-              
               <Route path="/premium-menu" element={<V8PageWrapper><V8PremiumTestMenu /></V8PageWrapper>} />
               <Route path="/m/:menuId" element={<PublicMenuTestQRMenu />} />
-
-              {/* 🔥 RUTE ZA AI AGENTE I UI/UX V10 🔥 */}
               <Route path="/ai-agents" element={<V8PageWrapper><AIAgentsShowcase /></V8PageWrapper>} />
               <Route path="/ui-ux" element={<V8PageWrapper><UiUxHub /></V8PageWrapper>} />
               <Route path="/pdf-translator" element={<V8PageWrapper><V10PdfTranslator /></V8PageWrapper>} />
@@ -755,22 +698,17 @@ function AppContent({ appsData, refreshData }) {
               <Route path="/ui-ux/commercial" element={<V8PageWrapper><CommercialOps /></V8PageWrapper>} /> 
               <Route path="/ui-ux/project/:projectId" element={<V8PageWrapper><V10SplitScreen /></V8PageWrapper>} />
               <Route path="/my-vault" element={<V8PageWrapper><V10MyVault /></V8PageWrapper>} />
-
             </Routes>
           </AnimatePresence>
         </div>
-        
         {!isPublicMenuRoute && <SmartScrollButton />}
         {!isPublicMenuRoute && <V8ContactWidget />}
-
         {!isPublicMenuRoute && isDesktop && (
           <div id="v8-counter-container">
             <VisitorCounter />
           </div>
         )}
-
         {!isPublicMenuRoute && <V8Footer />}
-
         <LoginRequiredModal
           isOpen={loginRequiredData.isOpen}
           onClose={handleCloseLoginRequired}
@@ -780,7 +718,6 @@ function AppContent({ appsData, refreshData }) {
             openSecureCheckout(loginRequiredData.name, loginRequiredData.price, loginRequiredData.zipLink);
           }}
         />
-
         <AnimatePresence>
           {checkoutData.isOpen && (
             <V8SecureCheckout 
@@ -792,13 +729,11 @@ function AppContent({ appsData, refreshData }) {
             />
           )}
         </AnimatePresence>
-
         <AnimatePresence>
           {notification && (
             <NotificationModal data={notification} onClose={() => setNotification(null)} />
           )}
         </AnimatePresence>
-
       </div>
     </div>
   );
@@ -806,7 +741,6 @@ function AppContent({ appsData, refreshData }) {
 
 export default function App() {
   const [appsData, setAppsData] = useState([]);
-
   const refreshData = useCallback(async () => {
     try {
       const q = query(collection(db, "v8_products"), orderBy("createdAt", "desc"));
@@ -817,9 +751,7 @@ export default function App() {
       setAppsData([]);
     }
   }, []);
-
   useEffect(() => { refreshData(); }, [refreshData]);
-
   return (
     <HelmetProvider>
       <Router>
@@ -828,4 +760,6 @@ export default function App() {
     </HelmetProvider>
   );
 }
-// KRAJ FAJLA: App.jsx
+// ============================================================================
+// KRAJ FAJLA: src/App.jsx
+// ============================================================================

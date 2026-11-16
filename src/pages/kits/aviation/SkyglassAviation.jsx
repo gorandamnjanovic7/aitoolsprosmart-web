@@ -1,19 +1,38 @@
-// ============================================================================
-// src/pages/kits/aviation/SkyglassAviation.jsx
-// Skyglass Aviation (Page 6 of 6 — Private Aviation Collection)
-// Fixed Export Name + Airplane Hero Banner + Floating Prev/Next Navigation
-// ============================================================================
+//SkyglassAviation.jsx
+
+
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Helmet } from 'react-helmet-async';
 import {
-  Aperture, ArrowDownRight, ArrowLeft, ArrowRight, ArrowUpRight, Calendar,
-  CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Clock3, Compass,
-  Crown, DownloadCloud, FileCode, FolderArchive, Layers, Lock, MapPin,
-  Menu, Pause, Plane, Play, ShieldCheck, Sparkles, Volume2,
-  VolumeX, Video, X
+  ArrowLeft,
+  ArrowRight,
+  ArrowUpRight,
+  CheckCircle2,
+  ChevronDown,
+  Compass,
+  Crown,
+  DownloadCloud,
+  FolderArchive,
+  Gem,
+  Layers,
+  Lock,
+  Maximize2,
+  Pause,
+  Plane,
+  Play,
+  Send,
+  ShieldCheck,
+  Sparkles,
+  Video,
+  Volume2,
+  VolumeX,
+  X,
+  Zap
 } from 'lucide-react';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+
 import { db, auth } from '../../../firebase';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -21,684 +40,1388 @@ import V8SecureCheckout from '../../../V8SecureCheckout';
 import LoginRequiredModal from '../../../LoginRequiredModal';
 import { trackV8Action } from '../../../utils/analytics';
 
-const SITE = {
-  brand: 'Skyglass Aviation',
-  descriptor: 'The modern private flight journal',
-  analyticsLabel: 'Skyglass_Aviation',
-  topline: 'A clear view of the journey ahead • Private flight, thoughtfully arranged • 150MP Fleet Architecture',
-  kicker: 'Issue 01 / The open sky',
-  titleBefore: 'A different view of ',
-  titleEmphasis: 'away.',
-  titleAfter: '',
-  description: 'An editorial private aviation experience shaped by light, purposeful design and the freedom to move on your own schedule.',
-  footer: 'A perspective worth travelling for.',
-  heroStyle: 'portal',
-  cabinLayout: 'reversed',
-  galleryLayout: 'editorial',
-  requestLayout: 'editorial',
-  order: ['fleet', 'cabins', 'charter', 'cinema', 'licensing', 'faq'],
-  palette: {
-    canvas: '#EDF5F8',
-    ink: '#17364E',
-    muted: '#658096',
-    accent: '#267DA8',
-    accentContrast: '#FFFFFF',
-    panel: '#FFFFFF',
-    soft: '#DCEBF1',
-    line: '#BFD0D9',
-    inverse: '#14374E',
-    inverseInk: '#FFFFFF'
-  }
+const WEBHOOK_URL = 'https://n8n-production-720dcf20.up.railway.app/webhook/v10-concierge-webhook';
+
+// Fullscreen Lightbox Inspector
+const LightboxInspector = ({ imageUrl, onClose }) => {
+  if (!imageUrl) return null;
+  return createPortal(
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#020B09]/95 p-4 backdrop-blur-2xl"
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute right-6 top-6 rounded-full border border-emerald-400/40 bg-black/80 p-3 text-emerald-200 transition hover:bg-emerald-400 hover:text-black cursor-pointer"
+      >
+        <X size={20} />
+      </button>
+      <img
+        src={imageUrl}
+        alt="150MP Master Visual Inspection"
+        className="max-h-[90vh] max-w-[94vw] rounded-2xl border border-emerald-400/40 object-contain shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      />
+    </div>,
+    document.body
+  );
 };
 
-const handleSmartJetImageError = (e, fallbackUrl) => {
-  const currentSrc = e.currentTarget.getAttribute('src') || '';
-  if (currentSrc.endsWith('.png')) {
-    e.currentTarget.setAttribute('src', currentSrc.replace('.png', '.jpg'));
-  } else if (currentSrc.endsWith('.jpg') && !currentSrc.includes('unsplash.com')) {
-    e.currentTarget.setAttribute('src', currentSrc.replace('.jpg', '.jpeg'));
-  } else if (fallbackUrl && e.currentTarget.src !== fallbackUrl) {
-    e.currentTarget.src = fallbackUrl;
-  }
-};
-
+// ============================================================================
+// KIT_CONFIG — STRANICA 5 OD 5 (SKYGLASS • EMERALD & BORDEAUX EDITION)
+// SVI FAJLOVI SU 100% TAČNI .WEBP I .PNG IZ TVOG PUBLIC/JETS FOLDERA
+// ============================================================================
 const KIT_CONFIG = {
   standardZipLink: 'https://drive.google.com/your-standard-349-kit-link',
   buyoutZipLink: 'https://drive.google.com/your-exclusive-1490-buyout-link',
- freeSampleLink: 'https://drive.google.com/file/d/11RFyWjqgczESJuzpyje7hxrXHCvT_5o1/view?usp=sharing',
+  freeSampleLink: 'https://drive.google.com/file/d/1IRFykjqqczESjuzpyjo7hxrXHCVT_5aI/view?usp=sharing',
 
-  // Navigacija (Stranica 6 od 6 — Prelazak na jahte):
-  prevPageRoute: '/aviation-runway-kit',
-  prevPageLabel: 'Prev Jet Page: Runway (5/6)',
-  nextPageRoute: '/superyacht-charter-kit',
-  nextPageLabel: 'Next Kit: Superyachts (1/5)',
+  prevPageRoute: '/aviation-midnight-kit',
+  prevPageLabel: 'Prev Jet Page: Midnight (4/5)',
+  nextLandingRoute: '/aviation-charter-kit',
+  nextLandingLabel: 'Back to Page 1: Sovereign (1/5)',
 
-  // SLIKA AVIONA U HERO BANERU:
-  heroImage: '/jets/hf_20261110_233304_5a6972f3-2ba3-44d1-8ee2-abfa02059f60.png',
-  heroFallback: 'https://images.unsplash.com/photo-1540962351504-03099e0a754b?auto=format&fit=crop&w=2200&q=90',
-  heroVideoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-flying-through-white-clouds-in-the-sky-41645-large.mp4',
+  heroImage: '/jets/31.webp',
+  heroVideoUrl:
+    'https://assets.mixkit.co/videos/preview/mixkit-view-of-the-sun-setting-above-the-clouds-from-an-airplane-41649-large.mp4',
 
+  // 6 ZONA U EMERALD, BORDEAUX & PLATINUM KOLEKCIJI
   bespokeCabins: [
     {
-      id: 'v10-daylight-lounge',
-      zone: 'Zone 01 • Main Architectural Salon',
-      mode: 'day',
-      title: 'Daylight Calacatta & Walnut Lounge',
-      subtitle: 'Curved bouclé sofa, brushed champagne ribs & panoramic daylight windows',
-      materials: 'Calacatta Viola Marble • Fluted American Walnut • Full-Grain Cream Leather',
-      resolution: '150MP Master (14,200 × 10,600 px) • 16-Bit TIFF/PNG',
-      image: '/jets/V10_Aero_Architectural_Render_Daylight_150MP.png',
-      fallback: 'https://images.unsplash.com/photo-1583416750470-965b2707b355?auto=format&fit=crop&w=1800&q=85'
+      id: 'emerald-01-flagship',
+      step: '01 / 06',
+      zone: 'Zone 01 • British Racing Emerald Tarmac Flagship',
+      badge: 'Collector Livery Edition',
+      title: 'Sovereign Emerald & Brushed Platinum.',
+      subtitle:
+        'Custom multi-coat British Racing Emerald fuselage with gold pinstriping and mirror-polished leading edges.',
+      materials: 'Deep Emerald Metallic • 24K Gold Pinstripe • Brushed Titanium Winglets',
+      resolution: '150MP Master (14,200 × 10,600 px) • 16-Bit WEBP',
+      image: '/jets/31.webp'
     },
     {
-      id: 'v10-evening-lounge',
-      zone: 'Zone 02 • Night Altitude Club',
-      mode: 'night',
-      title: 'Evening Obsidian & Smoked Glass Club',
-      subtitle: 'Sculpted cove lighting, crystal decanter table & twilight horizon',
-      materials: 'Nero Marquina Marble • Smoked Bronze Glass Partitions • Charcoal Nappa',
-      resolution: '150MP Master (14,200 × 10,600 px) • 16-Bit TIFF/PNG',
-      image: '/jets/V10_Aero_Architectural_Render_Evening_150MP.png',
-      fallback: 'https://images.unsplash.com/photo-1540339832862-474599807836?auto=format&fit=crop&w=1800&q=85'
+      id: 'emerald-02-bordeaux',
+      step: '02 / 06',
+      zone: 'Zone 02 • Imperial Bordeaux & Silver Nose Profile',
+      badge: 'Haute Couture Exterior',
+      title: 'Sculpted aerodynamics in Imperial Crimson.',
+      subtitle:
+        'A bold crimson-bordeaux metallic finish paired with high-lustre chrome engine cowlings for unmistakable apron presence.',
+      materials: 'Imperial Bordeaux Pearl • Platinum Silver Stripe • Heated Cockpit Glass',
+      resolution: '150MP Master (14,200 × 10,600 px) • 16-Bit WEBP',
+      image: '/jets/24.webp'
     },
     {
-      id: 'v10-travertine-dining',
-      zone: 'Zone 03 • Private Dining Suite',
-      mode: 'day',
-      title: 'Travertine & Fluted Teak Dining Room',
-      subtitle: 'Six-seat private culinary table with sunset cloudline views',
-      materials: 'Raw Roman Travertine • Vertical Tambour Wood Bulkhead • Fine Porcelain',
-      resolution: '150MP Master • Commercial Print & WebP Ready',
-      image: '/jets/magnific_ultrapremium-unbranded-pr_iA4bcS83uK.png',
-      fallback: 'https://images.unsplash.com/photo-1569154941061-e231b4725ef1?auto=format&fit=crop&w=1800&q=85'
+      id: 'emerald-03-green-salon',
+      step: '03 / 06',
+      zone: 'Zone 03 • Heritage Emerald Leather & Walnut Club',
+      badge: '41 dB Acoustic Salon',
+      title: 'Private members’ club atmosphere at FL510.',
+      subtitle:
+        'Deep forest green full-grain hides paired with bookmatched walnut bulkheads and full-moon panoramic windows.',
+      materials: 'Heritage Green Calfskin • Dark American Walnut • Matte Obsidian Table',
+      resolution: '150MP Master (14,200 × 10,600 px) • 16-Bit WEBP',
+      image: '/jets/50.webp'
     },
     {
-      id: 'v10-marble-boardroom',
-      zone: 'Zone 04 • Executive Sky Boardroom',
-      mode: 'day',
-      title: 'Executive Nero Marble Conference Suite',
-      subtitle: 'Six-executive high-back leather chairs for confidential C-suite briefings',
-      materials: 'Polished Black Veined Marble • Brushed Brass Inlays • Espresso Leather',
-      resolution: '150MP Master • Commercial Print & WebP Ready',
-      image: '/jets/magnific_ultrapremium-unbranded-pr_l7xINVXgv9.png',
-      fallback: 'https://images.unsplash.com/photo-1540962351504-03099e0a754b?auto=format&fit=crop&w=1800&q=85'
+      id: 'emerald-04-dining',
+      step: '04 / 06',
+      zone: 'Zone 04 • Calacatta Gold & Ivory Gastronomy',
+      badge: 'Six-Guest Formal Dining',
+      title: 'Panoramic cloud-deck dining in natural stone.',
+      subtitle:
+        ' gather around a honeycomb-backed Calacatta marble table with oversized panoramic windows looking over the stratosphere.',
+      materials: 'Honed Calacatta Marble • Loro Piana Cream Leather • Brushed Brass',
+      resolution: '150MP Master (14,200 × 10,600 px) • 16-Bit WEBP',
+      image: '/jets/41.webp'
     },
     {
-      id: 'v10-master-bedroom',
-      zone: 'Zone 05 • Private Stateroom',
-      mode: 'night',
-      title: 'Whisper-Quiet Master Bedroom Suite',
-      subtitle: 'King-size cashmere bedding, acoustic padded walls & twin stratosphere windows',
-      materials: 'Loro Piana Cashmere • Acoustic Alcantara Panels • Warm Reading Sconces',
-      resolution: '150MP Master • Commercial Print & WebP Ready',
-      image: '/jets/magnific_ultrapremium-unbranded-pr_XtD4EIHBfo.png',
-      fallback: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1800&q=85'
-    }
-  ],
-
-  cinemaVideos: [
-    {
-      id: 'altitude-reel',
-      badge: '01 • High-Altitude Motion Reel',
-      title: 'Above the weather, on your own timeline.',
-      desc: '4K 60fps aerial cinematography ready for hero headers, social campaigns, and investor decks.',
-      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-flying-through-white-clouds-in-the-sky-41645-large.mp4',
-      poster: '/jets/V10_Aero_Architectural_Render_Daylight_150MP.png'
+      id: 'emerald-05-hangar-coupe',
+      step: '05 / 06',
+      zone: 'Zone 05 • Autumn Hangar & Grand Tourer Transfer',
+      badge: '90-Second Boarding',
+      title: 'Direct wing-side arrival from your private coupe.',
+      subtitle:
+        'Bypass every commercial terminal with direct tarmac access outside our architectural private hangar.',
+      materials: 'Bordeaux & Gold Livery • Private Hangar Apron • Biometric Clearance',
+      resolution: '150MP Master (14,200 × 10,600 px) • 16-Bit WEBP',
+      image: '/jets/5.webp'
     },
     {
-      id: 'sunset-approach',
-      badge: '02 • Golden-Hour Departure',
-      title: 'Seamless private terminal transitions.',
-      desc: 'Warm ambient lighting and cinematic depth engineered for luxury charter brokerages.',
-      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-view-of-the-sun-setting-above-the-clouds-from-an-airplane-41649-large.mp4',
-      poster: '/jets/V10_Aero_Architectural_Render_Evening_150MP.png'
-    }
-  ],
-
-  fleetAssets: [
-    {
-      id: 'v10-arch-daylight',
-      category: 'cabin',
-      tag: 'V10 Bespoke Salon',
-      title: 'Daylight Architectural Lounge',
-      specs: 'Curved bouclé sofa • Calacatta marble table • Brushed steel ceiling ribs',
-      resolution: 'WebP + 4K UHD + 150MP Master',
-      image: '/jets/V10_Aero_Architectural_Render_Daylight_150MP.png',
-      fallback: 'https://images.unsplash.com/photo-1583416750470-965b2707b355?auto=format&fit=crop&w=1400&q=85'
-    },
-    {
-      id: 'v10-arch-evening',
-      category: 'cabin',
-      tag: 'V10 Night Lounge',
-      title: 'Evening Obsidian Cocktail Suite',
-      specs: 'Smoked glass partitions • Crystal decanter bar • Organic LED ceiling coves',
-      resolution: 'WebP + 4K UHD + 150MP Master',
-      image: '/jets/V10_Aero_Architectural_Render_Evening_150MP.png',
-      fallback: 'https://images.unsplash.com/photo-1540339832862-474599807836?auto=format&fit=crop&w=1400&q=85'
-    },
-    {
-      id: 'v10-travertine-dining-card',
-      category: 'dining',
-      tag: 'V10 Culinary Suite',
-      title: 'Travertine & Fluted Walnut Dining',
-      specs: 'Six-guest stone dining table • Fine crystal stemware • Golden-hour windows',
-      resolution: 'WebP + 4K UHD + 150MP Master',
-      image: '/jets/magnific_ultrapremium-unbranded-pr_iA4bcS83uK.png',
-      fallback: 'https://images.unsplash.com/photo-1569154941061-e231b4725ef1?auto=format&fit=crop&w=1400&q=85'
-    },
-    {
-      id: 'v10-nero-boardroom-card',
-      category: 'dining',
-      tag: 'V10 Sky Boardroom',
-      title: 'Nero Marquina Executive Conference',
-      specs: 'Six executive leather seats • Black veined marble table • Brass trim',
-      resolution: 'WebP + 4K UHD + 150MP Master',
-      image: '/jets/magnific_ultrapremium-unbranded-pr_l7xINVXgv9.png',
-      fallback: 'https://images.unsplash.com/photo-1540962351504-03099e0a754b?auto=format&fit=crop&w=1400&q=85'
-    },
-    {
-      id: 'v10-master-bedroom-card',
-      category: 'cabin',
-      tag: 'V10 Master Stateroom',
-      title: 'Private King Stateroom at 45,000 ft',
-      specs: 'Cashmere king bed • Acoustic channel-tufted walls • Dual night tables',
-      resolution: 'WebP + 4K UHD + 150MP Master',
-      image: '/jets/magnific_ultrapremium-unbranded-pr_XtD4EIHBfo.png',
-      fallback: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1400&q=85'
-    },
-    {
-      id: 'global-lounge',
-      category: 'cabin',
-      tag: 'Long-range cabin',
-      title: 'A quiet, considered cabin',
-      specs: 'Wide leather seating • Warm wood details • Soft indirect lighting',
-      resolution: 'WebP + 4K UHD + 150MP Master',
-      image: 'https://images.unsplash.com/photo-1583416750470-965b2707b355?auto=format&fit=crop&w=1400&q=85'
-    },
-    {
-      id: 'boardroom',
-      category: 'dining',
-      tag: 'Executive cabin',
-      title: 'A boardroom above the clouds',
-      specs: 'Private meeting space • Fine-grain finishes • Natural window light',
-      resolution: 'WebP + 4K UHD + 150MP Master',
-      image: 'https://images.unsplash.com/photo-1569154941061-e231b4725ef1?auto=format&fit=crop&w=1400&q=85'
-    },
-    {
-      id: 'tarmac-arrival',
-      category: 'exterior',
-      tag: 'Tarmac arrival',
-      title: 'A clear runway to what comes next',
-      specs: 'Private terminal approach • Refined aircraft profile • Golden-hour light',
-      resolution: 'WebP + 4K UHD + 150MP Master',
-      image: 'https://images.unsplash.com/photo-1474302770737-173ee21bab63?auto=format&fit=crop&w=1400&q=85'
-    },
-    {
-      id: 'wing-detail',
-      category: 'exterior',
-      tag: 'In-flight perspective',
-      title: 'The world, from the window seat',
-      specs: 'Sculpted wing detail • High-altitude atmosphere • Natural daylight',
-      resolution: 'WebP + 4K UHD + 150MP Master',
-      image: 'https://images.unsplash.com/photo-1464037866556-6812c9d1c72e?auto=format&fit=crop&w=1400&q=85'
-    },
-    {
-      id: 'private-jet',
-      category: 'exterior',
-      tag: 'Private aviation',
-      title: 'A poised departure',
-      specs: 'Clean aircraft silhouette • Open apron • Crisp editorial composition',
-      resolution: 'WebP + 4K UHD + 150MP Master',
-      image: 'https://images.unsplash.com/photo-1556388158-158ea5ccacbd?auto=format&fit=crop&w=1400&q=85'
-    },
-    {
-      id: 'cabin-window',
-      category: 'cabin',
-      tag: 'Window seat',
-      title: 'A view with room to breathe',
-      specs: 'Panoramic oval windows • Tailored leather • Layered morning light',
-      resolution: 'WebP + 4K UHD + 150MP Master',
-      image: 'https://images.unsplash.com/photo-1540339832862-474599807836?auto=format&fit=crop&w=1400&q=85'
-    },
-    {
-      id: 'jet-runway',
-      category: 'exterior',
-      tag: 'Ready when you are',
-      title: 'Departure, on your schedule',
-      specs: 'Private runway scene • Elegant proportions • Blue-hour atmosphere',
-      resolution: 'WebP + 4K UHD + 150MP Master',
-      image: 'https://images.unsplash.com/photo-1542296332-2e4473faf563?auto=format&fit=crop&w=1400&q=85'
+      id: 'emerald-06-stateroom',
+      step: '06 / 06',
+      zone: 'Zone 06 • Full-Beam Master Stateroom Sanctuary',
+      badge: '16-Hour Non-Stop Rest',
+      title: 'Arrive across oceans in a private king suite.',
+      subtitle:
+        'A dedicated aft master bedroom with hand-tufted cashmere linens, walnut wardrobes, and warm sunset illumination.',
+      materials: 'Cashmere Linens • Bookmatched Walnut • Circadian 2700K Lighting',
+      resolution: '150MP Master (14,200 × 10,600 px) • 16-Bit WEBP',
+      image: '/jets/37.webp'
     }
   ]
 };
 
-const FAQS = [
+// UNIKATNA SEKCIJA ZA STRANICU 5: BESPOKE LIVERY & CABIN PAIRING COMPARATOR
+const LIVERY_COLLECTIONS = [
   {
-    question: 'What is included in the agency license?',
-    answer: 'The agency package includes the React and Tailwind landing-page source, 20 private-jet visual scenes in WebP, 4K UHD and 150MP formats, ICC Color Profile & Print Spec Sheet, and a commercial license for client projects.'
+    id: 'livery-emerald',
+    name: '01 / British Racing Emerald & Gold',
+    swatch: '#10B981',
+    exteriorImg: '/jets/30.webp',
+    cabinImg: '/jets/50.webp',
+    range: '7,800 NM Non-Stop',
+    coatSpec: '7-Layer Pearlescent Emerald with 24K Gold Pinstripe',
+    cabinSpec: 'Deep Forest Heritage Leather & Bookmatched Walnut'
   },
   {
-    question: 'Can I change the images, videos, colors and copy?',
-    answer: 'Yes. The JSX is organized so your team can swap the video reels, brand palette, imagery, copy, route form and pricing content to fit any private aviation operator or charter broker.'
+    id: 'livery-bordeaux',
+    name: '02 / Imperial Bordeaux & Platinum',
+    swatch: '#E11D48',
+    exteriorImg: '/jets/24.webp',
+    cabinImg: '/jets/41.webp',
+    range: '7,650 NM Non-Stop',
+    coatSpec: 'Metallic Crimson Bordeaux with Mirror-Chrome Leading Edges',
+    cabinSpec: 'Warm Alabaster Calfskin & Calacatta Gold Marble Table'
   },
   {
-    question: 'What does the exclusive buyout include?',
-    answer: 'The one-buyer option includes all 60 image files, 10 custom 150MP renders, the private-jet prompt ruleset and an enterprise IP transfer certificate, as described in the license section.'
+    id: 'livery-bronze',
+    name: '03 / Champagne Bronze & Walnut',
+    swatch: '#D97706',
+    exteriorImg: '/jets/26.webp',
+    cabinImg: '/jets/35.webp',
+    range: '7,800 NM Non-Stop',
+    coatSpec: 'Sunlit Espresso-Bronze Topcoat over Titanium Belly',
+    cabinSpec: 'Ivory Executive Recliners & High-Gloss Walnut Consoles'
   },
   {
-    question: 'Does the route request form book a flight?',
-    answer: 'This page includes a working front-end inquiry demonstration. Connect the form to your own CRM, email webhook or concierge desk to receive and manage real booking requests.'
+    id: 'livery-silver',
+    name: '04 / Stratospheric Silver & Emerald Stripe',
+    swatch: '#94A3B8',
+    exteriorImg: '/jets/11.webp',
+    cabinImg: '/jets/36.webp',
+    range: '8,000 NM Ultra-Long-Range',
+    coatSpec: 'Raw Polished Aluminum Finish with Racing Green Tail Fin',
+    cabinSpec: 'Daylight Cream Club Seating with Direct Cockpit View'
   }
 ];
 
-const optimizeWebP = (url, width = 1600) => {
-  if (!url) return '';
-  if (url.includes('res.cloudinary.com') && url.includes('/upload/') && !url.includes('f_webp')) {
-    return url.replace('/upload/', '/upload/f_webp,q_auto,w_' + width + '/');
+const VIDEO_CHAPTERS = [
+  {
+    id: 'reel-1',
+    title: '01 / Emerald & Silver Stratospheric Cruise',
+    duration: '01:45 • 4K 60FPS',
+    poster: '/jets/11.webp',
+    videoUrl: KIT_CONFIG.heroVideoUrl,
+    caption: 'High-altitude chase cinematography above the clouds in bespoke silver-emerald livery.'
+  },
+  {
+    id: 'reel-2',
+    title: '02 / Autumn Hangar & Grand Tourer Arrival',
+    duration: '01:18 • 4K 60FPS',
+    poster: '/jets/5.webp',
+    videoUrl: KIT_CONFIG.heroVideoUrl,
+    caption: 'Direct supercar apron arrival alongside the bordeaux-and-gold flagship.'
+  },
+  {
+    id: 'reel-3',
+    title: '03 / Emerald Club & Calacatta Dining Tour',
+    duration: '02:10 • 4K 60FPS',
+    poster: '/jets/50.webp',
+    videoUrl: KIT_CONFIG.heroVideoUrl,
+    caption: 'Interior walkthrough of the heritage green leather lounge and marble dining room.'
   }
-  return url;
-};
+];
 
-const Reveal = ({ children, className = '', delay = 0 }) => {
-  const reduceMotion = useReducedMotion();
-  return (
-    <motion.div
-      className={className}
-      initial={reduceMotion ? false : { opacity: 0, y: 22 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.12 }}
-      transition={{ duration: reduceMotion ? 0 : 0.62, delay, ease: [0.22, 1, 0.36, 1] }}
-    >
-      {children}
-    </motion.div>
-  );
-};
+const LOOKBOOK_ASSETS = [
+  { src: '/jets/31.webp', title: 'British Racing Emerald Flagship on Apron', zone: 'Collector Liveries' },
+  { src: '/jets/30.webp', title: 'Symmetrical Emerald Nose & Cockpit', zone: 'Collector Liveries' },
+  { src: '/jets/24.webp', title: 'Imperial Bordeaux & Chrome Fuselage', zone: 'Collector Liveries' },
+  { src: '/jets/5.webp', title: 'Bordeaux Jet & Black Coupe at Hangar', zone: 'Collector Liveries' },
+  { src: '/jets/26.webp', title: 'Espresso-Bronze Hangar Reveal', zone: 'Collector Liveries' },
+  { src: '/jets/28.webp', title: 'Bronze-Grey Aft Wing & Tail Fin', zone: 'Collector Liveries' },
+  { src: '/jets/10.webp', title: 'Champagne Gold Desert Runway Taxi', zone: 'Collector Liveries' },
+  { src: '/jets/13.webp', title: 'Teal-Striped White Flagship by the Sea', zone: 'Collector Liveries' },
+  { src: '/jets/11.webp', title: 'Polished Silver & Emerald Cloud Cruise', zone: 'Aerial & Hangar' },
+  { src: '/jets/12.webp', title: 'Steep Climb with Wingtip Condensation', zone: 'Aerial & Hangar' },
+  { src: '/jets/27.webp', title: 'Twin Turbofan Engineering Inside Hangar', zone: 'Aerial & Hangar' },
+  { src: '/jets/8.webp', title: 'Symmetrical Hangar Nose Silhouette', zone: 'Aerial & Hangar' },
+  { src: '/jets/20.webp', title: 'Sculpted Metallic Winglet in Golden Light', zone: 'Aerial & Hangar' },
+  { src: '/jets/17.webp', title: 'Cream Flagship Over Desert Canyon', zone: 'Aerial & Hangar' },
+  { src: '/jets/15.webp', title: 'Mountain Valley Sunset Takeoff', zone: 'Aerial & Hangar' },
+  { src: '/jets/29.webp', title: 'Golden Hour Runway Rotation', zone: 'Aerial & Hangar' },
+  { src: '/jets/50.webp', title: 'Heritage Emerald Leather & Moonlit Salon', zone: 'Bespoke Interiors' },
+  { src: '/jets/41.webp', title: 'Calacatta Gold Panoramic Marble Dining', zone: 'Bespoke Interiors' },
+  { src: '/jets/40.webp', title: 'Circular Sky-Window Marble Dining', zone: 'Bespoke Interiors' },
+  { src: '/jets/35.webp', title: 'Daylight Walnut & Cream Espresso Lounge', zone: 'Bespoke Interiors' },
+  { src: '/jets/36.webp', title: 'Executive Worktable Looking to Cockpit', zone: 'Bespoke Interiors' },
+  { src: '/jets/42.webp', title: 'Twin Cream Recliners & High-Gloss Consoles', zone: 'Bespoke Interiors' },
+  { src: '/jets/57.webp', title: 'Anthracite Four-Place Conference Suite', zone: 'Bespoke Interiors' },
+  { src: '/jets/58.webp', title: 'Evening Walnut Table & Crystal Glasses', zone: 'Bespoke Interiors' },
+  { src: '/jets/37.webp', title: 'Sunset Master Suite & Side Divan', zone: 'Private Staterooms' },
+  { src: '/jets/34.webp', title: 'Warm Cove-Lit King Bedroom Stateroom', zone: 'Private Staterooms' },
+  { src: '/jets/38.webp', title: 'Aft Master Bed With Sunset Cockpit View', zone: 'Private Staterooms' },
+  { src: '/jets/59.webp', title: 'Golden Hour Full-Beam Stateroom', zone: 'Private Staterooms' }
+];
 
-const cabinLayouts = {
-  classic: 'lg:grid-cols-[1.05fr_0.95fr]',
-  reversed: 'lg:grid-cols-[0.82fr_1.18fr]',
-  wide: 'lg:grid-cols-[1.25fr_0.75fr]',
-  stacked: 'lg:grid-cols-1',
-  editorial: 'lg:grid-cols-[0.92fr_1.08fr]'
-};
-
-const galleryLayouts = {
-  balanced: 'sm:grid-cols-2 xl:grid-cols-3',
-  mosaic: 'sm:grid-cols-2 xl:grid-cols-4',
-  editorial: 'sm:grid-cols-2 xl:grid-cols-3',
-  wide: 'sm:grid-cols-2 xl:grid-cols-2',
-  grid: 'sm:grid-cols-2 xl:grid-cols-3'
-};
-
-const requestLayouts = {
-  split: 'lg:grid-cols-[0.8fr_1.2fr]',
-  compact: 'lg:grid-cols-[0.65fr_1.35fr]',
-  editorial: 'lg:grid-cols-[1fr_1fr]',
-  wide: 'lg:grid-cols-1',
-  portal: 'lg:grid-cols-[0.72fr_1.28fr]'
-};
-
-const STYLES = '.av-page{background:var(--av-canvas);color:var(--av-ink)}' +
-  '.av-panel{background:var(--av-panel);border-color:var(--av-line)}' +
-  '.av-soft{background:var(--av-soft)}' +
-  '.av-muted{color:var(--av-muted)}' +
-  '.av-accent{color:var(--av-accent)}' +
-  '.av-accent-bg{background:var(--av-accent);color:var(--av-accent-contrast)}' +
-  '.av-inverse{background:var(--av-inverse);color:var(--av-inverse-ink)}' +
-  '.av-line{border-color:var(--av-line)}' +
-  '.av-button{transition:transform .25s ease,filter .25s ease,box-shadow .25s ease}' +
-  '.av-button:hover{transform:translateY(-2px);filter:brightness(1.04);box-shadow:0 12px 28px rgba(0,0,0,.12)}' +
-  '.av-page ::selection{background:var(--av-accent);color:var(--av-accent-contrast)}' +
-  '@media(prefers-reduced-motion:reduce){.av-button{transition:none}}';
+const FAQ_ITEMS = [
+  {
+    q: 'HOW DOES THE CENTERPIECE COCKPIT DECK & LIVERY COMPARATOR WORK ON PAGE 5?',
+    a: 'Skyglass Aviation (Page 5 of 5) introduces a sovereign Emerald, Bordeaux & Brushed Platinum color architecture with a Centerpiece Showcase Deck and an interactive Livery & Cabin Comparator that pairs custom exterior paintwork directly with matching interior hides and stone.'
+  },
+  {
+    q: 'WHAT IS INCLUDED IN THE $349 AGENCY LICENSE?',
+    a: 'You receive the complete Skyglass Aviation React + Tailwind JSX source code (with 6-Zone Showcase Deck & Livery Comparator), 60 production files (20 WebP, 20 4K UHD & 20 150MP masters with embedded sRGB ICC profiles), the Railway n8n + Groq AI Flight Desk workflow, and a commercial license for unlimited client websites and print.'
+  },
+  {
+    q: 'HOW DOES THE 16:9 VIDEO PLACEHOLDER WORK WITH SEEDANCE 2.5 AND KLING 4.0?',
+    a: 'Both the Hero Showcase Deck and the 16:9 Cinema Reel player support native 4K/60FPS WebM and MP4 streams. When you add the +$199 30s 4K/60fps Cinema Motion Pack, you receive the seamless 30-second 16:9 WebM hero loop, 16:9 MP4 LED billboard master, and 9:16 vertical Reels cut ready to drop straight into the player.'
+  },
+  {
+    q: 'WHAT IS THE DIFFERENCE BETWEEN THE $349 LICENSE AND THE $1,490 EXCLUSIVE BUYOUT?',
+    a: 'The $349 Multi-Client Agency License grants commercial deployment rights for your agency and client projects. The $1,490 1-of-1 Exclusive Buyout permanently removes this kit from our public Stock Store, includes 10 custom 150MP renders tailored to your brand palette, the Private Jet Prompt Engine ruleset, and a signed enterprise IP transfer certificate.'
+  }
+];
 
 const SkyglassAviation = () => {
   const navigate = useNavigate();
-  const cabinVideoRef = useRef(null);
-  const cinemaVideoRef = useRef(null);
+  const videoRef = useRef(null);
+
+  // User Auth & Checkout Modals
   const [currentUser, setCurrentUser] = useState(null);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [fleetFilter, setFleetFilter] = useState('all');
+  const [loginModal, setLoginModal] = useState({
+    isOpen: false,
+    tierName: '',
+    price: '0.00',
+    zipLink: ''
+  });
+  const [checkoutData, setCheckoutData] = useState({
+    isOpen: false,
+    name: '',
+    price: '0.00',
+    zipLink: ''
+  });
+
+  // +$199 Order Bump State (Cinema Motion Pack)
+  const [includeMotionPack, setIncludeMotionPack] = useState(false);
+
+  // Hero & Interactive Zone States
+  const [activeZoneIndex, setActiveZoneIndex] = useState(0);
+  const [heroVideoMode, setHeroVideoMode] = useState(false);
+
+  // Bespoke Livery Comparator State (Unique to Page 5)
+  const [selectedLivery, setSelectedLivery] = useState(LIVERY_COLLECTIONS[0]);
+
+  // Video Showcase State
+  const [activeClip, setActiveClip] = useState(VIDEO_CHAPTERS[0]);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+
+  // Lookbook & Lightbox State
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const [zoomImage, setZoomImage] = useState(null);
-  const [openFaq, setOpenFaq] = useState(0);
-  const [heroMediaMode, setHeroMediaMode] = useState('still');
-  const [activeCabinIdx, setActiveCabinIdx] = useState(0);
-  const [autoTourActive, setAutoTourActive] = useState(true);
-  const [activeCinemaIdx, setActiveCinemaIdx] = useState(0);
-  const [isCinemaPlaying, setIsCinemaPlaying] = useState(true);
-  const [isCinemaMuted, setIsCinemaMuted] = useState(true);
-  const [departure, setDeparture] = useState('Geneva (LSGG)');
-  const [destination, setDestination] = useState('Nice Côte d’Azur (LFMN)');
-  const [aircraftType, setAircraftType] = useState('Long-range private jet');
-  const [demoSubmitted, setDemoSubmitted] = useState(false);
-  const [checkoutData, setCheckoutData] = useState({ isOpen: false, name: '', price: '0.00', zipLink: '' });
-  const [loginModal, setLoginModal] = useState({ isOpen: false, tierName: '', price: '0.00', zipLink: '' });
+
+  // Executive FAQ Accordion State
+  const [openFaqIndex, setOpenFaqIndex] = useState(0);
+
+  // n8n + Groq AI Flight Desk State
+  const [chatMessages, setChatMessages] = useState([
+    {
+      role: 'assistant',
+      text: 'Welcome to Skyglass Reserve (Page 5/5 • British Racing Emerald & Bordeaux Edition). Ask me about custom collector liveries, heritage green leather cabins, or licensing this complete Turnkey Web + 150MP Asset Kit.'
+    }
+  ]);
+  const [userInput, setUserInput] = useState('');
+  const [clientName, setClientName] = useState('');
+  const [clientEmail, setClientEmail] = useState('');
+  const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => setCurrentUser(user || null));
-    trackV8Action('page_view', { event_category: 'High_Ticket_Kit', event_label: SITE.analyticsLabel });
-    return () => unsubscribe();
+    const unsub = onAuthStateChanged(auth, (u) => setCurrentUser(u));
+    return () => unsub();
   }, []);
 
-  useEffect(() => {
-    if (!autoTourActive) return undefined;
-    const timer = window.setInterval(() => {
-      setActiveCabinIdx((previous) => (previous + 1) % KIT_CONFIG.bespokeCabins.length);
-    }, 6500);
-    return () => window.clearInterval(timer);
-  }, [autoTourActive]);
+  const currentZone = KIT_CONFIG.bespokeCabins[activeZoneIndex];
 
-  const scrollTo = (id) => {
-    setMenuOpen(false);
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-  const filteredAssets = fleetFilter === 'all'
-    ? KIT_CONFIG.fleetAssets
-    : KIT_CONFIG.fleetAssets.filter((item) => item.category === fleetFilter);
-  const activeCabin = KIT_CONFIG.bespokeCabins[activeCabinIdx];
-  const activeCinemaClip = KIT_CONFIG.cinemaVideos[activeCinemaIdx];
-  const paletteStyle = {
-    '--av-canvas': SITE.palette.canvas,
-    '--av-ink': SITE.palette.ink,
-    '--av-muted': SITE.palette.muted,
-    '--av-accent': SITE.palette.accent,
-    '--av-accent-contrast': SITE.palette.accentContrast,
-    '--av-panel': SITE.palette.panel,
-    '--av-soft': SITE.palette.soft,
-    '--av-line': SITE.palette.line,
-    '--av-inverse': SITE.palette.inverse,
-    '--av-inverse-ink': SITE.palette.inverseInk
-  };
+  // Dinamički obračun cene sa +$199 Video Motion Pack Order Bump-om
+  const agencyPrice = includeMotionPack ? 349 + 199 : 349;
+  const buyoutPrice = includeMotionPack ? 1490 + 199 : 1490;
 
-  const recordOrderIntent = async (user, productName, price) => {
+  const categories = [
+    'All',
+    'Collector Liveries',
+    'Aerial & Hangar',
+    'Bespoke Interiors',
+    'Private Staterooms'
+  ];
+
+  const filteredAssets =
+    selectedCategory === 'All'
+      ? LOOKBOOK_ASSETS
+      : LOOKBOOK_ASSETS.filter((a) => a.zone === selectedCategory);
+
+  const recordOrderIntent = async (user, tierName, price) => {
     try {
-      await addDoc(collection(db, 'v8_payoneer_requests'), {
-        ime: user.displayName || 'B2B Agency Client',
-        email: user.email,
-        uid: user.uid,
-        zeliPaket: productName,
-        paketId: price === '1490.00' ? 'private_jet_buyout_1490' : 'private_jet_kit_349',
-        cenaPaketa: price,
-        vreme: serverTimestamp(),
-        isPaid: false
+      await addDoc(collection(db, 'orders'), {
+        userId: user?.uid || 'guest',
+        userEmail: user?.email || 'guest@aitoolsprosmart.com',
+        packageName: tierName,
+        price,
+        includeMotionPack,
+        kitCategory: 'Aviation Turnkey Kit - Page 5 (Skyglass Reserve)',
+        createdAt: serverTimestamp()
       });
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error('Order log error:', err);
     }
   };
 
-  const handlePurchaseTier = async (tier) => {
-    const isBuyout = tier === 'buyout';
-    const productName = isBuyout
-      ? '1-of-1 Exclusive Buyout: Private Jet Brand + React Kit (60 Files + 3 PSD)'
-      : 'Agency License: Private Jet React Kit + 20 Scenes (WebP/4K/150MP) + 3 PSD';
-    const price = isBuyout ? '1490.00' : '349.00';
-    const zipLink = isBuyout ? KIT_CONFIG.buyoutZipLink : KIT_CONFIG.standardZipLink;
-    trackV8Action('high_ticket_checkout_click', {
-      item_name: productName,
-      value: Number(price),
-      currency: 'USD'
-    });
-    const activeUser = currentUser || auth.currentUser;
-    if (activeUser) {
-      await recordOrderIntent(activeUser, productName, price);
-      setCheckoutData({ isOpen: true, name: productName, price, zipLink });
+  const handlePurchaseTier = async (baseTierName, numericPrice, zipLink) => {
+    const finalTierName = includeMotionPack
+      ? `${baseTierName} + 30s 4K/60fps Cinema Motion Pack`
+      : baseTierName;
+    const formattedPrice = Number(numericPrice).toFixed(2);
+
+    try {
+      if (typeof trackV8Action === 'function') {
+        trackV8Action('initiate_checkout', { package: finalTierName, price: formattedPrice });
+      }
+    } catch (_) {}
+
+    if (!currentUser) {
+      setLoginModal({ isOpen: true, tierName: finalTierName, price: formattedPrice, zipLink });
+      return;
+    }
+
+    await recordOrderIntent(currentUser, finalTierName, formattedPrice);
+    setCheckoutData({ isOpen: true, name: finalTierName, price: formattedPrice, zipLink });
+  };
+
+  const handleDownloadSampleAndSpec = () => {
+    const specContent = `===================================================================
+VISIONARY FACTORY V10 — SKYGLASS RESERVE (PAGE 5 OF 5)
+150MP ULTRA PRINT & TURNKEY AVIATION KIT SPECIFICATION SHEET (.TXT)
+===================================================================
+Edition: Skyglass Reserve • British Racing Emerald & Bordeaux Edition
+Resolution: 150 Megapixels (14,200 x 10,600 px) & 4K UHD WebP
+Upscaling & Filtering: LANCZOS-3 / NumPy Calibrated Glassmorphism
+Color Profile: Embedded sRGB IEC61966-2.1 (Print & Web Ready)
+Motion Pack Option: +$199 30s 4K/60fps Cinema Motion Pack (Seedance 2.5 & Kling 4.0)
+AI Concierge Webhook: Production Railway n8n + Groq Llama-3.3-70B
+Free Sample Vault Drive: ${KIT_CONFIG.freeSampleLink}
+===================================================================`;
+    const blob = new Blob([specContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'Skyglass_Reserve_150MP_Spec_Sheet.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+
+    window.open(KIT_CONFIG.freeSampleLink, '_blank', 'noopener,noreferrer');
+  };
+
+  const toggleVideoPlay = () => {
+    if (!videoRef.current) return;
+    if (videoRef.current.paused) {
+      videoRef.current.play().catch(() => {});
+      setIsPlaying(true);
     } else {
-      setLoginModal({ isOpen: true, tierName: productName, price, zipLink });
+      videoRef.current.pause();
+      setIsPlaying(false);
     }
   };
 
-  const toggleCinemaPlay = () => {
-    if (!cinemaVideoRef.current) return;
-    if (cinemaVideoRef.current.paused) {
-      cinemaVideoRef.current.play();
-      setIsCinemaPlaying(true);
-    } else {
-      cinemaVideoRef.current.pause();
-      setIsCinemaPlaying(false);
+  const handleConciergeSubmit = async (e) => {
+    e.preventDefault();
+    if (!userInput.trim()) return;
+
+    const msg = userInput.trim();
+    setChatMessages((prev) => [...prev, { role: 'user', text: msg }]);
+    setUserInput('');
+    setIsSending(true);
+
+    try {
+      const res = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: msg,
+          clientName: clientName || 'Skyglass VIP Guest',
+          clientEmail: clientEmail || 'vip@skyglass-aviation.com',
+          activeZone: currentZone.zone,
+          selectedLivery: selectedLivery.name,
+          source: 'SkyglassAviation.jsx (Page 5 of 5)'
+        })
+      });
+      const data = await res.json();
+      const reply =
+        data?.reply ||
+        data?.output ||
+        data?.text ||
+        data?.message ||
+        'Our 24/7 Skyglass Flight Desk has registered your inquiry and prepared your bespoke aviation dossier.';
+      setChatMessages((prev) => [...prev, { role: 'assistant', text: reply }]);
+    } catch (err) {
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          text: 'Direct Railway AI Flight Desk connection is active. Leave your VIP email above for immediate charter & turnkey kit dispatch.'
+        }
+      ]);
+    } finally {
+      setIsSending(false);
     }
-  };
-  const toggleCinemaMute = () => {
-    if (!cinemaVideoRef.current) return;
-    cinemaVideoRef.current.muted = !cinemaVideoRef.current.muted;
-    setIsCinemaMuted(cinemaVideoRef.current.muted);
-  };
-  const moveCabin = (step) => {
-    setActiveCabinIdx((previous) => (previous + step + KIT_CONFIG.bespokeCabins.length) % KIT_CONFIG.bespokeCabins.length);
-  };
-  const moveCinema = (step) => {
-    setActiveCinemaIdx((previous) => (previous + step + KIT_CONFIG.cinemaVideos.length) % KIT_CONFIG.cinemaVideos.length);
-    setIsCinemaPlaying(true);
-  };
-  const changeHeroMedia = (mode) => {
-    setHeroMediaMode(mode);
-    if (cabinVideoRef.current) {
-      if (mode === 'video') cabinVideoRef.current.play().catch(() => {});
-      else cabinVideoRef.current.pause();
-    }
-  };
-  const heroVideoUrl = activeCinemaClip.videoUrl || KIT_CONFIG.heroVideoUrl;
-
-  const mediaFrame = (className) => (
-    <div className={'group relative overflow-hidden av-inverse ' + className}>
-      {heroMediaMode === 'video' ? (
-        <video
-          ref={cabinVideoRef}
-          autoPlay
-          loop
-          muted
-          playsInline
-          poster={KIT_CONFIG.heroFallback}
-          className="absolute inset-0 h-full w-full object-cover"
-        >
-          <source src={heroVideoUrl} type="video/mp4" />
-        </video>
-      ) : (
-        <img
-          src={KIT_CONFIG.heroImage}
-          onError={(event) => handleSmartJetImageError(event, KIT_CONFIG.heroFallback)}
-          alt="Private jet aircraft flying above clouds"
-          className="absolute inset-0 h-full w-full object-cover transition duration-1000 group-hover:scale-105"
-          fetchPriority="high"
-        />
-      )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
-      <button
-        type="button"
-        onClick={() => setZoomImage(heroMediaMode === 'video' ? KIT_CONFIG.heroFallback : KIT_CONFIG.heroImage)}
-        aria-label="Inspect hero visual"
-        className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/45 bg-black/20 text-white backdrop-blur-md transition hover:bg-white hover:text-[#17364E]"
-      >
-        <ArrowUpRight size={16} />
-      </button>
-      <div className="absolute bottom-4 left-4 z-10 flex flex-wrap gap-2">
-        <button type="button" onClick={() => changeHeroMedia('still')} className={'rounded-full px-3 py-2 text-[8px] font-extrabold uppercase tracking-[0.12em] transition ' + (heroMediaMode === 'still' ? 'bg-white text-[#17364E]' : 'bg-black/35 text-white')}>
-          <Aperture size={11} className="mr-1 inline" /> 150MP Jet Banner
-        </button>
-        <button type="button" onClick={() => changeHeroMedia('video')} className={'rounded-full px-3 py-2 text-[8px] font-extrabold uppercase tracking-[0.12em] transition ' + (heroMediaMode === 'video' ? 'bg-white text-[#17364E]' : 'bg-black/35 text-white')}>
-          <Play size={11} className="mr-1 inline" /> 4K Motion
-        </button>
-      </div>
-    </div>
-  );
-
-  const heroMediaSwitch = (
-    <div className="inline-flex gap-1 rounded-full border border-white/25 bg-black/25 p-1 backdrop-blur">
-      <button type="button" onClick={() => changeHeroMedia('still')} className={'rounded-full px-3 py-2 text-[8px] font-extrabold uppercase tracking-[0.12em] transition ' + (heroMediaMode === 'still' ? 'bg-white text-[#17364E]' : 'text-white')}>150MP Still</button>
-      <button type="button" onClick={() => changeHeroMedia('video')} className={'rounded-full px-3 py-2 text-[8px] font-extrabold uppercase tracking-[0.12em] transition ' + (heroMediaMode === 'video' ? 'bg-white text-[#17364E]' : 'text-white')}>Motion reel</button>
-    </div>
-  );
-
-  const heroSection = (
-    <section className="mx-auto grid max-w-[1480px] gap-8 px-4 py-10 sm:px-8 sm:py-16 lg:grid-cols-[0.8fr_1.2fr] lg:items-center lg:py-20">
-      <Reveal className="order-2 lg:order-1 rounded-[2rem] av-inverse p-7 sm:p-12 shadow-xl">
-        <span className="text-[9px] font-extrabold uppercase tracking-[0.22em] av-accent">{SITE.kicker}</span>
-        <h1 className="mt-5 max-w-xl font-serif text-5xl leading-[0.96] tracking-[-0.05em] sm:text-7xl">{SITE.titleBefore}<span className="italic av-accent">{SITE.titleEmphasis}</span>{SITE.titleAfter}</h1>
-        <p className="mt-6 max-w-xl text-sm leading-7 opacity-80 sm:text-base">{SITE.description}</p>
-        <div className="mt-8 flex flex-wrap gap-3">
-          <button type="button" onClick={() => scrollTo('charter-request')} className="av-button av-accent-bg rounded-full px-6 py-4 text-[9px] font-extrabold uppercase tracking-[0.14em]">Design your flight <ArrowRight size={14} className="ml-2 inline" /></button>
-          {heroMediaSwitch}
-        </div>
-        <div className="mt-10 grid max-w-md grid-cols-3 border-t border-white/20 pt-5 text-white">
-          <div><strong className="text-xl text-[#267DA8]">5</strong><span className="mt-1 block text-[8px] font-bold uppercase tracking-[0.12em] text-white/60">Cabin suites</span></div>
-          <div className="border-x border-white/20 px-4"><strong className="text-xl text-[#267DA8]">4K</strong><span className="mt-1 block text-[8px] font-bold uppercase tracking-[0.12em] text-white/60">Motion</span></div>
-          <div className="pl-4"><strong className="text-xl text-[#267DA8]">150MP</strong><span className="mt-1 block text-[8px] font-bold uppercase tracking-[0.12em] text-white/60">Print</span></div>
-        </div>
-      </Reveal>
-      {/* DODATA FIKSNA VISINA da se okvir ne skupi na nulu */}
-      <Reveal delay={0.1} className="order-1 lg:order-2 relative min-h-[500px] sm:min-h-[640px] w-full overflow-hidden rounded-[2rem] av-inverse shadow-2xl">
-        {mediaFrame('h-full w-full min-h-[500px]')}
-        <div className="absolute -bottom-4 left-5 z-10 rounded-xl av-panel p-4 shadow-xl border av-line">
-          <span className="text-[8px] font-extrabold uppercase tracking-[0.16em] av-accent">The private aviation edit</span>
-          <p className="mt-1 text-sm font-semibold">Space to think above the clouds.</p>
-        </div>
-      </Reveal>
-    </section>
-  );
-
-  const cabinSection = (
-    <section id="cabins" className="scroll-mt-24 px-4 py-16 sm:px-8 sm:py-24">
-      <div className="mx-auto max-w-[1440px]">
-        <Reveal className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><span className="text-[9px] font-extrabold uppercase tracking-[0.2em] av-accent">Interactive cabin tour</span><h2 className="mt-3 max-w-3xl text-3xl font-semibold tracking-[-0.04em] sm:text-5xl">A private space, designed around the journey.</h2></div><p className="max-w-md text-sm leading-6 av-muted">Five bespoke V10 cabin scenes. Select a suite or let the tour move through the collection.</p></Reveal>
-        <div className={'grid gap-5 ' + cabinLayouts[SITE.cabinLayout]}>
-          <Reveal className="relative min-h-[360px] overflow-hidden rounded-[1.6rem] av-inverse sm:min-h-[560px]">
-            <AnimatePresence mode="wait"><motion.img key={activeCabin.id} src={activeCabin.image} onError={(e) => handleSmartJetImageError(e, activeCabin.fallback)} alt={activeCabin.title} initial={{ opacity: 0, scale: 1.03 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.45 }} className="absolute inset-0 h-full w-full object-cover" /></AnimatePresence>
-            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
-            <button type="button" onClick={() => setZoomImage(activeCabin.image)} className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full border border-white/45 bg-black/25 text-white"><ArrowUpRight size={16} /></button>
-            <div className="absolute bottom-5 left-5 right-5 text-white"><p className="text-[8px] font-extrabold uppercase tracking-[0.18em] text-white/70">{activeCabin.zone}</p><h3 className="mt-2 text-2xl font-semibold sm:text-3xl">{activeCabin.title}</h3><p className="mt-2 max-w-xl text-xs leading-5 text-white/75">{activeCabin.subtitle}</p></div>
-          </Reveal>
-          <Reveal delay={0.1} className="flex flex-col rounded-[1.6rem] border av-line av-panel p-5 sm:p-7">
-            <div className="flex items-center justify-between gap-3"><span className="inline-flex items-center gap-2 text-[8px] font-extrabold uppercase tracking-[0.17em] av-accent"><Aperture size={13} /> Cabin details</span><button type="button" onClick={() => setAutoTourActive((value) => !value)} className="rounded-full border av-line px-3 py-2 text-[8px] font-extrabold uppercase tracking-[0.12em]">{autoTourActive ? 'Pause tour' : 'Auto tour'}</button></div>
-            <div className="mt-7"><p className="text-[8px] font-extrabold uppercase tracking-[0.15em] av-muted">Material palette</p><p className="mt-2 text-sm leading-6">{activeCabin.materials}</p><p className="mt-5 text-[8px] font-extrabold uppercase tracking-[0.15em] av-muted">Production master</p><p className="mt-2 text-xs leading-5">{activeCabin.resolution}</p></div>
-            <div className="mt-7 h-1.5 overflow-hidden rounded-full av-soft"><div className="h-full rounded-full av-accent-bg transition-all" style={{ width: ((activeCabinIdx + 1) / KIT_CONFIG.bespokeCabins.length * 100) + '%' }} /></div>
-            <div className="mt-4 flex items-center justify-between"><button type="button" onClick={() => moveCabin(-1)} aria-label="Previous cabin" className="flex h-10 w-10 items-center justify-center rounded-full border av-line"><ChevronLeft size={16} /></button><div className="flex gap-2">{KIT_CONFIG.bespokeCabins.map((cabin, index) => <button key={cabin.id} type="button" aria-label={'Show ' + cabin.title} onClick={() => setActiveCabinIdx(index)} className={'h-2.5 rounded-full transition-all ' + (activeCabinIdx === index ? 'w-8 av-accent-bg' : 'w-2.5 av-soft')} />)}</div><button type="button" onClick={() => moveCabin(1)} aria-label="Next cabin" className="flex h-10 w-10 items-center justify-center rounded-full border av-line"><ChevronRight size={16} /></button></div>
-          </Reveal>
-        </div>
-      </div>
-    </section>
-  );
-
-  const fleetSection = (
-    <section id="fleet" className="scroll-mt-24 px-4 py-16 sm:px-8 sm:py-24 av-soft">
-      <div className="mx-auto max-w-[1440px]">
-        <Reveal className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><span className="text-[9px] font-extrabold uppercase tracking-[0.2em] av-accent">The V10 aviation library</span><h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] sm:text-5xl">Scenes built for a premium first impression.</h2></div><p className="max-w-md text-sm leading-6 av-muted">Filter the cabin, dining and aircraft collection. Open an image for a larger preview.</p></Reveal>
-        <Reveal delay={0.08} className="mt-7 flex flex-wrap gap-2">{[{ id: 'all', label: 'All scenes (12)', icon: Layers }, { id: 'cabin', label: 'Cabins & suites', icon: Aperture }, { id: 'dining', label: 'Dining & boardrooms', icon: Sparkles }, { id: 'exterior', label: 'Aircraft exterior', icon: Plane }].map((tab) => { const Icon = tab.icon; const active = fleetFilter === tab.id; return <button key={tab.id} type="button" onClick={() => setFleetFilter(tab.id)} className={'inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-[8px] font-extrabold uppercase tracking-[0.12em] transition ' + (active ? 'av-accent-bg border-transparent' : 'av-panel av-line') }><Icon size={13} />{tab.label}</button>; })}</Reveal>
-        <motion.div layout className={'mt-7 grid gap-4 ' + galleryLayouts[SITE.galleryLayout]}>
-          <AnimatePresence mode="popLayout">{filteredAssets.map((item, index) => (
-            <motion.article key={item.id} layout initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.32, delay: index * 0.02 }} className={'group overflow-hidden rounded-[1.35rem] border av-line av-panel ' + (SITE.galleryLayout === 'mosaic' && index === 0 ? 'xl:col-span-2 xl:row-span-2' : '')}>
-              <button type="button" onClick={() => setZoomImage(item.image)} className="relative block aspect-[1.35] w-full overflow-hidden av-inverse text-left">
-                <img src={optimizeWebP(item.image, 1300)} onError={(e) => handleSmartJetImageError(e, item.fallback)} alt={item.title} loading="lazy" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
-                <span className="absolute left-3 top-3 rounded-full bg-black/55 px-3 py-1.5 text-[8px] font-extrabold uppercase tracking-[0.12em] text-white backdrop-blur">{item.tag}</span>
-                <span className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 av-accent"><ArrowUpRight size={15} /></span>
-              </button>
-              <div className="p-4 sm:p-5"><h3 className="text-sm font-semibold sm:text-base">{item.title}</h3><p className="mt-2 text-[10px] leading-5 av-muted">{item.specs}</p><div className="mt-3 flex items-center justify-between border-t av-line pt-3 text-[7px] font-extrabold uppercase tracking-[0.08em] av-accent"><span>{item.resolution}</span><button type="button" onClick={() => setZoomImage(item.image)}>Inspect</button></div></div>
-            </motion.article>
-          ))}</AnimatePresence>
-        </motion.div>
-      </div>
-    </section>
-  );
-
-  const cinemaSection = (
-    <section id="cinema-reel" className="scroll-mt-24 px-4 py-16 sm:px-8 sm:py-24">
-      <div className="mx-auto max-w-[1440px]">
-        <Reveal className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><span className="inline-flex items-center gap-2 text-[9px] font-extrabold uppercase tracking-[0.2em] av-accent"><Play size={13} /> 4K motion reels</span><h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] sm:text-5xl">A moving portrait of private flight.</h2></div><p className="max-w-md text-sm leading-6 av-muted">Two cinematic clips, ready for a landing hero, campaign film or presentation deck.</p></Reveal>
-        <div className="grid gap-5 lg:grid-cols-[1.35fr_0.65fr]">
-          <Reveal className="relative min-h-[340px] overflow-hidden rounded-[1.6rem] av-inverse sm:min-h-[540px]">
-            <video key={activeCinemaClip.id} ref={cinemaVideoRef} autoPlay loop muted={isCinemaMuted} playsInline poster={activeCinemaClip.poster} onPlay={() => setIsCinemaPlaying(true)} onPause={() => setIsCinemaPlaying(false)} className="absolute inset-0 h-full w-full object-cover"><source src={activeCinemaClip.videoUrl} type="video/mp4" /></video>
-            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/10" />
-            <div className="absolute left-5 top-5 rounded-full border border-white/30 bg-black/25 px-4 py-2 text-[8px] font-extrabold uppercase tracking-[0.15em] text-white backdrop-blur">{activeCinemaClip.badge}</div>
-            <div className="absolute bottom-5 left-5 right-5 flex flex-col justify-between gap-4 text-white sm:flex-row sm:items-end"><div><h3 className="text-2xl font-semibold sm:text-3xl">{activeCinemaClip.title}</h3><p className="mt-2 max-w-xl text-xs leading-5 text-white/70">{activeCinemaClip.desc}</p></div><div className="flex gap-2"><button type="button" onClick={toggleCinemaPlay} aria-label={isCinemaPlaying ? 'Pause reel' : 'Play reel'} className="flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-black/25">{isCinemaPlaying ? <Pause size={15} /> : <Play size={15} />}</button><button type="button" onClick={toggleCinemaMute} aria-label={isCinemaMuted ? 'Unmute reel' : 'Mute reel'} className="flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-black/25">{isCinemaMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}</button></div></div>
-          </Reveal>
-          <div className="flex flex-col gap-3">{KIT_CONFIG.cinemaVideos.map((clip, index) => <button key={clip.id} type="button" onClick={() => moveCinema(index - activeCinemaIdx)} className={'flex flex-1 items-center gap-4 rounded-[1.2rem] border p-4 text-left transition ' + (activeCinemaIdx === index ? 'av-accent-bg border-transparent' : 'av-panel av-line')}><img src={clip.poster} onError={(e) => handleSmartJetImageError(e, KIT_CONFIG.heroFallback)} alt="" className="h-20 w-28 rounded-lg object-cover" /><span><span className="block text-[8px] font-extrabold uppercase tracking-[0.14em] opacity-70">{clip.badge}</span><span className="mt-1 block text-xs font-semibold">{clip.title}</span></span><ArrowRight size={14} className="ml-auto shrink-0" /></button>)}</div>
-        </div>
-      </div>
-    </section>
-  );
-
-  const charterSection = (
-    <section id="charter-request" className="scroll-mt-24 px-4 py-16 sm:px-8 sm:py-24 av-soft">
-      <div className={'mx-auto grid max-w-[1440px] gap-8 ' + requestLayouts[SITE.requestLayout]}>
-        <Reveal className="flex flex-col justify-center"><span className="inline-flex items-center gap-2 text-[9px] font-extrabold uppercase tracking-[0.2em] av-accent"><Compass size={14} /> Private flight desk</span><h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] sm:text-5xl">Where should the next journey take you?</h2><p className="mt-4 max-w-lg text-sm leading-7 av-muted">Share a few details and a flight desk can help shape the right aircraft and route for your plans.</p><div className="mt-6 flex items-center gap-3 text-xs font-semibold"><span className="flex h-10 w-10 items-center justify-center rounded-full av-panel av-accent"><Clock3 size={17} /></span> Personal assistance, around the clock</div></Reveal>
-        <Reveal delay={0.1}><form onSubmit={(event) => { event.preventDefault(); setDemoSubmitted(true); }} className="rounded-[1.5rem] border av-line av-panel p-5 shadow-xl sm:p-8"><div className="mb-6 flex items-center justify-between"><div><p className="text-[8px] font-extrabold uppercase tracking-[0.16em] av-accent">Private flight enquiry</p><h3 className="mt-1 text-xl font-semibold">Build your route</h3></div><Plane size={20} className="av-accent" /></div><div className="grid gap-3 sm:grid-cols-2"><label className="rounded-xl border av-line av-soft p-3"><span className="flex items-center gap-1 text-[8px] font-extrabold uppercase tracking-[0.12em] av-muted"><MapPin size={11} /> Departure</span><input value={departure} onChange={(e) => setDeparture(e.target.value)} className="mt-2 w-full bg-transparent text-sm font-semibold outline-none" placeholder="City or airport" /></label><label className="rounded-xl border av-line av-soft p-3"><span className="flex items-center gap-1 text-[8px] font-extrabold uppercase tracking-[0.12em] av-muted"><MapPin size={11} /> Destination</span><input value={destination} onChange={(e) => setDestination(e.target.value)} className="mt-2 w-full bg-transparent text-sm font-semibold outline-none" placeholder="City or airport" /></label><label className="rounded-xl border av-line av-soft p-3"><span className="flex items-center gap-1 text-[8px] font-extrabold uppercase tracking-[0.12em] av-muted"><Plane size={11} /> Aircraft preference</span><select value={aircraftType} onChange={(e) => setAircraftType(e.target.value)} className="mt-2 w-full bg-transparent text-sm font-semibold outline-none"><option>Light private jet</option><option>Super-midsize private jet</option><option>Long-range private jet</option><option>Bespoke V10 VIP airliner</option></select></label><label className="rounded-xl border av-line av-soft p-3"><span className="flex items-center gap-1 text-[8px] font-extrabold uppercase tracking-[0.12em] av-muted"><Calendar size={11} /> Travel date</span><input type="date" className="mt-2 w-full bg-transparent text-sm font-semibold outline-none" /></label></div><div className="mt-5 flex flex-col justify-between gap-4 border-t av-line pt-5 sm:flex-row sm:items-center"><p className="max-w-lg text-[9px] leading-5 av-muted">{demoSubmitted ? 'Preview: ' + departure + ' to ' + destination + ' • ' + aircraftType : 'Front-end enquiry preview. Connect this form to your CRM or flight desk to receive live requests.'}</p><button type="submit" className="av-button av-accent-bg inline-flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 text-[8px] font-extrabold uppercase tracking-[0.14em] sm:w-auto">Request itinerary <ArrowRight size={13} /></button></div></form></Reveal>
-      </div>
-    </section>
-  );
-
-  const licenseSection = (
-    <section id="licensing" className="scroll-mt-24 px-4 py-16 sm:px-8 sm:py-24">
-      <div className="mx-auto max-w-[1280px]">
-        <Reveal className="mx-auto max-w-3xl text-center"><span className="inline-flex items-center gap-2 rounded-full border av-line av-panel px-4 py-2 text-[8px] font-extrabold uppercase tracking-[0.16em] av-accent"><Crown size={13} /> {SITE.brand} commercial kit</span><h2 className="mt-5 text-3xl font-semibold leading-tight tracking-[-0.04em] sm:text-5xl">A complete private aviation launch kit.</h2><p className="mt-4 text-sm leading-6 av-muted">Keep the React page, motion reels, image library and commercial license together in one ready-to-adapt package.</p></Reveal>
-        <div className="mb-8 mt-8 grid gap-4 md:grid-cols-3">{[[FileCode, 'React + Tailwind source', 'Responsive JSX with the interactive cabin tour, 4K reel and enquiry preview.'], [Aperture, '60 production image files', '20 original scenes in WebP, 4K UHD and 150MP print master formats.'], [FolderArchive, 'Three editable PSD mockups', 'Airport and city advertising layouts with smart objects for presentations.']].map(([Icon, title, description], index) => <Reveal key={title} delay={index * 0.06}><article className="h-full rounded-[1.25rem] border av-line av-panel p-5"><span className="flex h-10 w-10 items-center justify-center rounded-full av-soft av-accent"><Icon size={17} /></span><h3 className="mt-4 text-[10px] font-extrabold uppercase tracking-[0.08em]">{title}</h3><p className="mt-2 text-[10px] leading-5 av-muted">{description}</p></article></Reveal>)}</div>
-        <div className="grid gap-4 lg:grid-cols-2">{[{ tier: 'standard', label: 'Multi-client agency license', price: '$349', description: 'For agencies, developers and private aviation teams building a polished digital presence.', features: ['Complete React + Tailwind JSX source', '60 files: 20 WebP, 20 4K UHD and 20 150MP masters', 'Three editable PSD advertising mockups', 'Commercial license for client websites, campaigns and print'] }, { tier: 'buyout', label: '1-of-1 exclusive buyout', price: '$1,490', description: 'Exclusive ownership for a brand that wants its own private aviation visual world.', features: ['All 60 WebP, 4K UHD and 150MP files', '10 custom 150MP renders in your brand palette', 'Private Jet Prompt Engine ruleset', 'Enterprise IP transfer certificate'] }].map((plan, index) => <Reveal key={plan.tier} delay={index * 0.08}><article className={'relative flex h-full flex-col justify-between overflow-hidden rounded-[1.5rem] border av-line p-6 sm:p-8 ' + (index === 0 ? 'av-panel' : 'av-inverse')}><div><div className="flex items-center justify-between gap-3"><span className="text-[8px] font-extrabold uppercase tracking-[0.14em] av-accent">{plan.label}</span><span className="rounded-full av-soft px-3 py-1.5 text-[7px] font-extrabold uppercase tracking-[0.1em]">{index === 0 ? 'Agency' : 'Single buyer'}</span></div><p className="mt-5 text-5xl font-semibold tracking-[-0.06em]">{plan.price}</p><p className="mt-3 text-[10px] leading-5 av-muted">{plan.description}</p><ul className="mt-5 space-y-3 text-[10px] leading-5">{plan.features.map((feature) => <li key={feature} className="flex gap-2"><CheckCircle2 size={14} className="mt-0.5 shrink-0 av-accent" />{feature}</li>)}</ul></div><button type="button" onClick={() => handlePurchaseTier(plan.tier)} className="av-button av-accent-bg mt-7 flex w-full items-center justify-center gap-2 rounded-full px-5 py-4 text-[8px] font-extrabold uppercase tracking-[0.12em]">{index === 0 ? <DownloadCloud size={14} /> : <Lock size={13} />} Select {plan.price}</button></article></Reveal>)}</div>
-        <Reveal className="mt-6 text-center"><a href={KIT_CONFIG.freeSampleLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-[8px] font-extrabold uppercase tracking-[0.13em] av-accent underline underline-offset-4">Download the 150MP ICC spec sheet and sample <ArrowUpRight size={12} /></a></Reveal>
-      </div>
-    </section>
-  );
-
-  const faqSection = (
-    <section id="details" className="scroll-mt-24 px-4 py-16 sm:px-8 sm:py-24 av-soft">
-      <div className="mx-auto grid max-w-[1280px] gap-8 lg:grid-cols-[0.7fr_1.3fr]">
-        <Reveal><span className="text-[9px] font-extrabold uppercase tracking-[0.2em] av-accent">A few helpful details</span><h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">Good to know.</h2></Reveal>
-        <div className="divide-y av-line">{FAQS.map((item, index) => <div key={item.question} className="border-b av-line py-4"><button type="button" onClick={() => setOpenFaq(openFaq === index ? -1 : index)} className="flex w-full items-center justify-between gap-5 text-left"><span className="text-sm font-semibold">{item.question}</span><ChevronDown size={17} className={'shrink-0 av-accent transition ' + (openFaq === index ? 'rotate-180' : '')} /></button><AnimatePresence initial={false}>{openFaq === index && <motion.p initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden pr-8 pt-3 text-xs leading-6 av-muted">{item.answer}</motion.p>}</AnimatePresence></div>)}</div>
-      </div>
-    </section>
-  );
-
-  const sections = {
-    cabins: cabinSection,
-    fleet: fleetSection,
-    cinema: cinemaSection,
-    charter: charterSection,
-    licensing: licenseSection,
-    faq: faqSection
   };
 
   return (
-    <div className="av-page min-h-screen overflow-hidden font-sans" style={paletteStyle}>
-      <style>{STYLES}</style>
-      <Helmet><title>{SITE.brand} | Private Jet Charter</title><meta name="description" content={SITE.description} /><meta name="theme-color" content={SITE.palette.inverse} /></Helmet>
-      <div className="av-inverse px-4 py-2 text-center text-[8px] font-extrabold uppercase tracking-[0.2em] sm:text-[9px]">{SITE.topline}</div>
-      <header className="sticky top-0 z-40 border-b av-line av-panel backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[1480px] items-center justify-between gap-3 px-4 py-4 sm:px-8">
-          <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-3 text-left"><span className="flex h-10 w-10 items-center justify-center rounded-full av-inverse av-accent"><Plane size={17} /></span><span><span className="block text-[10px] font-black uppercase tracking-[0.22em]">{SITE.brand}</span><span className="mt-1 block text-[7px] font-bold uppercase tracking-[0.16em] av-muted">{SITE.descriptor}</span></span></button>
-          <nav className="hidden items-center gap-6 text-[8px] font-extrabold uppercase tracking-[0.13em] av-muted lg:flex" aria-label="Main navigation"><button type="button" onClick={() => scrollTo('cabins')}>Cabins</button><button type="button" onClick={() => scrollTo('fleet')}>Visual library</button><button type="button" onClick={() => scrollTo('cinema-reel')}>Motion reel</button><button type="button" onClick={() => scrollTo('licensing')}>Licensing</button></nav>
-          <button type="button" onClick={() => scrollTo('charter-request')} className="av-button av-accent-bg hidden rounded-full px-5 py-3 text-[8px] font-extrabold uppercase tracking-[0.13em] sm:inline-flex">Request an itinerary <ArrowRight size={12} className="ml-2" /></button>
-          <button type="button" onClick={() => setMenuOpen((value) => !value)} aria-label="Toggle navigation" className="flex h-10 w-10 items-center justify-center rounded-full border av-line lg:hidden">{menuOpen ? <X size={17} /> : <Menu size={17} />}</button>
-        </div>
-        <AnimatePresence>{menuOpen && <motion.nav initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden border-t av-line lg:hidden"><div className="mx-auto flex max-w-[1480px] flex-col px-5 py-3 text-[9px] font-bold uppercase tracking-[0.12em] av-muted">{[['Cabin tour', 'cabins'], ['Visual library', 'fleet'], ['Motion reel', 'cinema-reel'], ['Charter request', 'charter-request'], ['Licensing', 'licensing']].map(([label, id]) => <button key={id} type="button" onClick={() => scrollTo(id)} className="py-3 text-left">{label}</button>)}</div></motion.nav>}</AnimatePresence>
-      </header>
-      <main>
-        {heroSection}
-        {SITE.order.map((key) => <React.Fragment key={key}>{sections[key]}</React.Fragment>)}
-        <section className="px-4 py-12 sm:px-8 sm:py-16"><Reveal className="mx-auto max-w-[1440px]"><div className="relative overflow-hidden rounded-[1.7rem] av-inverse p-7 sm:p-12"><img src={KIT_CONFIG.bespokeCabins[1].image} onError={(e) => { e.currentTarget.src = KIT_CONFIG.bespokeCabins[1].fallback; }} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover opacity-25" /><div className="absolute inset-0 bg-gradient-to-r from-black/80 to-black/20" /><div className="relative max-w-3xl"><span className="text-[8px] font-extrabold uppercase tracking-[0.2em] av-accent">Your next journey starts here</span><h2 className="mt-4 text-3xl font-medium leading-tight sm:text-5xl">Take the long way out of the ordinary.</h2><p className="mt-4 max-w-xl text-sm leading-6 opacity-75">Plan a private jet journey or explore the complete aviation brand kit.</p><div className="mt-6 flex flex-wrap gap-3"><button type="button" onClick={() => scrollTo('charter-request')} className="av-button av-accent-bg rounded-full px-6 py-3.5 text-[8px] font-extrabold uppercase tracking-[0.13em]">Plan your flight <ArrowRight size={13} className="ml-2 inline" /></button><button type="button" onClick={() => scrollTo('licensing')} className="av-button rounded-full border border-white/40 bg-white/10 px-6 py-3.5 text-[8px] font-extrabold uppercase tracking-[0.13em] text-white">View the kit <ArrowUpRight size={13} className="ml-2 inline" /></button></div></div></div></Reveal></section>
-      </main>
-      <footer className="border-t av-line px-4 py-7 sm:px-8"><div className="mx-auto flex max-w-[1440px] flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left"><div className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-full av-inverse av-accent"><Plane size={15} /></span><span><span className="block text-[10px] font-black uppercase tracking-[0.18em]">{SITE.brand}</span><span className="mt-1 block text-[7px] font-bold uppercase tracking-[0.15em] av-muted">Private aviation</span></span></div><p className="text-[9px] av-muted">{SITE.footer}</p><button type="button" onClick={() => navigate('/stock')} className="text-[8px] font-extrabold uppercase tracking-[0.12em] av-accent">Back to stock vaults <ArrowRight size={11} className="ml-1 inline" /></button></div></footer>
-      <AnimatePresence>{zoomImage && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/95 p-4" onClick={() => setZoomImage(null)}><button type="button" onClick={() => setZoomImage(null)} aria-label="Close image preview" className="absolute right-5 top-5 rounded-full bg-white p-3 text-slate-900"><X size={20} /></button><img src={zoomImage} alt="Private aviation image preview" className="max-h-[90vh] max-w-full rounded-xl object-contain" onClick={(event) => event.stopPropagation()} /></motion.div>}</AnimatePresence>
-      <LoginRequiredModal isOpen={loginModal.isOpen} onClose={() => setLoginModal({ isOpen: false, tierName: '', price: '0.00', zipLink: '' })} packageName={loginModal.tierName} price={loginModal.price} onLoginSuccess={async (user) => { await recordOrderIntent(user, loginModal.tierName, loginModal.price); setCheckoutData({ isOpen: true, name: loginModal.tierName, price: loginModal.price, zipLink: loginModal.zipLink }); setLoginModal({ isOpen: false, tierName: '', price: '0.00', zipLink: '' }); }} />
-      <AnimatePresence>{checkoutData.isOpen && <V8SecureCheckout isOpen={checkoutData.isOpen} productName={checkoutData.name} price={checkoutData.price} zipLink={checkoutData.zipLink} onClose={() => setCheckoutData({ isOpen: false, name: '', price: '0.00', zipLink: '' })} />}</AnimatePresence>
+    <div className="min-h-screen bg-[#03110D] text-[#F2F7F5] selection:bg-emerald-400 selection:text-[#03110D] font-sans">
+      <Helmet>
+        <title>Skyglass Reserve • Emerald & Bordeaux Private Aviation Kit (Page 5/5)</title>
+      </Helmet>
 
-      {/* Plivajuća Prev / Next navigacija (Stranica 6 od 6) */}
-      <div className="fixed bottom-24 left-6 z-50 hidden sm:block">
+      {/* TOP BRITISH RACING EMERALD & PLATINUM NAVIGATION BAR */}
+      <header className="sticky top-0 z-40 border-b border-emerald-400/20 bg-[#03110D]/90 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-[1440px] items-center justify-between px-4 py-4 sm:px-8">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-emerald-300 via-emerald-500 to-teal-700 text-[#03110D] shadow-lg shadow-emerald-500/25">
+              <Gem size={18} />
+            </span>
+            <div>
+              <span className="block text-xs font-black uppercase tracking-[0.28em] text-white">
+                Skyglass • Reserve
+              </span>
+              <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-400">
+                Emerald & Bordeaux Collector Edition • Page 5 of 5
+              </span>
+            </div>
+          </div>
+
+          <nav className="hidden items-center gap-6 text-xs font-bold uppercase tracking-[0.15em] text-emerald-100/80 xl:flex">
+            <a href="#showcase-deck" className="transition hover:text-emerald-300">
+              Showcase Deck
+            </a>
+            <a href="#livery-comparator" className="transition hover:text-emerald-300">
+              Livery Comparator
+            </a>
+            <a href="#cinema-reel" className="transition hover:text-emerald-300">
+              4K Video Reel
+            </a>
+            <a href="#lookbook-vault" className="transition hover:text-emerald-300">
+              28-Image Lookbook
+            </a>
+            <a href="#commercial-pricing" className="text-emerald-300 transition hover:text-white">
+              Pricing (${agencyPrice} / ${buyoutPrice})
+            </a>
+            <button
+              type="button"
+              onClick={() => navigate('/stock')}
+              className="text-emerald-400 transition hover:text-white cursor-pointer"
+            >
+              Stock Vaults ↗
+            </button>
+          </nav>
+
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => navigate('/stock')}
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-950/40 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.14em] text-emerald-100 transition hover:border-emerald-400 hover:text-white cursor-pointer"
+            >
+              Stock Vaults <ArrowUpRight size={13} />
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate(KIT_CONFIG.nextLandingRoute)}
+              className="flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500 px-5 py-2 text-[11px] font-black uppercase tracking-[0.15em] text-[#03110D] shadow-lg shadow-emerald-500/25 transition hover:brightness-110 cursor-pointer"
+            >
+              Page 1 <ArrowRight size={13} />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        {/* 1. NOVI "CENTERPIECE SHOWCASE DECK" HERO (DRUGAČIJI RASPORED OD STRANICA 1-4) */}
+        <section
+          id="showcase-deck"
+          className="relative overflow-hidden border-b border-emerald-400/20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#0A2E23] via-[#03110D] to-[#020A08] py-14 sm:py-20"
+        >
+          <div className="mx-auto max-w-[1440px] px-4 sm:px-8">
+            {/* Gornji centrirani naslov */}
+            <div className="mx-auto max-w-4xl text-center">
+              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-4 py-1.5 backdrop-blur-md">
+                <Sparkles size={13} className="text-emerald-300" />
+                <span className="text-[11px] font-black uppercase tracking-[0.22em] text-emerald-200">
+                  {currentZone.badge} • Step {currentZone.step}
+                </span>
+              </div>
+
+              <h1 className="mt-5 text-4xl font-black uppercase leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-7xl">
+                {currentZone.title}
+              </h1>
+
+              <p className="mx-auto mt-4 max-w-2xl text-sm font-medium leading-relaxed text-emerald-100/80 sm:text-base">
+                {currentZone.subtitle}
+              </p>
+
+              <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+                <a
+                  href="#commercial-pricing"
+                  className="flex items-center gap-2.5 rounded-full bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500 px-7 py-3.5 text-xs font-black uppercase tracking-[0.18em] text-[#03110D] shadow-xl shadow-emerald-500/25 transition hover:scale-105"
+                >
+                  <DownloadCloud size={15} /> License Agency Kit — ${agencyPrice}
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setHeroVideoMode(!heroVideoMode)}
+                  className={`flex items-center gap-2 rounded-full border px-6 py-3.5 text-xs font-black uppercase tracking-[0.16em] transition cursor-pointer ${
+                    heroVideoMode
+                      ? 'border-teal-200 bg-teal-300 text-[#03110D]'
+                      : 'border-emerald-400/40 bg-[#061F18] text-emerald-200 hover:bg-emerald-400/20'
+                  }`}
+                >
+                  <Video size={14} /> {heroVideoMode ? '4K Video Active' : 'Switch to 4K Video Deck'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDownloadSampleAndSpec}
+                  className="flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-6 py-3.5 text-xs font-bold uppercase tracking-[0.15em] text-white transition hover:border-emerald-400 cursor-pointer"
+                >
+                  Free Sample + .TXT ↗
+                </button>
+              </div>
+            </div>
+
+            {/* SREDNJI PANORAMSKI COCKPIT PROZOR SA SLIKOM ILI VIDEOM */}
+            <div className="relative mt-10 overflow-hidden rounded-[2rem] border-2 border-emerald-400/35 bg-black shadow-2xl shadow-emerald-950/60">
+              <div className="relative h-[440px] sm:h-[580px] w-full overflow-hidden">
+                {heroVideoMode ? (
+                  <video
+                    src={KIT_CONFIG.heroVideoUrl}
+                    poster={currentZone.image}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="h-full w-full object-cover object-center"
+                  />
+                ) : (
+                  <img
+                    src={currentZone.image}
+                    alt={currentZone.title}
+                    className="h-full w-full object-cover object-center transition-all duration-700"
+                  />
+                )}
+
+                <div className="absolute inset-0 bg-gradient-to-t from-[#03110D] via-transparent to-black/30" />
+
+                {/* Gornji desni 150MP Zoom taster */}
+                <button
+                  type="button"
+                  onClick={() => setZoomImage(currentZone.image)}
+                  className="absolute right-5 top-5 flex items-center gap-2 rounded-full border border-emerald-400/40 bg-[#03110D]/85 px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-emerald-200 backdrop-blur-md transition hover:bg-emerald-400 hover:text-black cursor-pointer"
+                >
+                  <Maximize2 size={13} /> Inspect 150MP Master
+                </button>
+
+                {/* Donji HUD info bar unutar okvira */}
+                <div className="absolute bottom-5 left-5 right-5 flex flex-col justify-between gap-4 rounded-2xl border border-emerald-400/30 bg-[#03110D]/85 p-4 backdrop-blur-xl sm:flex-row sm:items-center">
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">
+                      {currentZone.zone}
+                    </span>
+                    <p className="mt-0.5 text-xs font-bold text-white">{currentZone.materials}</p>
+                  </div>
+                  <span className="self-start sm:self-center rounded-full bg-emerald-400/15 border border-emerald-400/40 px-3.5 py-1 text-[10px] font-black uppercase tracking-widest text-emerald-300">
+                    {currentZone.resolution}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* 6 HORIZONTALNIH PILL TABOVA ISPOD PROZORA */}
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+              {KIT_CONFIG.bespokeCabins.map((z, idx) => {
+                const active = idx === activeZoneIndex;
+                return (
+                  <button
+                    key={z.id}
+                    type="button"
+                    onClick={() => {
+                      setHeroVideoMode(false);
+                      setActiveZoneIndex(idx);
+                    }}
+                    className={`group flex flex-col justify-between rounded-2xl border p-3.5 text-left transition cursor-pointer ${
+                      active
+                        ? 'border-emerald-400 bg-emerald-500/20 shadow-lg shadow-emerald-500/15'
+                        : 'border-white/10 bg-[#061C16] hover:border-emerald-400/40'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-emerald-300">
+                        {z.step}
+                      </span>
+                      <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                    </div>
+                    <span className="mt-2 line-clamp-2 text-xs font-bold text-white group-hover:text-emerald-200">
+                      {z.zone.split('•')[1] || z.zone}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* 2. UNIKATNA SEKCIJA NA STRANICI 5: BESPOKE LIVERY & CABIN PAIRING COMPARATOR */}
+        <section
+          id="livery-comparator"
+          className="mx-auto max-w-[1440px] px-4 py-20 sm:px-8 border-b border-emerald-400/15"
+        >
+          <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+            <div>
+              <span className="text-xs font-black uppercase tracking-[0.24em] text-emerald-400">
+                Bespoke Paintwork & Interior Harmony
+              </span>
+              <h2 className="mt-2 text-3xl font-black uppercase tracking-tight text-white sm:text-5xl">
+                Collector Livery & Cabin Comparator
+              </h2>
+            </div>
+            <p className="max-w-md text-xs leading-relaxed text-emerald-100/70">
+              Select one of our four signature exterior commissions below to inspect the fuselage paintwork alongside its matched interior cabin architecture.
+            </p>
+          </div>
+
+          {/* 4 LIVERY SWATCH TABS */}
+          <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {LIVERY_COLLECTIONS.map((item) => {
+              const active = selectedLivery.id === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setSelectedLivery(item)}
+                  className={`flex flex-col justify-between rounded-2xl border p-5 text-left transition cursor-pointer ${
+                    active
+                      ? 'border-emerald-400 bg-gradient-to-b from-emerald-500/20 to-[#061C16] shadow-xl'
+                      : 'border-white/10 bg-[#061C16] hover:border-emerald-400/40'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black uppercase tracking-wider text-white">
+                      {item.name}
+                    </span>
+                    <span
+                      className="h-4 w-4 rounded-full border border-white/40 shrink-0"
+                      style={{ backgroundColor: item.swatch }}
+                    />
+                  </div>
+                  <span className="mt-3 block text-[11px] font-bold text-emerald-300">
+                    {item.range}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* SIDE-BY-SIDE EXTERIOR & CABIN COMPARISON */}
+          <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div
+              onClick={() => setZoomImage(selectedLivery.exteriorImg)}
+              className="group relative overflow-hidden rounded-3xl border border-emerald-400/30 bg-[#061C16] cursor-pointer"
+            >
+              <div className="relative h-80 sm:h-96 w-full overflow-hidden">
+                <img
+                  src={selectedLivery.exteriorImg}
+                  alt={selectedLivery.name}
+                  className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#03110D] via-transparent to-transparent" />
+                <span className="absolute left-5 top-5 rounded-full bg-[#03110D]/80 px-3.5 py-1 text-[10px] font-black uppercase tracking-widest text-emerald-300 backdrop-blur-md">
+                  Exterior Livery Spec
+                </span>
+              </div>
+              <div className="p-6">
+                <h3 className="text-lg font-black uppercase text-white">{selectedLivery.name}</h3>
+                <p className="mt-1 text-xs text-emerald-100/80">{selectedLivery.coatSpec}</p>
+              </div>
+            </div>
+
+            <div
+              onClick={() => setZoomImage(selectedLivery.cabinImg)}
+              className="group relative overflow-hidden rounded-3xl border border-emerald-400/30 bg-[#061C16] cursor-pointer"
+            >
+              <div className="relative h-80 sm:h-96 w-full overflow-hidden">
+                <img
+                  src={selectedLivery.cabinImg}
+                  alt={selectedLivery.cabinSpec}
+                  className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#03110D] via-transparent to-transparent" />
+                <span className="absolute left-5 top-5 rounded-full bg-[#03110D]/80 px-3.5 py-1 text-[10px] font-black uppercase tracking-widest text-rose-300 backdrop-blur-md">
+                  Matched Cabin Interior
+                </span>
+              </div>
+              <div className="p-6">
+                <h3 className="text-lg font-black uppercase text-white">Bespoke Cabin Pairing</h3>
+                <p className="mt-1 text-xs text-emerald-100/80">{selectedLivery.cabinSpec}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 3. 16:9 4K CINEMA VIDEO SHOWCASE SECTION */}
+        <section id="cinema-reel" className="mx-auto max-w-[1440px] px-4 py-20 sm:px-8">
+          <div className="flex flex-col justify-between gap-6 border-b border-emerald-400/15 pb-8 lg:flex-row lg:items-end">
+            <div>
+              <span className="text-xs font-black uppercase tracking-[0.24em] text-emerald-400">
+                16:9 Video Placeholder • Seedance 2.5 & Kling 4.0 Ready
+              </span>
+              <h2 className="mt-2 text-3xl font-black uppercase tracking-tight text-white sm:text-5xl">
+                Skyglass Cinema Flight Reel
+              </h2>
+            </div>
+            <p className="max-w-md text-xs leading-relaxed text-emerald-100/70">
+              Connected to your 4K stratospheric video stream with instant 150MP `.webp` poster frames from `/public/jets/`.
+            </p>
+          </div>
+
+          <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-12">
+            <div className="lg:col-span-8">
+              <div className="relative overflow-hidden rounded-3xl border border-emerald-400/35 bg-[#061C16] shadow-2xl">
+                <div className="relative aspect-video w-full overflow-hidden bg-black">
+                  <video
+                    ref={videoRef}
+                    key={activeClip.id}
+                    src={activeClip.videoUrl}
+                    poster={activeClip.poster}
+                    muted={isMuted}
+                    loop
+                    playsInline
+                    onPlay={() => setIsPlaying(true)}
+                    onPause={() => setIsPlaying(false)}
+                    className="h-full w-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#03110D]/90 via-transparent to-black/30 pointer-events-none" />
+
+                  <div className="absolute left-5 top-5 flex items-center gap-2 rounded-full border border-emerald-400/45 bg-[#03110D]/80 px-4 py-1.5 backdrop-blur-md">
+                    <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-200">
+                      {activeClip.duration}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={toggleVideoPlay}
+                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex h-20 w-20 items-center justify-center rounded-full border border-emerald-300/60 bg-emerald-400/20 text-white shadow-2xl backdrop-blur-md transition hover:scale-110 hover:bg-emerald-400 hover:text-[#03110D] cursor-pointer"
+                  >
+                    {isPlaying ? <Pause size={28} /> : <Play size={28} className="ml-1 fill-current" />}
+                  </button>
+
+                  <div className="absolute bottom-5 left-5 right-5 flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                      <h3 className="text-lg font-black uppercase text-white sm:text-xl">
+                        {activeClip.title}
+                      </h3>
+                      <p className="mt-0.5 text-xs text-emerald-100/80">{activeClip.caption}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsMuted(!isMuted)}
+                        className="rounded-full border border-white/20 bg-black/70 p-2.5 text-white hover:border-emerald-400 cursor-pointer"
+                      >
+                        {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setZoomImage(activeClip.poster)}
+                        className="rounded-full border border-white/20 bg-black/70 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-emerald-300 hover:border-emerald-400 cursor-pointer"
+                      >
+                        Inspect 150MP Frame
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col justify-between gap-4 lg:col-span-4">
+              <div className="space-y-4">
+                {VIDEO_CHAPTERS.map((clip) => {
+                  const isCurrent = activeClip.id === clip.id;
+                  return (
+                    <div
+                      key={clip.id}
+                      onClick={() => {
+                        setActiveClip(clip);
+                        setIsPlaying(false);
+                      }}
+                      className={`group flex gap-4 rounded-2xl border p-3.5 transition cursor-pointer ${
+                        isCurrent
+                          ? 'border-emerald-400 bg-emerald-500/15 shadow-lg shadow-emerald-500/10'
+                          : 'border-white/10 bg-[#061C16] hover:border-emerald-400/40'
+                      }`}
+                    >
+                      <div className="relative h-20 w-28 shrink-0 overflow-hidden rounded-xl">
+                        <img
+                          src={clip.poster}
+                          alt={clip.title}
+                          className="h-full w-full object-cover transition group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                          <Play size={16} className="text-emerald-300 fill-current" />
+                        </div>
+                      </div>
+                      <div className="flex flex-col justify-center">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">
+                          {clip.duration}
+                        </span>
+                        <h4 className="mt-1 text-xs font-black uppercase text-white group-hover:text-emerald-200">
+                          {clip.title}
+                        </h4>
+                        <p className="mt-1 line-clamp-2 text-[11px] text-emerald-100/60">
+                          {clip.caption}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="rounded-2xl border border-emerald-400/25 bg-[#061C16] p-5">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-300">
+                  100% Verified Local Assets
+                </span>
+                <p className="mt-1 text-xs leading-relaxed text-emerald-100/80">
+                  Every collector livery and interior visual is loaded directly from your <code className="text-emerald-300">/public/jets/</code> `.webp` master vault.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 4. 28-ASSET 150MP LOOKBOOK VAULT */}
+        <section id="lookbook-vault" className="mx-auto max-w-[1440px] px-4 py-20 sm:px-8">
+          <div className="flex flex-col justify-between gap-6 border-b border-emerald-400/15 pb-8 lg:flex-row lg:items-end">
+            <div>
+              <span className="text-xs font-black uppercase tracking-[0.24em] text-emerald-400">
+                150MP Ultra Print Master Archive (28 Verified Visuals)
+              </span>
+              <h2 className="mt-2 text-3xl font-black uppercase tracking-tight text-white sm:text-5xl">
+                Skyglass Fleet & Cabin Lookbook
+              </h2>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`rounded-full px-4 py-2 text-[11px] font-bold uppercase tracking-wider transition cursor-pointer ${
+                    selectedCategory === cat
+                      ? 'bg-emerald-400 text-[#03110D]'
+                      : 'border border-white/15 bg-[#061C16] text-emerald-100/80 hover:border-emerald-400/50'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {filteredAssets.map((item, idx) => (
+              <div
+                key={idx}
+                onClick={() => setZoomImage(item.src)}
+                className="group relative overflow-hidden rounded-2xl border border-white/10 bg-[#061C16] transition hover:border-emerald-400/60 cursor-pointer"
+              >
+                <div className="relative h-60 w-full overflow-hidden">
+                  <img
+                    src={item.src}
+                    alt={item.title}
+                    className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#03110D]/90 via-transparent to-transparent" />
+                  <span className="absolute right-3 top-3 rounded-full bg-[#03110D]/85 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-emerald-300 backdrop-blur-md">
+                    150MP RAW
+                  </span>
+                </div>
+                <div className="p-4">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-400">
+                    {item.zone}
+                  </span>
+                  <h4 className="mt-1 text-sm font-bold text-white group-hover:text-emerald-200">
+                    {item.title}
+                  </h4>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 5. COMMERCIAL PRICING + $199 VIDEO ORDER BUMP + FREE B2B SAMPLE BOX (BEZ PSD FAJLOVA) */}
+        <section id="commercial-pricing" className="mx-auto max-w-[1440px] px-4 py-24 sm:px-8">
+          <div className="mx-auto max-w-3xl text-center">
+            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.22em] text-emerald-300">
+              <Crown size={13} className="text-emerald-400" /> TURNKEY PRIVATE AVIATION BRAND KIT
+            </span>
+            <h2 className="mt-4 text-4xl font-black tracking-tight text-white sm:text-6xl leading-[1.08]">
+              A complete private jet brand, <br />
+              ready to take off.
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed text-emerald-100/80 sm:text-base">
+              Launch faster with the complete React + Tailwind JSX source code (including the 6-Zone Showcase Deck, Livery Comparator & 16:9 Video Player), 60 production visuals (up to 150MP), and commercial licensing.
+            </p>
+          </div>
+
+          {/* +$199 VIDEO MOTION PACK ORDER BUMP BOKS */}
+          <div className="mx-auto mt-10 max-w-3xl">
+            <label
+              onClick={() => setIncludeMotionPack(!includeMotionPack)}
+              className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border p-5 transition cursor-pointer select-none ${
+                includeMotionPack
+                  ? 'border-emerald-300 bg-emerald-900/40 shadow-lg shadow-emerald-500/15'
+                  : 'border-emerald-400/40 bg-[#061C16] hover:border-emerald-400'
+              }`}
+            >
+              <div className="flex items-start sm:items-center gap-4">
+                <input
+                  type="checkbox"
+                  checked={includeMotionPack}
+                  onChange={(e) => setIncludeMotionPack(e.target.checked)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="mt-1 sm:mt-0 h-5 w-5 rounded border-emerald-500 accent-emerald-400 cursor-pointer"
+                />
+                <div>
+                  <div className="flex items-center gap-1.5 text-xs sm:text-sm font-black uppercase tracking-wider text-white">
+                    <Zap size={14} className="text-emerald-400 fill-current shrink-0" />
+                    <span>ADD 30S 4K/60FPS CINEMA MOTION PACK (SEEDANCE 2.5 & KLING 4.0)</span>
+                  </div>
+                  <p className="mt-1 text-xs text-emerald-100/80">
+                    Includes seamless 30-second 16:9 WebM hero loop, 16:9 MP4 LED billboard master, and 9:16 vertical Reels cut.
+                  </p>
+                </div>
+              </div>
+
+              <span className="shrink-0 self-start sm:self-center rounded-full bg-emerald-400/20 border border-emerald-400/50 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-widest text-emerald-200">
+                +$199 ORDER BUMP
+              </span>
+            </label>
+          </div>
+
+          {/* 2 PRICING KARTICE ($349 / $548 AGENCY LICENSE & $1490 / $1689 EXCLUSIVE BUYOUT) */}
+          <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-2 max-w-5xl mx-auto">
+            {/* LEFT CARD: MULTI-CLIENT AGENCY LICENSE */}
+            <div className="flex flex-col justify-between rounded-3xl border border-white/15 bg-[#061C16] p-8 shadow-2xl">
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-200">
+                    MULTI-CLIENT AGENCY LICENSE
+                  </span>
+                  <span className="rounded-full bg-white/10 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-white">
+                    INSTANT ZIP
+                  </span>
+                </div>
+
+                <div className="mt-5 flex items-baseline gap-3">
+                  <span className="text-5xl font-black text-white">${agencyPrice}</span>
+                  {includeMotionPack && (
+                    <span className="rounded-full bg-emerald-400/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-200">
+                      Includes +$199 Motion Pack
+                    </span>
+                  )}
+                </div>
+
+                <p className="mt-4 text-xs leading-relaxed text-emerald-100/80">
+                  For agencies, developers, and private aviation teams building a polished high-ticket digital presence.
+                </p>
+
+                <ul className="mt-6 space-y-3 border-t border-white/10 pt-6 text-xs text-emerald-50">
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-400" />
+                    <span>Complete Skyglass Reserve React + Tailwind JSX source (with Livery Comparator)</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-400" />
+                    <span>60 production files: 20 WebP, 20 4K UHD & 20 150MP masters</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-400" />
+                    <span>Ready-to-import Railway n8n + Groq AI Flight Desk JSON workflow</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-400" />
+                    <span>sRGB IEC61966-2.1 color-calibrated large-format print & web deliverables</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-400" />
+                    <span>Commercial license for unlimited client websites & print</span>
+                  </li>
+                  {includeMotionPack && (
+                    <li className="flex items-start gap-3 text-emerald-300 font-bold">
+                      <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-400" />
+                      <span>INCLUDED: 30s 4K/60fps Cinema Motion Pack (WebM + MP4 + 9:16 Reels)</span>
+                    </li>
+                  )}
+                </ul>
+              </div>
+
+              <div className="mt-8 pt-4">
+                <button
+                  type="button"
+                  onClick={() =>
+                    handlePurchaseTier(
+                      'Skyglass Reserve — Agency Turnkey Kit',
+                      agencyPrice,
+                      KIT_CONFIG.standardZipLink
+                    )
+                  }
+                  className="flex w-full items-center justify-center gap-2 rounded-full bg-white py-4 text-xs font-black uppercase tracking-[0.16em] text-[#03110D] shadow-xl transition hover:bg-emerald-100 cursor-pointer"
+                >
+                  <DownloadCloud size={15} /> LICENSE AGENCY KIT — ${agencyPrice}
+                </button>
+              </div>
+            </div>
+
+            {/* RIGHT CARD: 1-OF-1 EXCLUSIVE BUYOUT */}
+            <div className="flex flex-col justify-between rounded-3xl border border-emerald-400/65 bg-[#061C16] p-8 shadow-2xl shadow-emerald-500/10">
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-black uppercase tracking-[0.2em] text-white">
+                    1-OF-1 EXCLUSIVE BUYOUT
+                  </span>
+                  <span className="rounded-full bg-emerald-400 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-[#03110D]">
+                    SINGLE BUYER ONLY
+                  </span>
+                </div>
+
+                <div className="mt-5 flex items-baseline gap-3">
+                  <span className="text-5xl font-black text-emerald-300">${buyoutPrice}</span>
+                  {includeMotionPack && (
+                    <span className="rounded-full bg-emerald-400/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-200">
+                      Includes +$199 Motion Pack
+                    </span>
+                  )}
+                </div>
+
+                <p className="mt-4 text-xs leading-relaxed text-emerald-100/80">
+                  Exclusive ownership for a brand that wants permanent removal from our store and full IP transfer.
+                </p>
+
+                <ul className="mt-6 space-y-3 border-t border-white/10 pt-6 text-xs text-emerald-50">
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-400" />
+                    <span>All 60 WebP, 4K UHD and 150MP master files + permanent store removal</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-400" />
+                    <span>10 custom 150MP renders tailored to your brand palette</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-400" />
+                    <span>Private Jet Prompt Engine ruleset for internal expansion</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-400" />
+                    <span>Signed enterprise IP transfer certificate</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-400" />
+                    <span>Custom Railway n8n AI Concierge & CRM deployment support</span>
+                  </li>
+                  {includeMotionPack && (
+                    <li className="flex items-start gap-3 text-emerald-300 font-bold">
+                      <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-400" />
+                      <span>INCLUDED: 30s 4K/60fps Cinema Motion Pack (WebM + MP4 + 9:16 Reels)</span>
+                    </li>
+                  )}
+                </ul>
+              </div>
+
+              <div className="mt-8 pt-4">
+                <button
+                  type="button"
+                  onClick={() =>
+                    handlePurchaseTier(
+                      'Skyglass Reserve — Exclusive Buyout Rights',
+                      buyoutPrice,
+                      KIT_CONFIG.buyoutZipLink
+                    )
+                  }
+                  className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500 py-4 text-xs font-black uppercase tracking-[0.16em] text-[#03110D] shadow-xl shadow-emerald-500/20 transition hover:brightness-110 cursor-pointer"
+                >
+                  <Lock size={14} /> ACQUIRE EXCLUSIVE RIGHTS — ${buyoutPrice}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* HORIZONTALNI BOKS ISPOD KARTICA ("Download Free 150MP Sample Visuals & Technical Spec Sheet (.TXT)") */}
+          <div className="mx-auto mt-8 max-w-5xl rounded-3xl border border-emerald-400/35 bg-[#061C16] p-6 sm:p-8 shadow-xl">
+            <div className="flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-center">
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-emerald-400/35 bg-emerald-500/10 text-emerald-300">
+                  <FolderArchive size={20} />
+                </div>
+                <div>
+                  <span className="block text-[10px] font-black uppercase tracking-[0.22em] text-emerald-400">
+                    FREE B2B INSPECTION SAMPLE • INSTANT ACCESS
+                  </span>
+                  <h3 className="mt-1 text-lg font-black text-white sm:text-xl">
+                    Download Free 150MP Sample Visuals & Technical Spec Sheet (.TXT)
+                  </h3>
+                  <p className="mt-1.5 max-w-xl text-xs leading-relaxed text-emerald-100/80">
+                    Inspect our full-resolution sample images alongside the complete <code className="text-emerald-300">.txt</code> architecture, ICC color profile, and commercial licensing explanation before purchasing.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleDownloadSampleAndSpec}
+                className="flex shrink-0 items-center gap-2.5 rounded-full border border-emerald-400/50 bg-emerald-500/10 px-6 py-3.5 text-xs font-black uppercase tracking-[0.16em] text-emerald-200 transition hover:bg-emerald-400 hover:text-[#03110D] cursor-pointer"
+              >
+                <DownloadCloud size={15} /> DOWNLOAD FREE SAMPLE + .TXT <ArrowUpRight size={14} />
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* 6. 24/7 AI SKYGLASS & CHARTER CONCIERGE (RAILWAY N8N WEBHOOK) */}
+        <section id="ai-concierge" className="mx-auto max-w-[1440px] px-4 pb-20 pt-4 sm:px-8">
+          <div className="grid grid-cols-1 gap-10 rounded-3xl border border-emerald-400/35 bg-[#061C16] p-6 sm:p-12 lg:grid-cols-12 shadow-2xl">
+            <div className="lg:col-span-5">
+              <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/15 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-300">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" /> Live Railway n8n + Groq AI
+              </span>
+              <h2 className="mt-4 text-3xl font-black uppercase text-white sm:text-4xl">
+                24/7 Skyglass AI Flight Desk
+              </h2>
+              <p className="mt-4 text-sm leading-relaxed text-emerald-100/80">
+                Connected directly to <code className="text-emerald-300">n8n-production-720dcf20.up.railway.app</code>. Test live collector livery inquiries, charter dispatch, or white-label kit questions right now.
+              </p>
+
+              <div className="mt-6 space-y-3 border-t border-white/10 pt-6 text-xs text-emerald-100/80">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 size={16} className="text-emerald-400" />
+                  <span>Active Zone: {currentZone.zone}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 size={16} className="text-emerald-400" />
+                  <span>Selected Livery: {selectedLivery.name}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col justify-between rounded-2xl border border-white/10 bg-[#03110D] p-5 lg:col-span-7">
+              <div className="grid grid-cols-1 gap-3 border-b border-white/10 pb-4 sm:grid-cols-2">
+                <input
+                  type="text"
+                  placeholder="Your Name / Family Office"
+                  value={clientName}
+                  onChange={(e) => setClientName(e.target.value)}
+                  className="rounded-xl border border-white/15 bg-[#07221B] px-4 py-2.5 text-xs text-white placeholder-emerald-200/40 focus:border-emerald-400 focus:outline-none"
+                />
+                <input
+                  type="email"
+                  placeholder="Direct VIP Email"
+                  value={clientEmail}
+                  onChange={(e) => setClientEmail(e.target.value)}
+                  className="rounded-xl border border-white/15 bg-[#07221B] px-4 py-2.5 text-xs text-white placeholder-emerald-200/40 focus:border-emerald-400 focus:outline-none"
+                />
+              </div>
+
+              <div className="my-4 h-64 space-y-3 overflow-y-auto pr-2">
+                {chatMessages.map((msg, i) => (
+                  <div
+                    key={i}
+                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs leading-relaxed ${
+                        msg.role === 'user'
+                          ? 'bg-emerald-400 font-bold text-[#03110D]'
+                          : 'border border-emerald-400/25 bg-[#07221B] text-emerald-50'
+                      }`}
+                    >
+                      {msg.text}
+                    </div>
+                  </div>
+                ))}
+                {isSending && (
+                  <div className="text-xs italic text-emerald-300">
+                    Skyglass AI Flight Desk is computing your response...
+                  </div>
+                )}
+              </div>
+
+              <form onSubmit={handleConciergeSubmit} className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Ask about British Racing Emerald livery, Bordeaux cabin specs, or $349 kit license..."
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value)}
+                  className="flex-1 rounded-xl border border-white/15 bg-[#07221B] px-4 py-3 text-xs text-white placeholder-emerald-200/40 focus:border-emerald-400 focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  disabled={isSending}
+                  className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-300 px-6 py-3 text-xs font-black uppercase tracking-wider text-[#03110D] transition hover:brightness-110 cursor-pointer"
+                >
+                  <Send size={14} /> Send
+                </button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        {/* 7. EXECUTIVE FAQ — "Good to know." (BEZ POMINJANJA PSD FAJLOVA) */}
+        <section id="executive-faq" className="mx-auto max-w-[1440px] px-4 py-20 sm:px-8 border-t border-emerald-400/15">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
+            <div className="lg:col-span-4">
+              <span className="text-[11px] font-black uppercase tracking-[0.24em] text-emerald-400">
+                EXECUTIVE FAQ
+              </span>
+              <h2 className="mt-2 text-3xl font-black tracking-tight text-white sm:text-5xl">
+                Good to know.
+              </h2>
+              <p className="mt-4 text-xs leading-relaxed text-emerald-100/70">
+                Technical specifications, licensing terms, and AI workflow details for creative directors and aviation charter operators.
+              </p>
+              <button
+                type="button"
+                onClick={() => navigate('/stock')}
+                className="mt-6 inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-5 py-2.5 text-xs font-black uppercase tracking-[0.15em] text-emerald-200 transition hover:bg-emerald-400 hover:text-[#03110D] cursor-pointer"
+              >
+                Explore All Stock Vaults <ArrowUpRight size={14} />
+              </button>
+            </div>
+
+            <div className="lg:col-span-8 divide-y divide-white/10 border-t border-b border-white/10">
+              {FAQ_ITEMS.map((item, idx) => {
+                const isOpen = openFaqIndex === idx;
+                return (
+                  <div key={idx} className="py-5">
+                    <button
+                      type="button"
+                      onClick={() => setOpenFaqIndex(isOpen ? -1 : idx)}
+                      className="flex w-full items-center justify-between gap-4 text-left cursor-pointer"
+                    >
+                      <span className="text-xs font-black uppercase tracking-[0.14em] text-white sm:text-sm">
+                        {item.q}
+                      </span>
+                      <ChevronDown
+                        size={16}
+                        className={`shrink-0 text-emerald-400 transition-transform duration-300 ${
+                          isOpen ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </button>
+                    {isOpen && (
+                      <p className="mt-3 text-xs leading-relaxed text-emerald-100/80 sm:text-sm">
+                        {item.a}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* FOOTER SA ISTAKNUTIM LINKOM KA STOCK VAULTS */}
+      <footer className="border-t border-emerald-400/20 bg-[#020B08] px-4 py-8 sm:px-7 lg:px-10">
+        <div className="mx-auto flex max-w-[1440px] flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
+          <div className="flex items-center gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-400 text-[#03110D]">
+              <Gem size={15} />
+            </span>
+            <span>
+              <span className="block text-xs font-black uppercase tracking-[0.2em] text-white">
+                Skyglass Reserve
+              </span>
+              <span className="mt-0.5 block text-[9px] font-bold uppercase tracking-[0.15em] text-emerald-400">
+                Collector Private Aviation • Page 5 of 5
+              </span>
+            </span>
+          </div>
+          <p className="text-xs font-medium text-emerald-100/70">
+            Bespoke collector liveries and private staterooms for transoceanic flight.
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate('/stock')}
+            className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-5 py-2.5 text-xs font-black uppercase tracking-[0.14em] text-emerald-200 transition hover:bg-emerald-400 hover:text-[#03110D] cursor-pointer"
+          >
+            Back to Stock Vaults <ArrowRight size={13} />
+          </button>
+        </div>
+      </footer>
+
+      {/* MODALS */}
+      <LoginRequiredModal
+        isOpen={loginModal.isOpen}
+        onClose={() => setLoginModal({ isOpen: false, tierName: '', price: '0.00', zipLink: '' })}
+        packageName={loginModal.tierName}
+        price={loginModal.price}
+        onLoginSuccess={async (user) => {
+          await recordOrderIntent(user, loginModal.tierName, loginModal.price);
+          setCheckoutData({
+            isOpen: true,
+            name: loginModal.tierName,
+            price: loginModal.price,
+            zipLink: loginModal.zipLink
+          });
+          setLoginModal({ isOpen: false, tierName: '', price: '0.00', zipLink: '' });
+        }}
+      />
+
+      <LightboxInspector imageUrl={zoomImage} onClose={() => setZoomImage(null)} />
+
+      <AnimatePresence>
+        {checkoutData.isOpen && (
+          <V8SecureCheckout
+            isOpen={checkoutData.isOpen}
+            onClose={() =>
+              setCheckoutData({ isOpen: false, name: '', price: '0.00', zipLink: '' })
+            }
+            packageName={checkoutData.name}
+            price={checkoutData.price}
+            zipLink={checkoutData.zipLink}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* FLOATING NAVIGATION (STRANICA 5 OD 5) */}
+      <div className="fixed bottom-6 left-6 z-50 hidden sm:block">
         <button
           type="button"
           onClick={() => navigate(KIT_CONFIG.prevPageRoute)}
-          className="group flex items-center gap-3 rounded-full bg-white/95 px-4 py-3 text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#17364E] shadow-xl border border-[#17364E]/15 backdrop-blur-md transition hover:bg-[#17364E] hover:text-white cursor-pointer"
+          className="group flex items-center gap-3 rounded-full border border-emerald-400/40 bg-black/90 px-5 py-3.5 text-[11px] font-black uppercase tracking-[0.16em] text-white shadow-2xl backdrop-blur-md transition hover:border-emerald-400 cursor-pointer"
         >
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#DCEBF1] text-[#17364E] transition group-hover:-translate-x-0.5">
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-400 text-[#03110D] transition group-hover:-translate-x-0.5">
             <ArrowLeft size={14} />
           </span>
           <span>{KIT_CONFIG.prevPageLabel}</span>
         </button>
       </div>
 
-      <div className="fixed bottom-24 right-6 z-50">
+      <div className="fixed bottom-6 right-24 z-50">
         <button
           type="button"
-          onClick={() => navigate(KIT_CONFIG.nextPageRoute)}
-          className="group flex items-center gap-3 rounded-full bg-[#14374E] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-white shadow-2xl shadow-black/40 border border-[#267DA8]/40 transition hover:bg-[#17364E] hover:scale-105 cursor-pointer"
+          onClick={() => navigate(KIT_CONFIG.nextLandingRoute)}
+          className="group flex items-center gap-3 rounded-full bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500 px-5 py-3.5 text-[11px] font-black uppercase tracking-[0.16em] text-[#03110D] shadow-2xl transition hover:scale-105 cursor-pointer"
         >
-          <span>{KIT_CONFIG.nextPageLabel}</span>
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#267DA8] text-white transition group-hover:translate-x-0.5">
+          <span>{KIT_CONFIG.nextLandingLabel}</span>
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#03110D] text-emerald-300 transition group-hover:translate-x-0.5">
             <ArrowRight size={14} />
           </span>
         </button>

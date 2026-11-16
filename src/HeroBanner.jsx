@@ -60,8 +60,8 @@ const HeroBanner = ({ setIsBannerHovered }) => {
   const [activeSlide, setActiveSlide] = useState(0); 
   const [isHovered, setIsHovered] = useState(false);
   
-  // Zvuk je isključen po defaultu (true) da bi autoplay radio bez problema
-  const [isMuted, setIsMuted] = useState(true); 
+  // Zvuk je odmah uključen (false)
+  const [isMuted, setIsMuted] = useState(false); 
   const videoRefs = useRef([]);
 
   const nextSlide = useCallback(() => {
@@ -81,7 +81,7 @@ const HeroBanner = ({ setIsBannerHovered }) => {
           const playPromise = vid.play();
           if (playPromise !== undefined) {
              playPromise.catch(error => {
-                console.log("Autoplay sprečen od strane pretraživača:", error);
+                console.log("Pretraživač blokira autoplay sa zvukom. Čeka se interakcija korisnika.", error);
              });
           }
         } else {
@@ -119,7 +119,6 @@ const HeroBanner = ({ setIsBannerHovered }) => {
                 autoPlay 
                 playsInline
                 muted={isMuted}
-                loop={false}
                 onEnded={nextSlide}
                 className="w-full h-full object-contain object-center"
               />

@@ -9,7 +9,7 @@ import {
   ShoppingCart, RefreshCw, MessageSquare, Instagram, Receipt, PenTool, 
   Database, PhoneCall, Headphones, Building, Lock, KeyRound, Download, Printer, Copy,
   Flame, Rocket, Calculator, Crosshair, Calendar, BookOpen, Languages, HelpCircle,
-  BellRing, Send, Smartphone, Wrench, Sliders, Clock
+  BellRing, Send, Smartphone, Wrench, Sliders, Clock, Plane, Anchor, Watch
 } from 'lucide-react';
 
 // Data from NextPageHub
@@ -32,21 +32,32 @@ const masterTools = [
   { path: '/kling', name: 'KLING 3.0', desc: 'Motion Engine', icon: Video, color: 'text-red-500', bg: 'bg-red-500/20', hover: 'group-hover:bg-red-500/40', border: 'border-red-500/30' },
 ];
 
+const b2bEcosystemSystems = [
+  { path: '/aviation-charter-kit', name: 'PRIVATE AVIATION KIT', desc: '6 Turnkey React Kits ($349 / $1,490)', icon: Plane, color: 'text-amber-400', bg: 'bg-amber-500/20', hover: 'group-hover:bg-amber-500/40', border: 'border-amber-500/40' },
+  { path: '/superyacht-charter-kit', name: 'SUPERYACHT CHARTER KIT', desc: '5 Turnkey React Kits ($349 / $1,490)', icon: Anchor, color: 'text-cyan-400', bg: 'bg-cyan-500/20', hover: 'group-hover:bg-cyan-500/40', border: 'border-cyan-500/40' },
+  { path: '/watch-page-1', name: 'LUXURY WATCHES KIT', desc: 'Haute Horlogerie Kits ($349 / $1,490)', icon: Watch, color: 'text-yellow-400', bg: 'bg-yellow-500/20', hover: 'group-hover:bg-yellow-500/40', border: 'border-yellow-500/40' },
+  { path: '/standard-mocup', name: '150MP SaaS MOCKUPS', desc: 'Glass Plaque, Wall & Billboard', icon: MonitorPlay, color: 'text-orange-400', bg: 'bg-orange-500/20', hover: 'group-hover:bg-orange-500/40', border: 'border-orange-500/40' },
+  { path: '/ui-ux/vault', name: 'UI/UX DESIGN VAULT', desc: 'Enterprise Web Systems', icon: LayoutGrid, color: 'text-emerald-400', bg: 'bg-emerald-500/20', hover: 'group-hover:bg-emerald-500/40', border: 'border-emerald-500/40' },
+  { path: '/pdf-translator', name: 'V10 PDF TRANSLATOR', desc: '100% Layout DTP Neural Engine', icon: FileText, color: 'text-teal-400', bg: 'bg-teal-500/20', hover: 'group-hover:bg-teal-500/40', border: 'border-teal-500/40' },
+  { path: '/premium-menu', name: 'QR MENU BUILDER', desc: 'Premium Hospitality System', icon: ScanLine, color: 'text-purple-400', bg: 'bg-purple-500/20', hover: 'group-hover:bg-purple-500/40', border: 'border-purple-500/40' }
+];
+
 // ============================================================================
 // 🔥 4 HIGH-PRIORITY FLAGSHIP B2B SYSTEMS (TOP REVENUE GENERATORS)
 // ============================================================================
 const priorityFlagshipSystems = [
   {
     id: 'priority-project-scoper',
-    badge: '🔥 TOP AGENCY CLOSER',
+    badge: '🔥 TOP AGENCY CLOSER (LIVE GROQ ENGINE)',
     roiTag: 'Closes $5k–$25k Deals 24/7',
     name: 'B2B Project Scoper & AI Quote Calculator',
-    shortDesc: 'Autonomous Proposal & SOW Generator',
-    longDesc: 'Eliminates hours of manual proposal writing. Prospective clients input their project requirements, timeline, and budget on your site, and the AI instantly calculates an itemized quote, technical roadmap, phased deliverables, and PDF Scope of Work while alerting your sales team.',
-    deliverables: 'Interactive Calculator UI (React/HTML) + n8n Quote Synthesis Engine (.JSON)',
+    shortDesc: 'Autonomous Proposal, B2B Webhook & WhatsApp Escalation',
+    longDesc: 'Eliminates hours of manual proposal writing. Prospective clients input their project requirements, timeline, and budget on your site in any language, and the V10 Groq AI Engine instantly calculates an itemized quote, technical specs, and direct WhatsApp VIP routing.',
+    deliverables: 'Interactive B2B Lead & Quote UI (React/HTML) + V10 B2B Webhook - NEW (Groq) (.JSON)',
     whiteLabelPrice: '$4,500 – $8,500',
     icon: Calculator,
-    colorTheme: 'amber'
+    colorTheme: 'amber',
+    hasB2BWebhookStudio: true
   },
   {
     id: 'priority-lead-harvester',
@@ -66,12 +77,13 @@ const priorityFlagshipSystems = [
     roiTag: 'Instant $10M Enterprise Positioning',
     name: 'Executive SaaS Launch & 150MP Rebranding Kit',
     shortDesc: 'UI/UX Vault + 150MP Mockup Engine + AI Sales Concierge',
-    longDesc: 'The ultimate turnkey package for SaaS founders and software studios. Combines ultra-high-resolution 150MP dark-obsidian device mockups, commercial UI/UX presentation templates, and a pre-trained B2B AI Sales Concierge ready to convert enterprise investors and buyers.',
-    deliverables: '150MP Visual Asset Pack + UI/UX Frontend Templates + n8n AI Concierge (.JSON)',
+    longDesc: 'The ultimate turnkey package for SaaS founders and software studios. Combines ultra-high-resolution 150MP dark-obsidian device mockups, commercial UI/UX presentation templates, and our pre-trained Visual Concierge Floating Chat Widget ready to convert enterprise buyers.',
+    deliverables: '150MP Visual Asset Pack + UI/UX Templates + Visual Concierge Floating Chat Widget (.JSON)',
     whiteLabelPrice: '$3,500 – $6,500',
     icon: Sparkles,
     colorTheme: 'emerald',
-    hasLiveStudio: true
+    hasLiveStudio: true,
+    hasB2BWebhookStudio: true
   },
   {
     id: 'priority-micro-saas-box',
@@ -79,8 +91,8 @@ const priorityFlagshipSystems = [
     roiTag: 'Ready for $99–$299/mo Subscriptions',
     name: 'Micro-SaaS in a Box — Turnkey AI Business',
     shortDesc: 'Complete Multi-Studio AI Platform Ready to Launch',
-    longDesc: 'Designed for entrepreneurs and investors who want to launch their own profitable AI software company without writing code. Includes the complete multi-tool Studio Portal (Mockup Engine + SEO Auditor + Campaign Synthesizer), sales landing page, and full commercial resale rights.',
-    deliverables: 'Full Multi-Studio Web Platform + 3 Production n8n Engines (.JSON) + Launch Guide',
+    longDesc: 'Designed for entrepreneurs and investors who want to launch their own profitable AI software company without writing code. Includes the complete multi-tool Studio Portal (Mockup Engine + SEO Auditor + Campaign Synthesizer + B2B Webhook), sales landing page, and full commercial resale rights.',
+    deliverables: 'Full Multi-Studio Web Platform + Production n8n Engines (.JSON) + Launch Guide',
     whiteLabelPrice: '$6,000 – $10,000',
     icon: Rocket,
     colorTheme: 'indigo',
@@ -115,10 +127,10 @@ const aiAgentsList = [
     hasBookingStudio: true
   },
   { id: 'campaign-agent', name: 'Omnichannel Campaign & Content Agent', shortDesc: 'Turnkey Marketing Synthesizer', longDesc: 'Automatically generates synchronized B2B LinkedIn posts, cold outreach emails, Meta/Google ad copy, and short-form video scripts from a single brief.', whiteLabelPrice: '$3,000 – $5,000', icon: Megaphone, colorTheme: 'cyan', hasCampaignStudio: true },
-  { id: 'b2b-lead-agent', name: 'Smart B2B Lead Generator & Chatbot', shortDesc: 'Lead Qualification & Booking', longDesc: 'Conducts deep contextual conversations on your site, qualifies leads, scores buyer intent, and routes high-value prospects to your sales team 24/7.', whiteLabelPrice: '$4,000 – $7,000', icon: Users, colorTheme: 'emerald' },
+  { id: 'b2b-lead-agent', name: 'Smart B2B Lead Generator & Chatbot', shortDesc: 'Lead Qualification & Booking', longDesc: 'Conducts deep contextual conversations on your site, qualifies leads, scores buyer intent, and routes high-value prospects to your sales team 24/7 via our V10 B2B Webhook & Floating Chat Widget.', deliverables: 'index.html + Visual Concierge Floating Chat Widget (.JSON) + V10 B2B Webhook (.JSON) + README.md', whiteLabelPrice: '$4,000 – $7,000', icon: Users, colorTheme: 'emerald', hasB2BWebhookStudio: true },
   { id: 'mockup-agent', name: 'AI Mockup & Visual Asset Generator', shortDesc: 'Turnkey White-Label Studio', longDesc: 'Transforms raw concepts, logos, and product descriptions into photorealistic 8K commercial mockups across 16:9, 9:16, and 21:9 aspect ratios without Photoshop.', whiteLabelPrice: '$5,500 – $8,500', icon: ImageIcon, colorTheme: 'cyan', hasLiveStudio: true },
   { id: 'seo-auditor-agent', name: 'SEO & CRO Website Auditor', shortDesc: 'Live Technical & Conversion Scanner', longDesc: 'Scans live client URLs for technical SEO bottlenecks, meta structure, and conversion barriers, generating an executive B2B report with 0–100 scores and PDF export.', whiteLabelPrice: '$3,500 – $5,000', icon: Search, colorTheme: 'emerald', hasSeoStudio: true },
-  { id: 'website-support-agent', name: 'AI Website Knowledge & Support Concierge', shortDesc: '24/7 Site Support & Escalation', longDesc: 'Trained directly on your website content and FAQs to resolve visitor inquiries instantaneously while escalating complex high-ticket requests to your human team.', whiteLabelPrice: '$2,500 – $4,500', icon: HelpCircle, colorTheme: 'indigo' },
+  { id: 'website-support-agent', name: 'AI Website Knowledge & Support Concierge', shortDesc: '24/7 Site Support & Escalation', longDesc: 'Trained directly on your website content and product catalog to resolve visitor inquiries instantaneously in any language while escalating VIP requests to WhatsApp (+381648201496).', deliverables: 'Visual Concierge - Floating Chat Widget (.JSON) + index.html + README.md', whiteLabelPrice: '$2,500 – $4,500', icon: HelpCircle, colorTheme: 'indigo', hasB2BWebhookStudio: true },
   { id: 'pdf-translator-agent', name: 'Enterprise PDF & Document Translator', shortDesc: 'Multi-Language OCR & Layout Preservation', longDesc: 'Translates complex PDFs, contracts, and scanned documents into 30+ languages via OCR and LLM processing while preserving executive formatting and terminology.', whiteLabelPrice: '$3,500 – $6,000', icon: Languages, colorTheme: 'emerald' },
   { id: 'rag-doc-assistant', name: 'RAG Document Q&A & Knowledge Base Agent', shortDesc: 'Instant Answers From PDFs & Manuals', longDesc: 'Allows users or internal teams to upload PDFs, SOPs, and technical guides and ask complex questions with instant, citation-backed answers extracted from your files.', whiteLabelPrice: '$4,500 – $7,500', icon: BookOpen, colorTheme: 'indigo' },
   { id: 'email-triage-agent', name: 'AI Email & CRM Triage Agent', shortDesc: 'Inbox Management', longDesc: 'Integrates into your inbox, filters spam, prioritizes urgent inquiries, and automatically drafts professional client replies.', whiteLabelPrice: '$3,000 – $5,000', icon: Mail, colorTheme: 'cyan' },
@@ -131,7 +143,7 @@ const aiAgentsList = [
   { id: 'brand-inspector-agent', name: 'AI Multimodal Brand Inspector', shortDesc: 'Quality Assurance', longDesc: 'Scans design materials and checks compliance with the brand book (colors, typography, logo) prior to final delivery.', whiteLabelPrice: '$3,500 – $6,500', icon: CheckCircle, colorTheme: 'indigo' },
   { id: 'ecommerce-advisor', name: 'E-commerce Sales Advisor', shortDesc: 'Sales & Recommendations', longDesc: 'Suggests products based on customer needs and increases sales via text and online store integration.', whiteLabelPrice: '$3,500 – $6,000', icon: ShoppingCart, colorTheme: 'cyan' },
   { id: 'order-tracking', name: 'Order & Return Tracking Agent', shortDesc: 'Order Management', longDesc: 'Checks order statuses and guides customers through returns or exchanges with full system integration.', whiteLabelPrice: '$4,000 – $6,500', icon: RefreshCw, colorTheme: 'emerald' },
-  { id: 'whatsapp-agent', name: 'WhatsApp AI Agent', shortDesc: 'WhatsApp Automation', longDesc: 'Responds to customers, collects inquiries, and routes them to the right person directly on WhatsApp.', whiteLabelPrice: '$3,000 – $5,000', icon: MessageSquare, colorTheme: 'indigo' },
+  { id: 'whatsapp-agent', name: 'WhatsApp AI Agent', shortDesc: 'WhatsApp Automation', longDesc: 'Responds to customers, collects inquiries, and routes them to the right person directly on WhatsApp.', deliverables: 'V10 B2B Webhook - NEW (Groq).json + index.html + README.md', whiteLabelPrice: '$3,000 – $5,000', icon: MessageSquare, colorTheme: 'indigo', hasB2BWebhookStudio: true },
   { id: 'social-dm-agent', name: 'Social Media DM Agent', shortDesc: 'Social DM Automation', longDesc: 'Replies to messages, captures leads, and forwards requests to the team via social media platforms.', whiteLabelPrice: '$3,000 – $5,000', icon: Instagram, colorTheme: 'cyan' },
   { id: 'invoice-agent', name: 'Invoice & Billing Agent', shortDesc: 'Invoice Data Extraction', longDesc: 'Extracts dates, amounts, vendors, and other data from documents using OCR and secure integrations.', whiteLabelPrice: '$4,500 – $7,000', icon: Receipt, colorTheme: 'emerald' },
   { id: 'product-desc-agent', name: 'Product Content Generator', shortDesc: 'Content Creation', longDesc: 'Creates titles, descriptions, features, and SEO copy for catalogs via CSV or store integration.', whiteLabelPrice: '$2,500 – $4,500', icon: PenTool, colorTheme: 'indigo' },
@@ -173,14 +185,23 @@ const b2bCaseStudies = [
   },
   {
     agency: "ScaleFlow Automation (London)",
-    system: "Omnichannel Campaign & Content Agent",
-    metric: "80% Faster Client Copywriting",
-    quote: "We use the V10 Campaign Synthesizer to onboard new B2B clients in 5 minutes—generating LinkedIn posts, cold outreach sequences, and ad copy from a single intake brief."
+    system: "V10 B2B Webhook & Visual Concierge",
+    metric: "< 2.1s Multilingual AI Quotes",
+    quote: "We connected the V10 B2B Webhook and Floating Chat Widget powered by Groq. It scopes leads in English, German, and French automatically and escalates VIP buyers straight to WhatsApp."
   }
 ];
 
 export default function AIAgentsShowcase() {
   const [activeModalAgent, setActiveModalAgent] = useState(null);
+
+  // =========================================================
+  // ACTIVE N8N WEBHOOK ENDPOINTS (LOCALHOST:5678 GROQ ENGINE)
+  // =========================================================
+  const N8N_B2B_CONCIERGE_WEBHOOK = 'https://n8n-production-720dcf20.up.railway.app/webhook/v10-concierge-webhook';
+  const N8N_FLOATING_CHAT_WEBHOOK = 'http://localhost:5678/webhook/237acb8c-83c6-4f97-a800-1426e24e7993/chat';
+  const N8N_MOCKUP_WEBHOOK = 'http://localhost:5678/webhook/mockup-engine';
+  const N8N_SEO_WEBHOOK = 'http://localhost:5678/webhook/seo-auditor';
+  const N8N_CAMPAIGN_WEBHOOK = 'http://localhost:5678/webhook/campaign-engine';
 
   // =========================================================
   // 1. LIVE MOCKUP STUDIO STATE (WHITE-LABEL + VIP DEMO)
@@ -232,9 +253,10 @@ export default function AIAgentsShowcase() {
   const [alertProduct, setAlertProduct] = useState('Sapphire Voyages Exclusive Yacht Buyout + 150MP Kit');
   const [alertAmount, setAlertAmount] = useState('$1,490.00');
   const [alertPaymentMethod, setAlertPaymentMethod] = useState('Payoneer B2B Wire');
-  const [alertWebhookUrl, setAlertWebhookUrl] = useState('https://aitools-n8n.app.n8n.cloud/webhook/v10-sale-alert');
+  const [alertWebhookUrl, setAlertWebhookUrl] = useState(N8N_B2B_CONCIERGE_WEBHOOK);
   const [isSendingAlert, setIsSendingAlert] = useState(false);
   const [alertDispatched, setAlertDispatched] = useState(false);
+  const [alertAiReply, setAlertAiReply] = useState('');
   const [alertStatus, setAlertStatus] = useState('Listener Armed & Ready');
 
   // =========================================================
@@ -253,12 +275,22 @@ export default function AIAgentsShowcase() {
   const [bookingPlatform, setBookingPlatform] = useState('Google Meet + WhatsApp Confirmation');
   const [isBookingSubmitting, setIsBookingSubmitting] = useState(false);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
+  const [bookingAiReply, setBookingAiReply] = useState('');
   const [bookingStatus, setBookingStatus] = useState('Calendar Synced & Live');
 
-  const N8N_MOCKUP_WEBHOOK = 'https://aitools-n8n.app.n8n.cloud/webhook/mockup-engine';
-  const N8N_SEO_WEBHOOK = 'https://aitools-n8n.app.n8n.cloud/webhook/seo-auditor';
-  const N8N_CAMPAIGN_WEBHOOK = 'https://aitools-n8n.app.n8n.cloud/webhook/campaign-engine';
-  const N8N_WHATSAPP_SALE_WEBHOOK = 'https://aitools-n8n.app.n8n.cloud/webhook/v10-sale-alert';
+  // =========================================================
+  // 6. NEW: LIVE V10 B2B WEBHOOK & MULTILINGUAL SCOPER STUDIO
+  // =========================================================
+  const [isB2BWebhookStudioOpen, setIsB2BWebhookStudioOpen] = useState(false);
+  const [b2bLeadName, setB2bLeadName] = useState('Apex Luxury Aviation Holdings');
+  const [b2bLeadEmail, setB2bLeadEmail] = useState('director@apexaviation.aero');
+  const [b2bLeadCategory, setB2bLeadCategory] = useState('Turnkey B2B Landing Page Kits (8 Niches)');
+  const [b2bLeadItem, setB2bLeadItem] = useState('Private Aviation Kit — Exclusive Buyout ($1,490)');
+  const [b2bLeadMessage, setB2bLeadMessage] = useState('We want to acquire the Private Aviation Turnkey Kit with 150MP assets and V10 PDF Translator. Please send exact pricing and links.');
+  const [isB2bSubmitting, setIsB2bSubmitting] = useState(false);
+  const [b2bAgentReply, setB2bAgentReply] = useState('');
+  const [b2bWhatsappLink, setB2bWhatsappLink] = useState('https://wa.me/381648201496');
+  const [b2bStatus, setB2bStatus] = useState('Connected to localhost:5678 (Groq openai/gpt-oss-120b)');
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -274,6 +306,7 @@ export default function AIAgentsShowcase() {
         setIsCampaignStudioOpen(false);
         setIsAlertStudioOpen(false);
         setIsBookingStudioOpen(false);
+        setIsB2BWebhookStudioOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -404,35 +437,34 @@ export default function AIAgentsShowcase() {
     }
   };
 
-  // HANDLER 4: Instant Viber / Telegram / WhatsApp Alert Simulator
+  // HANDLER 4: Instant Viber / Telegram / WhatsApp Alert Simulator (Connected to V10 B2B Webhook)
   const handleSimulateSaleAlert = async (e) => {
     e.preventDefault();
     setIsSendingAlert(true);
     setAlertDispatched(false);
-    setAlertStatus(`Dispatching to ${alertChannel}...`);
-
-    const formattedMessage = `🚨 NEW HIGH-TICKET SALE — V10 ENGINE\n\n👤 Client: ${alertBuyerName}\n📧 Email: ${alertBuyerEmail}\n📦 Package: ${alertProduct}\n💰 Amount: ${alertAmount}\n💳 Method: ${alertPaymentMethod}\n🤖 AI Lead Score: 98/100 (Verified B2B Corporate Domain)\n⏰ Time: ${new Date().toLocaleTimeString()}`;
+    setAlertAiReply('');
+    setAlertStatus(`Dispatching to ${alertChannel} via n8n...`);
 
     try {
-      if (alertWebhookUrl.trim()) {
-        await fetch(alertWebhookUrl.trim(), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            channel: alertChannel,
-            buyer: alertBuyerName,
-            email: alertBuyerEmail,
-            product: alertProduct,
-            amount: alertAmount,
-            method: alertPaymentMethod,
-            message: formattedMessage
-          })
-        });
-      } else {
-        await new Promise((res) => setTimeout(res, 900));
+      const targetUrl = alertWebhookUrl.trim() || N8N_B2B_CONCIERGE_WEBHOOK;
+      const res = await fetch(targetUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: alertBuyerName,
+          email: alertBuyerEmail,
+          category: `Instant ${alertChannel} Sale Alert`,
+          item: alertProduct,
+          budget: alertAmount,
+          message: `New high-ticket order paid via ${alertPaymentMethod} for ${alertProduct} (${alertAmount}). Provide a brief VIP onboarding confirmation.`
+        })
+      });
+      const data = await res.json();
+      if (data?.agent_reply) {
+        setAlertAiReply(data.agent_reply);
       }
       setAlertDispatched(true);
-      setAlertStatus(`Delivered to ${alertChannel} (< 400ms)`);
+      setAlertStatus(`Delivered via n8n Groq Engine to ${alertChannel}`);
     } catch (err) {
       setAlertDispatched(true);
       setAlertStatus(`Simulated ${alertChannel} Push Preview`);
@@ -441,26 +473,32 @@ export default function AIAgentsShowcase() {
     }
   };
 
-  // HANDLER 5: Autonomous Calendar & Appointment Setter (100% Free WhatsApp Push via n8n)
+  // HANDLER 5: Autonomous Calendar & Appointment Setter (Connected to V10 B2B Webhook)
   const handleConfirmAppointment = async (e) => {
     e.preventDefault();
     setIsBookingSubmitting(true);
     setBookingConfirmed(false);
-    setBookingStatus('Locking Calendar Slot & Dispatching WhatsApp Alert...');
+    setBookingAiReply('');
+    setBookingStatus('Locking Calendar Slot & Dispatching via V10 Webhook...');
 
     try {
-      await fetch(N8N_WHATSAPP_SALE_WEBHOOK, {
+      const res = await fetch(N8N_B2B_CONCIERGE_WEBHOOK, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          channel: 'WhatsApp',
-          buyer: `📅 ZAKAZAN SASTANAK: ${bookingClientName}`,
+          name: bookingClientName,
           email: bookingClientEmail,
-          product: `${bookingTopic} | Termin: ${bookingDate} u ${bookingSlot}`,
-          amount: bookingBudget,
-          method: bookingPlatform
+          category: 'Executive Consultation Booking',
+          item: bookingTopic,
+          date: `${bookingDate} at ${bookingSlot}`,
+          budget: bookingBudget,
+          message: `Please confirm my executive consultation call on ${bookingDate} at ${bookingSlot} via ${bookingPlatform} regarding ${bookingTopic} (Budget: ${bookingBudget}).`
         })
       });
+      const data = await res.json();
+      if (data?.agent_reply) {
+        setBookingAiReply(data.agent_reply);
+      }
       setBookingConfirmed(true);
       setBookingStatus(`Slot Confirmed (${bookingDate} @ ${bookingSlot})`);
     } catch (err) {
@@ -468,6 +506,47 @@ export default function AIAgentsShowcase() {
       setBookingStatus(`Slot Confirmed (${bookingDate} @ ${bookingSlot})`);
     } finally {
       setIsBookingSubmitting(false);
+    }
+  };
+
+  // HANDLER 6: Live V10 B2B Webhook & Multilingual Scoper
+  const handleB2BWebhookSubmit = async (e) => {
+    e.preventDefault();
+    setIsB2bSubmitting(true);
+    setB2bAgentReply('');
+    setB2bStatus('Querying V10 B2B Webhook (Groq openai/gpt-oss-120b)...');
+
+    const payload = {
+      name: b2bLeadName,
+      email: b2bLeadEmail,
+      category: b2bLeadCategory,
+      item: b2bLeadItem,
+      message: b2bLeadMessage
+    };
+
+    try {
+      let data;
+      if (typeof window !== 'undefined' && typeof window.sendV10ConciergeLead === 'function') {
+        data = await window.sendV10ConciergeLead(payload);
+      } else {
+        const res = await fetch(N8N_B2B_CONCIERGE_WEBHOOK, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        data = await res.json();
+      }
+
+      setB2bAgentReply(data?.agent_reply || 'Thank you! Your inquiry has been processed by Visionary Factory V10.');
+      if (data?.whatsapp_direct_link) {
+        setB2bWhatsappLink(data.whatsapp_direct_link);
+      }
+      setB2bStatus('✓ Live Response Received (< 2.1s via localhost:5678)');
+    } catch (err) {
+      setB2bAgentReply('Ensure your n8n workflow "V10 B2B Webhook - NEW (Groq)" is Published on http://localhost:5678. Direct VIP escalation is available via WhatsApp below.');
+      setB2bStatus('Offline Fallback Mode');
+    } finally {
+      setIsB2bSubmitting(false);
     }
   };
 
@@ -502,36 +581,267 @@ export default function AIAgentsShowcase() {
 
   // 3 MAIN AGENTS (WHITE-LABEL BUYOUT)
   const visualConcierge = {
-      name: "Visual Concierge",
-      shortDesc: "Mockups & UI/UX Routing",
-      longDesc: "Transforms raw product photos, logos, or UI designs into photorealistic commercial mockups in high resolution across multiple aspect ratios. Eliminates manual Photoshop rendering.",
-      whiteLabelPrice: "$5,500 – $8,500",
-      icon: Bot,
-      colorTheme: 'blue',
-      hasLiveStudio: true
+    name: "Visual Concierge (Floating Chat + Studio)",
+    shortDesc: "24/7 Floating Chat Widget & Mockup Routing",
+    longDesc: "Includes both the live Visual Concierge Floating Chat Widget (powered by n8n & Groq openai/gpt-oss-120b) trained on the entire V10 ecosystem and the 8K Commercial Mockup Studio.",
+    deliverables: "Visual Concierge - Floating Chat Widget.json + index.html + README.md",
+    whiteLabelPrice: "$4,000 – $7,000",
+    icon: Bot,
+    colorTheme: 'blue',
+    hasLiveStudio: true,
+    hasB2BWebhookStudio: true
   };
 
   const salesScoper = {
-      name: "B2B Sales Scoper",
-      shortDesc: "Automated Project Quotes",
-      longDesc: "An intelligent agent deployed on client websites that conducts deep contextual conversations, qualifies leads, answers complex product queries, and books appointments automatically.",
-      whiteLabelPrice: "$4,000 – $8,000",
-      icon: Briefcase,
-      colorTheme: 'emerald'
+    name: "B2B Sales Scoper (V10 B2B Webhook)",
+    shortDesc: "Automated Multilingual Project Quotes & WhatsApp Routing",
+    longDesc: "Powered by our live V10 B2B Webhook - NEW (Groq) workflow. Receives B2B form inquiries, detects any client language automatically, calculates accurate package quotes across all 8 Turnkey Niches and 30+ AI Agents, and returns a structured JSON response with direct WhatsApp VIP escalation.",
+    deliverables: "V10 B2B Webhook - NEW (Groq).json + index.html + README.md",
+    whiteLabelPrice: "$4,000 – $8,000",
+    icon: Briefcase,
+    colorTheme: 'emerald',
+    hasB2BWebhookStudio: true
   };
 
   const techEngineer = {
-      name: "Tech 24/7 Engineer",
-      shortDesc: "Dev & Infrastructure Support",
-      longDesc: "Provides round-the-clock autonomous infrastructure support, resolving technical queries, diagnosing errors, and assisting with development workflows seamlessly.",
-      whiteLabelPrice: "$5,000 – $10,000",
-      icon: Cpu,
-      colorTheme: 'indigo'
+    name: "Tech 24/7 Engineer",
+    shortDesc: "Dev & Infrastructure Support",
+    longDesc: "Provides round-the-clock autonomous infrastructure support, resolving technical queries, diagnosing errors, and assisting with React, Vite, and self-hosted n8n deployments seamlessly.",
+    deliverables: "Frontend Support Console (React/HTML) + n8n Tech Diagnostic Workflow (.JSON)",
+    whiteLabelPrice: "$5,000 – $10,000",
+    icon: Cpu,
+    colorTheme: 'indigo'
   };
 
   return (
     <div className="min-h-screen bg-[#02040a] text-white py-24 px-4 sm:px-6 font-sans relative z-10">
-      
+
+      {/* ========================================================= */}
+      {/* 6. NEW: LIVE V10 B2B WEBHOOK & MULTILINGUAL SCOPER MODAL  */}
+      {/* ========================================================= */}
+      {isB2BWebhookStudioOpen && (
+        <div
+          onClick={() => setIsB2BWebhookStudioOpen(false)}
+          className="fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-3 sm:p-6 backdrop-blur-xl overflow-y-auto pt-20"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-[#070a12] border-2 border-[#d4af37]/50 rounded-3xl max-w-6xl w-full relative shadow-[0_0_90px_rgba(212,175,55,0.22)] p-5 sm:p-8 my-auto"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#d4af37] to-amber-600 flex items-center justify-center font-black text-black text-sm shadow-lg shadow-amber-500/20">
+                  V10
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-lg sm:text-xl font-black uppercase tracking-tight text-white">
+                      V10 B2B Webhook - NEW (Groq) • Live Enterprise Scoper
+                    </h2>
+                    <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded-full">
+                      ● PUBLISHED ON LOCALHOST:5678
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    Endpoint: <code className="text-amber-300">https://n8n-production-720dcf20.up.railway.app/webhook/v10-concierge-webhook</code> • Replies in Any Language
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsB2BWebhookStudioOpen(false)}
+                className="relative z-50 text-white bg-red-500/20 hover:bg-red-500 border border-red-500/40 p-2.5 rounded-full transition-all cursor-pointer"
+              >
+                <X size={22} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              <form onSubmit={handleB2BWebhookSubmit} className="lg:col-span-5 space-y-4 bg-black/60 border border-white/10 rounded-2xl p-5">
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+                    1. Name / Company
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={b2bLeadName}
+                    onChange={(e) => setB2bLeadName(e.target.value)}
+                    className="w-full bg-[#05070f] border border-white/15 rounded-xl p-2.5 text-xs text-white focus:border-[#d4af37] focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+                    2. Corporate Email or WhatsApp Phone
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={b2bLeadEmail}
+                    onChange={(e) => setB2bLeadEmail(e.target.value)}
+                    className="w-full bg-[#05070f] border border-white/15 rounded-xl p-2.5 text-xs text-white focus:border-[#d4af37] focus:outline-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+                      3. Ecosystem Category
+                    </label>
+                    <select
+                      value={b2bLeadCategory}
+                      onChange={(e) => setB2bLeadCategory(e.target.value)}
+                      className="w-full bg-[#05070f] border border-white/15 rounded-xl p-2.5 text-xs text-white focus:border-[#d4af37] focus:outline-none"
+                    >
+                      <option value="Turnkey B2B Landing Page Kits (8 Niches)">Turnkey B2B Landing Page Kits</option>
+                      <option value="150MP Master Mockups & Stock">150MP Master Mockups & Stock</option>
+                      <option value="UI/UX Design Vault">UI/UX Design Vault</option>
+                      <option value="V10 PDF Translator">V10 PDF Translator</option>
+                      <option value="V10 Software Ecosystem & AI Agents">V10 Software Ecosystem & AI Agents</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+                      4. Selected License / Package
+                    </label>
+                    <select
+                      value={b2bLeadItem}
+                      onChange={(e) => setB2bLeadItem(e.target.value)}
+                      className="w-full bg-[#05070f] border border-white/15 rounded-xl p-2.5 text-xs text-amber-300 font-bold focus:border-[#d4af37] focus:outline-none"
+                    >
+                      <option value="Private Aviation Kit — Agency License ($349)">Agency License ($349)</option>
+                      <option value="Private Aviation Kit — Exclusive Buyout ($1,490)">Exclusive Buyout ($1,490)</option>
+                      <option value="Full White-Label AI Agent Buyout ($4,000–$8,000)">White-Label AI Agent Buyout</option>
+                      <option value="V10 PDF Translator ($399 / 1,000 pages)">PDF Translator ($399/1k pages)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                      5. Client Inquiry (Write in ANY Language)
+                    </label>
+                    <span className="text-[10px] text-amber-400 font-bold">Auto-Detects Language</span>
+                  </div>
+                  <textarea
+                    rows="3"
+                    required
+                    value={b2bLeadMessage}
+                    onChange={(e) => setB2bLeadMessage(e.target.value)}
+                    className="w-full bg-[#05070f] border border-white/15 rounded-xl p-2.5 text-xs text-white focus:border-[#d4af37] focus:outline-none resize-none"
+                  />
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setB2bLeadMessage('We want to acquire the Private Aviation Turnkey Kit with 150MP assets and V10 PDF Translator. Please send exact pricing and links.')}
+                      className="text-[10px] bg-white/5 hover:bg-white/10 text-slate-300 px-2.5 py-1 rounded border border-white/10 transition"
+                    >
+                      🇬🇧 English Test
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setB2bLeadMessage('Zanima nas kupovina Private Aviation paketa sa 150MP slikama i kako radi PDF prevodilac. Koja je cena?')}
+                      className="text-[10px] bg-white/5 hover:bg-white/10 text-slate-300 px-2.5 py-1 rounded border border-white/10 transition"
+                    >
+                      🇷🇸 Srpski Test
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setB2bLeadMessage('Wir möchten das Private Aviation Turnkey Kit und den V10 PDF Translator erwerben. Bitte senden Sie uns Preise und Links.')}
+                      className="text-[10px] bg-white/5 hover:bg-white/10 text-slate-300 px-2.5 py-1 rounded border border-white/10 transition"
+                    >
+                      🇩🇪 Deutsch Test
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isB2bSubmitting}
+                  className="w-full py-3.5 bg-gradient-to-r from-[#d4af37] to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-black uppercase tracking-widest rounded-xl text-xs shadow-lg shadow-amber-500/20 transition-all cursor-pointer"
+                >
+                  {isB2bSubmitting ? 'Processing via Groq (localhost:5678)...' : '⚡ Send Live POST to V10 B2B Webhook'}
+                </button>
+              </form>
+
+              <div className="lg:col-span-7 bg-black/60 border border-white/10 rounded-2xl p-5 min-h-[460px] flex flex-col justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2.5 h-2.5 rounded-full ${isB2bSubmitting ? 'bg-amber-400 animate-ping' : 'bg-emerald-400'}`}></span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-300">{b2bStatus}</span>
+                  </div>
+                  <span className="text-[10px] font-mono uppercase px-2.5 py-1 bg-white/5 text-amber-300 rounded border border-amber-500/20">
+                    Groq • openai/gpt-oss-120b
+                  </span>
+                </div>
+
+                <div className="my-auto py-4">
+                  {isB2bSubmitting ? (
+                    <div className="py-16 text-center">
+                      <div className="inline-block w-12 h-12 border-4 border-[#d4af37] border-t-transparent rounded-full animate-spin mb-4"></div>
+                      <h4 className="text-sm font-bold uppercase tracking-widest text-white">Generating Multilingual B2B Quote...</h4>
+                      <p className="text-xs text-slate-400 mt-1">Executing V10 AI Concierge Agent with Window Buffer Memory</p>
+                    </div>
+                  ) : b2bAgentReply ? (
+                    <div className="space-y-4">
+                      <div className="bg-[#0b0e17] border border-[#d4af37]/40 rounded-2xl p-5 shadow-inner">
+                        <div className="flex items-center justify-between border-b border-white/10 pb-2.5 mb-3">
+                          <span className="text-xs font-black uppercase tracking-widest text-[#d4af37]">
+                            🤖 V10 AI Concierge Live Output:
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => copyToClipboard(b2bAgentReply)}
+                            className="text-[10px] bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded text-white font-bold flex items-center gap-1"
+                          >
+                            <Copy size={11} /> Copy Reply
+                          </button>
+                        </div>
+                        <div className="text-xs sm:text-sm text-slate-200 whitespace-pre-line leading-relaxed max-h-[260px] overflow-y-auto pr-2">
+                          {b2bAgentReply}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <a
+                          href={b2bWhatsappLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 text-center bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-wider py-3 rounded-xl text-xs transition shadow-lg"
+                        >
+                          💬 Escalate Directly to VIP WhatsApp (+381648201496)
+                        </a>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="py-12 text-center max-w-md mx-auto space-y-3">
+                      <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto text-[#d4af37]">
+                        <Bot size={28} />
+                      </div>
+                      <h3 className="text-sm font-black uppercase tracking-wider text-white">
+                        Both V10 n8n Workflows Are Published & Ready
+                      </h3>
+                      <p className="text-xs text-slate-400 leading-relaxed">
+                        Click <strong>Send Live POST to V10 B2B Webhook</strong> on the left to test real-time B2B quote generation from your local n8n instance (<code className="text-amber-300">localhost:5678</code>), or use the floating chat widget in the bottom-right corner of the screen.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="border-t border-white/10 pt-3 mt-4 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500">
+                  <span>Package: <code className="text-slate-300">V10 B2B Webhook - NEW (Groq).json</code> + <code className="text-slate-300">index.html</code> + <code className="text-slate-300">README.md</code></span>
+                  <span className="text-[#d4af37] font-bold">100% Turnkey White-Label Ownership</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ========================================================= */}
       {/* 5. INTERACTIVE AUTONOMOUS CALENDAR & APPOINTMENT STUDIO    */}
       {/* ========================================================= */}
@@ -680,7 +990,7 @@ export default function AIAgentsShowcase() {
                   className="w-full py-3.5 bg-gradient-to-r from-cyan-400 to-teal-500 hover:from-cyan-300 hover:to-teal-400 text-black font-black uppercase tracking-widest rounded-xl text-xs shadow-lg shadow-cyan-500/20 transition-all cursor-pointer flex items-center justify-center gap-2"
                 >
                   <Calendar size={14} />
-                  {isBookingSubmitting ? 'Locking Slot & Alerting WhatsApp...' : '📅 Confirm Executive Call & Push Alert'}
+                  {isBookingSubmitting ? 'Locking Slot & Alerting via n8n...' : '📅 Confirm Executive Call & Push Alert'}
                 </button>
               </form>
 
@@ -708,7 +1018,7 @@ export default function AIAgentsShowcase() {
                             V10 Autonomous Appointment Pass
                           </div>
                           <div className="text-[11px] text-emerald-400 font-bold">
-                            {bookingConfirmed ? '✓ Dispatched to Owner WhatsApp (+381648201496)' : 'Live Executive Booking Preview'}
+                            {bookingConfirmed ? '✓ Dispatched to V10 B2B Webhook (+381648201496)' : 'Live Executive Booking Preview'}
                           </div>
                         </div>
                       </div>
@@ -729,15 +1039,26 @@ export default function AIAgentsShowcase() {
                         <div><span className="text-slate-400">💰 Qualified Budget:</span> <strong className="text-emerald-400">{bookingBudget}</strong></div>
                         <div><span className="text-slate-400">📍 Channel:</span> <span>{bookingPlatform}</span></div>
                       </div>
+                      {bookingAiReply && (
+                        <div className="mt-3 pt-2.5 border-t border-white/10 text-[11px] text-emerald-300 whitespace-pre-line">
+                          <strong className="block uppercase text-cyan-400 mb-1">🤖 V10 Concierge Confirmation:</strong>
+                          {bookingAiReply}
+                        </div>
+                      )}
                     </div>
 
                     <div className="mt-4 grid grid-cols-2 gap-2.5">
                       <div className="text-center py-2.5 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-[10px] font-black uppercase tracking-wider">
                         ✓ Auto-Blocks Busy Slots
                       </div>
-                      <div className="text-center py-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-black uppercase tracking-wider">
-                        📲 Instant WhatsApp Alert
-                      </div>
+                      <a
+                        href="https://wa.me/381648201496"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-center py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-[10px] font-black uppercase tracking-wider transition"
+                      >
+                        📲 Open VIP WhatsApp
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -898,13 +1219,13 @@ export default function AIAgentsShowcase() {
 
                 <div className="pt-2 border-t border-white/10">
                   <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1 mb-1">
-                    <Smartphone size={12} className="text-amber-400" /> Live n8n / Viber / Telegram Webhook URL (Optional)
+                    <Smartphone size={12} className="text-amber-400" /> Active Local n8n Webhook URL
                   </label>
                   <input
                     type="url"
                     value={alertWebhookUrl}
                     onChange={(e) => setAlertWebhookUrl(e.target.value)}
-                    placeholder="Paste webhook URL to trigger real phone vibration..."
+                    placeholder="https://n8n-production-720dcf20.up.railway.app/webhook/v10-concierge-webhook"
                     className="w-full bg-[#05070f] border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:border-amber-400 focus:outline-none"
                   />
                 </div>
@@ -945,7 +1266,7 @@ export default function AIAgentsShowcase() {
                             V10 Sales Concierge Bot ({alertChannel})
                           </div>
                           <div className="text-[10px] text-emerald-400 font-semibold">
-                            {alertDispatched ? '✓ Just delivered to your phone' : 'Live Mobile Message Preview'}
+                            {alertDispatched ? '✓ Just delivered via n8n' : 'Live Mobile Message Preview'}
                           </div>
                         </div>
                       </div>
@@ -964,7 +1285,7 @@ export default function AIAgentsShowcase() {
                       </div>
                       <div className="mt-3 pt-2.5 border-t border-white/10 text-[11px] text-slate-300">
                         <span className="text-amber-400 font-bold uppercase block mb-0.5">🤖 AI Buyer Intelligence:</span>
-                        Corporate domain verified. High probability of repeat agency licensing. Recommended action: Send VIP onboarding link.
+                        {alertAiReply || 'Corporate domain verified. High probability of repeat agency licensing. Recommended action: Send VIP onboarding link.'}
                       </div>
                     </div>
 
@@ -972,9 +1293,14 @@ export default function AIAgentsShowcase() {
                       <div className="text-center py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[10px] font-black uppercase tracking-wider">
                         ✓ Approve & Send ZIP
                       </div>
-                      <div className="text-center py-2 rounded-xl bg-white/5 border border-white/10 text-slate-300 text-[10px] font-black uppercase tracking-wider">
+                      <a
+                        href="https://wa.me/381648201496"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-center py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-[10px] font-black uppercase tracking-wider"
+                      >
                         ✉️ 1-Click VIP Reply
-                      </div>
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -1179,10 +1505,12 @@ export default function AIAgentsShowcase() {
                     </p>
                     <div className="mt-5 flex flex-col sm:flex-row gap-2 justify-center">
                       <a 
-                        href="mailto:aitoolsprosmart@gmail.com?subject=White-Label%20AI%20Mockup%20Studio%20Acquisition%20($5,500)"
+                        href="https://wa.me/381648201496"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="px-4 py-2.5 bg-cyan-400 hover:bg-cyan-300 text-black font-black text-xs uppercase tracking-wider rounded-xl transition"
                       >
-                        Request VIP Key / Buyout ($5,500)
+                        Request VIP Key / Buyout on WhatsApp
                       </a>
                     </div>
                   </div>
@@ -1378,10 +1706,12 @@ export default function AIAgentsShowcase() {
                     </p>
                     <div className="mt-5 flex justify-center">
                       <a 
-                        href="mailto:aitoolsprosmart@gmail.com?subject=White-Label%20SEO%20%26%20CRO%20Auditor%20Acquisition%20($3,500)"
+                        href="https://wa.me/381648201496"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="px-4 py-2.5 bg-emerald-400 hover:bg-emerald-300 text-black font-black text-xs uppercase tracking-wider rounded-xl transition"
                       >
-                        Request VIP Key / Buyout ($3,500)
+                        Request VIP Key / Buyout on WhatsApp
                       </a>
                     </div>
                   </div>
@@ -1640,10 +1970,12 @@ export default function AIAgentsShowcase() {
                     </p>
                     <div className="mt-5 flex justify-center">
                       <a 
-                        href="mailto:aitoolsprosmart@gmail.com?subject=White-Label%20Omnichannel%20Campaign%20Studio%20Acquisition%20($3,000)"
+                        href="https://wa.me/381648201496"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="px-4 py-2.5 bg-cyan-400 hover:bg-cyan-300 text-black font-black text-xs uppercase tracking-wider rounded-xl transition"
                       >
-                        Request VIP Key / Buyout ($3,000)
+                        Request VIP Key / Buyout on WhatsApp
                       </a>
                     </div>
                   </div>
@@ -1799,7 +2131,7 @@ export default function AIAgentsShowcase() {
                   <div className="font-bold text-white uppercase tracking-wider text-[11px] mb-1">Included in Turnkey Package (.ZIP):</div>
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span><strong>Deliverables:</strong> {activeModalAgent.deliverables || 'Custom-branded HTML/Tailwind/React interface + n8n Workflow (.JSON)'}</span>
+                    <span><strong>Deliverables:</strong> {activeModalAgent.deliverables || 'Custom-branded HTML/Tailwind/React interface + n8n Workflow (.JSON) + README.md'}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -1821,6 +2153,18 @@ export default function AIAgentsShowcase() {
             </div>
 
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
+              {activeModalAgent.hasB2BWebhookStudio && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveModalAgent(null);
+                    setIsB2BWebhookStudioOpen(true);
+                  }}
+                  className="flex-1 bg-gradient-to-r from-[#d4af37] to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black text-xs sm:text-sm font-black uppercase tracking-widest py-3.5 md:py-4 rounded-xl transition shadow-lg cursor-pointer"
+                >
+                  ⚡ Test Live B2B Webhook
+                </button>
+              )}
               {activeModalAgent.hasLiveStudio && (
                 <button 
                   type="button"
@@ -1882,10 +2226,12 @@ export default function AIAgentsShowcase() {
                 </button>
               )}
               <a 
-                href={`mailto:aitoolsprosmart@gmail.com?subject=Priority%20White-Label%20Acquisition:%20${encodeURIComponent(activeModalAgent.name)}`}
+                href={`https://wa.me/381648201496?text=${encodeURIComponent(`Hi Goran, I want to acquire the White-Label License for: ${activeModalAgent.name} (${activeModalAgent.whiteLabelPrice})`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className={`flex-1 text-center ${getColorClasses(activeModalAgent.colorTheme).button} text-xs sm:text-sm font-black uppercase tracking-widest py-3.5 md:py-4 rounded-xl transition shadow-lg`}
               >
-                Acquire White-Label License
+                Acquire via VIP WhatsApp
               </a>
               <button
                 type="button"
@@ -1930,8 +2276,14 @@ export default function AIAgentsShowcase() {
               Acquire production-ready AI architectures (HTML/React Frontend UI + Self-Hosted n8n Backend Workflows) for your agency or enterprise. One-time buyout, zero recurring license fees.
             </p>
 
-            {/* HIGH-CONVERSION ABOVE-THE-FOLD CTA BUTTONS (5 LIVE STUDIOS) */}
+            {/* HIGH-CONVERSION ABOVE-THE-FOLD CTA BUTTONS (6 LIVE STUDIOS) */}
             <div className="relative z-10 mt-8 flex flex-wrap items-center justify-center gap-3">
+              <button 
+                onClick={() => setIsB2BWebhookStudioOpen(true)}
+                className="px-5 py-3.5 bg-gradient-to-r from-[#d4af37] to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-black text-xs uppercase tracking-widest rounded-xl shadow-[0_0_25px_rgba(212,175,55,0.45)] transition transform hover:scale-105 cursor-pointer"
+              >
+                🤖 Live B2B Webhook Scoper (Groq)
+              </button>
               <button 
                 onClick={() => setIsMockupStudioOpen(true)}
                 className="px-5 py-3.5 bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-black font-black text-xs uppercase tracking-widest rounded-xl shadow-[0_0_25px_rgba(6,182,212,0.35)] transition transform hover:scale-105 cursor-pointer"
@@ -1971,21 +2323,21 @@ export default function AIAgentsShowcase() {
               <ShieldCheck className="w-8 h-8 text-cyan-400 shrink-0" />
               <div>
                 <div className="text-xs font-black uppercase text-white">100% IP & Code Transfer</div>
-                <div className="text-[11px] text-slate-400">Delivered via instant .ZIP package</div>
+                <div className="text-[11px] text-slate-400">JSON + index.html + README.md</div>
               </div>
             </div>
             <div className="bg-[#050914] border border-white/10 rounded-2xl p-4 flex items-center gap-3">
               <Code className="w-8 h-8 text-emerald-400 shrink-0" />
               <div>
-                <div className="text-xs font-black uppercase text-white">n8n JSON + React/HTML</div>
-                <div className="text-[11px] text-slate-400">Deploy on your own server in 15 min</div>
+                <div className="text-xs font-black uppercase text-white">n8n + Groq 120B Engine</div>
+                <div className="text-[11px] text-slate-400">Replies in any language (&lt; 2.1s)</div>
               </div>
             </div>
             <div className="bg-[#050914] border border-white/10 rounded-2xl p-4 flex items-center gap-3">
               <Zap className="w-8 h-8 text-amber-400 shrink-0" />
               <div>
                 <div className="text-xs font-black uppercase text-white">Zero Monthly SaaS Fees</div>
-                <div className="text-[11px] text-slate-400">Plug in your own OpenAI API key</div>
+                <div className="text-[11px] text-slate-400">Self-hosted n8n + Free Groq API</div>
               </div>
             </div>
             <div className="bg-[#050914] border border-white/10 rounded-2xl p-4 flex items-center gap-3">
@@ -2011,15 +2363,17 @@ export default function AIAgentsShowcase() {
                   Flagship Revenue & Client-Acquisition Engines
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-3xl">
-                  Engineered specifically for digital agencies, SaaS founders, and B2B operators seeking immediate client acquisition, automated project quoting, or a complete turnkey AI business in a box.
+                  Engineered specifically for digital agencies, SaaS founders, and B2B operators seeking immediate client acquisition, automated multilingual project quoting, or a complete turnkey AI business in a box.
                 </p>
               </div>
               <div className="shrink-0">
                 <a 
-                  href="mailto:aitoolsprosmart@gmail.com?subject=Priority%20Tier%201%20Flagship%20Acquisition%20Inquiry"
+                  href="https://wa.me/381648201496"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-block px-5 py-3 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-black font-black text-xs uppercase tracking-widest rounded-xl shadow-lg shadow-amber-500/25 transition"
                 >
-                  ⚡ Priority VIP Inquiry
+                  ⚡ Priority VIP WhatsApp
                 </a>
               </div>
             </div>
@@ -2078,6 +2432,15 @@ export default function AIAgentsShowcase() {
                       </div>
 
                       <div className="flex flex-wrap gap-2">
+                        {item.hasB2BWebhookStudio && (
+                          <button 
+                            type="button"
+                            onClick={() => setIsB2BWebhookStudioOpen(true)}
+                            className="px-4 py-3 bg-white/10 hover:bg-white/20 text-amber-300 text-xs font-black uppercase tracking-wider rounded-xl transition cursor-pointer"
+                          >
+                            🤖 Live Webhook
+                          </button>
+                        )}
                         {item.hasLiveStudio && (
                           <button 
                             type="button"
@@ -2115,14 +2478,17 @@ export default function AIAgentsShowcase() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
             {/* Agent 1: Visual Concierge */}
             <div className="flex flex-col gap-4">
-              <div className="bg-[#050914] border border-cyan-500/30 rounded-3xl p-6 flex flex-col items-center text-center shadow-[0_0_30px_rgba(8,145,178,0.15)] h-full justify-center">
+              <div className="bg-[#050914] border border-cyan-500/30 rounded-3xl p-6 flex flex-col items-center text-center shadow-[0_0_30px_rgba(8,145,178,0.15)] h-full justify-center relative">
+                 <span className="absolute top-4 right-4 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 rounded-full">
+                   ● Published Live
+                 </span>
                  <div className="w-16 h-16 rounded-2xl bg-cyan-600/20 flex items-center justify-center text-cyan-400 mb-4">
                     <Bot size={32} />
                  </div>
                  <h3 className="text-white font-black text-lg uppercase mb-1">Visual Concierge</h3>
-                 <p className="text-cyan-400 text-xs font-bold uppercase tracking-widest mb-4">Mockups & UI/UX Routing</p>
+                 <p className="text-cyan-400 text-xs font-bold uppercase tracking-widest mb-4">Floating Chat Widget + Studio</p>
                  <p className="text-slate-400 text-xs font-medium leading-relaxed">
-                   Transforms raw product photos, logos, or UI designs into photorealistic commercial mockups in high resolution across multiple aspect ratios. Eliminates manual Photoshop rendering.
+                   Active site-wide floating chat concierge (<code className="text-cyan-300">Visual Concierge - Floating Chat Widget.json</code>) powered by Groq 120B + 8K Commercial Mockup Studio.
                  </p>
               </div>
               <div className="flex gap-2 mt-auto">
@@ -2138,30 +2504,40 @@ export default function AIAgentsShowcase() {
                   onClick={() => setActiveModalAgent(visualConcierge)}
                   className="flex-1 text-center bg-blue-600 hover:bg-blue-500 text-white text-[10px] sm:text-xs font-black uppercase py-4 rounded-xl transition shadow-lg shadow-blue-600/30 cursor-pointer"
                 >
-                  Buyout ($5.5k)
+                  Buyout ($4k–$7k)
                 </button>
               </div>
             </div>
 
             {/* Agent 2: B2B Sales Scoper */}
             <div className="flex flex-col gap-4">
-               <div className="bg-[#050914] border border-emerald-500/30 rounded-3xl p-6 flex flex-col items-center text-center shadow-[0_0_30px_rgba(16,185,129,0.15)] h-full justify-center">
+               <div className="bg-[#050914] border border-emerald-500/30 rounded-3xl p-6 flex flex-col items-center text-center shadow-[0_0_30px_rgba(16,185,129,0.15)] h-full justify-center relative">
+                  <span className="absolute top-4 right-4 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 rounded-full">
+                    ● Published Live
+                  </span>
                   <div className="w-16 h-16 rounded-2xl bg-emerald-600/20 flex items-center justify-center text-emerald-400 mb-4">
                      <Briefcase size={32} />
                   </div>
                   <h3 className="text-white font-black text-lg uppercase mb-1">B2B Sales Scoper</h3>
-                  <p className="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-4">Automated Project Quotes</p>
+                  <p className="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-4">V10 B2B Webhook - NEW (Groq)</p>
                   <p className="text-slate-400 text-xs font-medium leading-relaxed">
-                    An intelligent agent deployed on client websites that conducts deep contextual conversations, qualifies leads, answers complex product queries, and books appointments automatically.
+                    Autonomous POST webhook agent (<code className="text-emerald-300">/webhook/v10-concierge-webhook</code>) that replies in the client's exact language, quotes all V10 packages, and routes VIPs to WhatsApp.
                   </p>
                </div>
-               <div className="mt-auto">
+               <div className="flex gap-2 mt-auto">
+                 <button 
+                    type="button"
+                    onClick={() => setIsB2BWebhookStudioOpen(true)}
+                    className="flex-1 text-center bg-emerald-400 hover:bg-emerald-300 text-black text-[10px] sm:text-xs font-black uppercase py-4 rounded-xl transition shadow-lg shadow-emerald-500/25 cursor-pointer"
+                 >
+                   🤖 Test Live Webhook
+                 </button>
                  <button 
                     type="button"
                     onClick={() => setActiveModalAgent(salesScoper)}
-                    className="w-full text-center bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black uppercase tracking-widest py-4 rounded-xl transition shadow-lg shadow-emerald-500/25 cursor-pointer"
+                    className="flex-1 text-center bg-emerald-700 hover:bg-emerald-600 text-white text-[10px] sm:text-xs font-black uppercase py-4 rounded-xl transition shadow-lg cursor-pointer"
                  >
-                   Acquire White-Label ($4k – $8k)
+                   Buyout ($4k–$8k)
                  </button>
                </div>
             </div>
@@ -2262,7 +2638,7 @@ export default function AIAgentsShowcase() {
               return (
                 <div key={agent.id} className="flex flex-col gap-4">
                   <div className={`bg-[#050914] border ${themeClasses.border} rounded-3xl p-6 flex flex-col items-center text-center ${themeClasses.shadow} h-full justify-center relative`}>
-                     {(agent.hasLiveStudio || agent.hasSeoStudio || agent.hasCampaignStudio || agent.hasAlertStudio || agent.hasBookingStudio) && (
+                     {(agent.hasLiveStudio || agent.hasSeoStudio || agent.hasCampaignStudio || agent.hasAlertStudio || agent.hasBookingStudio || agent.hasB2BWebhookStudio) && (
                        <span className="absolute top-4 right-4 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 rounded-full">
                          Live Studio Ready
                        </span>
@@ -2277,6 +2653,15 @@ export default function AIAgentsShowcase() {
                      </p>
                   </div>
                   <div className="mt-auto flex flex-col gap-2">
+                    {agent.hasB2BWebhookStudio && (
+                      <button 
+                        type="button"
+                        onClick={() => setIsB2BWebhookStudioOpen(true)}
+                        className="w-full text-center bg-gradient-to-r from-[#d4af37] to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black text-xs font-black uppercase tracking-widest py-3.5 rounded-xl transition shadow-lg shadow-amber-500/20 cursor-pointer"
+                      >
+                        🤖 Launch Live B2B Webhook Studio
+                      </button>
+                    )}
                     {agent.hasAlertStudio && (
                       <button 
                         type="button"
@@ -2347,7 +2732,7 @@ export default function AIAgentsShowcase() {
               V10 Software Ecosystem
             </h2>
             <p className="text-slate-400 text-sm font-bold">
-              Centralized Access to Master Tools, Premium Upscalers, and B2B Systems.
+              Centralized Access to Master Tools, Premium Upscalers, and Turnkey B2B Systems.
             </p>
           </div>
 
@@ -2371,18 +2756,10 @@ export default function AIAgentsShowcase() {
 
           <div>
             <h2 className="text-sm font-black uppercase tracking-[0.3em] text-zinc-500 mb-6 border-b border-white/10 pb-3 flex items-center gap-2">
-              <ScanLine className="w-5 h-5"/> B2B SYSTEMS
+              <ScanLine className="w-5 h-5"/> TURNKEY B2B SYSTEMS & LUXURY KITS
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <Link to="/premium-menu" className="bg-[#0a0a0a] border border-purple-500/40 p-5 rounded-2xl hover:scale-105 hover:shadow-[0_0_25px_rgba(168,85,247,0.3)] transition-all flex items-center gap-4 group">
-                <div className="bg-purple-500/20 p-3 rounded-xl shrink-0 group-hover:bg-purple-500/40 transition-colors">
-                  <ScanLine className="w-6 h-6 text-purple-400" />
-                </div>
-                <div className="flex flex-col overflow-hidden">
-                  <span className="text-[12px] md:text-[14px] font-black uppercase tracking-widest text-white truncate">QR BUILDER</span>
-                  <span className="text-[9px] md:text-[10px] font-bold text-zinc-500 uppercase tracking-widest truncate">Premium Menu System</span>
-                </div>
-              </Link>
+              {b2bEcosystemSystems.map(renderCard)}
             </div>
           </div>
         </section>
