@@ -247,11 +247,16 @@ const KIT_CONFIG = {
 };
 
 const CALENDAR_SLOTS = [
+  'Calendar Slot: 08:00 CET',
   'Calendar Slot: 10:00 CET',
   'Calendar Slot: 12:00 CET',
   'Calendar Slot: 14:00 CET',
   'Calendar Slot: 16:00 CET',
-  'Calendar Slot: 18:00 CET'
+  'Calendar Slot: 18:00 CET',
+  'Calendar Slot: 20:00 CET',
+  'Calendar Slot: 22:00 CET',
+  'Calendar Slot: 23:00 CET',
+  'Calendar Slot: 00:00 CET'
 ];
 
 const FAQS = [
