@@ -40,7 +40,7 @@ import V8SecureCheckout from '../../../V8SecureCheckout';
 import LoginRequiredModal from '../../../LoginRequiredModal';
 import { trackV8Action } from '../../../utils/analytics';
 
-const WEBHOOK_URL = 'https://n8n-production-720dcf20.up.railway.app/webhook/v10-concierge-webhook';
+const WEBHOOK_URL = 'https://n8n-production-720dcf20.up.railway.app/webhook/AVIATION_Concierge_And_Calendar';
 
 // Fullscreen Lightbox Inspector
 const LightboxInspector = ({ imageUrl, onClose }) => {
@@ -79,7 +79,7 @@ const KIT_CONFIG = {
 
   prevPageRoute: '/aviation-cloudline-kit',
   prevPageLabel: 'Prev Jet Page: Cloudline (3/5)',
-  nextLandingRoute: '/aviation-page-5',
+  nextLandingRoute: '/aviation-skyglass-aviation',
   nextLandingLabel: 'Next Jet Page: Skyglass (5/5)',
 
   heroImage: '/jets/60.webp',
@@ -338,6 +338,8 @@ const MidnightAltitude = () => {
   const [userInput, setUserInput] = useState('');
   const [clientName, setClientName] = useState('');
   const [clientEmail, setClientEmail] = useState('');
+  const [flightDate, setFlightDate] = useState('2026-11-20');
+  const [flightSlot, setFlightSlot] = useState('14:00 CET');
   const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
@@ -451,6 +453,7 @@ Free Sample Vault Drive: ${KIT_CONFIG.freeSampleLink}
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: msg,
+          date: `${flightDate} at ${flightSlot}`,
           clientName: clientName || 'Midnight VIP Guest',
           clientEmail: clientEmail || 'vip@midnight-altitude.com',
           activeZone: currentZone.zone,
@@ -1287,6 +1290,23 @@ Free Sample Vault Drive: ${KIT_CONFIG.freeSampleLink}
                   onChange={(e) => setClientEmail(e.target.value)}
                   className="rounded-xl border border-white/15 bg-[#0B0E1A] px-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none"
                 />
+                <input
+                  type="date"
+                  value={flightDate}
+                  onChange={(e) => setFlightDate(e.target.value)}
+                  className="rounded-xl border border-white/15 bg-black/50 px-4 py-2.5 text-xs text-white focus:border-emerald-400 focus:outline-none"
+                />
+                <select
+                  value={flightSlot}
+                  onChange={(e) => setFlightSlot(e.target.value)}
+                  className="rounded-xl border border-white/15 bg-black/50 px-4 py-2.5 text-xs font-bold text-amber-200 focus:border-emerald-400 focus:outline-none"
+                >
+                  <option value="10:00 CET" className="bg-black text-white">Calendar Slot: 10:00 CET</option>
+                  <option value="12:00 CET" className="bg-black text-white">Calendar Slot: 12:00 CET</option>
+                  <option value="14:00 CET" className="bg-black text-white">Calendar Slot: 14:00 CET</option>
+                  <option value="16:30 CET" className="bg-black text-white">Calendar Slot: 16:30 CET</option>
+                  <option value="18:00 CET" className="bg-black text-white">Calendar Slot: 18:00 CET</option>
+                </select>
               </div>
 
               <div className="my-4 h-64 space-y-3 overflow-y-auto pr-2">

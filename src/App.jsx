@@ -1,5 +1,5 @@
 // ============================================================================
-// POČETAK FAJLA: src/App.jsx
+// START OF FILE: src/App.jsx
 // ============================================================================
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
@@ -60,29 +60,28 @@ import V10PdfTranslator from './pdf/V10PdfTranslator';
 // 🔥 SHOWCASE (aiagents folder) 🔥
 import AIAgentsShowcase from './aiagents/AIAgentsShowcase';
 
-// 🔥 TURNKEY B2B BRAND & WEB KITS (pages/kits folder) 🔥
+// 🔥 TURNKEY B2B BRAND & WEB KITS (pages/kits folder) - 5 JETS KITS 🔥
 import PrivateAviationKit from './pages/kits/aviation/PrivateAviationKit';
 import AeroPriveAtelier from './pages/kits/aviation/AeroPriveAtelier';
-import MidnightAltitude from './pages/kits/aviation/MidnightAltitude';
 import CloudlinePrestige from './pages/kits/aviation/CloudlinePrestige';
 import RunwayReserve from './pages/kits/aviation/RunwayReserve';
 import SkyglassAviation from './pages/kits/aviation/SkyglassAviation';
 
-// 🔥 SVIH 5 JAHTI (pages/kits/yachts folder) 🔥
+// 🔥 SUPERYACHT KITS (1 TO 5) 🔥
 import AquaYachtCharterKit from './pages/kits/yachts/AquaYachtCharterKit';
 import AegeanYachtEscape from './pages/kits/yachts/AegeanYachtEscape';
 import NautilusNightCharter from './pages/kits/yachts/NautilusNightCharter';
 import SapphireVoyageYachts from './pages/kits/yachts/SapphireVoyageYachts';
 import TideglassYachtSociety from './pages/kits/yachts/TideglassYachtSociety';
 
-// 🔥 SVIH 5 SATOVA (pages/kits/watches folder) 🔥
+// 🔥 WATCH KITS (1 TO 5) 🔥
 import AbyssChronograph from './pages/kits/watches/AbyssChronograph';
 import AtelierHorology from './pages/kits/watches/AtelierHorology';
 import MeridianWatchHouse from './pages/kits/watches/MeridianWatchHouse';
 import LumenWatchCollective from './pages/kits/watches/LumenWatchCollective';
 import MonarchTimepieces from './pages/kits/watches/MonarchTimepieces';
 
-// 🔥 DIJAMANTI (pages/kits/diamonds folder) 🔥
+// 🔥 DIAMOND KITS (1 TO 5) 🔥
 import VerdantOrangerieJewels from './pages/kits/diamonds/VerdantOrangerieJewels';
 import SolenneHighJewelry from './pages/kits/diamonds/SolenneHighJewelry';
 
@@ -91,12 +90,14 @@ import Portfolio from './Portfolio';
 import V8PremiumTestMenu from './qrcode/V8PremiumTestMenu';
 import PublicMenuTestQRMenu from './qrcode/PublicMenuTestQRMenu';
 
-// 🔥 UI/UX V10 INŽENJERING 🔥
+// 🔥 UI/UX V10 ENGINEERING 🔥
 import UiUxHub from './ux/UiUxHub';
 import VaultGrid from './ux/VaultGrid';
 import V10SplitScreen from './ux/V10SplitScreen';
 import CommercialOps from './ux/CommercialOps'; 
 import V10MyVault from './ux/V10MyVault'; 
+
+import MidnightAltitude from './pages/kits/aviation/MidnightAltitude';
 
 if (typeof window !== 'undefined') {
   if ('scrollRestoration' in window.history) { window.history.scrollRestoration = 'manual'; }
@@ -120,7 +121,7 @@ export const playV8Sound = (type) => {
     if (audioUrl) {
       currentAudio = new Audio(audioUrl);
       currentAudio.volume = 0.5;
-      currentAudio.play().catch(e => console.warn("Browser blokirao autoplay zvuka", e));
+      currentAudio.play().catch(e => console.warn("Browser blocked sound autoplay", e));
     }
   } catch (err) {}
 };
@@ -289,11 +290,11 @@ const V8AlertModalContainer = () => {
           </div>
           <div className="flex justify-between items-end mt-2">
             <div>
-              <p className="text-[10px] text-white/60 uppercase font-black tracking-widest mb-1">Datum i Vreme</p>
+              <p className="text-[10px] text-white/60 uppercase font-black tracking-widest mb-1">Timestamp</p>
               <p className="text-xs font-semibold">{modalData.timestamp}</p>
             </div>
             <div className="text-right">
-              <p className="text-[10px] text-white/60 uppercase font-black tracking-widest mb-1">Iznos</p>
+              <p className="text-[10px] text-white/60 uppercase font-black tracking-widest mb-1">Amount</p>
               <p className="text-2xl font-black">${modalData.amount}</p>
             </div>
           </div>
@@ -331,9 +332,9 @@ const AdminLiveSalesTracker = () => {
           const d = change.doc.data();
           if (d.isPaid) {
              v8AlertModal.show({ 
-              customerName: d.ime || d.klijent || 'B2B Klijent',
-              email: d.email || 'Bez emaila',
-              timestamp: new Date().toLocaleString('sr-RS'),
+              customerName: d.ime || d.klijent || 'B2B Client',
+              email: d.email || 'No email',
+              timestamp: new Date().toLocaleString('en-US'),
               amount: d.cenaPaketa ? Math.ceil(d.cenaPaketa/117) : (d.price || 0), 
               type: 'success',
               icon: 'b2b'
@@ -351,9 +352,9 @@ const AdminLiveSalesTracker = () => {
           const isUiUx = d.selectedProjects && d.selectedProjects.length > 0;
           v8AlertModal.show({ 
             customerName: `${d.firstName} ${d.lastName}`,
-            email: d.clientEmail || 'Bez emaila',
+            email: d.clientEmail || 'No email',
             packageTitle: d.productName || '',
-            timestamp: new Date().toLocaleString('sr-RS'),
+            timestamp: new Date().toLocaleString('en-US'),
             amount: d.price || 0, 
             type: 'success',
             icon: isUiUx ? 'uiux' : 'crypto',
@@ -372,9 +373,9 @@ const AdminLiveSalesTracker = () => {
           const isUiUx = d.selectedProjects && d.selectedProjects.length > 0;
           v8AlertModal.show({ 
             customerName: `${d.firstName} ${d.lastName}`,
-            email: d.clientEmail || 'Bez emaila',
+            email: d.clientEmail || 'No email',
             packageTitle: d.productName || '',
-            timestamp: new Date().toLocaleString('sr-RS'),
+            timestamp: new Date().toLocaleString('en-US'),
             amount: d.price || 0, 
             type: 'success',
             icon: isUiUx ? 'uiux' : (isCard ? 'card' : 'paypal'),
@@ -391,9 +392,9 @@ const AdminLiveSalesTracker = () => {
           const d = change.doc.data();
           v8AlertModal.show({ 
             customerName: `${d.firstName} ${d.lastName}`,
-            email: d.clientEmail || 'Bez emaila',
+            email: d.clientEmail || 'No email',
             packageTitle: d.productName || '',
-            timestamp: new Date().toLocaleString('sr-RS'),
+            timestamp: new Date().toLocaleString('en-US'),
             amount: d.price || 0, 
             type: 'success',
             icon: 'uiux',
@@ -634,17 +635,15 @@ function AppContent({ appsData, refreshData }) {
               <Route path="/dashboard" element={<V8PageWrapper><V8AdminDashboard /></V8PageWrapper>} />
               <Route path="/admin-payoneer" element={<V8PageWrapper><V8PayoneerDashboard /></V8PageWrapper>} />
               
-              {/* 🔥 SVIH 6 AVIO KITOVA 🔥 */}
+              {/* 🔥 5 JETS KITS (5th page correctly bound to SkyglassAviation and explicit filename path) 🔥 */}
               <Route path="/aviation-charter-kit" element={<V8PageWrapper><PrivateAviationKit /></V8PageWrapper>} />
               <Route path="/aviation-atelier-kit" element={<V8PageWrapper><AeroPriveAtelier /></V8PageWrapper>} />
               <Route path="/aviation-cloudline-kit" element={<V8PageWrapper><CloudlinePrestige /></V8PageWrapper>} />
-              <Route path="/aviation-page-4" element={<V8PageWrapper><MidnightAltitude /></V8PageWrapper>} />
-              <Route path="/aviation-midnight-kit" element={<V8PageWrapper><MidnightAltitude /></V8PageWrapper>} />
               <Route path="/aviation-runway-kit" element={<V8PageWrapper><RunwayReserve /></V8PageWrapper>} />
-              <Route path="/aviation-skyglass-kit" element={<V8PageWrapper><SkyglassAviation /></V8PageWrapper>} />
+              <Route path="/aviation-skyglass-aviation" element={<V8PageWrapper><SkyglassAviation /></V8PageWrapper>} />
               <Route path="/aviation-page-5" element={<V8PageWrapper><SkyglassAviation /></V8PageWrapper>} />
 
-              {/* 🔥 SVIH 5 SUPERYACHT KITOVA (1 DO 5) 🔥 */}
+              {/* 🔥 SUPERYACHT KITS (1 TO 5) 🔥 */}
               <Route path="/superyacht-charter-kit" element={<V8PageWrapper><AquaYachtCharterKit /></V8PageWrapper>} />
               <Route path="/yacht-charter-kit" element={<V8PageWrapper><AquaYachtCharterKit /></V8PageWrapper>} />
               <Route path="/yacht-page-1" element={<V8PageWrapper><AquaYachtCharterKit /></V8PageWrapper>} />
@@ -657,7 +656,7 @@ function AppContent({ appsData, refreshData }) {
               <Route path="/yacht-page-5" element={<TideglassYachtSociety />} />
               <Route path="/tideglass-yacht-kit" element={<V8PageWrapper><TideglassYachtSociety /></V8PageWrapper>} />
               
-              {/* 🔥 SVIH 5 SATOVA (1 DO 5) 🔥 */}
+              {/* 🔥 WATCH KITS (1 TO 5) 🔥 */}
               <Route path="/abyss-chronograph" element={<AbyssChronograph />} />
               <Route path="/watch-kit" element={<AbyssChronograph />} />
               <Route path="/watch-page-1" element={<AbyssChronograph />} />
@@ -674,7 +673,7 @@ function AppContent({ appsData, refreshData }) {
               <Route path="/monarch-timepieces" element={<MonarchTimepieces />} />
               <Route path="/watch-page-5" element={<MonarchTimepieces />} />
 
-              {/* 🔥 DIJAMANTI (1 DO 5) 🔥 */}
+              {/* 🔥 DIAMOND KITS (1 TO 5) 🔥 */}
               <Route path="/diamonds-kit" element={<VerdantOrangerieJewels />} />
               <Route path="/diamond-page-1" element={<VerdantOrangerieJewels />} />
 
@@ -698,7 +697,15 @@ function AppContent({ appsData, refreshData }) {
               <Route path="/ui-ux/commercial" element={<V8PageWrapper><CommercialOps /></V8PageWrapper>} /> 
               <Route path="/ui-ux/project/:projectId" element={<V8PageWrapper><V10SplitScreen /></V8PageWrapper>} />
               <Route path="/my-vault" element={<V8PageWrapper><V10MyVault /></V8PageWrapper>} />
-            </Routes>
+                    <Route path="/aviation-charter-kit" element={<PrivateAviationKit />} />
+              <Route path="/aviation-atelier-kit" element={<AeroPriveAtelier />} />
+              <Route path="/aviation-cloudline-kit" element={<CloudlinePrestige />} />
+              <Route path="/aviation-midnight-kit" element={<MidnightAltitude />} />
+              <Route path="/aviation-runway-kit" element={<MidnightAltitude />} />
+              <Route path="/aviation-page-5" element={<SkyglassAviation />} />
+              <Route path="/aviation-skyglass-aviation" element={<SkyglassAviation />} />
+              <Route path="/aviation-skyglass-kit" element={<SkyglassAviation />} />
+      </Routes>
           </AnimatePresence>
         </div>
         {!isPublicMenuRoute && <SmartScrollButton />}
@@ -761,5 +768,5 @@ export default function App() {
   );
 }
 // ============================================================================
-// KRAJ FAJLA: src/App.jsx
+// END OF FILE: src/App.jsx
 // ============================================================================

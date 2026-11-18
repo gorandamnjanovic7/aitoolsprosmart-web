@@ -1,12 +1,12 @@
 // ============================================================================
-// POČETAK FAJLA: src/V8StockBerza.jsx (EDITORIAL GALLERY LIGHT MODE)
+// POČETAK FAJLA: src/V8StockBerza.jsx (DARK OBSIDIAN & CHAMPAGNE GOLD + VOL INPUT)
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Helmet } from 'react-helmet-async';
 import { CLOUDINARY_UPLOAD_PRESET, CLOUDINARY_CLOUD_NAME } from '../data';
 import {
-  Zap, X, Image as ImageIcon, Images, DownloadCloud, Crown, AlertCircle,
-  Type, Layers, FolderArchive, FileText, Wallet, MonitorPlay, Link as LinkIcon,
+  Zap, X, UploadCloud, DownloadCloud, Crown, AlertCircle,
+  Type, Hash, Layers, FolderArchive, FileText, Wallet, MonitorPlay, Link as LinkIcon,
   Diamond, RefreshCcw, Aperture, ShieldCheck, Edit, Trash2, Sparkles,
   Compass, Utensils, Mail, CheckCircle2, ChevronDown
 } from 'lucide-react';
@@ -41,15 +41,15 @@ class V8ErrorGuard extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-[#F8F7F4] flex flex-col items-center justify-center p-6 text-center z-[999999] relative text-stone-900">
-          <AlertCircle size={56} className="text-amber-700 mb-6" />
+        <div className="min-h-screen bg-[#0B0E14] flex flex-col items-center justify-center p-6 text-center z-[999999] relative text-[#EAE6DF]">
+          <AlertCircle size={56} className="text-[#C5A059] mb-6" />
           <h1 className="text-2xl md:text-3xl font-black uppercase tracking-widest mb-4">Sistemska Blokada</h1>
-          <p className="text-stone-600 max-w-md mx-auto mb-8 font-medium leading-relaxed">
+          <p className="text-slate-400 max-w-md mx-auto mb-8 font-medium leading-relaxed">
             Vaš pretraživač ili aktivna ekstenzija blokira učitavanje modula. Pauzirajte ad-blocker ili osvežite stranicu.
           </p>
           <button
             onClick={() => window.location.reload()}
-            className="flex items-center justify-center gap-2 bg-[#111111] hover:bg-stone-800 text-white px-8 py-4 rounded-xl font-bold uppercase tracking-widest transition-all shadow-md mx-auto cursor-pointer"
+            className="flex items-center justify-center gap-2 bg-[#C5A059] hover:bg-[#D4AF37] text-[#0B0E14] px-8 py-4 rounded-xl font-black uppercase tracking-widest transition-all shadow-lg mx-auto cursor-pointer"
           >
             <RefreshCcw size={18} /> Osveži Sistem
           </button>
@@ -73,18 +73,18 @@ const FullScreenLightbox = ({ imageUrl, onClose }) => {
 
   if (!imageUrl) return null;
   return createPortal(
-    <div className="fixed inset-0 z-[999999] bg-stone-950/95 backdrop-blur-md flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[999999] bg-[#06080C]/95 backdrop-blur-xl flex items-center justify-center p-4" onClick={onClose}>
       <button
         type="button"
         onClick={(e) => { e.stopPropagation(); onClose(); }}
-        className="absolute top-6 right-6 md:top-10 md:right-10 bg-white hover:bg-stone-200 text-stone-900 p-3.5 rounded-full font-black z-[1000000] transition-all hover:scale-105 cursor-pointer shadow-xl"
+        className="absolute top-6 right-6 md:top-10 md:right-10 bg-[#C5A059] hover:bg-[#D4AF37] text-[#0B0E14] p-3.5 rounded-full font-black z-[1000000] transition-all hover:scale-105 cursor-pointer shadow-2xl"
       >
         <X size={26} strokeWidth={2.5} />
       </button>
       <img
         src={imageUrl}
         alt="150MP Full Screen Inspection"
-        className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl relative z-[999999] border border-white/15"
+        className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl relative z-[999999] border border-[#C5A059]/40"
         onClick={(e) => e.stopPropagation()}
       />
     </div>,
@@ -93,12 +93,12 @@ const FullScreenLightbox = ({ imageUrl, onClose }) => {
 };
 
 // ============================================================================
-// KOMERCIJALNE B2B KATEGORIJE (EDITORIAL LIGHT GALERIJA)
+// KOMERCIJALNE B2B KATEGORIJE (USKLAĐENA IMENA DUGMIĆA I FORME)
 // ============================================================================
 const INDUSTRY_TABS = [
   {
     id: 'all',
-    label: 'All Commercial Vaults',
+    label: 'ALL VAULTS',
     shortLabel: 'ALL VAULTS',
     formatCode: 'V10 LUXURY GOODS (10x 4K + 10x 150MP)',
     icon: Layers,
@@ -107,62 +107,84 @@ const INDUSTRY_TABS = [
   },
   {
     id: 'luxury_goods',
-    label: 'Watches, Jewelry & Perfumes',
+    label: 'LUXURY GOODS',
     shortLabel: 'LUXURY GOODS',
     formatCode: 'V10 LUXURY GOODS (10x 4K + 10x 150MP)',
     icon: Diamond,
-    headline: 'WATCHES, FINE JEWELRY, PERFUMES & COUTURE',
-    subheadline: 'BLANK-LABEL HOROLOGY, HIGH-JEWELRY DIAMONDS, FRAGRANCE FLACONS, HANDBAGS & EYEWEAR. ZERO LOGOS—READY FOR INSTANT BRAND COMPOSITING & BILLBOARD PRINT.'
+    headline: 'LUXURY GOODS, HOROLOGY, FINE JEWELRY & PERFUMES',
+    subheadline: 'BLANK-LABEL LUXURY GOODS, HOROLOGY, HIGH-JEWELRY DIAMONDS, FRAGRANCE FLACONS, HANDBAGS & EYEWEAR. ZERO LOGOS—READY FOR INSTANT BRAND COMPOSITING & BILLBOARD PRINT.'
   },
   {
     id: 'beauty',
-    label: 'Beauty, Skincare & Editorial',
+    label: 'BEAUTY & SKINCARE',
     shortLabel: 'BEAUTY & SKINCARE',
     formatCode: 'V10 BEAUTY & SKINCARE (10x 4K + 10x 150MP)',
     icon: Sparkles,
-    headline: 'ANONYMOUS BEAUTY, SKINCARE & COSMETIC TEXTURES',
-    subheadline: '100% IP-SAFE BEAUTY ADVERTISING CROPS WITH NATURAL SKIN MICROTEXTURE, SERUM DROPLETS & GLOSSY EDITORIAL LIGHTING. NO IDENTIFIABLE FACES OR TRADEMARKS.'
+    headline: 'BEAUTY, SKINCARE & COSMETIC EDITORIAL TEXTURES',
+    subheadline: '100% IP-SAFE BEAUTY & SKINCARE ADVERTISING CROPS WITH NATURAL SKIN MICROTEXTURE, SERUM DROPLETS & GLOSSY EDITORIAL LIGHTING. NO IDENTIFIABLE FACES OR TRADEMARKS.'
   },
   {
     id: 'aviation_interior',
-    label: 'Jets, Yachts & Architecture',
+    label: 'JETS, YACHTS & INTERIORS',
     shortLabel: 'JETS, YACHTS & INTERIORS',
     formatCode: 'V10 JETS YACHTS & INTERIORS (10x 4K + 10x 150MP)',
     icon: Compass,
-    headline: 'PRIVATE AVIATION, SUPERYACHTS & ULTRA-PRIME REAL ESTATE',
+    headline: 'JETS, YACHTS & ARCHITECTURAL INTERIORS',
     subheadline: 'BESPOKE PRIVATE JET CABINS, SUPERYACHT DECKS, PENTHOUSE INTERIORS & ARCHITECTURAL EXTERIORS ENGINEERED FOR CHARTER BROKERS, REAL ESTATE & WEALTH BRANDS.'
   },
   {
     id: 'gastronomy',
-    label: 'Michelin Gastronomy',
+    label: 'MICHELIN FOOD',
     shortLabel: 'MICHELIN FOOD',
     formatCode: 'V10 MICHELIN GASTRONOMY (10x 4K + 10x 150MP)',
     icon: Utensils,
-    headline: 'MICHELIN MOLECULAR GASTRONOMY & FINE DINING',
+    headline: 'MICHELIN FOOD, MOLECULAR GASTRONOMY & FINE DINING',
     subheadline: 'CULINARY PLATING, FINE SPIRITS & FIVE-STAR HOSPITALITY VISUALS IN RAZOR-SHARP 4K UHD & 150MP MASTER PRINT RESOLUTION.'
   },
   {
     id: 'cinematic',
-    label: 'Cinematic & Legacy Collections',
+    label: 'CINEMATIC & LEGACY',
     shortLabel: 'CINEMATIC & LEGACY',
     formatCode: 'V10 CINEMATIC & WORLD (10x 4K + 10x 150MP)',
     icon: Crown,
-    headline: 'CINEMATIC REALMS, ANCIENT ARCHITECTURE & SIGNATURE PACKS',
+    headline: 'CINEMATIC & LEGACY REALMS, ARCHITECTURE & KEY ART',
     subheadline: 'HIGH-IMPACT KEY ART, HISTORICAL MONUMENTS & MULTI-RATIO PRODUCTION BUNDLES FOR FILM STUDIOS, PUBLISHERS & GAME DEVELOPERS.'
   }
 ];
 
+// ============================================================================
+// OBAVEZNI STANDARDIZOVANI OPISI ZA SVAKO DUGME (100% USKLAĐENO SA DUGMIĆIMA)
+// ============================================================================
 const DEFAULT_DESCRIPTIONS = {
   'V10 LUXURY GOODS (10x 4K + 10x 150MP)':
-    "COMMERCIAL CAMPAIGN DELIVERY: 20 PRODUCTION FILES (10× 4K UHD FOR WEB/SOCIAL + SAME 10× 150MP MASTER FILES FOR LARGE-FORMAT BILLBOARD & PRINT).\n• 100% Unbranded & Blank-Label Luxury Product Photography (Zero logos, zero trademarks, zero watermarks).\n• Shot-matched Phase One XF IQ4 150MP macro aesthetics with natural highlight rolloff, sRGB ICC color profile, and cleaned EXIF metadata.\n• Ready for luxury e-commerce hero banners, packaging mockups, jewelry/watch catalogs, and agency client campaigns.",
+`COMMERCIAL LUXURY GOODS DELIVERY: 20 PRODUCTION FILES (10× 4K UHD FOR WEB/SOCIAL + SAME 10× 150MP MASTER FILES FOR LARGE-FORMAT BILLBOARD & PRINT).
+- 100% Unbranded & Blank-Label Luxury Goods Photography (Zero logos, zero trademarks, zero watermarks).
+- Shot-matched Phase One XF IQ4 150MP macro aesthetics with natural highlight rolloff, sRGB ICC color profile, and cleaned EXIF metadata.
+- Ready for luxury e-commerce hero banners, packaging mockups, luxury goods catalogs, and agency client campaigns.`,
+
   'V10 BEAUTY & SKINCARE (10x 4K + 10x 150MP)':
-    "COMMERCIAL BEAUTY CAMPAIGN DELIVERY: 20 PRODUCTION FILES (10× 4K UHD + SAME 10× 150MP MASTER PRINT FILES).\n• 100% IP-Safe Anonymous Beauty & Skincare Macro Photography—no identifiable faces, no celebrity likeness, no brand labels.\n• Natural skin pore microtexture, realistic serum hydration droplets, and high-end studio beauty-dish lighting.\n• Engineered for cosmetic brands, aesthetic clinics, spa resorts, and global beauty ad campaigns.",
+`COMMERCIAL BEAUTY & SKINCARE DELIVERY: 20 PRODUCTION FILES (10× 4K UHD FOR WEB/SOCIAL + SAME 10× 150MP MASTER FILES FOR LARGE-FORMAT BILLBOARD & PRINT).
+- 100% Unbranded & Blank-Label Beauty & Skincare Photography (Zero logos, zero trademarks, zero watermarks, no identifiable faces).
+- Shot-matched Phase One XF IQ4 150MP macro aesthetics with natural highlight rolloff, sRGB ICC color profile, and cleaned EXIF metadata.
+- Ready for luxury e-commerce hero banners, packaging mockups, beauty & skincare catalogs, and agency client campaigns.`,
+
   'V10 JETS YACHTS & INTERIORS (10x 4K + 10x 150MP)':
-    "ULTRA-PRIME HOSPITALITY & AVIATION DELIVERY: 20 PRODUCTION FILES (10× 4K UHD + SAME 10× 150MP MASTER PRINT FILES).\n• Bespoke private jet interiors, superyacht lounges, architectural villas, and luxury penthouses.\n• Flawless interior/exterior dynamic range, sRGB ICC color accuracy, and 100% IP-safe commercial licensing.\n• Built for private charter brokers, luxury real estate agencies, architects, and wealth management firms.",
+`COMMERCIAL JETS, YACHTS & INTERIORS DELIVERY: 20 PRODUCTION FILES (10× 4K UHD FOR WEB/SOCIAL + SAME 10× 150MP MASTER FILES FOR LARGE-FORMAT BILLBOARD & PRINT).
+- 100% Unbranded & Blank-Label Jets, Yachts & Interiors Photography (Zero logos, zero trademarks, zero watermarks).
+- Shot-matched Phase One XF IQ4 150MP architectural aesthetics with natural highlight rolloff, sRGB ICC color profile, and cleaned EXIF metadata.
+- Ready for luxury e-commerce hero banners, packaging mockups, jets, yachts & interiors catalogs, and agency client campaigns.`,
+
   'V10 MICHELIN GASTRONOMY (10x 4K + 10x 150MP)':
-    "FINE-DINING & HOSPITALITY DELIVERY: 20 PRODUCTION FILES (10× 4K UHD + SAME 10× 150MP MASTER PRINT FILES).\n• Michelin-grade culinary plating, artisanal cocktails, and moody five-star restaurant aesthetics.\n• Crisp macro surface textures, natural steam/liquid highlights, and zero brand trademarks.\n• Ideal for luxury restaurants, digital QR menus, hotel groups, and gourmet packaging.",
+`COMMERCIAL MICHELIN FOOD DELIVERY: 20 PRODUCTION FILES (10× 4K UHD FOR WEB/SOCIAL + SAME 10× 150MP MASTER FILES FOR LARGE-FORMAT BILLBOARD & PRINT).
+- 100% Unbranded & Blank-Label Michelin Food Photography (Zero logos, zero trademarks, zero watermarks).
+- Shot-matched Phase One XF IQ4 150MP macro aesthetics with natural highlight rolloff, sRGB ICC color profile, and cleaned EXIF metadata.
+- Ready for luxury e-commerce hero banners, packaging mockups, Michelin food catalogs, and agency client campaigns.`,
+
   'V10 CINEMATIC & WORLD (10x 4K + 10x 150MP)':
-    "CINEMATIC KEY-ART DELIVERY: 20 PRODUCTION FILES (10× 4K UHD + SAME 10× 150MP MASTER PRINT FILES).\n• Epic world-building environments, historical reconstructions, and atmospheric concept visuals.\n• Processed via V10 Master Engine with LANCZOS interpolation, anti-plastic organic micro-grain, and full commercial usage rights."
+`COMMERCIAL CINEMATIC & LEGACY DELIVERY: 20 PRODUCTION FILES (10× 4K UHD FOR WEB/SOCIAL + SAME 10× 150MP MASTER FILES FOR LARGE-FORMAT BILLBOARD & PRINT).
+- 100% Unbranded & Blank-Label Cinematic & Legacy Photography (Zero logos, zero trademarks, zero watermarks).
+- Shot-matched Phase One XF IQ4 150MP macro aesthetics with natural highlight rolloff, sRGB ICC color profile, and cleaned EXIF metadata.
+- Ready for luxury e-commerce hero banners, packaging mockups, cinematic & legacy catalogs, and agency client campaigns.`
 };
 
 const detectIndustry = (paket) => {
@@ -224,7 +246,7 @@ const V8StockBerzaBase = () => {
 
   useEffect(() => {
     localStorage.setItem('v10_luxury_industry_tab', activeTab);
-    trackV8Action('tab_view', { event_category: 'Luxury_Store_Light', event_label: activeTab });
+    trackV8Action('tab_view', { event_category: 'Luxury_Store_Dark', event_label: activeTab });
   }, [activeTab]);
 
   // Lead Magnet State (1 Free 150MP + 4K Sample za email)
@@ -241,7 +263,8 @@ const V8StockBerzaBase = () => {
   const [paidCrypto, setPaidCrypto] = useState([]);
   const [paidPaypal, setPaidPaypal] = useState([]);
 
-  // Admin Forma State
+  // Admin Forma State (uključujući posebno VOL. polje kao naslov edicije)
+  const [noviVolNaslov, setNoviVolNaslov] = useState('VOL. 01');
   const [noviNazivEn, setNoviNazivEn] = useState('');
   const [noviVolume, setNoviVolume] = useState('10x 4K UHD + 10x 150MP');
   const [noviFormat, setNoviFormat] = useState('V10 LUXURY GOODS (10x 4K + 10x 150MP)');
@@ -351,6 +374,14 @@ const V8StockBerzaBase = () => {
     return isNaN(numCena) ? "0.00" : numCena.toFixed(2);
   };
 
+  const formatPaketDisplayTitle = (paket) => {
+    const baseTitle = paket.nazivEn || 'Luxury Campaign Vault';
+    const vol = (paket.volTitle || '').trim();
+    if (!vol) return baseTitle;
+    if (baseTitle.toUpperCase().includes(vol.toUpperCase())) return baseTitle;
+    return `${vol} — ${baseTitle}`;
+  };
+
   const handleSaveSampleConfig = async () => {
     try {
       await setDoc(doc(db, "v8_settings", "free_sample_config"), {
@@ -396,7 +427,7 @@ const V8StockBerzaBase = () => {
         ime: user.displayName || "Client",
         email: user.email,
         uid: user.uid,
-        zeliPaket: paket.nazivEn || "Luxury Campaign Vault",
+        zeliPaket: formatPaketDisplayTitle(paket),
         paketId: paket.id,
         cenaPaketa: paket.cena,
         vreme: serverTimestamp(),
@@ -415,7 +446,8 @@ const V8StockBerzaBase = () => {
 
   const otvoriCheckoutIliPaddle = async (user, paket) => {
     if (!user || !paket) return;
-    const fullName = paket.volume ? `${paket.nazivEn} (${paket.volume})` : paket.nazivEn;
+    const displayTitle = formatPaketDisplayTitle(paket);
+    const fullName = paket.volume ? `${displayTitle} (${paket.volume})` : displayTitle;
     const finalPrice = getGlobalCena(paket.cena);
     await snimiKupcaUPayoneerBazu(user, paket);
     if (paket.paddleLink && paket.paddleLink.trim() !== "") {
@@ -426,18 +458,19 @@ const V8StockBerzaBase = () => {
   };
 
   const prijavaIKupovina = async (paket) => {
+    const displayTitle = formatPaketDisplayTitle(paket);
     if (paket.isFree || paket.cena === "0.00" || parseFloat(paket.cena) === 0) {
-      trackV8Action('free_asset_download', { asset_name: paket.nazivEn });
+      trackV8Action('free_asset_download', { asset_name: displayTitle });
       if (typeof v8Toast !== 'undefined') v8Toast.success("🚀 ACCESS GRANTED: Downloading Free 150MP Sample...");
       window.open(paket.zipLink, '_blank');
       return;
     }
     if (kupljeniPaketiIds.includes(paket.id)) {
-      trackV8Action('owned_asset_download', { asset_name: paket.nazivEn });
+      trackV8Action('owned_asset_download', { asset_name: displayTitle });
       window.open(paket.zipLink, '_blank');
       return;
     }
-    const fullName = paket.volume ? `${paket.nazivEn} (${paket.volume})` : paket.nazivEn;
+    const fullName = paket.volume ? `${displayTitle} (${paket.volume})` : displayTitle;
     const finalPrice = getGlobalCena(paket.cena);
     const userNow = currentUser || auth.currentUser;
     trackV8Action('checkout_initiated', { event_category: 'B2B_Sales', item_name: fullName, value: Number(finalPrice), currency: 'USD' });
@@ -500,6 +533,7 @@ const V8StockBerzaBase = () => {
     }
 
     const paketData = {
+      volTitle: noviVolNaslov.trim(),
       nazivEn: noviNazivEn.trim(),
       volume: noviVolume.trim() || '10x 4K UHD + 10x 150MP',
       format: noviFormat,
@@ -530,12 +564,13 @@ const V8StockBerzaBase = () => {
 
   const startEditPaket = (paket) => {
     setEditingPaketId(paket.id);
+    setNoviVolNaslov(paket.volTitle || 'VOL. 01');
     setNoviNazivEn(paket.nazivEn || '');
     setNoviVolume(paket.volume || '10x 4K UHD + 10x 150MP');
     setNoviFormat(paket.format || 'V10 LUXURY GOODS (10x 4K + 10x 150MP)');
     setNovaKategorijaEn(paket.kategorijaEn || '');
     setNovaCena(paket.cena || '79.00');
-    setNoviOpisEn(paket.opisEn || '');
+    setNoviOpisEn(paket.opisEn || DEFAULT_DESCRIPTIONS[paket.format] || DEFAULT_DESCRIPTIONS['V10 LUXURY GOODS (10x 4K + 10x 150MP)']);
     setPreviewUrl(paket.previewUrl || '');
     setZipLink(paket.zipLink || '');
     setIsFree(paket.isFree || false);
@@ -545,11 +580,13 @@ const V8StockBerzaBase = () => {
 
   const stoziEdit = () => {
     setEditingPaketId(null);
+    setNoviVolNaslov('VOL. 01');
     setNoviNazivEn('');
     setNoviVolume('10x 4K UHD + 10x 150MP');
     setNoviFormat('V10 LUXURY GOODS (10x 4K + 10x 150MP)');
     setNovaKategorijaEn('');
     setNovaCena('79.00');
+    setNoviOpisEn(DEFAULT_DESCRIPTIONS['V10 LUXURY GOODS (10x 4K + 10x 150MP)']);
     setPreviewUrl('');
     setZipLink('');
     setIsFree(false);
@@ -572,37 +609,44 @@ const V8StockBerzaBase = () => {
     return paketi.filter(p => detectIndustry(p) === tabId).length;
   };
 
+  // Uzima do 10 sličica iz trenutno aktivnog dugmeta za gornji brzi pregled
+  const activeTabPreviewThumbs = filtriraniPaketi
+    .flatMap(p => (p.primeri && p.primeri.length > 0 ? p.primeri : p.previewUrl ? [p.previewUrl] : []))
+    .slice(0, 10);
+
   return (
-    <div className="min-h-screen bg-[#F8F7F4] text-[#141413] font-sans relative pb-28">
+    <div className="min-h-screen bg-gradient-to-b from-[#090C12] via-[#0E131D] to-[#090C12] text-[#EAE6DF] font-sans relative pb-28">
       <Helmet>
         <title>Luxury Commercial 150MP + 4K Campaign Archive | AI Tools Pro Smart</title>
         <meta
           name="description"
-          content="100% IP-safe commercial 150MP print & 4K UHD visual campaign packages for luxury watches, perfumes, skincare, private aviation, superyachts, and Michelin gastronomy."
+          content="100% IP-safe commercial 150MP print & 4K UHD visual campaign packages for luxury goods, beauty & skincare, private aviation, superyachts, and Michelin food."
         />
       </Helmet>
 
       <div className="relative z-10 pt-28 px-4 sm:px-6 max-w-[1600px] mx-auto">
 
         {/* =================================================================== */}
-        {/* 1. EDITORIAL GALLERY HERO SECTION (WARM ALABASTER & ESPRESSO)       */}
+        {/* 1. VELVET OBSIDIAN & CHAMPAGNE GOLD HERO SECTION (BEZ BELE BOJE)    */}
         {/* =================================================================== */}
-        <div className="rounded-[2.25rem] bg-white border border-stone-200/90 shadow-[0_20px_50px_rgba(20,20,19,0.04)] p-8 md:p-14 mb-8 text-center">
-          <div className="inline-flex flex-wrap items-center justify-center gap-2 px-4 py-1.5 rounded-full bg-[#FAF6F0] border border-[#E5D7C3] text-[#8C6239] text-[10px] md:text-[11px] font-extrabold uppercase tracking-[0.22em] mb-6">
+        <div className="rounded-[2.25rem] bg-[#121722] border border-[#C5A059]/30 shadow-[0_25px_70px_rgba(0,0,0,0.65)] p-8 md:p-14 mb-8 text-center relative overflow-hidden">
+          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#C5A059] to-transparent" />
+
+          <div className="inline-flex flex-wrap items-center justify-center gap-2 px-4 py-1.5 rounded-full bg-[#1A2130] border border-[#C5A059]/40 text-[#F3E5AB] text-[10px] md:text-[11px] font-extrabold uppercase tracking-[0.22em] mb-6">
             <span>100% IP-Safe Unbranded Commercial Archive</span>
-            <span className="opacity-40">•</span>
+            <span className="text-[#C5A059]">•</span>
             <span>Dual Delivery: 10× 4K UHD + 10× 150MP Master Print</span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl lg:text-[54px] font-black uppercase tracking-tight text-[#111111] max-w-5xl mx-auto leading-[1.08] mb-5">
+          <h1 className="text-3xl sm:text-5xl lg:text-[52px] font-black uppercase tracking-tight text-[#F7F4EE] max-w-5xl mx-auto leading-[1.08] mb-5">
             {currentTabInfo.headline}
           </h1>
 
-          <p className="text-stone-500 text-xs sm:text-[13px] font-semibold uppercase tracking-[0.14em] max-w-4xl mx-auto leading-relaxed mb-10">
+          <p className="text-slate-400 text-xs sm:text-[13px] font-semibold uppercase tracking-[0.14em] max-w-4xl mx-auto leading-relaxed mb-10">
             {currentTabInfo.subheadline}
           </p>
 
-          {/* ČISTI MUZEJSKI TABOVI BEZ ŠARENILA */}
+          {/* KATEGORIJSKI DUGMIĆI U TAMNOM LUKSUZNOM STILU */}
           <div className="flex flex-wrap items-center justify-center gap-2.5 max-w-6xl mx-auto">
             {INDUSTRY_TABS.map((tab) => {
               const Icon = tab.icon;
@@ -615,14 +659,14 @@ const V8StockBerzaBase = () => {
                   onClick={() => setActiveTab(tab.id)}
                   className={`px-4 py-3.5 sm:px-5 sm:py-3.5 rounded-xl font-extrabold text-[11px] sm:text-xs uppercase tracking-wider transition-all flex items-center gap-2.5 cursor-pointer border ${
                     isActive
-                      ? 'bg-[#111111] text-white border-[#111111] shadow-[0_10px_24px_rgba(0,0,0,0.14)] scale-[1.02]'
-                      : 'bg-[#F8F7F4] text-stone-600 border-stone-200/90 hover:bg-white hover:border-stone-400 hover:text-[#111111]'
+                      ? 'bg-gradient-to-r from-[#C5A059] via-[#E2C383] to-[#C5A059] text-[#0B0E14] border-[#F3E5AB] shadow-[0_10px_28px_rgba(197,160,89,0.28)] scale-[1.02]'
+                      : 'bg-[#171E2C] text-slate-300 border-white/10 hover:bg-[#1E2738] hover:border-[#C5A059]/50 hover:text-white'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#D4AF37]' : 'text-stone-400'}`} />
+                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#0B0E14]' : 'text-[#C5A059]'}`} />
                   <span>{tab.shortLabel}</span>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-extrabold ${
-                    isActive ? 'bg-white/15 text-white' : 'bg-stone-200/70 text-stone-600'
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
+                    isActive ? 'bg-[#0B0E14] text-[#F3E5AB]' : 'bg-[#0B0E14]/70 text-[#C5A059]'
                   }`}>
                     {count}
                   </span>
@@ -630,49 +674,91 @@ const V8StockBerzaBase = () => {
               );
             })}
           </div>
+
+          {/* 10 MALIH SLIČICA ZA TRENUTNO IZABRANO DUGME */}
+          {activeTabPreviewThumbs.length > 0 && (
+            <div className="mt-8 pt-6 border-t border-white/10 max-w-5xl mx-auto">
+              <div className="flex items-center justify-between mb-3 px-1">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#C5A059]">
+                  {currentTabInfo.shortLabel} — 10-IMAGE INSTANT PREVIEW STRIP
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Click any thumbnail to inspect 150MP detail
+                </span>
+              </div>
+              <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
+                {Array.from({ length: 10 }).map((_, idx) => {
+                  const thumbUrl = activeTabPreviewThumbs[idx];
+                  return thumbUrl ? (
+                    <div
+                      key={idx}
+                      onClick={() => setFullScreenImageUrl(thumbUrl)}
+                      className="aspect-square rounded-xl overflow-hidden border border-[#C5A059]/40 hover:border-[#F3E5AB] bg-[#0B0E14] cursor-zoom-in group relative"
+                    >
+                      <img
+                        src={thumbUrl}
+                        alt={`Preview ${idx + 1}`}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                      <span className="absolute bottom-0.5 right-1 text-[8px] font-black text-[#F3E5AB] bg-black/75 px-1 rounded">
+                        #{idx + 1}
+                      </span>
+                    </div>
+                  ) : (
+                    <div
+                      key={idx}
+                      className="aspect-square rounded-xl border border-dashed border-white/15 bg-[#0B0E14]/60 flex items-center justify-center text-[9px] font-bold text-slate-500"
+                    >
+                      #{idx + 1}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* =================================================================== */}
-        {/* 2. B2B LEAD MAGNET BAR (SVETLI ŠAMPANJ-PESAK STIL)                  */}
+        {/* 2. B2B LEAD MAGNET BAR (TAMNI SMARAGD & ŠAMPANJAC ZLATO)            */}
         {/* =================================================================== */}
-        <div className="mb-14 rounded-3xl bg-[#F3EFE6] border border-[#E2D9C8] p-6 sm:p-8 shadow-[0_10px_30px_rgba(20,20,19,0.03)]">
+        <div className="mb-14 rounded-3xl bg-gradient-to-r from-[#111927] via-[#162235] to-[#111927] border border-[#C5A059]/40 p-6 sm:p-9 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
             <div className="max-w-2xl text-center lg:text-left">
-              <div className="inline-flex items-center gap-1.5 text-emerald-800 bg-emerald-100/80 border border-emerald-200 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-[0.2em] mb-2.5">
+              <div className="inline-flex items-center gap-1.5 text-[#0B0E14] bg-gradient-to-r from-[#F3E5AB] to-[#C5A059] px-3.5 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-3">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Agency Quality Verification • Zero Risk
               </div>
-              <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-[#111111]">
+              <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-[#F7F4EE]">
                 Inspect True 150MP + 4K Resolution Before Licensing
               </h2>
-              <p className="text-xs sm:text-sm text-stone-600 mt-1.5 leading-relaxed">
-                Creative directors & designers: enter your work email to instantly unlock a complimentary <strong>150MP Master Print + 4K UHD Commercial Sample</strong> with embedded sRGB ICC profile and zero watermarks.
+              <p className="text-xs sm:text-sm text-slate-300 mt-1.5 leading-relaxed">
+                Creative directors & designers: enter your work email to instantly unlock a complimentary <strong className="text-[#F3E5AB]">150MP Master Print + 4K UHD Commercial Sample</strong> with embedded sRGB ICC profile and zero watermarks.
               </p>
             </div>
 
             {!sampleUnlocked ? (
               <form onSubmit={handleUnlockFreeSample} className="w-full lg:w-auto flex flex-col sm:flex-row gap-2.5 shrink-0">
                 <div className="relative">
-                  <Mail className="w-4 h-4 text-stone-400 absolute left-4 top-1/2 -translate-y-1/2" />
+                  <Mail className="w-4 h-4 text-[#C5A059] absolute left-4 top-1/2 -translate-y-1/2" />
                   <input
                     type="email"
                     required
                     value={sampleEmail}
                     onChange={(e) => setSampleEmail(e.target.value)}
                     placeholder="Enter agency or work email..."
-                    className="w-full sm:w-72 bg-white border border-stone-300 focus:border-[#111111] rounded-xl pl-11 pr-4 py-3.5 text-xs sm:text-sm text-[#111111] placeholder:text-stone-400 outline-none shadow-sm"
+                    className="w-full sm:w-72 bg-[#0B0E14] border border-[#C5A059]/50 focus:border-[#F3E5AB] rounded-xl pl-11 pr-4 py-3.5 text-xs sm:text-sm text-[#F7F4EE] placeholder:text-slate-500 font-semibold outline-none shadow-inner"
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={isSubmittingLead}
-                  className="px-6 py-3.5 bg-[#111111] hover:bg-stone-800 text-white font-extrabold text-xs uppercase tracking-widest rounded-xl shadow-md transition cursor-pointer whitespace-nowrap"
+                  className="px-6 py-3.5 bg-gradient-to-r from-[#C5A059] via-[#E2C383] to-[#C5A059] hover:brightness-110 text-[#0B0E14] font-black text-xs uppercase tracking-widest rounded-xl shadow-lg transition cursor-pointer whitespace-nowrap"
                 >
                   {isSubmittingLead ? 'Unlocking...' : 'Download 150MP Sample'}
                 </button>
               </form>
             ) : (
-              <div className="bg-white border border-emerald-300 rounded-2xl px-6 py-4 text-center shadow-sm">
-                <div className="text-xs font-extrabold uppercase tracking-wider text-emerald-800">
+              <div className="bg-[#0B0E14] border border-emerald-500/50 rounded-2xl px-6 py-4 text-center shadow-md">
+                <div className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">
                   ✓ Master Sample Unlocked! Check Your New Tab
                 </div>
                 <button
@@ -681,7 +767,7 @@ const V8StockBerzaBase = () => {
                     const fallbackFreePkg = paketi.find(p => p.isFree || parseFloat(p.cena) === 0);
                     window.open(customSampleUrl || fallbackFreePkg?.zipLink || '/VISIONARY_V10_ZIP_VALIDATION.txt', '_blank');
                   }}
-                  className="mt-1.5 text-[11px] underline text-[#111111] font-bold cursor-pointer"
+                  className="mt-1.5 text-[11px] underline text-[#F3E5AB] font-bold cursor-pointer"
                 >
                   Click here if download didn't start automatically
                 </button>
@@ -690,8 +776,8 @@ const V8StockBerzaBase = () => {
           </div>
 
           {isAdmin && (
-            <div className="mt-5 pt-4 border-t border-stone-300/70 flex flex-col sm:flex-row items-center gap-3">
-              <span className="text-[10px] font-black uppercase tracking-widest text-[#8C6239] shrink-0">
+            <div className="mt-5 pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center gap-3">
+              <span className="text-[10px] font-black uppercase tracking-widest text-[#F3E5AB] shrink-0">
                 🔧 ADMIN — Free 150MP Sample Google Drive Link:
               </span>
               <input
@@ -699,12 +785,12 @@ const V8StockBerzaBase = () => {
                 value={adminSampleInput}
                 onChange={(e) => setAdminSampleInput(e.target.value)}
                 placeholder="Paste Google Drive link to your 1-image Free 150MP + 4K Sample ZIP..."
-                className="flex-1 w-full bg-white border border-stone-300 rounded-lg px-3 py-2 text-xs text-[#111111] outline-none"
+                className="flex-1 w-full bg-[#0B0E14] border border-[#C5A059]/40 rounded-lg px-3 py-2 text-xs text-[#F7F4EE] font-semibold outline-none"
               />
               <button
                 type="button"
                 onClick={handleSaveSampleConfig}
-                className="px-4 py-2 bg-[#111111] hover:bg-stone-800 text-white font-bold text-[11px] uppercase tracking-wider rounded-lg cursor-pointer shrink-0"
+                className="px-4 py-2 bg-[#C5A059] hover:bg-[#D4AF37] text-[#0B0E14] font-black text-[11px] uppercase tracking-wider rounded-lg cursor-pointer shrink-0"
               >
                 Save Sample Link
               </button>
@@ -713,82 +799,96 @@ const V8StockBerzaBase = () => {
         </div>
 
         {/* =================================================================== */}
-        {/* 3. ADMIN FORMA ZA UBACIVANJE PAKETA (ČISTA BELA RADNA STANICA)      */}
+        {/* 3. ADMIN FORMA SA VOL. NASLOVOM, OBLAČIĆEM I 10 SLOTOVA             */}
         {/* =================================================================== */}
         {isAdmin && (
-          <form onSubmit={dodajPaket} className="bg-white border-2 border-stone-300 rounded-[2rem] p-6 md:p-8 mb-16 shadow-[0_15px_40px_rgba(0,0,0,0.06)] max-w-5xl mx-auto">
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 pb-4 mb-6">
-              <h2 className="text-lg md:text-xl font-black text-[#111111] uppercase tracking-widest flex items-center gap-2">
-                <Zap className="w-5 h-5 text-[#8C6239]" /> {editingPaketId ? 'EDIT B2B CAMPAIGN PACKAGE' : 'PUBLISH NEW B2B PACKAGE (10x 4K + 10x 150MP)'}
+          <form onSubmit={dodajPaket} className="bg-[#121722] border-2 border-[#C5A059]/40 rounded-[2rem] p-6 md:p-8 mb-16 shadow-[0_20px_60px_rgba(0,0,0,0.65)] max-w-5xl mx-auto">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4 mb-6">
+              <h2 className="text-lg md:text-xl font-black text-[#F7F4EE] uppercase tracking-widest flex items-center gap-2">
+                <Zap className="w-5 h-5 text-[#C5A059]" /> {editingPaketId ? 'EDIT B2B CAMPAIGN PACKAGE' : 'PUBLISH NEW B2B PACKAGE (10x 4K + 10x 150MP)'}
               </h2>
               {editingPaketId && (
-                <button type="button" onClick={stoziEdit} className="text-xs font-bold uppercase px-4 py-2 bg-stone-100 hover:bg-stone-200 rounded-lg text-stone-800 cursor-pointer">
+                <button type="button" onClick={stoziEdit} className="text-xs font-bold uppercase px-4 py-2 bg-[#1B2232] hover:bg-[#252F45] rounded-lg text-[#F3E5AB] cursor-pointer">
                   Cancel Edit
                 </button>
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+            {/* GORNJI RED SA POSEBNIM VOL. POLJEM KAO NASLOVOM */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
               <div className="flex flex-col gap-2">
-                <label className="flex items-center gap-2 text-stone-600 font-extrabold text-[11px] tracking-widest uppercase">
-                  <Type size={14} /> CAMPAIGN PACKAGE TITLE
+                <label className="flex items-center gap-2 text-[#F3E5AB] font-extrabold text-[11px] tracking-widest uppercase">
+                  <Hash size={14} className="text-[#C5A059]" /> VOL. / EDITION TITLE
+                </label>
+                <input
+                  type="text"
+                  value={noviVolNaslov}
+                  onChange={(e) => setNoviVolNaslov(e.target.value)}
+                  placeholder="E.g. VOL. 01"
+                  className="bg-[#0B0E14] border border-[#C5A059]/50 p-3.5 rounded-xl text-sm font-black uppercase tracking-wider text-[#F3E5AB] placeholder:text-slate-500 outline-none focus:border-[#F3E5AB]"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="flex items-center gap-2 text-slate-300 font-extrabold text-[11px] tracking-widest uppercase">
+                  <Type size={14} className="text-[#C5A059]" /> CAMPAIGN PACKAGE TITLE
                 </label>
                 <input
                   type="text"
                   value={noviNazivEn}
                   onChange={(e) => setNoviNazivEn(e.target.value)}
-                  placeholder="E.g. Obsidian Watches & Diamonds Vol. 1"
-                  className="bg-[#F8F7F4] border border-stone-300 p-3.5 rounded-xl text-sm font-bold text-[#111111] outline-none focus:bg-white focus:border-[#111111]"
+                  placeholder="E.g. Obsidian Luxury Goods"
+                  className="bg-[#0B0E14] border border-white/15 p-3.5 rounded-xl text-sm font-bold text-[#F7F4EE] placeholder:text-slate-500 outline-none focus:border-[#C5A059]"
                   required
                 />
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="flex items-center gap-2 text-stone-600 font-extrabold text-[11px] tracking-widest uppercase">
-                  <Layers size={14} /> SUB-NICHE TAG
+                <label className="flex items-center gap-2 text-slate-300 font-extrabold text-[11px] tracking-widest uppercase">
+                  <Layers size={14} className="text-[#C5A059]" /> SUB-NICHE TAG
                 </label>
                 <input
                   type="text"
                   value={novaKategorijaEn}
                   onChange={(e) => setNovaKategorijaEn(e.target.value)}
-                  placeholder="E.g. Blank-Label Perfumes / Private Jets"
-                  className="bg-[#F8F7F4] border border-stone-300 p-3.5 rounded-xl text-sm font-bold text-[#111111] outline-none focus:bg-white focus:border-[#111111]"
+                  placeholder="E.g. Luxury Goods / Private Jets"
+                  className="bg-[#0B0E14] border border-white/15 p-3.5 rounded-xl text-sm font-bold text-[#F7F4EE] placeholder:text-slate-500 outline-none focus:border-[#C5A059]"
                   required
                 />
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="flex items-center gap-2 text-stone-600 font-extrabold text-[11px] tracking-widest uppercase">
-                  <FolderArchive size={14} /> DELIVERY BADGE (VOLUME)
+                <label className="flex items-center gap-2 text-slate-300 font-extrabold text-[11px] tracking-widest uppercase">
+                  <FolderArchive size={14} className="text-[#C5A059]" /> DELIVERY BADGE (SPECS)
                 </label>
                 <input
                   type="text"
                   value={noviVolume}
                   onChange={(e) => setNoviVolume(e.target.value)}
                   placeholder="10x 4K UHD + 10x 150MP"
-                  className="bg-[#F8F7F4] border border-stone-300 p-3.5 rounded-xl text-sm font-bold text-[#111111] outline-none focus:bg-white focus:border-[#111111]"
+                  className="bg-[#0B0E14] border border-white/15 p-3.5 rounded-xl text-sm font-bold text-[#F7F4EE] placeholder:text-slate-500 outline-none focus:border-[#C5A059]"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
               <div className="flex flex-col gap-2 md:col-span-1">
-                <label className="flex items-center gap-2 text-stone-600 font-extrabold text-[11px] tracking-widest uppercase">
-                  <FileText size={14} /> COMMERCIAL DESCRIPTION
+                <label className="flex items-center gap-2 text-slate-300 font-extrabold text-[11px] tracking-widest uppercase">
+                  <FileText size={14} className="text-[#C5A059]" /> COMMERCIAL DESCRIPTION
                 </label>
                 <textarea
                   value={noviOpisEn}
                   onChange={(e) => setNoviOpisEn(e.target.value)}
-                  rows={6}
-                  className="bg-[#F8F7F4] border border-stone-300 p-3.5 rounded-xl text-xs font-medium text-stone-700 outline-none focus:bg-white focus:border-[#111111] resize-none h-full"
+                  rows={7}
+                  className="bg-[#0B0E14] border border-white/15 p-3.5 rounded-xl text-xs font-medium text-slate-200 outline-none focus:border-[#C5A059] resize-none h-full leading-relaxed"
                   required
                 />
               </div>
 
               <div className="flex flex-col gap-5 md:col-span-2">
                 <div className="flex flex-col gap-2">
-                  <label className="flex items-center gap-2 text-stone-600 font-extrabold text-[11px] tracking-widest uppercase">
-                    <Wallet size={14} /> COMMERCIAL LICENSE PRICE (USD)
+                  <label className="flex items-center gap-2 text-slate-300 font-extrabold text-[11px] tracking-widest uppercase">
+                    <Wallet size={14} className="text-[#C5A059]" /> COMMERCIAL LICENSE PRICE (USD)
                   </label>
                   <input
                     type="text"
@@ -796,22 +896,22 @@ const V8StockBerzaBase = () => {
                     onChange={(e) => setNovaCena(e.target.value)}
                     disabled={isFree}
                     placeholder="79.00"
-                    className="bg-[#F8F7F4] border border-stone-300 p-3.5 rounded-xl text-sm font-black text-[#111111] outline-none focus:bg-white focus:border-[#111111]"
+                    className="bg-[#0B0E14] border border-white/15 p-3.5 rounded-xl text-sm font-black text-[#F3E5AB] outline-none focus:border-[#C5A059]"
                   />
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <label className="flex items-center gap-2 text-stone-600 font-extrabold text-[11px] tracking-widest uppercase">
-                    <MonitorPlay size={14} /> SELECT TARGET B2B INDUSTRY TAB
+                  <label className="flex items-center gap-2 text-slate-300 font-extrabold text-[11px] tracking-widest uppercase">
+                    <MonitorPlay size={14} className="text-[#C5A059]" /> SELECT TARGET B2B INDUSTRY TAB
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {INDUSTRY_TABS.filter(t => t.id !== 'all').map((t) => (
                       <label
                         key={t.formatCode}
-                        className={`cursor-pointer p-3 rounded-xl border text-center font-extrabold text-[10px] uppercase tracking-wider transition-all ${
+                        className={`cursor-pointer p-3.5 rounded-xl border text-center font-extrabold text-[11px] uppercase tracking-wider transition-all ${
                           noviFormat === t.formatCode
-                            ? 'bg-[#111111] text-white border-[#111111] shadow-sm'
-                            : 'bg-[#F8F7F4] border-stone-200 text-stone-600 hover:border-stone-400 hover:text-[#111111]'
+                            ? 'bg-gradient-to-r from-[#C5A059] to-[#D4AF37] text-[#0B0E14] border-[#F3E5AB] shadow-md'
+                            : 'bg-[#0B0E14] border-white/15 text-slate-300 hover:border-[#C5A059]/60 hover:text-white'
                         }`}
                       >
                         <input
@@ -822,7 +922,7 @@ const V8StockBerzaBase = () => {
                           onChange={() => handleFormatRadioChange(t.formatCode)}
                           className="hidden"
                         />
-                        {t.label}
+                        {t.shortLabel}
                       </label>
                     ))}
                   </div>
@@ -830,25 +930,25 @@ const V8StockBerzaBase = () => {
               </div>
             </div>
 
-            <div className="border-t border-stone-200 pt-6">
+            <div className="border-t border-white/10 pt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
                 <div className="flex flex-col gap-2">
-                  <label className="flex items-center gap-2 text-stone-700 font-extrabold text-[11px] tracking-widest uppercase">
-                    <LinkIcon size={14} /> GOOGLE DRIVE ZIP LINK (10x 4K + 10x 150MP)
+                  <label className="flex items-center gap-2 text-slate-300 font-extrabold text-[11px] tracking-widest uppercase">
+                    <LinkIcon size={14} className="text-[#C5A059]" /> GOOGLE DRIVE ZIP LINK (10x 4K + 10x 150MP)
                   </label>
                   <input
                     type="url"
                     value={zipLink}
                     onChange={(e) => setZipLink(e.target.value)}
                     placeholder="https://drive.google.com/..."
-                    className="bg-[#F8F7F4] border border-stone-300 p-3.5 rounded-xl text-xs font-bold text-[#111111] outline-none focus:bg-white focus:border-[#111111]"
+                    className="bg-[#0B0E14] border border-white/15 p-3.5 rounded-xl text-xs font-bold text-[#F7F4EE] placeholder:text-slate-500 outline-none focus:border-[#C5A059]"
                     required
                   />
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <label className="flex items-center gap-2 text-stone-700 font-extrabold text-[11px] tracking-widest uppercase">
-                    <Zap size={14} /> PACKAGE ACCESS TYPE
+                  <label className="flex items-center gap-2 text-slate-300 font-extrabold text-[11px] tracking-widest uppercase">
+                    <Zap size={14} className="text-[#C5A059]" /> PACKAGE ACCESS TYPE
                   </label>
                   <button
                     type="button"
@@ -859,8 +959,8 @@ const V8StockBerzaBase = () => {
                     }}
                     className={`w-full p-3.5 rounded-xl font-extrabold text-xs tracking-widest uppercase border transition-all cursor-pointer ${
                       isFree
-                        ? 'bg-emerald-700 text-white border-emerald-700'
-                        : 'bg-[#F8F7F4] border-stone-300 text-stone-600 hover:text-[#111111]'
+                        ? 'bg-emerald-600 text-white border-emerald-400'
+                        : 'bg-[#0B0E14] border-white/15 text-slate-300 hover:border-[#C5A059]'
                     }`}
                   >
                     {isFree ? "⚡ FREE LEAD-MAGNET PACKAGE ($0.00)" : "PAID COMMERCIAL LICENSE"}
@@ -868,55 +968,123 @@ const V8StockBerzaBase = () => {
                 </div>
               </div>
 
-              {(previewUrl || primeriUrls.length > 0) && (
-                <div className="flex flex-wrap gap-3 p-4 bg-[#F8F7F4] rounded-xl border border-stone-200 mb-5">
-                  {previewUrl && (
-                    <div className="relative w-20 h-20 rounded-lg overflow-hidden border-2 border-[#111111] group">
-                      <span className="absolute top-0 left-0 bg-[#111111] text-white text-[8px] font-black px-1.5 py-0.5 z-10">COVER</span>
-                      <button type="button" onClick={() => setPreviewUrl('')} className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 z-20 cursor-pointer">
-                        <X size={10} />
-                      </button>
-                      <img src={previewUrl} alt="Main" className="w-full h-full object-cover" />
-                    </div>
-                  )}
-                  {primeriUrls.map((url, idx) => (
-                    <div key={idx} className="w-20 h-20 rounded-lg overflow-hidden border border-stone-300 relative group">
-                      <span className="absolute bottom-0 right-0 bg-[#111111]/85 text-white text-[8px] font-black px-1.5 py-0.5 z-10">#{idx + 1}</span>
-                      <button type="button" onClick={() => setPrimeriUrls(prev => prev.filter((_, i) => i !== idx))} className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 z-20 cursor-pointer">
-                        <X size={10} />
-                      </button>
-                      <img src={url} alt={`Thumb ${idx}`} className="w-full h-full object-cover" />
-                    </div>
-                  ))}
+              {/* =============================================================== */}
+              {/* 1 GLAVNI COVER + 10 FIKSNIH MALIH SLIČICA SA OBLAČIĆEM           */}
+              {/* =============================================================== */}
+              <div className="p-4 sm:p-5 bg-[#0B0E14] rounded-2xl border border-white/10 mb-6">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                  <span className="text-[11px] font-black uppercase tracking-widest text-[#F3E5AB] flex items-center gap-2">
+                    <UploadCloud size={16} className="text-[#C5A059]" />
+                    PACKAGE VISUAL SLOTS: 1 MAIN COVER + 10 SMALL PREVIEW THUMBNAILS ({primeriUrls.length}/10)
+                  </span>
+                  <span className="text-[10px] font-semibold text-slate-400">
+                    Click any empty slot below to upload directly from your computer
+                  </span>
                 </div>
-              )}
 
+                <div className="grid grid-cols-2 sm:grid-cols-6 lg:grid-cols-11 gap-2.5">
+                  {/* GLAVNI COVER SLOT */}
+                  <div
+                    onClick={() => !previewUrl && mainImageRef.current.click()}
+                    className={`aspect-square rounded-xl overflow-hidden relative flex flex-col items-center justify-center border-2 transition ${
+                      previewUrl
+                        ? 'border-[#C5A059] bg-[#121722]'
+                        : 'border-dashed border-[#C5A059]/60 bg-[#121722]/70 hover:bg-[#192030] cursor-pointer'
+                    }`}
+                  >
+                    <span className="absolute top-1 left-1 bg-[#C5A059] text-[#0B0E14] text-[8px] font-black px-1.5 py-0.5 rounded z-10">
+                      COVER
+                    </span>
+                    {previewUrl ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); setPreviewUrl(''); }}
+                          className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 z-20 cursor-pointer"
+                        >
+                          <X size={10} />
+                        </button>
+                        <img src={previewUrl} alt="Main Cover" className="w-full h-full object-cover" />
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center text-center p-1">
+                        <UploadCloud size={18} className="text-[#C5A059] mb-1" />
+                        <span className="text-[8px] font-bold uppercase text-slate-300">Upload Cover</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 10 MALIH SLIČICA (SLOTOVI #1 DO #10 UVEK VIDLJIVI) */}
+                  {Array.from({ length: 10 }).map((_, idx) => {
+                    const url = primeriUrls[idx];
+                    return (
+                      <div
+                        key={idx}
+                        onClick={() => !url && galleryImagesRef.current.click()}
+                        className={`aspect-square rounded-xl overflow-hidden relative flex flex-col items-center justify-center border transition ${
+                          url
+                            ? 'border-[#C5A059]/60 bg-[#121722]'
+                            : 'border-dashed border-white/15 bg-[#121722]/40 hover:border-[#C5A059]/60 hover:bg-[#192030] cursor-pointer'
+                        }`}
+                      >
+                        <span className="absolute bottom-1 right-1 bg-black/80 text-[#F3E5AB] text-[8px] font-black px-1.5 py-0.5 rounded z-10">
+                          #{idx + 1}
+                        </span>
+                        {url ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setPrimeriUrls(prev => prev.filter((_, i) => i !== idx));
+                              }}
+                              className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 z-20 cursor-pointer"
+                            >
+                              <X size={10} />
+                            </button>
+                            <img src={url} alt={`Slot ${idx + 1}`} className="w-full h-full object-cover" />
+                          </>
+                        ) : (
+                          <div className="flex flex-col items-center text-center p-1 opacity-75">
+                            <UploadCloud size={15} className="text-slate-400 mb-0.5" />
+                            <span className="text-[8px] font-bold uppercase text-slate-400">Slot {idx + 1}</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* GLAVNI TASTERI SA OBLAČIĆEM ("UPLOAD FROM COMPUTER") */}
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="flex flex-wrap gap-3">
                   <button
                     type="button"
                     onClick={() => mainImageRef.current.click()}
-                    className="bg-[#F8F7F4] hover:bg-stone-200 text-[#111111] border border-stone-300 px-5 py-3.5 rounded-xl font-extrabold text-xs uppercase tracking-wider transition flex items-center gap-2 cursor-pointer"
+                    className="bg-[#182030] hover:bg-[#222D42] text-[#F7F4EE] border border-[#C5A059]/40 px-5 py-3.5 rounded-xl font-extrabold text-xs uppercase tracking-wider transition flex items-center gap-2.5 cursor-pointer"
                   >
-                    <ImageIcon size={16} /> {isUploading ? 'Uploading...' : 'Upload Main Cover'}
+                    <UploadCloud size={17} className="text-[#C5A059]" />
+                    {isUploading ? 'Uploading Cover...' : 'Upload Cover from Computer'}
                   </button>
-                  <input type="file" ref={mainImageRef} onChange={handleUploadPreview} className="hidden" />
+                  <input type="file" accept="image/*" ref={mainImageRef} onChange={handleUploadPreview} className="hidden" />
 
                   <button
                     type="button"
                     onClick={() => galleryImagesRef.current.click()}
-                    className="bg-[#F8F7F4] hover:bg-stone-200 text-[#111111] border border-stone-300 px-5 py-3.5 rounded-xl font-extrabold text-xs uppercase tracking-wider transition flex items-center gap-2 cursor-pointer"
+                    className="bg-[#182030] hover:bg-[#222D42] text-[#F7F4EE] border border-[#C5A059]/40 px-5 py-3.5 rounded-xl font-extrabold text-xs uppercase tracking-wider transition flex items-center gap-2.5 cursor-pointer"
                   >
-                    <Images size={16} /> {isUploadingPrimer ? 'Uploading...' : `Upload 10 Previews (${primeriUrls.length}/10)`}
+                    <UploadCloud size={17} className="text-[#C5A059]" />
+                    {isUploadingPrimer ? 'Uploading...' : `Upload 10 Thumbnails from Computer (${primeriUrls.length}/10)`}
                   </button>
-                  <input type="file" multiple ref={galleryImagesRef} onChange={handleUploadPrimeri} className="hidden" />
+                  <input type="file" accept="image/*" multiple ref={galleryImagesRef} onChange={handleUploadPrimeri} className="hidden" />
                 </div>
 
                 <button
                   type="submit"
-                  className="px-8 py-4 rounded-xl font-black text-xs sm:text-sm tracking-widest uppercase bg-[#111111] hover:bg-stone-800 text-white shadow-md flex items-center gap-2 cursor-pointer"
+                  className="px-8 py-4 rounded-xl font-black text-xs sm:text-sm tracking-widest uppercase bg-gradient-to-r from-[#C5A059] via-[#E2C383] to-[#C5A059] hover:brightness-110 text-[#0B0E14] shadow-lg flex items-center gap-2 cursor-pointer"
                 >
-                  <Zap size={16} className="text-[#D4AF37]" /> {editingPaketId ? 'SAVE UPDATES' : 'PUBLISH TO STORE'}
+                  <Zap size={16} /> {editingPaketId ? 'SAVE UPDATES' : 'PUBLISH TO STORE'}
                 </button>
               </div>
             </div>
@@ -924,22 +1092,22 @@ const V8StockBerzaBase = () => {
         )}
 
         {/* =================================================================== */}
-        {/* 4. EDITORIAL LIGHT PRODUCT CARDS (MUZEJSKA PREZENTACIJA)            */}
+        {/* 4. DARK OBSIDIAN PRODUCT CARDS (SA VOL. NASLOVOM I 10 SLIČICA)      */}
         {/* =================================================================== */}
         {filtriraniPaketi.length === 0 ? (
-          <div className="text-center py-20 bg-white border border-stone-200 rounded-3xl mb-16 shadow-sm">
-            <Aperture className="w-11 h-11 text-[#8C6239] mx-auto mb-3 opacity-80" />
-            <h3 className="text-lg font-black uppercase tracking-widest text-[#111111]">
-              New 150MP + 4K Campaign Vaults Arriving in This Category
+          <div className="text-center py-20 bg-[#121722] border border-white/10 rounded-3xl mb-16 shadow-xl">
+            <Aperture className="w-11 h-11 text-[#C5A059] mx-auto mb-3" />
+            <h3 className="text-lg font-black uppercase tracking-widest text-[#F7F4EE]">
+              New 150MP + 4K Campaign Vaults Arriving in {currentTabInfo.shortLabel}
             </h3>
-            <p className="text-xs text-stone-500 mt-2 mb-6">
+            <p className="text-xs text-slate-400 mt-2 mb-6">
               Switch to "ALL VAULTS" to browse all currently published commercial packages, or upload a new ZIP above.
             </p>
             {activeTab !== 'all' && (
               <button
                 type="button"
                 onClick={() => setActiveTab('all')}
-                className="px-6 py-3.5 bg-[#111111] hover:bg-stone-800 text-white font-extrabold text-xs uppercase tracking-widest rounded-xl cursor-pointer"
+                className="px-6 py-3.5 bg-[#C5A059] hover:bg-[#D4AF37] text-[#0B0E14] font-black text-xs uppercase tracking-widest rounded-xl cursor-pointer"
               >
                 Show All Published Packages ({paketi.length})
               </button>
@@ -949,97 +1117,127 @@ const V8StockBerzaBase = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-20">
             {filtriraniPaketi.map((paket) => {
               const isOwned = kupljeniPaketiIds?.includes(paket.id) || paket.isFree || parseFloat(paket.cena) === 0;
+              const matchedTab = INDUSTRY_TABS.find(t => t.id === detectIndustry(paket)) || INDUSTRY_TABS[1];
               return (
                 <div
                   key={paket.id}
-                  className="bg-white border border-stone-200/90 hover:border-stone-400 rounded-[2rem] overflow-hidden shadow-[0_12px_36px_rgba(20,20,19,0.05)] hover:shadow-[0_24px_60px_rgba(20,20,19,0.1)] transition-all duration-300 flex flex-col"
+                  className="bg-[#121722] border border-white/10 hover:border-[#C5A059]/60 rounded-[2rem] overflow-hidden shadow-[0_18px_50px_rgba(0,0,0,0.55)] transition-all duration-300 flex flex-col"
                 >
-                  {/* SLIKA U MIRNOM MUZEJSKOM PASPARTU OKVIRU */}
-                  <div className="p-4 sm:p-5 relative bg-[#FBFAF8] border-b border-stone-100">
+                  {/* SLIKA U TAMNOM OBSIDIAN OKVIRU */}
+                  <div className="p-4 sm:p-5 relative bg-[#0D111A] border-b border-white/10">
                     <div className="absolute top-7 left-7 z-20 flex flex-wrap gap-2">
-                      <span className="bg-white/95 backdrop-blur-md border border-stone-200 text-[#111111] text-[10px] font-extrabold uppercase tracking-widest px-3 py-1.5 rounded-full shadow-sm">
-                        {paket.volume || '10× 4K UHD + 10× 150MP'}
-                      </span>
-                      {paket.kategorijaEn && (
-                        <span className="bg-[#FAF6F0]/95 backdrop-blur-md border border-[#E5D7C3] text-[#8C6239] text-[10px] font-extrabold uppercase tracking-wider px-3 py-1.5 rounded-full shadow-sm">
-                          {paket.kategorijaEn}
+                      {paket.volTitle && (
+                        <span className="bg-gradient-to-r from-[#C5A059] to-[#E2C383] text-[#0B0E14] text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-md">
+                          {paket.volTitle}
                         </span>
                       )}
+                      <span className="bg-[#0B0E14]/90 backdrop-blur-md border border-white/15 text-[#F7F4EE] text-[10px] font-extrabold uppercase tracking-widest px-3 py-1.5 rounded-full shadow-sm">
+                        {paket.volume || '10× 4K UHD + 10× 150MP'}
+                      </span>
+                      <span className="bg-[#182030]/90 backdrop-blur-md border border-[#C5A059]/50 text-[#F3E5AB] text-[10px] font-extrabold uppercase tracking-wider px-3 py-1.5 rounded-full shadow-sm">
+                        {paket.kategorijaEn || matchedTab.shortLabel}
+                      </span>
                     </div>
 
                     <div className="absolute top-7 right-7 z-20">
-                      <span className="bg-[#111111] text-white text-[10px] font-extrabold uppercase tracking-widest px-3 py-1.5 rounded-full shadow-sm">
+                      <span className="bg-[#0B0E14]/90 backdrop-blur-md border border-[#C5A059]/60 text-[#F3E5AB] text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-sm">
                         IP-SAFE COMMERCIAL
                       </span>
                     </div>
 
                     <div
                       onClick={() => setFullScreenImageUrl(paket.previewUrl)}
-                      className="w-full aspect-[16/9] rounded-2xl overflow-hidden cursor-zoom-in relative group border border-stone-200/80 bg-stone-100"
+                      className="w-full aspect-[16/9] rounded-2xl overflow-hidden cursor-zoom-in relative group border border-white/10 bg-[#080A0F]"
                     >
                       <img
                         src={paket.previewUrl}
-                        alt={paket.nazivEn}
+                        alt={formatPaketDisplayTitle(paket)}
                         className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-4">
-                        <span className="text-[11px] font-bold uppercase tracking-widest text-white">
-                          Click to Inspect Full-Screen Detail
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#080A0F]/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-4">
+                        <span className="text-[11px] font-bold uppercase tracking-widest text-[#F3E5AB]">
+                          Click to Inspect Full-Screen 150MP Detail
                         </span>
                       </div>
                     </div>
 
-                    {/* 10 THUMBNAIL SLIKA BEZ TRZANJA I ROTACIJE */}
-                    {paket.primeri && paket.primeri.length > 0 && (
-                      <div className="grid grid-cols-5 gap-2 mt-3">
-                        {paket.primeri.slice(0, 10).map((thumb, idx) => (
+                    {/* 10 MALIH SLIČICA ISPOD GLAVNE SLIKE NA SVAKOJ KARTICI */}
+                    <div className="grid grid-cols-5 gap-2 mt-3">
+                      {Array.from({ length: 10 }).map((_, idx) => {
+                        const thumb = paket.primeri && paket.primeri[idx];
+                        return thumb ? (
                           <div
                             key={idx}
                             onClick={() => setFullScreenImageUrl(thumb)}
-                            className="aspect-square rounded-xl overflow-hidden cursor-zoom-in border border-stone-200 hover:border-[#111111] transition bg-stone-100"
+                            className="aspect-square rounded-xl overflow-hidden cursor-zoom-in border border-white/15 hover:border-[#C5A059] transition bg-[#080A0F] relative group"
                           >
                             <img
                               src={thumb}
                               alt={`Asset ${idx + 1}`}
-                              className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />
+                            <span className="absolute bottom-0.5 right-1 text-[8px] font-black text-[#F3E5AB] bg-black/70 px-1 rounded">
+                              #{idx + 1}
+                            </span>
                           </div>
-                        ))}
-                      </div>
-                    )}
+                        ) : (
+                          <div
+                            key={idx}
+                            onClick={() => isAdmin && startEditPaket(paket)}
+                            className="aspect-square rounded-xl border border-dashed border-white/10 bg-[#080A0F]/60 flex flex-col items-center justify-center text-slate-600"
+                          >
+                            <span className="text-[8px] font-bold">#{idx + 1}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
 
-                  {/* OPIS, SPECIFIKACIJE I KUPOVINA */}
-                  <div className="p-6 sm:p-8 flex flex-col flex-grow bg-white">
-                    <h3 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-[#111111] mb-4">
-                      {paket.nazivEn}
+                  {/* OPIS, VOL. NASLOV, SPECIFIKACIJE I KUPOVINA */}
+                  <div className="p-6 sm:p-8 flex flex-col flex-grow bg-[#121722]">
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#C5A059]">
+                        {paket.volTitle ? `${paket.volTitle} • ` : ''}{matchedTab.shortLabel} VAULT
+                      </span>
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400">
+                        ● Instant Digital Delivery
+                      </span>
+                    </div>
+
+                    <h3 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-[#F7F4EE] mb-4 flex flex-wrap items-center gap-2.5">
+                      {paket.volTitle && (
+                        <span className="px-2.5 py-0.5 rounded-lg bg-[#1C2436] border border-[#C5A059]/50 text-[#F3E5AB] text-sm sm:text-base font-black tracking-widest">
+                          {paket.volTitle}
+                        </span>
+                      )}
+                      <span>{paket.nazivEn}</span>
                     </h3>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-5">
-                      <div className="bg-[#F8F7F4] border border-stone-200/90 rounded-xl p-3 flex items-center gap-2.5">
-                        <Aperture className="w-4 h-4 text-[#8C6239] shrink-0" />
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-stone-800">
+                      <div className="bg-[#0B0E14] border border-white/10 rounded-xl p-3 flex items-center gap-2.5">
+                        <Aperture className="w-4 h-4 text-[#C5A059] shrink-0" />
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-200">
                           Dual Resolution: 4K Web + 150MP Print
                         </span>
                       </div>
-                      <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-xl p-3 flex items-center gap-2.5">
-                        <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0" />
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-900">
+                      <div className="bg-emerald-950/40 border border-emerald-500/30 rounded-xl p-3 flex items-center gap-2.5">
+                        <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-300">
                           Zero Logos • Commercial License
                         </span>
                       </div>
                     </div>
 
-                    <p className="text-xs text-stone-600 leading-relaxed whitespace-pre-line mb-6 flex-grow">
-                      {paket.opisEn}
+                    <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-line mb-6 flex-grow font-medium">
+                      {paket.opisEn || DEFAULT_DESCRIPTIONS[paket.format] || DEFAULT_DESCRIPTIONS['V10 LUXURY GOODS (10x 4K + 10x 150MP)']}
                     </p>
 
-                    <div className="pt-5 border-t border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-4 mt-auto">
+                    <div className="pt-5 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 mt-auto">
                       <div className="text-center sm:text-left">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 block mb-0.5">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-0.5">
                           Instant .ZIP Delivery • Full Commercial Rights
                         </span>
-                        <span className="text-3xl sm:text-4xl font-black text-[#111111]">
+                        <span className="text-3xl sm:text-4xl font-black text-[#F3E5AB]">
                           ${getGlobalCena(paket.cena)}
                         </span>
                       </div>
@@ -1054,34 +1252,34 @@ const V8StockBerzaBase = () => {
                               prijavaIKupovina(paket);
                             }
                           }}
-                          className={`flex-1 sm:flex-initial px-7 py-4 rounded-xl font-extrabold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md ${
+                          className={`flex-1 sm:flex-initial px-7 py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg ${
                             !isAdmin && isOwned
-                              ? 'bg-emerald-700 hover:bg-emerald-800 text-white'
-                              : 'bg-[#111111] hover:bg-stone-800 text-white'
+                              ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                              : 'bg-gradient-to-r from-[#C5A059] via-[#E2C383] to-[#C5A059] hover:brightness-110 text-[#0B0E14]'
                           }`}
                         >
                           {(isAdmin || isOwned) ? (
                             <><DownloadCloud size={16} /> Download ZIP</>
                           ) : (
-                            <><Diamond size={15} className="text-[#D4AF37]" /> Buy Commercial Pack</>
+                            <><Diamond size={15} /> Buy Commercial Pack</>
                           )}
                         </button>
                       </div>
                     </div>
 
                     {isAdmin && (
-                      <div className="mt-5 pt-4 border-t border-stone-200 flex gap-3">
+                      <div className="mt-5 pt-4 border-t border-white/10 flex gap-3">
                         <button
                           type="button"
                           onClick={() => startEditPaket(paket)}
-                          className="flex-1 bg-[#F8F7F4] hover:bg-[#111111] text-stone-700 hover:text-white border border-stone-200 py-2.5 rounded-xl text-[10px] font-extrabold uppercase tracking-widest flex items-center justify-center gap-1.5 transition cursor-pointer"
+                          className="flex-1 bg-[#1A2232] hover:bg-[#C5A059] text-slate-200 hover:text-[#0B0E14] border border-white/10 py-2.5 rounded-xl text-[10px] font-extrabold uppercase tracking-widest flex items-center justify-center gap-1.5 transition cursor-pointer"
                         >
                           <Edit size={13} /> Edit Package
                         </button>
                         <button
                           type="button"
                           onClick={() => obrisiPaket(paket.id)}
-                          className="flex-1 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-200 py-2.5 rounded-xl text-[10px] font-extrabold uppercase tracking-widest flex items-center justify-center gap-1.5 transition cursor-pointer"
+                          className="flex-1 bg-red-950/50 hover:bg-red-600 text-red-300 hover:text-white border border-red-500/30 py-2.5 rounded-xl text-[10px] font-extrabold uppercase tracking-widest flex items-center justify-center gap-1.5 transition cursor-pointer"
                         >
                           <Trash2 size={13} /> Delete
                         </button>
@@ -1095,49 +1293,49 @@ const V8StockBerzaBase = () => {
         )}
 
         {/* =================================================================== */}
-        {/* 5. SKLOPLJEN TEHNIČKI SERTIFIKAT NA DNU (SVETLA VERZIJA)            */}
+        {/* 5. SKLOPLJEN TEHNIČKI SERTIFIKAT NA DNU (TAMNA VERZIJA)             */}
         {/* =================================================================== */}
-        <div className="max-w-5xl mx-auto border border-stone-200 bg-white rounded-3xl overflow-hidden shadow-sm">
+        <div className="max-w-5xl mx-auto border border-[#C5A059]/30 bg-[#121722] rounded-3xl overflow-hidden shadow-xl">
           <button
             type="button"
             onClick={() => setShowTechSpecs(!showTechSpecs)}
-            className="w-full p-6 flex items-center justify-between text-left hover:bg-[#F8F7F4] transition cursor-pointer"
+            className="w-full p-6 flex items-center justify-between text-left hover:bg-[#171E2C] transition cursor-pointer"
           >
             <div>
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#8C6239] block">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#C5A059] block">
                 V10 Master Engine • Agency Quality Assurance
               </span>
-              <h3 className="text-base sm:text-lg font-black uppercase tracking-tight text-[#111111] mt-0.5">
+              <h3 className="text-base sm:text-lg font-black uppercase tracking-tight text-[#F7F4EE] mt-0.5">
                 View 150MP Technical Pipeline, Color Science & IP-Safe Certification
               </h3>
             </div>
-            <ChevronDown className={`w-6 h-6 text-stone-500 transition-transform ${showTechSpecs ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-6 h-6 text-[#C5A059] transition-transform ${showTechSpecs ? 'rotate-180' : ''}`} />
           </button>
 
           {showTechSpecs && (
-            <div className="p-6 pt-2 border-t border-stone-100 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-stone-600">
-              <div className="p-4 bg-[#F8F7F4] rounded-xl border border-stone-200/70">
-                <strong className="text-[#111111] uppercase block mb-1">1. Dual Commercial Delivery (4K + 150MP)</strong>
+            <div className="p-6 pt-2 border-t border-white/10 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300">
+              <div className="p-4 bg-[#0B0E14] rounded-xl border border-white/10">
+                <strong className="text-[#F3E5AB] uppercase block mb-1">1. Dual Commercial Delivery (4K + 150MP)</strong>
                 Every campaign bundle includes 10× 4K UHD files optimized for websites, social ads, and pitch decks, plus the exact same 10 visuals upscaled to 150MP for billboards and luxury print.
               </div>
-              <div className="p-4 bg-[#F8F7F4] rounded-xl border border-stone-200/70">
-                <strong className="text-[#111111] uppercase block mb-1">2. 100% IP-Safe & Unbranded Cleanliness</strong>
+              <div className="p-4 bg-[#0B0E14] rounded-xl border border-white/10">
+                <strong className="text-[#F3E5AB] uppercase block mb-1">2. 100% IP-Safe & Unbranded Cleanliness</strong>
                 Zero third-party logos, zero readable text, zero identifiable celebrity likenesses, and stripped EXIF metadata—ready for corporate legal approval.
               </div>
-              <div className="p-4 bg-[#F8F7F4] rounded-xl border border-stone-200/70">
-                <strong className="text-[#111111] uppercase block mb-1">3. LANCZOS + Anti-Plastic Micro-Grain</strong>
+              <div className="p-4 bg-[#0B0E14] rounded-xl border border-white/10">
+                <strong className="text-[#F3E5AB] uppercase block mb-1">3. LANCZOS + Anti-Plastic Micro-Grain</strong>
                 Processed with precision LANCZOS interpolation, MedianFilter noise cleanup, highlight rolloff protection, and subtle organic grain for authentic medium-format camera realism.
               </div>
-              <div className="p-4 bg-[#F8F7F4] rounded-xl border border-stone-200/70 flex flex-col justify-between">
+              <div className="p-4 bg-[#0B0E14] rounded-xl border border-white/10 flex flex-col justify-between">
                 <div>
-                  <strong className="text-[#111111] uppercase block mb-1">4. Embedded sRGB ICC & Enterprise License</strong>
+                  <strong className="text-[#F3E5AB] uppercase block mb-1">4. Embedded sRGB ICC & Enterprise License</strong>
                   Calibrated color accuracy across reference monitors and print RIP systems.
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <a href="/PREMIUM ENTERPRISE LICENSE.pdf" target="_blank" rel="noopener noreferrer" download className="text-[10px] font-extrabold uppercase px-3 py-2 bg-[#111111] text-white hover:bg-stone-800 rounded-lg transition">
+                  <a href="/PREMIUM ENTERPRISE LICENSE.pdf" target="_blank" rel="noopener noreferrer" download className="text-[10px] font-extrabold uppercase px-3 py-2 bg-[#C5A059] text-[#0B0E14] hover:bg-[#D4AF37] rounded-lg transition">
                     Download Enterprise License PDF
                   </a>
-                  <button type="button" onClick={() => navigate('/stock-2')} className="text-[10px] font-extrabold uppercase px-3 py-2 bg-white border border-stone-300 text-stone-800 hover:border-[#111111] rounded-lg transition cursor-pointer">
+                  <button type="button" onClick={() => navigate('/stock-2')} className="text-[10px] font-extrabold uppercase px-3 py-2 bg-[#182030] border border-white/15 text-[#F3E5AB] hover:border-[#C5A059] rounded-lg transition cursor-pointer">
                     Open Legacy Mystic/Ancient Vault →
                   </button>
                 </div>

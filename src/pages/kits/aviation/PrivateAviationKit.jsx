@@ -41,8 +41,8 @@ const KIT_CONFIG = {
   buyoutZipLink: 'https://drive.google.com/your-exclusive-1490-buyout-link',
   freeSampleLink: 'https://drive.google.com/file/d/11RFyWjqgczESJuzpyje7hxrXHCvT_5o1/view?usp=sharing',
 
-  prevPageRoute: '/',
-  prevPageLabel: 'Home',
+  prevPageRoute: '/aviation-skyglass-aviation',
+  prevPageLabel: 'Prev Jet Page: Skyglass (5/5)',
   nextLandingRoute: '/aviation-atelier-kit',
   nextLandingLabel: 'Next Jet Page: Atelier (2/5)',
 
