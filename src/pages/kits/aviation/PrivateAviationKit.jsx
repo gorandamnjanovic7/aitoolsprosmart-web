@@ -3,17 +3,18 @@
 // Complete Ultra-Luxury V10 Private Jet Landing Page (Page 1 of 5)
 // Fixed: Zero Empty Space on Top + Interactive 6-Zone Wheel/Click Fly-Through
 // + Dedicated 16:9 Video Placeholder (Seedance 2.5 & Kling 4.0 Ready)
+// + 24/7 Sovereign AI Flight Desk & Google Calendar Slot Coordinator (Zero-Block)
 // + Free 150MP Sample Vault (.TXT Spec Sheet + Sample Images Link)
-// + Zero Duplicate Images Across All Sections + Full V8 Checkout & n8n Webhook
+// + Zero Duplicate Images Across All Sections + Full V8 Checkout
 // ============================================================================
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Helmet } from 'react-helmet-async';
 import {
   Aperture, ArrowLeft, ArrowRight, ArrowUpRight, Calendar, CheckCircle2, ChevronDown,
-  Clock3, Compass, Crown, DownloadCloud, FileCode, FolderArchive, Layers,
-  Lock, MapPin, Menu, Pause, Plane, Play, ShieldCheck, Sparkles,
-  Volume2, VolumeX, Video, X, Maximize2, MousePointerClick
+  Clock3, Compass, Crown, DownloadCloud, FolderArchive, Layers,
+  Lock, Maximize2, Menu, MousePointerClick, Pause, Plane, Play, Send, ShieldCheck, Sparkles,
+  Video, Volume2, VolumeX, X
 } from 'lucide-react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -33,6 +34,9 @@ const optimizeWebP = (url, width = 1600) => {
   return url;
 };
 
+const N8N_PRIMARY_WEBHOOK = 'https://n8n-production-720dcf20.up.railway.app/webhook/AVIATION_Concierge_And_Calendar';
+const N8N_FALLBACK_WEBHOOK = 'https://n8n-production-720dcf20.up.railway.app/webhook/v10-aviation-flight-desk';
+
 // ============================================================================
 // SVE SLIKE SU 100% UNIKATNE PO SEKCIJAMA (BEZ PONAVLJANJA NA STRANICI)
 // ============================================================================
@@ -41,7 +45,7 @@ const KIT_CONFIG = {
   buyoutZipLink: 'https://drive.google.com/your-exclusive-1490-buyout-link',
   freeSampleLink: 'https://drive.google.com/file/d/11RFyWjqgczESJuzpyje7hxrXHCvT_5o1/view?usp=sharing',
 
-  prevPageRoute: '/aviation-skyglass-aviation',
+  prevPageRoute: '/aviation-skyglass-kit',
   prevPageLabel: 'Prev Jet Page: Skyglass (5/5)',
   nextLandingRoute: '/aviation-atelier-kit',
   nextLandingLabel: 'Next Jet Page: Atelier (2/5)',
@@ -242,6 +246,14 @@ const KIT_CONFIG = {
   ctaBannerImage: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=2000&q=85'
 };
 
+const CALENDAR_SLOTS = [
+  'Calendar Slot: 10:00 CET',
+  'Calendar Slot: 12:00 CET',
+  'Calendar Slot: 14:00 CET',
+  'Calendar Slot: 16:00 CET',
+  'Calendar Slot: 18:00 CET'
+];
+
 const FAQS = [
   {
     question: 'How does the 6-Zone Cabin Fly-Through Hero work on this landing page?',
@@ -324,7 +336,7 @@ const PrivateAviationKit = () => {
   const [openFaq, setOpenFaq] = useState(0);
 
   // ==========================================================================
-  // INTERACTIVE 6-ZONE CABIN FLY-THROUGH STATE (NO EMPTY BLUE GAP!)
+  // INTERACTIVE 6-ZONE CABIN FLY-THROUGH STATE
   // ==========================================================================
   const [activeZoneIdx, setActiveZoneIdx] = useState(0);
   const [autoFlyActive, setAutoFlyActive] = useState(false);
@@ -340,22 +352,43 @@ const PrivateAviationKit = () => {
   // Order Bump (+ $199 for 30s 4K Seedance 2.5 / Kling 4.0 Motion Pack)
   const [includeMotionBump, setIncludeMotionBump] = useState(false);
 
-  // Flight Desk + Live n8n Webhook State
-  const [departure, setDeparture] = useState('Geneva (LSGG)');
-  const [destination, setDestination] = useState('Dubai Al Maktoum (OMDW)');
+  // ==========================================================================
+  // 24/7 SOVEREIGN AI FLIGHT DESK + CALENDAR COORDINATOR STATE
+  // ==========================================================================
   const [aircraftType, setAircraftType] = useState('Gulfstream G700 Flagship');
-  const [demoSubmitted, setDemoSubmitted] = useState(false);
-  const [aiFlightReply, setAiFlightReply] = useState('');
+  const [vipName, setVipName] = useState('');
+  const [vipEmail, setVipEmail] = useState('');
+  const [bookingDate, setBookingDate] = useState('2026-11-20');
+  const [bookingSlot, setBookingSlot] = useState('Calendar Slot: 14:00 CET');
+  const [chatInput, setChatInput] = useState('');
+  const [isAiThinking, setIsAiThinking] = useState(false);
+  const [chatMessages, setChatMessages] = useState([
+    {
+      role: 'assistant',
+      text: 'Welcome to Aero Privé Sovereign (Page 1/5 • Imperial 6-Zone Fly-Through Edition). Ask me about Gulfstream G700 & Global 8000 charter rates, 150MP cabin zones, Google Calendar flight briefings, or licensing this complete Turnkey Web + 150MP Asset Kit.'
+    }
+  ]);
+  const chatScrollRef = useRef(null);
 
   const [checkoutData, setCheckoutData] = useState({ isOpen: false, name: '', price: '0.00', zipLink: '' });
   const [loginModal, setLoginModal] = useState({ isOpen: false, tierName: '', price: '0.00', zipLink: '' });
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    const unsub = onAuthStateChanged(auth, (user) => setCurrentUser(user || null));
+    const unsub = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user || null);
+      if (user?.displayName) setVipName((prev) => prev || user.displayName);
+      if (user?.email) setVipEmail((prev) => prev || user.email);
+    });
     trackV8Action('page_view', { event_category: 'High_Ticket_Kit', event_label: 'Private_Jet_Kit' });
     return () => unsub();
   }, []);
+
+  useEffect(() => {
+    if (chatScrollRef.current) {
+      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+    }
+  }, [chatMessages, isAiThinking]);
 
   // Optional Auto-Fly timer
   useEffect(() => {
@@ -447,29 +480,85 @@ const PrivateAviationKit = () => {
     }
   };
 
-  const handleFlightDeskSubmit = async (event) => {
+  // ==========================================================================
+  // ZERO-BLOCK EXECUTIVE FALLBACK (Ako n8n ikada štucne ili se osvežava)
+  // ==========================================================================
+  const buildExecutiveFallbackReply = (userText, currentZoneTitle) => {
+    const lower = userText.toLowerCase();
+    const isSerbian = /[čćžšđ]|zdravo|ćao|cao|cena|koliko|zakaz|termin|avion|let|kalendar|kupov/i.test(lower);
+    const slotClean = bookingSlot.replace('Calendar Slot: ', '');
+    const clientLabel = vipName.trim() || (isSerbian ? 'VIP Klijent' : 'Executive Guest');
+
+    if (isSerbian) {
+      return `Dobrodošli u Aero Privé Sovereign Flight Desk, ${clientLabel}. Vaš upit za flotnu klasu (${aircraftType}, aktivna zona: ${currentZoneTitle}) je evidentiran. Predloženi VIP brifing termin (${bookingDate} u ${slotClean}) je spreman za potvrdu${vipEmail ? ` na ${vipEmail}` : ''}. Čarter tarife počinju od $15,900/h (Falcon 10X) do $17,200/h (Global 8000), dok kompletan Turnkey React + 150MP Kit možete preuzeti za $${agencyPriceNum} (Agency) ili $${buyoutPriceNum} (1-of-1 Exclusive Buyout).`;
+    }
+
+    return `Welcome to Aero Privé Sovereign Flight Desk, ${clientLabel}. We have logged your inquiry regarding ${aircraftType} (Active Cabin: ${currentZoneTitle}). Your requested executive briefing slot (${bookingDate} at ${slotClean}) is queued${vipEmail ? ` for ${vipEmail}` : ''}. Transcontinental charter rates range from $15,900/hr (Falcon 10X) to $17,200/hr (Global 8000), and this complete Turnkey React + 150MP Visual Kit is available immediately at $${agencyPriceNum} (Multi-Client Agency) or $${buyoutPriceNum} (1-of-1 Exclusive Buyout).`;
+  };
+
+  const handleFlightDeskSend = async (event) => {
     event.preventDefault();
-    setDemoSubmitted(true);
-    setAiFlightReply('');
+    const trimmed = chatInput.trim();
+    if (!trimmed || isAiThinking) return;
+
+    const activeZoneObj = KIT_CONFIG.flyThroughZones[activeZoneIdx];
+    const slotTimeClean = bookingSlot.replace('Calendar Slot: ', '');
+
+    setChatMessages((prev) => [...prev, { role: 'user', text: trimmed }]);
+    setChatInput('');
+    setIsAiThinking(true);
+
+    const payload = {
+      sessionId: vipEmail.trim() || `sovereign-jet-${Date.now()}`,
+      clientName: vipName.trim() || currentUser?.displayName || 'VIP Family Office',
+      clientEmail: vipEmail.trim() || currentUser?.email || 'vip@aeroprive.com',
+      bookingDate,
+      bookingSlot: slotTimeClean,
+      page: 'Aero Privé Sovereign (Page 1/5)',
+      activeZone: activeZoneObj.zone,
+      aircraft: aircraftType,
+      message: trimmed,
+      chatInput: `[Page 1/5 Sovereign | Aircraft: ${aircraftType} | Active Zone: ${activeZoneObj.zone} | Client: ${vipName || 'VIP Guest'} (${vipEmail || 'no-email'}) | Preferred Calendar Slot: ${bookingDate} ${slotTimeClean}] Client Inquiry: ${trimmed}`
+    };
 
     try {
-      const res = await fetch('https://n8n-production-720dcf20.up.railway.app/webhook/v10-concierge-webhook', {
+      let res = await fetch(N8N_PRIMARY_WEBHOOK, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: currentUser?.displayName || 'VIP Aviation Client',
-          email: currentUser?.email || 'flightdesk@aeroprive.com',
-          category: 'Private Aviation Kit (Page 1/5)',
-          item: `${departure} -> ${destination} (${aircraftType})`,
-          message: `Client requested itinerary from ${departure} to ${destination} aboard ${aircraftType}. Provide a concise executive confirmation and quote the $349 / $1,490 Private Aviation Kit.`
-        })
+        body: JSON.stringify(payload)
       });
-      const data = await res.json();
-      if (data?.agent_reply) {
-        setAiFlightReply(data.agent_reply);
+
+      if (res.status === 404) {
+        res = await fetch(N8N_FALLBACK_WEBHOOK, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
       }
-    } catch (err) {
-      // Fallback if local n8n is offline
+
+      const data = await res.json().catch(() => null);
+      const rawReply =
+        data?.reply ||
+        data?.output ||
+        data?.agent_reply ||
+        data?.text ||
+        (Array.isArray(data) ? data[0]?.output || data[0]?.reply || data[0]?.text : '');
+
+      if (res.ok && rawReply && !String(rawReply).toLowerCase().includes('error in workflow')) {
+        setChatMessages((prev) => [...prev, { role: 'assistant', text: String(rawReply) }]);
+      } else {
+        setChatMessages((prev) => [
+          ...prev,
+          { role: 'assistant', text: buildExecutiveFallbackReply(trimmed, activeZoneObj.title) }
+        ]);
+      }
+    } catch {
+      setChatMessages((prev) => [
+        ...prev,
+        { role: 'assistant', text: buildExecutiveFallbackReply(trimmed, activeZoneObj.title) }
+      ]);
+    } finally {
+      setIsAiThinking(false);
     }
   };
 
@@ -490,7 +579,7 @@ const PrivateAviationKit = () => {
         <title>Private Jets — Sovereign Scroll Fly-Through & 150MP Visual Kit | Aero Privé</title>
         <meta
           name="description"
-          content="Ultra-luxury private jet charter landing page featuring an interactive 6-zone 150MP cabin fly-through, 16:9 4K motion reel, visual gallery, and B2B agency licensing."
+          content="Ultra-luxury private jet charter landing page featuring an interactive 6-zone 150MP cabin fly-through, 16:9 4K motion reel, 24/7 AI Flight Desk with Google Calendar slots, and B2B agency licensing."
         />
         <meta name="theme-color" content="#050811" />
       </Helmet>
@@ -549,7 +638,7 @@ const PrivateAviationKit = () => {
               onClick={() => scrollTo('charter-request')}
               className="rounded-full border-2 border-[#D4AF37]/50 bg-white/5 px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.15em] text-[#F3E5AB] transition hover:bg-[#D4AF37] hover:text-black cursor-pointer"
             >
-              Flight Desk
+              24/7 AI Flight Desk
             </button>
             <button
               type="button"
@@ -584,7 +673,7 @@ const PrivateAviationKit = () => {
                   ['16:9 Flight Film', 'cinema-reel'],
                   ['The Fleet', 'fleet'],
                   ['Beyond the Flight', 'experience'],
-                  ['Flight Desk', 'charter-request'],
+                  ['24/7 AI Flight Desk', 'charter-request'],
                   ['Visual Vault', 'gallery'],
                   ['B2B Licensing', 'licensing']
                 ].map(([label, id]) => (
@@ -606,14 +695,12 @@ const PrivateAviationKit = () => {
       <main>
         {/* ================================================================= */}
         {/* 1. IMMEDIATE FULL-SCREEN 6-ZONE CABIN FLY-THROUGH SHOWCASE        */}
-        {/* Odmah vidljivo na vrhu bez ijednog piksela praznog prostora!      */}
         {/* ================================================================= */}
         <section
           id="bespoke-cabins"
           onWheel={handleHeroWheel}
           className="relative min-h-[86vh] w-full overflow-hidden border-b border-[#D4AF37]/30 bg-[#050811] flex flex-col justify-between"
         >
-          {/* FULL-BLEED BACKGROUND IMAGE WITH SMOOTH ZOOM FLY-THROUGH */}
           <AnimatePresence mode="wait">
             <motion.div
               key={activeFlyZone.id}
@@ -629,13 +716,11 @@ const PrivateAviationKit = () => {
                 alt={activeFlyZone.title}
                 className="h-full w-full object-cover"
               />
-              {/* Dark Luxury Gradients for 100% Crisp Text Legibility */}
               <div className="absolute inset-0 bg-gradient-to-r from-[#050811]/95 via-[#050811]/65 to-black/25" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#050811] via-transparent to-[#050811]/40" />
             </motion.div>
           </AnimatePresence>
 
-          {/* TOP GOLD PROGRESS BAR */}
           <div className="relative z-20 h-1.5 w-full bg-white/10">
             <div
               className="h-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#C59B27] transition-all duration-300"
@@ -643,10 +728,7 @@ const PrivateAviationKit = () => {
             />
           </div>
 
-          {/* FOREGROUND CONTENT */}
           <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-1 flex-col justify-between px-4 py-8 sm:px-7 lg:px-10">
-            
-            {/* TOP CONTROLS BAR */}
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="inline-flex items-center gap-2.5 rounded-full border border-[#D4AF37]/60 bg-black/85 px-4 py-2 backdrop-blur-xl">
                 <span className="h-2.5 w-2.5 rounded-full bg-[#D4AF37] animate-ping" />
@@ -679,7 +761,6 @@ const PrivateAviationKit = () => {
               </div>
             </div>
 
-            {/* CENTER/LEFT: DYNAMIC ZONE HEADLINE & SPECS + PREV/NEXT ARROWS */}
             <div className="my-10 grid items-center gap-8 lg:grid-cols-12">
               <div className="lg:col-span-8">
                 <motion.div
@@ -731,7 +812,6 @@ const PrivateAviationKit = () => {
                 </motion.div>
               </div>
 
-              {/* RIGHT SIDE: INTERACTIVE ZONE STEPPER CARD */}
               <div className="lg:col-span-4 flex flex-col items-start lg:items-end justify-center">
                 <div className="w-full max-w-sm rounded-3xl border-2 border-[#D4AF37]/50 bg-black/85 p-5 backdrop-blur-2xl shadow-2xl">
                   <div className="flex items-center justify-between border-b border-white/15 pb-3 mb-3">
@@ -771,7 +851,6 @@ const PrivateAviationKit = () => {
               </div>
             </div>
 
-            {/* BOTTOM BAR: 6 INTERACTIVE ZONE THUMBNAIL STOPS */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 pt-2">
               {KIT_CONFIG.flyThroughZones.map((item, idx) => {
                 const isActive = activeZoneIdx === idx;
@@ -804,7 +883,6 @@ const PrivateAviationKit = () => {
                 );
               })}
             </div>
-
           </div>
         </section>
 
@@ -847,7 +925,6 @@ const PrivateAviationKit = () => {
                 </p>
               </div>
 
-              {/* VIDEO REEL SELECTOR TABS */}
               <div className="flex flex-wrap gap-2.5 shrink-0">
                 {KIT_CONFIG.cinemaVideos.map((clip, idx) => (
                   <button
@@ -870,7 +947,6 @@ const PrivateAviationKit = () => {
               </div>
             </div>
 
-            {/* TRUE 16:9 WIDESCREEN ASPECT-VIDEO CONTAINER */}
             <div className="relative w-full aspect-video overflow-hidden rounded-3xl border-2 border-[#D4AF37]/60 bg-black shadow-2xl">
               <video
                 ref={cinemaVideoRef}
@@ -888,7 +964,6 @@ const PrivateAviationKit = () => {
 
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40" />
 
-              {/* TOP 16:9 FRAME BADGE */}
               <div className="absolute left-5 right-5 top-5 flex flex-wrap items-center justify-between gap-2">
                 <span className="rounded-full border border-[#D4AF37]/50 bg-black/85 px-4 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-[#F3E5AB] backdrop-blur-md">
                   {activeCinemaClip.badge}
@@ -898,7 +973,6 @@ const PrivateAviationKit = () => {
                 </span>
               </div>
 
-              {/* BOTTOM CONTROLS INSIDE 16:9 VIDEO */}
               <div className="absolute bottom-5 left-5 right-5 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
                   <button
@@ -917,7 +991,6 @@ const PrivateAviationKit = () => {
                   </button>
                 </div>
 
-                {/* LIVE CUSTOM VIDEO URL TEST BAR */}
                 <div className="flex flex-1 max-w-xl items-center gap-2 rounded-2xl border border-white/25 bg-black/90 px-4 py-2 backdrop-blur-xl">
                   <Maximize2 size={15} className="text-[#D4AF37] shrink-0" />
                   <input
@@ -954,7 +1027,7 @@ const PrivateAviationKit = () => {
               onClick={() => scrollTo('charter-request')}
               className="inline-flex w-fit items-center gap-2 border-b-2 border-[#D4AF37] pb-2 text-xs font-black uppercase tracking-[0.16em] text-[#F3E5AB] transition hover:text-white cursor-pointer"
             >
-              Discuss Your Route <ArrowRight size={14} />
+              Open 24/7 AI Flight Desk <ArrowRight size={14} />
             </button>
           </Reveal>
 
@@ -993,6 +1066,7 @@ const PrivateAviationKit = () => {
                       type="button"
                       onClick={() => {
                         setAircraftType(aircraft.name);
+                        setChatInput(`Requesting charter availability & cabin specs for ${aircraft.name}`);
                         scrollTo('charter-request');
                       }}
                       className="mt-6 text-[11px] font-black uppercase tracking-[0.16em] text-[#F3E5AB] hover:text-white cursor-pointer"
@@ -1102,124 +1176,128 @@ const PrivateAviationKit = () => {
         </section>
 
         {/* ================================================================= */}
-        {/* 5. FLIGHT DESK ENQUIRY (CONNECTED TO N8N GROQ WEBHOOK)            */}
+        {/* 5. 24/7 SOVEREIGN AI FLIGHT DESK + GOOGLE CALENDAR COORDINATOR    */}
         {/* ================================================================= */}
         <section id="charter-request" className="scroll-mt-24 mx-auto max-w-[1440px] px-4 py-20 sm:px-7 sm:py-28 lg:px-10">
-          <div className="grid gap-10 lg:grid-cols-[0.78fr_1.22fr] lg:items-center">
-            <Reveal>
-              <span className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.22em] text-[#D4AF37]">
-                <Compass size={15} /> Start With Your Itinerary
-              </span>
-              <h2 className="mt-4 text-3xl font-black leading-tight tracking-[-0.03em] text-white sm:text-5xl">
-                Where would you like to fly?
-              </h2>
-              <p className="mt-4 max-w-lg text-sm font-medium leading-7 text-slate-200 sm:text-base">
-                Share your departure city and preferred aircraft class. Our 24/7 AI Flight Desk scopes availability and dispatches instant confirmation.
-              </p>
-              <div className="mt-7 flex items-center gap-3.5 text-xs font-black uppercase tracking-wider text-[#F3E5AB]">
-                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/50 text-[#F3E5AB]">
-                  <Clock3 size={18} />
+          <Reveal className="rounded-[2.2rem] border-2 border-[#D4AF37]/45 bg-[#080C17] p-6 shadow-[0_0_70px_rgba(212,175,55,0.14)] sm:p-10 lg:p-12">
+            <div className="grid gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:items-center">
+              {/* LEFT INFO PANEL */}
+              <div>
+                <span className="inline-flex items-center gap-2 rounded-full border border-[#D4AF37]/50 bg-[#D4AF37]/15 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-[#F3E5AB]">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                  LIVE RAILWAY N8N + AI CONCIERGE
                 </span>
-                Instant 24/7 Flight Desk & WhatsApp Escalation
-              </div>
-            </Reveal>
 
-            <Reveal delay={0.1}>
-              <form
-                onSubmit={handleFlightDeskSubmit}
-                className="rounded-[1.8rem] border-2 border-[#D4AF37]/40 bg-[#0B101E] p-6 shadow-2xl sm:p-8"
-              >
-                <div className="mb-6 flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D4AF37]">
-                      Private Flight Enquiry
-                    </p>
-                    <h3 className="mt-1 text-xl font-black text-white">Build Your Direct Route</h3>
+                <h2 className="mt-5 text-3xl font-black uppercase leading-[1.06] tracking-tight text-white sm:text-5xl">
+                  24/7 SOVEREIGN AI FLIGHT DESK
+                </h2>
+
+                <p className="mt-4 text-sm font-medium leading-7 text-slate-200">
+                  Connected directly to <strong className="text-[#F3E5AB]">n8n-production-720dcf20.up.railway.app</strong>. Test live transcontinental charter inquiries, 6-zone cabin material specs, Google Calendar briefing slots, or white-label kit questions right now.
+                </p>
+
+                <div className="mt-7 space-y-3 border-t border-white/15 pt-6 text-xs font-bold text-slate-200">
+                  <div className="flex items-center gap-2.5">
+                    <CheckCircle2 size={16} className="shrink-0 text-[#D4AF37]" />
+                    <span>Active Zone: {activeFlyZone.zone}</span>
                   </div>
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#D4AF37] text-black">
-                    <Plane size={18} />
-                  </span>
+                  <div className="flex items-center gap-2.5">
+                    <CheckCircle2 size={16} className="shrink-0 text-[#D4AF37]" />
+                    <span>Selected Aircraft: {aircraftType}</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <CheckCircle2 size={16} className="shrink-0 text-emerald-400" />
+                    <span>Autonomous Lead Triage & Google Calendar Slot Dispatch</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* RIGHT INTERACTIVE CALENDAR + CHAT CONSOLE */}
+              <div className="rounded-[1.8rem] border border-[#D4AF37]/35 bg-[#050811] p-5 sm:p-6 shadow-2xl">
+                {/* 2x2 VIP & GOOGLE CALENDAR SLOT HEADER */}
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <input
+                    type="text"
+                    value={vipName}
+                    onChange={(e) => setVipName(e.target.value)}
+                    placeholder="Your Name / Family Office"
+                    className="rounded-xl border border-white/15 bg-[#0B101E] px-4 py-3 text-xs font-semibold text-white placeholder-slate-400 outline-none transition focus:border-[#D4AF37]"
+                  />
+                  <input
+                    type="email"
+                    value={vipEmail}
+                    onChange={(e) => setVipEmail(e.target.value)}
+                    placeholder="Direct VIP Email"
+                    className="rounded-xl border border-white/15 bg-[#0B101E] px-4 py-3 text-xs font-semibold text-white placeholder-slate-400 outline-none transition focus:border-[#D4AF37]"
+                  />
+                  <input
+                    type="date"
+                    value={bookingDate}
+                    onChange={(e) => setBookingDate(e.target.value)}
+                    className="rounded-xl border border-white/15 bg-[#0B101E] px-4 py-3 text-xs font-bold text-white outline-none transition focus:border-[#D4AF37]"
+                  />
+                  <select
+                    value={bookingSlot}
+                    onChange={(e) => setBookingSlot(e.target.value)}
+                    className="rounded-xl border border-[#D4AF37]/45 bg-[#0B101E] px-4 py-3 text-xs font-bold text-[#F3E5AB] outline-none transition focus:border-[#D4AF37]"
+                  >
+                    {CALENDAR_SLOTS.map((slot) => (
+                      <option key={slot} value={slot} className="bg-[#050811] text-white">
+                        {slot}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <label className="rounded-xl border border-white/20 bg-black/70 px-4 py-3.5 focus-within:border-[#D4AF37]">
-                    <span className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-[#F3E5AB]">
-                      <MapPin size={13} /> Departure Airport
-                    </span>
-                    <input
-                      type="text"
-                      value={departure}
-                      onChange={(event) => setDeparture(event.target.value)}
-                      className="mt-2 w-full bg-transparent text-sm font-bold text-white outline-none"
-                      placeholder="City or airport"
-                    />
-                  </label>
-
-                  <label className="rounded-xl border border-white/20 bg-black/70 px-4 py-3.5 focus-within:border-[#D4AF37]">
-                    <span className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-[#F3E5AB]">
-                      <MapPin size={13} /> Destination Airport
-                    </span>
-                    <input
-                      type="text"
-                      value={destination}
-                      onChange={(event) => setDestination(event.target.value)}
-                      className="mt-2 w-full bg-transparent text-sm font-bold text-white outline-none"
-                      placeholder="City or airport"
-                    />
-                  </label>
-
-                  <label className="rounded-xl border border-white/20 bg-black/70 px-4 py-3.5 focus-within:border-[#D4AF37]">
-                    <span className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-[#F3E5AB]">
-                      <Plane size={13} /> Aircraft Preference
-                    </span>
-                    <select
-                      value={aircraftType}
-                      onChange={(event) => setAircraftType(event.target.value)}
-                      className="mt-2 w-full bg-black text-sm font-bold text-white outline-none"
+                {/* SCROLLABLE CHAT MESSAGES */}
+                <div
+                  ref={chatScrollRef}
+                  className="mt-4 h-72 space-y-3 overflow-y-auto rounded-2xl border border-white/10 bg-[#080C17]/90 p-4"
+                >
+                  {chatMessages.map((msg, i) => (
+                    <div
+                      key={i}
+                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
-                      <option>Gulfstream G700 Flagship</option>
-                      <option>Bombardier Global 8000</option>
-                      <option>Dassault Falcon 10X Residence</option>
-                      <option>Bespoke V10 VIP Airliner</option>
-                    </select>
-                  </label>
+                      <div
+                        className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs leading-relaxed ${
+                          msg.role === 'user'
+                            ? 'bg-gradient-to-r from-[#D4AF37] to-[#F3E5AB] font-bold text-black shadow-md'
+                            : 'border border-white/15 bg-[#0E1526] font-medium text-slate-100'
+                        }`}
+                      >
+                        {msg.text}
+                      </div>
+                    </div>
+                  ))}
 
-                  <label className="rounded-xl border border-white/20 bg-black/70 px-4 py-3.5 focus-within:border-[#D4AF37]">
-                    <span className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-[#F3E5AB]">
-                      <Calendar size={13} /> Departure Date
-                    </span>
-                    <input
-                      type="date"
-                      className="mt-2 w-full bg-transparent text-sm font-bold text-white outline-none"
-                    />
-                  </label>
+                  {isAiThinking && (
+                    <p className="text-xs italic text-[#F3E5AB]/85 animate-pulse">
+                      Sovereign AI Flight Desk is computing your response...
+                    </p>
+                  )}
                 </div>
 
-                <div className="mt-6 flex flex-col items-start justify-between gap-4 border-t border-white/15 pt-5 sm:flex-row sm:items-center">
-                  <p className="max-w-sm text-xs font-medium leading-5 text-slate-200">
-                    {demoSubmitted
-                      ? `✓ Route Logged: ${departure} to ${destination} • ${aircraftType}`
-                      : 'Share your preferred route and aircraft class to initiate flight desk scoping.'}
-                  </p>
+                {/* MESSAGE INPUT + SEND */}
+                <form onSubmit={handleFlightDeskSend} className="mt-4 flex gap-2.5">
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    placeholder={`Ask about Geneva–Dubai charter rates, 6-zone cabin specs, or $${agencyPriceNum} kit license...`}
+                    className="flex-1 rounded-xl border border-[#D4AF37]/40 bg-[#0B101E] px-4 py-3.5 text-xs font-semibold text-white placeholder-slate-400 outline-none transition focus:border-[#F3E5AB]"
+                  />
                   <button
                     type="submit"
-                    className="flex w-full shrink-0 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#C59B27] px-7 py-4 text-xs font-black uppercase tracking-[0.15em] text-black transition hover:scale-105 sm:w-auto cursor-pointer"
+                    disabled={isAiThinking}
+                    className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#C59B27] px-6 py-3.5 text-xs font-black uppercase tracking-wider text-black shadow-lg transition hover:scale-[1.02] disabled:opacity-60 cursor-pointer"
                   >
-                    Request Itinerary <ArrowRight size={15} />
+                    <Send size={14} /> SEND
                   </button>
-                </div>
-
-                {aiFlightReply && (
-                  <div className="mt-4 rounded-2xl border border-[#D4AF37]/50 bg-black/85 p-4 text-xs text-slate-100 whitespace-pre-line leading-relaxed">
-                    <strong className="block uppercase text-[#F3E5AB] mb-1">
-                      ✦ V10 AI Flight Desk Response:
-                    </strong>
-                    {aiFlightReply}
-                  </div>
-                )}
-              </form>
-            </Reveal>
-          </div>
+                </form>
+              </div>
+            </div>
+          </Reveal>
         </section>
 
         {/* ================================================================= */}
@@ -1330,11 +1408,10 @@ const PrivateAviationKit = () => {
               A complete private jet brand, ready to take off.
             </h2>
             <p className="mt-4 text-sm font-medium leading-7 text-slate-200 sm:text-base">
-              Launch faster with the complete React + Tailwind JSX source code (including the 6-Zone Cabin Fly-Through & 16:9 Video Player), 60 production visuals (up to 150MP), and commercial licensing.
+              Launch faster with the complete React + Tailwind JSX source code (including the 6-Zone Cabin Fly-Through, 16:9 Video Player & 24/7 AI Flight Desk), 60 production visuals (up to 150MP), and commercial licensing.
             </p>
           </Reveal>
 
-          {/* ONE-CLICK ORDER BUMP FOR 30S SEEDANCE 2.5 / KLING 4.0 MOTION PACK */}
           <Reveal className="mx-auto max-w-4xl mb-10">
             <div
               onClick={() => setIncludeMotionBump(!includeMotionBump)}
@@ -1384,7 +1461,7 @@ const PrivateAviationKit = () => {
                   </p>
                   <ul className="mt-7 space-y-3.5 text-xs font-medium text-slate-100">
                     {[
-                      'Complete Aero Privé React + Tailwind JSX source (with 6-Zone Fly-Through)',
+                      'Complete Aero Privé React + Tailwind JSX source (with 6-Zone Fly-Through & AI Desk)',
                       '60 production files: 20 WebP, 20 4K UHD & 20 150MP masters',
                       'Three editable PSD advertising mockups',
                       'Commercial license for unlimited client websites & print'
@@ -1446,9 +1523,6 @@ const PrivateAviationKit = () => {
             </Reveal>
           </div>
 
-          {/* =============================================================== */}
-          {/* FREE 150MP SAMPLE VAULT (.TXT OBJAŠNJENJE + NEKOLIKO SLIKA)      */}
-          {/* =============================================================== */}
           <Reveal className="mx-auto mt-10 max-w-5xl">
             <div className="flex flex-col items-center justify-between gap-6 rounded-[1.8rem] border-2 border-[#D4AF37]/50 bg-gradient-to-r from-[#0B101E] via-[#10182C] to-[#0B101E] p-6 sm:p-8 shadow-[0_0_45px_rgba(212,175,55,0.14)] md:flex-row">
               <div className="flex items-start gap-4 text-left">
@@ -1463,7 +1537,7 @@ const PrivateAviationKit = () => {
                     Download Free 150MP Sample Visuals & Technical Spec Sheet (.TXT)
                   </h3>
                   <p className="mt-1.5 max-w-xl text-xs sm:text-sm font-medium leading-relaxed text-slate-200">
-                    Inspect our full-resolution sample images alongside the complete <code className="text-[#F3E5AB]">.txt</code> architecture, ICC color profile, and commercial licensing explanation before purchasing.
+                    Inspect our full-resolution sample images alongside the complete <span className="font-bold text-[#F3E5AB]">.txt</span> architecture, ICC color profile, and commercial licensing explanation before purchasing.
                   </p>
                 </div>
               </div>
@@ -1557,7 +1631,7 @@ const PrivateAviationKit = () => {
                   onClick={() => scrollTo('charter-request')}
                   className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#C59B27] px-7 py-4 text-xs font-black uppercase tracking-[0.15em] text-black transition hover:scale-105 cursor-pointer"
                 >
-                  Plan Your Flight <ArrowRight size={15} />
+                  Open 24/7 Flight Desk <ArrowRight size={15} />
                 </button>
                 <button
                   type="button"
