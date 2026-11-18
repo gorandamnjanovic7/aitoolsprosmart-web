@@ -35,7 +35,7 @@ const optimizeWebP = (url, width = 1600) => {
 };
 
 const N8N_PRIMARY_WEBHOOK = 'https://n8n-production-720dcf20.up.railway.app/webhook/AVIATION_Concierge_And_Calendar';
-const N8N_FALLBACK_WEBHOOK = 'https://n8n-production-720dcf20.up.railway.app/webhook/v10-aviation-flight-desk';
+const N8N_FALLBACK_WEBHOOK = 'https://n8n-production-720dcf20.up.railway.app/webhook/AVIATION_Concierge_And_Calendar';
 
 // ============================================================================
 // SVE SLIKE SU 100% UNIKATNE PO SEKCIJAMA (BEZ PONAVLJANJA NA STRANICI)

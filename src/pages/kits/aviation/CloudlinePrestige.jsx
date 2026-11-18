@@ -396,6 +396,10 @@ Free Sample Vault Drive: ${KIT_CONFIG.freeSampleLink}
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          clientName: typeof clientName !== 'undefined' ? clientName : 'VIP Aviation Client',
+          clientEmail: typeof clientEmail !== 'undefined' ? clientEmail : '',
+          bookingDate: typeof flightDate !== 'undefined' ? flightDate : '2026-11-22',
+          bookingSlot: typeof flightSlot !== 'undefined' ? flightSlot : '14:00 CET',
           message: msg,
           date: `${flightDate} at ${flightSlot}`,
           clientName: clientName || 'Cloudline VIP Guest',

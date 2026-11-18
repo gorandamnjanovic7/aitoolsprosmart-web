@@ -79,7 +79,7 @@ const KIT_CONFIG = {
 
   prevPageRoute: '/aviation-cloudline-kit',
   prevPageLabel: 'Prev Jet Page: Cloudline (3/5)',
-  nextLandingRoute: '/aviation-skyglass-aviation',
+  nextLandingRoute: '/aviation-skyglass-kit',
   nextLandingLabel: 'Next Jet Page: Skyglass (5/5)',
 
   heroImage: '/jets/60.webp',
@@ -452,6 +452,10 @@ Free Sample Vault Drive: ${KIT_CONFIG.freeSampleLink}
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          clientName: typeof clientName !== 'undefined' ? clientName : 'VIP Aviation Client',
+          clientEmail: typeof clientEmail !== 'undefined' ? clientEmail : '',
+          bookingDate: typeof flightDate !== 'undefined' ? flightDate : '2026-11-22',
+          bookingSlot: typeof flightSlot !== 'undefined' ? flightSlot : '14:00 CET',
           message: msg,
           date: `${flightDate} at ${flightSlot}`,
           clientName: clientName || 'Midnight VIP Guest',
