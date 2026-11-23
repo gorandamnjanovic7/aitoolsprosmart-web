@@ -1,5 +1,5 @@
 // ============================================================================
-// POČETAK FAJLA: src/V8StockBerza.jsx (DARK OBSIDIAN & CHAMPAGNE GOLD + VOL INPUT)
+// POČETAK FAJLA: src/componentsStockBerza/V8StockBerza.jsx (STRICT FIREBASE PAID GATE + DUAL LICENSE)
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Helmet } from 'react-helmet-async';
@@ -8,7 +8,7 @@ import {
   Zap, X, UploadCloud, DownloadCloud, Crown, AlertCircle,
   Type, Hash, Layers, FolderArchive, FileText, Wallet, MonitorPlay, Link as LinkIcon,
   Diamond, RefreshCcw, Aperture, ShieldCheck, Edit, Trash2, Sparkles,
-  Compass, Utensils, Mail, CheckCircle2, ChevronDown
+  Compass, Utensils, Wine, Car, Mail, CheckCircle2, ChevronDown, Cpu, Watch, Home, Sun, Snowflake, Gem, Flame, Lock
 } from 'lucide-react';
 import { db, auth } from '../firebase';
 import {
@@ -23,6 +23,14 @@ import { useNavigate } from 'react-router-dom';
 import V8SecureCheckout from '../V8SecureCheckout';
 import LoginRequiredModal from '../LoginRequiredModal';
 import { trackV8Action } from '../utils/analytics';
+
+// Automatska WebP konverzija i kompresija za Cloudinary linkove radi munjevitog učitavanja sajta
+const toFastWebp = (url, width = 800) => {
+  if (!url || typeof url !== 'string') return url;
+  if (!url.includes('res.cloudinary.com') || !url.includes('/upload/')) return url;
+  if (url.includes('/upload/f_webp')) return url;
+  return url.replace('/upload/', `/upload/f_webp,q_auto:good,w_${width}/`);
+};
 
 class V8ErrorGuard extends React.Component {
   constructor(props) {
@@ -82,7 +90,7 @@ const FullScreenLightbox = ({ imageUrl, onClose }) => {
         <X size={26} strokeWidth={2.5} />
       </button>
       <img
-        src={imageUrl}
+        src={toFastWebp(imageUrl, 2400)}
         alt="150MP Full Screen Inspection"
         className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl relative z-[999999] border border-[#C5A059]/40"
         onClick={(e) => e.stopPropagation()}
@@ -93,59 +101,140 @@ const FullScreenLightbox = ({ imageUrl, onClose }) => {
 };
 
 // ============================================================================
-// KOMERCIJALNE B2B KATEGORIJE (USKLAĐENA IMENA DUGMIĆA I FORME)
+// SVE KOMERCIJALNE B2B KATEGORIJE
 // ============================================================================
 const INDUSTRY_TABS = [
   {
     id: 'all',
     label: 'ALL VAULTS',
     shortLabel: 'ALL VAULTS',
-    formatCode: 'V10 LUXURY GOODS (10x 4K + 10x 150MP)',
+    formatCode: 'V10 LUXURY INTERIORS (20x 150MP + 4K + WEBP)',
     icon: Layers,
-    headline: 'COMMERCIAL 150MP + 4K CAMPAIGN ARCHIVE',
-    subheadline: '100% IP-SAFE, UNBRANDED COMMERCIAL VISUAL PACKAGES FOR LUXURY BRANDS, CREATIVE DIRECTORS & ADVERTISING AGENCIES. EVERY ZIP INCLUDES 10× 4K UHD DIGITAL FILES + 10× 150MP MASTER PRINT FILES.'
+    headline: 'COMMERCIAL 150MP + 4K + WEBP CAMPAIGN ARCHIVE',
+    subheadline: '100% IP-SAFE, UNBRANDED COMMERCIAL VISUAL PACKAGES FOR LUXURY BRANDS, SAAS FOUNDERS & AGENCIES. TRIPLE DELIVERY IN EVERY ZIP: 150MP MASTER PRINT JPG + 4K UHD JPG + WEB-READY WEBP.'
+  },
+  {
+    id: 'luxury_interiors',
+    label: 'LUXURY INTERIORS',
+    shortLabel: 'LUXURY INTERIORS',
+    formatCode: 'V10 LUXURY INTERIORS (20x 150MP + 4K + WEBP)',
+    icon: Home,
+    headline: 'LUXURY INTERIOR DESIGN & ARCHITECTURAL SPACES',
+    subheadline: 'MARBLE LIVING ROOMS, DESIGNER KITCHENS, DINING SUITES, PRIVATE LIBRARIES, WALK-IN WARDROBES, EXECUTIVE OFFICES & PRIVATE CINEMAS IN 150MP PRINT + 4K UHD + WEBP.'
+  },
+  {
+    id: 'luxury_tech',
+    label: 'LUXURY TECH & AI',
+    shortLabel: 'LUXURY TECH & AI',
+    formatCode: 'V10 LUXURY TECH & AI (20x 150MP + 4K + WEBP)',
+    icon: Cpu,
+    headline: 'LUXURY TECH PRODUCTS, AI CORES & SAAS HARDWARE',
+    subheadline: 'UNBRANDED BLACK-TITANIUM AI HARDWARE MODULES, CYBERSECURITY VAULTS, SMART-HOME HUBS, OPTICAL SENSORS & LEVITATING LAUNCH OBJECTS WITH CLEAN HERO NEGATIVE SPACE.'
+  },
+  {
+    id: 'watches_horology',
+    label: 'WATCHES & HOROLOGY',
+    shortLabel: 'WATCHES & HOROLOGY',
+    formatCode: 'V10 WATCHES & HOROLOGY (20x 150MP + 4K + WEBP)',
+    icon: Watch,
+    headline: 'LUXURY WATCHES, SKELETON CALIBRES & HAUTE HORLOGERIE',
+    subheadline: '100% IP-SAFE UNBRANDED MECHANICAL TIMEPIECES, TOURBILLON-INSPIRED CAGES, SAPPHIRE CRYSTAL MACROS & COLLECTOR DISPLAYS SHOT ON 120MM MEDIUM-FORMAT OPTICS.'
+  },
+  {
+    id: 'exotic_auto',
+    label: 'EXOTIC AUTO & CARBON',
+    shortLabel: 'EXOTIC AUTO & CARBON',
+    formatCode: 'V10 EXOTIC AUTO & CARBON (20x 150MP + 4K + WEBP)',
+    icon: Car,
+    headline: 'EXOTIC AUTOMOTIVE DETAILS, FORGED CARBON & CERAMIC BRAKES',
+    subheadline: '100% IP-SAFE UNBRANDED AUTOMOTIVE BODY CURVES, FORGED CARBON WEAVES, FLUSH ALLOY RIMS, CERAMIC BRAKES, SMOKED HEADLIGHT OPTICS & STITCHED LEATHER INTERIORS.'
+  },
+  {
+    id: 'beverage_cocktail',
+    label: 'BEVERAGE / ENERGY DRINK / COCKTAIL BAR',
+    shortLabel: 'BEVERAGE, ENERGY & COCKTAIL',
+    formatCode: 'V10 BEVERAGE ENERGY & COCKTAIL (20x 150MP + 4K + WEBP)',
+    icon: Wine,
+    headline: 'BEVERAGE, ENERGY DRINK & COCKTAIL BAR CAMPAIGNS',
+    subheadline: 'HIGH-SPEED LIQUID SPLASHES, SLICED EXOTIC FRUITS, CRYSTAL GLASSWARE, SCULPTED ICE CUBES & DARK-STUDIO HERO BACKGROUNDS WITH CLEAN NEGATIVE SPACE FOR CANS & BOTTLES.'
+  },
+  {
+    id: 'obsidian_aurum',
+    label: 'OBSIDIAN AURUM (GOLD)',
+    shortLabel: 'OBSIDIAN AURUM',
+    formatCode: 'V10 OBSIDIAN AURUM GOLD (21:9 + 16:9 + WEBP)',
+    icon: Sun,
+    headline: 'OBSIDIAN AURUM — 24K GOLD & AMBER WEB HERO BACKGROUNDS',
+    subheadline: 'DARK-MODE LIQUID-OBSIDIAN WAVES & GOLD-COATED OPTICAL GLASS FINS WITH CLEAN LEFT THIRD FOR WEALTH MANAGEMENT, REAL ESTATE, AVIATION & LUXURY HEADLINES (21:9 & 16:9).'
+  },
+  {
+    id: 'obsidian_cryo',
+    label: 'OBSIDIAN CRYO (CYAN)',
+    shortLabel: 'OBSIDIAN CRYO',
+    formatCode: 'V10 OBSIDIAN CRYO CYAN (21:9 + 16:9 + WEBP)',
+    icon: Snowflake,
+    headline: 'OBSIDIAN CRYO — CRYO-CYAN & PLATINUM SAAS HERO BACKGROUNDS',
+    subheadline: 'ENTERPRISE SAAS, AI PLATFORM, CLOUD & CYBERSECURITY DARK-MODE HERO BACKGROUNDS WITH DIELECTRIC CRYO-CYAN & PLATINUM-SILVER CAUSTICS AND CLEAN LEFT THIRD.'
+  },
+  {
+    id: 'obsidian_emerald',
+    label: 'OBSIDIAN EMERALD',
+    shortLabel: 'OBSIDIAN EMERALD',
+    formatCode: 'V10 OBSIDIAN EMERALD TEAL (21:9 + 16:9 + WEBP)',
+    icon: Gem,
+    headline: 'OBSIDIAN OPTICS — EMERALD, TEAL & VIOLET WEB HEROES',
+    subheadline: 'FLAGSHIP FINTECH, WEB3 & LUXURY TECH DARK-MODE HERO BACKGROUNDS WITH DICHROIC EMERALD, TEAL & DEEP VIOLET SPECTRAL REFLECTIONS AND CLEAN LEFT THIRD.'
+  },
+  {
+    id: 'obsidian_ruby',
+    label: 'OBSIDIAN RUBY',
+    shortLabel: 'OBSIDIAN RUBY',
+    formatCode: 'V10 OBSIDIAN RUBY COPPER (21:9 + 16:9 + WEBP)',
+    icon: Flame,
+    headline: 'OBSIDIAN RUBY — CRIMSON RUBY & ROSE-COPPER WEB HEROES',
+    subheadline: 'HIGH-TICKET SUPERCAR, SOVEREIGN HOROLOGY & HAUTE PERFUMERY DARK-MODE HERO BACKGROUNDS WITH RUBY-DICHROIC & ROSE-COPPER REFLECTIONS AND CLEAN LEFT THIRD.'
   },
   {
     id: 'luxury_goods',
-    label: 'LUXURY GOODS',
+    label: 'LUXURY GOODS & JEWELRY',
     shortLabel: 'LUXURY GOODS',
-    formatCode: 'V10 LUXURY GOODS (10x 4K + 10x 150MP)',
+    formatCode: 'V10 LUXURY GOODS (20x 150MP + 4K + WEBP)',
     icon: Diamond,
-    headline: 'LUXURY GOODS, HOROLOGY, FINE JEWELRY & PERFUMES',
-    subheadline: 'BLANK-LABEL LUXURY GOODS, HOROLOGY, HIGH-JEWELRY DIAMONDS, FRAGRANCE FLACONS, HANDBAGS & EYEWEAR. ZERO LOGOS—READY FOR INSTANT BRAND COMPOSITING & BILLBOARD PRINT.'
+    headline: 'LUXURY GOODS, FINE JEWELRY, DIAMONDS & PERFUMES',
+    subheadline: 'BLANK-LABEL HIGH-JEWELRY DIAMONDS, FRAGRANCE FLACONS, LEATHER HANDBAGS & EYEWEAR. ZERO LOGOS—READY FOR INSTANT BRAND COMPOSITING & BILLBOARD PRINT.'
   },
   {
     id: 'beauty',
     label: 'BEAUTY & SKINCARE',
     shortLabel: 'BEAUTY & SKINCARE',
-    formatCode: 'V10 BEAUTY & SKINCARE (10x 4K + 10x 150MP)',
+    formatCode: 'V10 BEAUTY & SKINCARE (20x 150MP + 4K + WEBP)',
     icon: Sparkles,
-    headline: 'BEAUTY, SKINCARE & COSMETIC EDITORIAL TEXTURES',
-    subheadline: '100% IP-SAFE BEAUTY & SKINCARE ADVERTISING CROPS WITH NATURAL SKIN MICROTEXTURE, SERUM DROPLETS & GLOSSY EDITORIAL LIGHTING. NO IDENTIFIABLE FACES OR TRADEMARKS.'
+    headline: 'BEAUTY, SKINCARE & COSMETIC CAMPAIGN PHOTOGRAPHY',
+    subheadline: '100% IP-SAFE UNBRANDED SERUM BOTTLES, CREAM JARS, SPA VANITY SETUPS & WATER-DEW SKINCARE CAMPAIGNS WITH ZERO LABELS, ZERO LOGOS & ZERO MEDICAL CLAIMS.'
   },
   {
-    id: 'aviation_interior',
-    label: 'JETS, YACHTS & INTERIORS',
-    shortLabel: 'JETS, YACHTS & INTERIORS',
-    formatCode: 'V10 JETS YACHTS & INTERIORS (10x 4K + 10x 150MP)',
+    id: 'aviation_yachts',
+    label: 'JETS & YACHTS',
+    shortLabel: 'JETS & YACHTS',
+    formatCode: 'V10 JETS & YACHTS (20x 150MP + 4K + WEBP)',
     icon: Compass,
-    headline: 'JETS, YACHTS & ARCHITECTURAL INTERIORS',
-    subheadline: 'BESPOKE PRIVATE JET CABINS, SUPERYACHT DECKS, PENTHOUSE INTERIORS & ARCHITECTURAL EXTERIORS ENGINEERED FOR CHARTER BROKERS, REAL ESTATE & WEALTH BRANDS.'
+    headline: 'PRIVATE JETS, SUPERYACHTS & CHARTER AVIATION',
+    subheadline: 'BESPOKE PRIVATE JET CABINS, SUPERYACHT DECKS & ULTRA-LUXURY CHARTER EXTERIORS ENGINEERED FOR AVIATION & MARITIME BROKERS.'
   },
   {
     id: 'gastronomy',
     label: 'MICHELIN FOOD',
     shortLabel: 'MICHELIN FOOD',
-    formatCode: 'V10 MICHELIN GASTRONOMY (10x 4K + 10x 150MP)',
+    formatCode: 'V10 MICHELIN GASTRONOMY (20x 150MP + 4K + WEBP)',
     icon: Utensils,
-    headline: 'MICHELIN FOOD, MOLECULAR GASTRONOMY & FINE DINING',
-    subheadline: 'CULINARY PLATING, FINE SPIRITS & FIVE-STAR HOSPITALITY VISUALS IN RAZOR-SHARP 4K UHD & 150MP MASTER PRINT RESOLUTION.'
+    headline: 'MICHELIN FOOD, DECORATED PLATING & FINE DINING',
+    subheadline: 'DECORATED FINE-DINING PLATING, COMPLEMENTARY SIDES, LINEN-NAPKIN CUTLERY & LABEL-FREE BEVERAGE PAIRINGS IN 150MP MASTER PRINT, 4K UHD & WEBP FORMATS.'
   },
   {
     id: 'cinematic',
     label: 'CINEMATIC & LEGACY',
     shortLabel: 'CINEMATIC & LEGACY',
-    formatCode: 'V10 CINEMATIC & WORLD (10x 4K + 10x 150MP)',
+    formatCode: 'V10 CINEMATIC & WORLD (20x 150MP + 4K + WEBP)',
     icon: Crown,
     headline: 'CINEMATIC & LEGACY REALMS, ARCHITECTURE & KEY ART',
     subheadline: 'HIGH-IMPACT KEY ART, HISTORICAL MONUMENTS & MULTI-RATIO PRODUCTION BUNDLES FOR FILM STUDIOS, PUBLISHERS & GAME DEVELOPERS.'
@@ -153,75 +242,139 @@ const INDUSTRY_TABS = [
 ];
 
 // ============================================================================
-// OBAVEZNI STANDARDIZOVANI OPISI ZA SVAKO DUGME (100% USKLAĐENO SA DUGMIĆIMA)
+// STANDARDIZOVANI OPISI ZA STANDARD CAMPAIGN PACK (20 SCENA) I EXECUTIVE AGENCY BUNDLE (45 SCENA)
 // ============================================================================
-const DEFAULT_DESCRIPTIONS = {
-  'V10 LUXURY GOODS (10x 4K + 10x 150MP)':
-`COMMERCIAL LUXURY GOODS DELIVERY: 20 PRODUCTION FILES (10× 4K UHD FOR WEB/SOCIAL + SAME 10× 150MP MASTER FILES FOR LARGE-FORMAT BILLBOARD & PRINT).
-- 100% Unbranded & Blank-Label Luxury Goods Photography (Zero logos, zero trademarks, zero watermarks).
-- Shot-matched Phase One XF IQ4 150MP macro aesthetics with natural highlight rolloff, sRGB ICC color profile, and cleaned EXIF metadata.
-- Ready for luxury e-commerce hero banners, packaging mockups, luxury goods catalogs, and agency client campaigns.`,
+const buildUnifiedDescription = (formatCode, isAgency45 = false) => {
+  const count = isAgency45 ? 45 : 20;
+  const totalFiles = count * 3;
+  const code = (formatCode || '').toUpperCase();
 
-  'V10 BEAUTY & SKINCARE (10x 4K + 10x 150MP)':
-`COMMERCIAL BEAUTY & SKINCARE DELIVERY: 20 PRODUCTION FILES (10× 4K UHD FOR WEB/SOCIAL + SAME 10× 150MP MASTER FILES FOR LARGE-FORMAT BILLBOARD & PRINT).
-- 100% Unbranded & Blank-Label Beauty & Skincare Photography (Zero logos, zero trademarks, zero watermarks, no identifiable faces).
-- Shot-matched Phase One XF IQ4 150MP macro aesthetics with natural highlight rolloff, sRGB ICC color profile, and cleaned EXIF metadata.
-- Ready for luxury e-commerce hero banners, packaging mockups, beauty & skincare catalogs, and agency client campaigns.`,
+  if (code.includes('OBSIDIAN AURUM')) {
+    return `OBSIDIAN AURUM (24K GOLD & AMBER) WEB HERO DELIVERY: ${count} UNIQUE DARK-MODE SCENES (${totalFiles} PRODUCTION FILES: ${count}× 150MP MASTER JPG + ${count}× 21:9/16:9 4K UHD JPG + ${count}× OPTIMIZED WEBP).
+- Calm, low-contrast dark Left Third engineered specifically for Wealth Management, Real Estate, Private Aviation & Haute Gastronomie website headlines and CTA buttons.
+- Glossy liquid-obsidian waves intersected by 24k gold-coated optical glass fins (ARRI Alexa 65 × Panavision Primo 70 50mm physics, Snell's law caustics, cleaned EXIF, zero text, zero watermarks).`;
+  }
 
-  'V10 JETS YACHTS & INTERIORS (10x 4K + 10x 150MP)':
-`COMMERCIAL JETS, YACHTS & INTERIORS DELIVERY: 20 PRODUCTION FILES (10× 4K UHD FOR WEB/SOCIAL + SAME 10× 150MP MASTER FILES FOR LARGE-FORMAT BILLBOARD & PRINT).
-- 100% Unbranded & Blank-Label Jets, Yachts & Interiors Photography (Zero logos, zero trademarks, zero watermarks).
-- Shot-matched Phase One XF IQ4 150MP architectural aesthetics with natural highlight rolloff, sRGB ICC color profile, and cleaned EXIF metadata.
-- Ready for luxury e-commerce hero banners, packaging mockups, jets, yachts & interiors catalogs, and agency client campaigns.`,
+  if (code.includes('OBSIDIAN CRYO')) {
+    return `OBSIDIAN CRYO (CRYO-CYAN & PLATINUM) SAAS HERO DELIVERY: ${count} UNIQUE DARK-MODE SCENES (${totalFiles} PRODUCTION FILES: ${count}× 150MP MASTER JPG + ${count}× 21:9/16:9 4K UHD JPG + ${count}× OPTIMIZED WEBP).
+- Calm, low-contrast dark Left Third engineered specifically for AI Platforms, Modern SaaS, Cloud Infrastructure & Cybersecurity website headlines and CTA buttons.
+- Glossy liquid-obsidian waves intersected by dielectric optical glass fins with cryo-cyan, glacial cobalt & platinum-silver reflections (ARRI Alexa 65 × Primo 70 50mm, cleaned EXIF, zero watermarks).`;
+  }
 
-  'V10 MICHELIN GASTRONOMY (10x 4K + 10x 150MP)':
-`COMMERCIAL MICHELIN FOOD DELIVERY: 20 PRODUCTION FILES (10× 4K UHD FOR WEB/SOCIAL + SAME 10× 150MP MASTER FILES FOR LARGE-FORMAT BILLBOARD & PRINT).
-- 100% Unbranded & Blank-Label Michelin Food Photography (Zero logos, zero trademarks, zero watermarks).
-- Shot-matched Phase One XF IQ4 150MP macro aesthetics with natural highlight rolloff, sRGB ICC color profile, and cleaned EXIF metadata.
-- Ready for luxury e-commerce hero banners, packaging mockups, Michelin food catalogs, and agency client campaigns.`,
+  if (code.includes('OBSIDIAN EMERALD')) {
+    return `OBSIDIAN OPTICS (EMERALD, TEAL & DEEP VIOLET) WEB HERO DELIVERY: ${count} UNIQUE DARK-MODE SCENES (${totalFiles} PRODUCTION FILES: ${count}× 150MP MASTER JPG + ${count}× 21:9/16:9 4K UHD JPG + ${count}× OPTIMIZED WEBP).
+- Calm, low-contrast dark Left Third engineered specifically for Fintech, Web3, AI Systems & Luxury Tech flagship hero sections.
+- Glossy liquid-obsidian waves intersected by dichroic optical glass fins with muted emerald, teal & deep violet spectral traces (ARRI Alexa 65 × Primo 70 50mm, cleaned EXIF, zero text).`;
+  }
 
-  'V10 CINEMATIC & WORLD (10x 4K + 10x 150MP)':
-`COMMERCIAL CINEMATIC & LEGACY DELIVERY: 20 PRODUCTION FILES (10× 4K UHD FOR WEB/SOCIAL + SAME 10× 150MP MASTER FILES FOR LARGE-FORMAT BILLBOARD & PRINT).
-- 100% Unbranded & Blank-Label Cinematic & Legacy Photography (Zero logos, zero trademarks, zero watermarks).
-- Shot-matched Phase One XF IQ4 150MP macro aesthetics with natural highlight rolloff, sRGB ICC color profile, and cleaned EXIF metadata.
-- Ready for luxury e-commerce hero banners, packaging mockups, cinematic & legacy catalogs, and agency client campaigns.`
+  if (code.includes('OBSIDIAN RUBY')) {
+    return `OBSIDIAN RUBY (CRIMSON RUBY & ROSE-COPPER) WEB HERO DELIVERY: ${count} UNIQUE DARK-MODE SCENES (${totalFiles} PRODUCTION FILES: ${count}× 150MP MASTER JPG + ${count}× 21:9/16:9 4K UHD JPG + ${count}× OPTIMIZED WEBP).
+- Calm, low-contrast dark Left Third engineered specifically for Exotic Supercars, Sovereign Horology, Haute Perfumery & Executive Landing Pages.
+- Glossy liquid-obsidian waves intersected by ruby-dichroic optical glass fins with cardinal crimson, deep garnet & warm rose-copper reflections (ARRI Alexa 65 × Primo 70 50mm, cleaned EXIF).`;
+  }
+
+  if (code.includes('EXOTIC AUTO')) {
+    return `V10 EXOTIC AUTO & CARBON DELIVERY: ${count} UNIQUE AUTOMOTIVE DETAIL SCENES (${totalFiles} PRODUCTION FILES: ${count}× 150MP MASTER PRINT JPG + ${count}× 4K UHD JPG + ${count}× WEB-READY WEBP).
+- 100% IP-Safe, Unbranded Luxury Automotive Photography: Forged Carbon Weaves, Ceramic Brakes, Flush Unembossed Alloy Rims, Smoked Headlight Optics & Stitched Leather Interiors (Zero logos, zero badges, zero license plates, zero watermarks).
+- Phase One XF IQ4 150MP Macro optical physics with polarizer-controlled paint reflections, sRGB ICC color profile, and stripped EXIF metadata.`;
+  }
+
+  if (code.includes('BEVERAGE')) {
+    return `V10 BEVERAGE, ENERGY DRINK & COCKTAIL BAR DELIVERY: ${count} UNIQUE HIGH-SPEED SPLASH & GLASSWARE SCENES (${totalFiles} PRODUCTION FILES: ${count}× 150MP MASTER PRINT JPG + ${count}× 4K UHD JPG + ${count}× WEB-READY WEBP).
+- High-speed frozen liquid splashes, fresh fruit dynamics, crystal glassware & sculpted ice cubes with clean negative space for bottle/can compositing and bar menus.
+- 100% IP-Safe, Unbranded Commercial Assets (Zero logos, zero labels, zero watermarks, stripped EXIF, sRGB ICC color profile).`;
+  }
+
+  if (code.includes('LUXURY INTERIORS')) {
+    return `V10 LUXURY INTERIOR DESIGN DELIVERY: ${count} UNIQUE ARCHITECTURAL SCENES (${totalFiles} PRODUCTION FILES: ${count}× 150MP MASTER PRINT JPG + ${count}× 4K UHD JPG + ${count}× WEB-READY WEBP).
+- 100% IP-Safe, Unbranded Designer Living Rooms, Marble Kitchens, Dining Suites, Private Libraries, Master Bedrooms, Dressing Rooms & Executive Offices (Zero humans, zero text, zero logos).
+- Phase One XF IQ4 150MP & Hasselblad X2D Tilt-Shift architectural optics with ARRI LogC4 window highlight rolloff, sRGB ICC profile, and stripped EXIF metadata.`;
+  }
+
+  if (code.includes('LUXURY TECH')) {
+    return `V10 LUXURY TECH & AI HARDWARE DELIVERY: ${count} UNIQUE PRODUCT SCENES (${totalFiles} PRODUCTION FILES: ${count}× 150MP MASTER PRINT JPG + ${count}× 4K UHD JPG + ${count}× WEB-READY WEBP).
+- 100% IP-Safe, Unbranded Black-Titanium AI Core Modules, Smart-Home Hubs, Cybersecurity Hardware Vaults, Optical Sensors & Levitating Launch Objects (Zero clones, zero UI text, zero logos).
+- Phase One IQ4 150MP 120mm Macro optics with anisotropic brushed-metal reflections, sapphire caustics, clean SaaS hero negative space, and stripped EXIF metadata.`;
+  }
+
+  if (code.includes('WATCHES & HOROLOGY')) {
+    return `V10 LUXURY WATCH & HAUTE HORLOGERIE DELIVERY: ${count} UNIQUE HOROLOGY SCENES (${totalFiles} PRODUCTION FILES: ${count}× 150MP MASTER PRINT JPG + ${count}× 4K UHD JPG + ${count}× WEB-READY WEBP).
+- 100% IP-Safe, Fictional Unbranded Mechanical Timepieces, Exposed Skeleton Calibres, Tourbillon-Inspired Cages, Sapphire Dials & Collector Displays (Zero dial text, zero numbers, zero brand shapes).
+- Shot-matched Phase One IQ4 150MP × Schneider Kreuznach 120mm Macro LS optics with ruby jewel-bearing caustics, sRGB ICC color profile, and stripped EXIF metadata.`;
+  }
+
+  const labelMap = {
+    'V10 LUXURY GOODS (20x 150MP + 4K + WEBP)': 'LUXURY GOODS, JEWELRY & PERFUMES',
+    'V10 BEAUTY & SKINCARE (20x 150MP + 4K + WEBP)': 'BEAUTY & SKINCARE',
+    'V10 JETS & YACHTS (20x 150MP + 4K + WEBP)': 'PRIVATE JETS & SUPERYACHTS',
+    'V10 MICHELIN GASTRONOMY (20x 150MP + 4K + WEBP)': 'MICHELIN FOOD & FINE DINING',
+    'V10 CINEMATIC & WORLD (20x 150MP + 4K + WEBP)': 'CINEMATIC & LEGACY'
+  };
+
+  const nicheTitle = labelMap[formatCode] || 'COMMERCIAL CAMPAIGN';
+
+  return `UNIFIED ${nicheTitle} DELIVERY: ${count} UNIQUE SCENES (${totalFiles} PRODUCTION FILES: ${count}× 150MP MASTER PRINT JPG + ${count}× 4K UHD JPG + ${count}× WEB-READY WEBP).
+- 100% IP-Safe, Unbranded & Blank-Label Commercial Photography (Zero logos, zero readable text, zero trademarks, zero watermarks).
+- Phase One XF IQ4 150MP & Leica medium-format optical aesthetics with natural highlight rolloff, sRGB ICC color profile, and stripped EXIF metadata.
+- Organized into 3 clean ZIP folders (01_Master_Resolution_JPG, 02_4K_UHD_JPG, 03_Web_Ready_WEBP) + Commercial License included.`;
 };
 
 const detectIndustry = (paket) => {
+  const fmt = (paket.format || '').toUpperCase();
   const text = `${paket.format || ''} ${paket.kategorijaEn || ''} ${paket.nazivEn || ''} ${paket.opisEn || ''}`.toUpperCase();
 
-  if (
-    text.includes('LUXURY GOODS') || text.includes('WATCH') || text.includes('SAT') ||
-    text.includes('JEWEL') || text.includes('DIAMOND') || text.includes('PERFUME') ||
-    text.includes('PARFEM') || text.includes('FRAGRANCE') || text.includes('BAG') ||
-    text.includes('TORB') || text.includes('EYEWEAR') || text.includes('SUNGLASS') ||
-    text.includes('RING') || text.includes('NECKLACE') || text.includes('GOLD')
-  ) {
-    return 'luxury_goods';
-  }
-  if (
-    text.includes('BEAUTY') || text.includes('SKINCARE') || text.includes('MAKEUP') ||
-    text.includes('SERUM') || text.includes('COSMETIC') || text.includes('SPA') ||
-    text.includes('SKIN') || text.includes('LIP')
-  ) {
-    return 'beauty';
-  }
-  if (
-    text.includes('JET') || text.includes('YACHT') || text.includes('AVIATION') ||
-    text.includes('INTERIOR') || text.includes('EXTERIOR') || text.includes('ARCHITECT') ||
-    text.includes('VILLA') || text.includes('REAL ESTATE') || text.includes('PENTHOUSE') ||
-    text.includes('CABIN')
-  ) {
-    return 'aviation_interior';
-  }
-  if (
-    text.includes('MICHELIN') || text.includes('GASTRONOM') || text.includes('FOOD') ||
-    text.includes('CULINARY') || text.includes('RESTAURANT') || text.includes('DRINK') ||
-    text.includes('CHEF') || text.includes('DISH')
-  ) {
-    return 'gastronomy';
-  }
+  if (fmt.includes('OBSIDIAN AURUM') || text.includes('AURUM') || (text.includes('OBSIDIAN') && text.includes('24K GOLD'))) return 'obsidian_aurum';
+  if (fmt.includes('OBSIDIAN CRYO') || text.includes('CRYO') || text.includes('CRYO-CYAN')) return 'obsidian_cryo';
+  if (fmt.includes('OBSIDIAN EMERALD') || (text.includes('OBSIDIAN') && (text.includes('EMERALD') || text.includes('DICHROIC') || text.includes('OPTICS')))) return 'obsidian_emerald';
+  if (fmt.includes('OBSIDIAN RUBY') || (text.includes('OBSIDIAN') && (text.includes('RUBY') || text.includes('ROSE-COPPER') || text.includes('CRIMSON')))) return 'obsidian_ruby';
+  if (fmt.includes('EXOTIC AUTO') || text.includes('EXOTIC AUTO') || text.includes('AUTOMOTIVE') || text.includes('CARBON') || text.includes('BRAKE') || text.includes('HEADLIGHT')) return 'exotic_auto';
+  if (fmt.includes('BEVERAGE') || text.includes('BEVERAGE') || text.includes('ENERGY DRINK') || text.includes('COCKTAIL') || text.includes('SPLASH') || text.includes('GLASSWARE') || text.includes('MOCKTAIL') || text.includes('PINEAPPLE')) return 'beverage_cocktail';
+  if (fmt.includes('LUXURY INTERIORS') || text.includes('INTERIOR') || text.includes('LIVING ROOM') || text.includes('PENTHOUSE') || text.includes('KITCHEN') || text.includes('WARDROBE') || text.includes('LIBRARY')) return 'luxury_interiors';
+  if (fmt.includes('LUXURY TECH') || text.includes('TECH PRODUCT') || text.includes('AI HARDWARE') || text.includes('AI CORE') || text.includes('CYBERSECURITY') || text.includes('SMART-HOME')) return 'luxury_tech';
+  if (fmt.includes('WATCHES & HOROLOGY') || text.includes('WATCH') || text.includes('HOROLOG') || text.includes('TOURBILLON') || text.includes('CALIBRE') || text.includes('TIMEPIECE') || text.includes('SAT')) return 'watches_horology';
+  if (text.includes('LUXURY GOODS') || text.includes('JEWEL') || text.includes('DIAMOND') || text.includes('PERFUME') || text.includes('PARFEM') || text.includes('FRAGRANCE') || text.includes('BAG') || text.includes('TORB') || text.includes('EYEWEAR') || text.includes('RING') || text.includes('NECKLACE')) return 'luxury_goods';
+  if (text.includes('BEAUTY') || text.includes('SKINCARE') || text.includes('MAKEUP') || text.includes('SERUM') || text.includes('COSMETIC') || text.includes('SPA') || text.includes('SKIN') || text.includes('LIP')) return 'beauty';
+  if (text.includes('JET') || text.includes('YACHT') || text.includes('AVIATION') || text.includes('CABIN') || text.includes('SUPERCAR')) return 'aviation_yachts';
+  if (text.includes('MICHELIN') || text.includes('GASTRONOM') || text.includes('FOOD') || text.includes('CULINARY') || text.includes('RESTAURANT') || text.includes('CHEF') || text.includes('DISH')) return 'gastronomy';
   return 'cinematic';
+};
+
+// Određuje da li kartica prikazuje 20 preview sličica (45-scena Agency Bundle) ili 10 (20-scena Standard Pack)
+const getPaketPreviewSlotCount = (paket) => {
+  if (paket?.previewSlotCount === 20) return 20;
+  if ((paket?.primeri?.length || 0) > 10) return 20;
+  const priceNum = parseFloat(paket?.cena || '0');
+  const volText = `${paket?.volume || ''} ${paket?.nazivEn || ''} ${paket?.volTitle || ''}`.toUpperCase();
+  if (priceNum >= 349 || volText.includes('45X') || volText.includes('45 ') || volText.includes('80X') || volText.includes('AGENCY BUNDLE') || volText.includes('MASTER BUNDLE')) {
+    return 20;
+  }
+  return 10;
+};
+
+const isObsidianFormat = (fmtOrId = '') => {
+  const s = fmtOrId.toUpperCase();
+  return s.includes('OBSIDIAN') || s.includes('21:9');
+};
+
+// Automatski proračun veće (Global Enterprise) cene i za nove i za već objavljene pakete u bazi
+const computeDefaultEnterprisePrice = (standardCena) => {
+  const base = parseFloat(standardCena);
+  if (isNaN(base) || base <= 0) return '0.00';
+  if (Math.round(base) === 149) return '299.00';
+  if (Math.round(base) === 499) return '890.00';
+  if (Math.round(base) === 99) return '199.00';
+  if (Math.round(base) === 399) return '690.00';
+  return Math.round(base * 1.95).toFixed(2);
+};
+
+// ============================================================================
+// 📜 CENTRALNA FUNKCIJA (3 LINIJE LOGIKE) ZA ODREĐIVANJE STOCK PHOTOS LICENCE
+// ============================================================================
+const resolveStockLicenseMeta = (licenseTier = 'standard') => {
+  const isEnt = licenseTier === 'enterprise';
+  const licenseTitle = isEnt ? 'GLOBAL ENTERPRISE LICENSE' : 'STANDARD COMMERCIAL LICENSE';
+  const licensePdf = isEnt ? '/PREMIUM ENTERPRISE LICENSE.pdf' : '/V8_COMMERCIAL_LICENSE.pdf';
+  return { isEnt, licenseTitle, licensePdf };
 };
 
 const V8StockBerzaBase = () => {
@@ -230,8 +383,25 @@ const V8StockBerzaBase = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
 
-  const [checkoutData, setCheckoutData] = useState({ isOpen: false, name: '', price: 0, zipLink: '' });
-  const [loginRequiredData, setLoginRequiredData] = useState({ isOpen: false, paket: null, name: '', price: 0 });
+  // Čuva izabranu licencu po svakoj kartici ('standard' = manja cena | 'enterprise' = veća cena)
+  const [selectedLicenses, setSelectedLicenses] = useState({});
+
+  // 🔒 NE DRŽIMO zipLink U CHECKOUT STATE-u KAKO KLIJENT NE BI MOGAO DA DOĐE DO NJEGA PRE FIREBASE POTVRDE!
+  const [checkoutData, setCheckoutData] = useState({
+    isOpen: false,
+    paketId: null,
+    name: '',
+    price: 0,
+    licenseTier: 'standard',
+    previewUrl: ''
+  });
+  const [loginRequiredData, setLoginRequiredData] = useState({
+    isOpen: false,
+    paket: null,
+    licenseTier: 'standard',
+    name: '',
+    price: 0
+  });
 
   const [isUploading, setIsUploading] = useState(false);
   const [isUploadingPrimer, setIsUploadingPrimer] = useState(false);
@@ -249,7 +419,7 @@ const V8StockBerzaBase = () => {
     trackV8Action('tab_view', { event_category: 'Luxury_Store_Dark', event_label: activeTab });
   }, [activeTab]);
 
-  // Lead Magnet State (1 Free 150MP + 4K Sample za email)
+  // Lead Magnet State
   const [sampleEmail, setSampleEmail] = useState('');
   const [sampleUnlocked, setSampleUnlocked] = useState(false);
   const [isSubmittingLead, setIsSubmittingLead] = useState(false);
@@ -258,20 +428,27 @@ const V8StockBerzaBase = () => {
 
   const [showTechSpecs, setShowTechSpecs] = useState(false);
 
+  // 🔒 Čuva isključivo pakete i licence za koje je Firebase vratio isPaid === true!
   const [kupljeniPaketiIds, setKupljeniPaketiIds] = useState([]);
+  const [kupljeneLicencePoPaketu, setKupljeneLicencePoPaketu] = useState({});
   const [paidPayoneer, setPaidPayoneer] = useState([]);
   const [paidCrypto, setPaidCrypto] = useState([]);
   const [paidPaypal, setPaidPaypal] = useState([]);
 
-  // Admin Forma State (uključujući posebno VOL. polje kao naslov edicije)
+  // Admin Forma State:
+  // 1. Standard Campaign Pack -> 20 scena (Standard Commercial: $149.00 | Global Enterprise: $299.00)
+  // 2. Executive Agency Bundle -> 45 scena (Standard Commercial: $499.00 | Global Enterprise: $890.00)
+  const [paketTier, setPaketTier] = useState('standard');
+  const [adminSlotLimit, setAdminSlotLimit] = useState(10);
   const [noviVolNaslov, setNoviVolNaslov] = useState('VOL. 01');
   const [noviNazivEn, setNoviNazivEn] = useState('');
-  const [noviVolume, setNoviVolume] = useState('10x 4K UHD + 10x 150MP');
-  const [noviFormat, setNoviFormat] = useState('V10 LUXURY GOODS (10x 4K + 10x 150MP)');
+  const [noviVolume, setNoviVolume] = useState('20x 150MP + 20x 4K + 20x WEBP');
+  const [noviFormat, setNoviFormat] = useState('V10 LUXURY INTERIORS (20x 150MP + 4K + WEBP)');
   const [novaKategorijaEn, setNovaKategorijaEn] = useState('');
-  const [novaCena, setNovaCena] = useState('79.00');
+  const [novaCena, setNovaCena] = useState('149.00');
+  const [novaEnterpriseCena, setNovaEnterpriseCena] = useState('299.00');
   const [noviTip] = useState('Image');
-  const [noviOpisEn, setNoviOpisEn] = useState(DEFAULT_DESCRIPTIONS['V10 LUXURY GOODS (10x 4K + 10x 150MP)']);
+  const [noviOpisEn, setNoviOpisEn] = useState(() => buildUnifiedDescription('V10 LUXURY INTERIORS (20x 150MP + 4K + WEBP)', false));
   const [previewUrl, setPreviewUrl] = useState('');
   const [zipLink, setZipLink] = useState('');
   const [isFree, setIsFree] = useState(false);
@@ -288,6 +465,7 @@ const V8StockBerzaBase = () => {
         setCurrentUser(null);
         setIsAdmin(false);
         setKupljeniPaketiIds([]);
+        setKupljeneLicencePoPaketu({});
       }
     });
 
@@ -323,55 +501,124 @@ const V8StockBerzaBase = () => {
     };
   }, []);
 
+  // ============================================================================
+  // 🔒 FIREBASE REAL-TIME PROVERA PLAĆENIH PAKETA (SAMO GDE JE isPaid === true)
+  // ============================================================================
   useEffect(() => {
     if (!currentUser) {
       setPaidPayoneer([]); setPaidCrypto([]); setPaidPaypal([]); return;
     }
+
+    const extractPaidItems = (snap) => {
+      const list = [];
+      snap.forEach(d => {
+        const data = d.data();
+        if (data.paketId && data.isPaid === true) {
+          const tier = /ENTERPRISE/i.test(String(data.licenseType || data.productName || data.zeliPaket || '')) ? 'enterprise' : 'standard';
+          list.push({ paketId: data.paketId, tier });
+        }
+      });
+      return list;
+    };
+
     const qPayoneer = query(collection(db, "v8_payoneer_requests"), where("uid", "==", currentUser.uid), where("isPaid", "==", true));
-    const unsubPayoneer = onSnapshot(qPayoneer, (snap) => {
-      const items = []; snap.forEach(d => { if (d.data().paketId) items.push(d.data().paketId); });
-      setPaidPayoneer(items);
-    });
+    const unsubPayoneer = onSnapshot(qPayoneer, (snap) => setPaidPayoneer(extractPaidItems(snap)));
 
     const qCrypto = query(collection(db, "v8_crypto_requests"), where("uid", "==", currentUser.uid), where("isPaid", "==", true));
-    const unsubCrypto = onSnapshot(qCrypto, (snap) => {
-      const items = []; snap.forEach(d => { if (d.data().paketId) items.push(d.data().paketId); });
-      setPaidCrypto(items);
-    });
+    const unsubCrypto = onSnapshot(qCrypto, (snap) => setPaidCrypto(extractPaidItems(snap)));
 
     const qPaypal = query(collection(db, "v8_paypal_requests"), where("uid", "==", currentUser.uid), where("isPaid", "==", true));
-    const unsubPaypal = onSnapshot(qPaypal, (snap) => {
-      const items = []; snap.forEach(d => { if (d.data().paketId) items.push(d.data().paketId); });
-      setPaidPaypal(items);
-    });
+    const unsubPaypal = onSnapshot(qPaypal, (snap) => setPaidPaypal(extractPaidItems(snap)));
 
     return () => { unsubPayoneer(); unsubCrypto(); unsubPaypal(); };
   }, [currentUser]);
 
   useEffect(() => {
-    const allPaid = Array.from(new Set([...paidPayoneer, ...paidCrypto, ...paidPaypal]));
-    setKupljeniPaketiIds(allPaid);
+    const merged = [...paidPayoneer, ...paidCrypto, ...paidPaypal];
+    const ids = Array.from(new Set(merged.map(x => x.paketId)));
+    const licMap = {};
+    merged.forEach(x => {
+      if (x.tier === 'enterprise' || !licMap[x.paketId]) {
+        licMap[x.paketId] = x.tier;
+      }
+    });
+    setKupljeniPaketiIds(ids);
+    setKupljeneLicencePoPaketu(licMap);
   }, [paidPayoneer, paidCrypto, paidPaypal]);
 
   useEffect(() => {
     if (editingPaketId) return;
     const foundTab = INDUSTRY_TABS.find(t => t.id === activeTab);
     if (foundTab && activeTab !== 'all') {
+      const isAgency45 = paketTier === 'master';
       setNoviFormat(foundTab.formatCode);
-      setNoviOpisEn(DEFAULT_DESCRIPTIONS[foundTab.formatCode] || DEFAULT_DESCRIPTIONS['V10 LUXURY GOODS (10x 4K + 10x 150MP)']);
+      setNoviVolume(
+        isObsidianFormat(foundTab.formatCode)
+          ? (isAgency45 ? '45x 21:9 + 45x 16:9 + 45x WEBP' : '20x 21:9 + 20x 16:9 + 20x WEBP')
+          : (isAgency45 ? '45x 150MP + 45x 4K + 45x WEBP' : '20x 150MP + 20x 4K + 20x WEBP')
+      );
+      setNoviOpisEn(buildUnifiedDescription(foundTab.formatCode, isAgency45));
     }
-  }, [activeTab, editingPaketId]);
+  }, [activeTab, editingPaketId, paketTier]);
 
-  const handleFormatRadioChange = (fmt) => {
-    setNoviFormat(fmt);
-    if (!editingPaketId && DEFAULT_DESCRIPTIONS[fmt]) {
-      setNoviOpisEn(DEFAULT_DESCRIPTIONS[fmt]);
+  const handleSelectTierPreset = (tier) => {
+    setPaketTier(tier);
+    setIsFree(false);
+    if (tier === 'master') {
+      setNovaCena('499.00');
+      setNovaEnterpriseCena('890.00');
+      setAdminSlotLimit(20);
+      setNoviVolNaslov('AGENCY BUNDLE');
+      setNoviVolume(
+        isObsidianFormat(noviFormat)
+          ? '45x 21:9 + 45x 16:9 + 45x WEBP'
+          : '45x 150MP + 45x 4K + 45x WEBP'
+      );
+      setNoviOpisEn(buildUnifiedDescription(noviFormat, true));
+    } else {
+      setNovaCena('149.00');
+      setNovaEnterpriseCena('299.00');
+      setAdminSlotLimit(10);
+      if (noviVolNaslov === 'AGENCY BUNDLE' || noviVolNaslov === 'MASTER BUNDLE') setNoviVolNaslov('VOL. 01');
+      setNoviVolume(
+        isObsidianFormat(noviFormat)
+          ? '20x 21:9 + 20x 16:9 + 20x WEBP'
+          : '20x 150MP + 20x 4K + 20x WEBP'
+      );
+      setNoviOpisEn(buildUnifiedDescription(noviFormat, false));
     }
   };
 
-  const getGlobalCena = (cena) => {
-    const numCena = parseFloat(cena);
+  const handleFormatRadioChange = (fmt) => {
+    setNoviFormat(fmt);
+    if (!editingPaketId) {
+      const isAgency45 = paketTier === 'master';
+      setNoviVolume(
+        isObsidianFormat(fmt)
+          ? (isAgency45 ? '45x 21:9 + 45x 16:9 + 45x WEBP' : '20x 21:9 + 20x 16:9 + 20x WEBP')
+          : (isAgency45 ? '45x 150MP + 45x 4K + 45x WEBP' : '20x 150MP + 20x 4K + 20x WEBP')
+      );
+      setNoviOpisEn(buildUnifiedDescription(fmt, isAgency45));
+    }
+  };
+
+  const getStandardCena = (paket) => {
+    const numCena = parseFloat(paket?.cena);
     return isNaN(numCena) ? "0.00" : numCena.toFixed(2);
+  };
+
+  const getEnterpriseCena = (paket) => {
+    if (paket?.isFree || parseFloat(paket?.cena) === 0) return "0.00";
+    const explicitEnt = parseFloat(paket?.cenaEnterprise);
+    if (!isNaN(explicitEnt) && explicitEnt > 0) return explicitEnt.toFixed(2);
+    return computeDefaultEnterprisePrice(paket?.cena);
+  };
+
+  const getActiveCardLicense = (paketId) => selectedLicenses[paketId] || 'standard';
+
+  const setCardLicense = (paketId, tier) => {
+    setSelectedLicenses(prev => ({ ...prev, [paketId]: tier }));
+    trackV8Action('license_tier_switched', { paketId, license_tier: tier });
   };
 
   const formatPaketDisplayTitle = (paket) => {
@@ -408,7 +655,7 @@ const V8StockBerzaBase = () => {
       });
       trackV8Action('b2b_sample_lead_captured', { industry: activeTab });
       setSampleUnlocked(true);
-      if (typeof v8Toast !== 'undefined') v8Toast.success("🔓 150MP Master Sample Unlocked!");
+      if (typeof v8Toast !== 'undefined') v8Toast.success("🔓 150MP + WebP Master Sample Unlocked!");
 
       const fallbackFreePkg = paketi.find(p => p.isFree || parseFloat(p.cena) === 0);
       const targetDownload = customSampleUrl || fallbackFreePkg?.zipLink || '/VISIONARY_V10_ZIP_VALIDATION.txt';
@@ -421,64 +668,67 @@ const V8StockBerzaBase = () => {
     }
   };
 
-  const snimiKupcaUPayoneerBazu = async (user, paket) => {
-    try {
-      await addDoc(collection(db, "v8_payoneer_requests"), {
-        ime: user.displayName || "Client",
-        email: user.email,
-        uid: user.uid,
-        zeliPaket: formatPaketDisplayTitle(paket),
-        paketId: paket.id,
-        cenaPaketa: paket.cena,
-        vreme: serverTimestamp(),
-        isPaid: false
-      });
-      const userRef = doc(db, "vip_users", user.email.toLowerCase());
-      const userSnap = await getDoc(userRef);
-      const unlockedApps = userSnap.exists() ? userSnap.data().unlockedApps || [] : [];
-      if (!unlockedApps.includes('V8_PROMPT_ENGINE')) {
-        await setDoc(userRef, { unlockedApps: [...unlockedApps, 'V8_PROMPT_ENGINE'] }, { merge: true });
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const otvoriCheckoutIliPaddle = async (user, paket) => {
+  // Otvara Checkout BEZ prosleđivanja zipLink-a klijentu!
+  const otvoriCheckoutIliPaddle = async (user, paket, licenseTier = 'standard') => {
     if (!user || !paket) return;
+    const { isEnt, licenseTitle } = resolveStockLicenseMeta(licenseTier);
     const displayTitle = formatPaketDisplayTitle(paket);
-    const fullName = paket.volume ? `${displayTitle} (${paket.volume})` : displayTitle;
-    const finalPrice = getGlobalCena(paket.cena);
-    await snimiKupcaUPayoneerBazu(user, paket);
+    const baseFull = paket.volume ? `${displayTitle} (${paket.volume})` : displayTitle;
+    const fullName = `${baseFull} — [${licenseTitle}]`;
+    const finalPrice = isEnt ? getEnterpriseCena(paket) : getStandardCena(paket);
+
     if (paket.paddleLink && paket.paddleLink.trim() !== "") {
       window.location.href = paket.paddleLink;
       return;
     }
-    setCheckoutData({ isOpen: true, name: fullName, price: finalPrice, zipLink: paket.zipLink });
+
+    setCheckoutData({
+      isOpen: true,
+      paketId: paket.id,
+      name: fullName,
+      price: finalPrice,
+      licenseTier,
+      previewUrl: paket.previewUrl || '/v8-secure-blue.webp'
+    });
   };
 
-  const prijavaIKupovina = async (paket) => {
+  const prijavaIKupovina = async (paket, licenseTier = 'standard') => {
     const displayTitle = formatPaketDisplayTitle(paket);
+
+    // Besplatan paket ($0.00)
     if (paket.isFree || paket.cena === "0.00" || parseFloat(paket.cena) === 0) {
       trackV8Action('free_asset_download', { asset_name: displayTitle });
       if (typeof v8Toast !== 'undefined') v8Toast.success("🚀 ACCESS GRANTED: Downloading Free 150MP Sample...");
       window.open(paket.zipLink, '_blank');
       return;
     }
+
+    // Paket za koji je Firebase VEĆ potvrdio isPaid === true
     if (kupljeniPaketiIds.includes(paket.id)) {
       trackV8Action('owned_asset_download', { asset_name: displayTitle });
       window.open(paket.zipLink, '_blank');
       return;
     }
-    const fullName = paket.volume ? `${displayTitle} (${paket.volume})` : displayTitle;
-    const finalPrice = getGlobalCena(paket.cena);
+
+    const { isEnt, licenseTitle } = resolveStockLicenseMeta(licenseTier);
+    const baseFull = paket.volume ? `${displayTitle} (${paket.volume})` : displayTitle;
+    const fullName = `${baseFull} — [${licenseTitle}]`;
+    const finalPrice = isEnt ? getEnterpriseCena(paket) : getStandardCena(paket);
     const userNow = currentUser || auth.currentUser;
-    trackV8Action('checkout_initiated', { event_category: 'B2B_Sales', item_name: fullName, value: Number(finalPrice), currency: 'USD' });
+
+    trackV8Action('checkout_initiated', {
+      event_category: 'B2B_Sales',
+      item_name: fullName,
+      license_tier: licenseTitle,
+      value: Number(finalPrice),
+      currency: 'USD'
+    });
+
     if (userNow) {
-      await otvoriCheckoutIliPaddle(userNow, paket);
+      await otvoriCheckoutIliPaddle(userNow, paket, licenseTier);
       return;
     }
-    setLoginRequiredData({ isOpen: true, paket, name: fullName, price: finalPrice });
+    setLoginRequiredData({ isOpen: true, paket, licenseTier, name: fullName, price: finalPrice });
   };
 
   const handleUploadPreview = async (e) => {
@@ -503,7 +753,7 @@ const V8StockBerzaBase = () => {
   const handleUploadPrimeri = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
-    const slobodnaMesta = 10 - primeriUrls.length;
+    const slobodnaMesta = adminSlotLimit - primeriUrls.length;
     if (slobodnaMesta <= 0) return;
     setIsUploadingPrimer(true);
     const noveSlike = [];
@@ -535,16 +785,18 @@ const V8StockBerzaBase = () => {
     const paketData = {
       volTitle: noviVolNaslov.trim(),
       nazivEn: noviNazivEn.trim(),
-      volume: noviVolume.trim() || '10x 4K UHD + 10x 150MP',
+      volume: noviVolume.trim() || '20x 150MP + 20x 4K + 20x WEBP',
       format: noviFormat,
       kategorijaEn: novaKategorijaEn.trim(),
       cena: isFree ? "0.00" : novaCena,
+      cenaEnterprise: isFree ? "0.00" : (novaEnterpriseCena || computeDefaultEnterprisePrice(novaCena)),
       tip: noviTip,
       opisEn: noviOpisEn,
       previewUrl,
       zipLink,
       isFree,
-      primeri: primeriUrls,
+      previewSlotCount: adminSlotLimit,
+      primeri: primeriUrls.slice(0, adminSlotLimit),
       updatedAt: serverTimestamp()
     };
 
@@ -563,14 +815,18 @@ const V8StockBerzaBase = () => {
   };
 
   const startEditPaket = (paket) => {
+    const detectedSlots = getPaketPreviewSlotCount(paket);
     setEditingPaketId(paket.id);
+    setAdminSlotLimit(detectedSlots);
+    setPaketTier(detectedSlots === 20 ? 'master' : 'standard');
     setNoviVolNaslov(paket.volTitle || 'VOL. 01');
     setNoviNazivEn(paket.nazivEn || '');
-    setNoviVolume(paket.volume || '10x 4K UHD + 10x 150MP');
-    setNoviFormat(paket.format || 'V10 LUXURY GOODS (10x 4K + 10x 150MP)');
+    setNoviVolume(paket.volume || '20x 150MP + 20x 4K + 20x WEBP');
+    setNoviFormat(paket.format || 'V10 LUXURY INTERIORS (20x 150MP + 4K + WEBP)');
     setNovaKategorijaEn(paket.kategorijaEn || '');
-    setNovaCena(paket.cena || '79.00');
-    setNoviOpisEn(paket.opisEn || DEFAULT_DESCRIPTIONS[paket.format] || DEFAULT_DESCRIPTIONS['V10 LUXURY GOODS (10x 4K + 10x 150MP)']);
+    setNovaCena(paket.cena || '149.00');
+    setNovaEnterpriseCena(paket.cenaEnterprise || computeDefaultEnterprisePrice(paket.cena || '149.00'));
+    setNoviOpisEn(paket.opisEn || buildUnifiedDescription(paket.format || 'V10 LUXURY INTERIORS (20x 150MP + 4K + WEBP)', detectedSlots === 20));
     setPreviewUrl(paket.previewUrl || '');
     setZipLink(paket.zipLink || '');
     setIsFree(paket.isFree || false);
@@ -580,13 +836,16 @@ const V8StockBerzaBase = () => {
 
   const stoziEdit = () => {
     setEditingPaketId(null);
+    setPaketTier('standard');
+    setAdminSlotLimit(10);
     setNoviVolNaslov('VOL. 01');
     setNoviNazivEn('');
-    setNoviVolume('10x 4K UHD + 10x 150MP');
-    setNoviFormat('V10 LUXURY GOODS (10x 4K + 10x 150MP)');
+    setNoviVolume('20x 150MP + 20x 4K + 20x WEBP');
+    setNoviFormat('V10 LUXURY INTERIORS (20x 150MP + 4K + WEBP)');
     setNovaKategorijaEn('');
-    setNovaCena('79.00');
-    setNoviOpisEn(DEFAULT_DESCRIPTIONS['V10 LUXURY GOODS (10x 4K + 10x 150MP)']);
+    setNovaCena('149.00');
+    setNovaEnterpriseCena('299.00');
+    setNoviOpisEn(buildUnifiedDescription('V10 LUXURY INTERIORS (20x 150MP + 4K + WEBP)', false));
     setPreviewUrl('');
     setZipLink('');
     setIsFree(false);
@@ -609,25 +868,26 @@ const V8StockBerzaBase = () => {
     return paketi.filter(p => detectIndustry(p) === tabId).length;
   };
 
-  // Uzima do 10 sličica iz trenutno aktivnog dugmeta za gornji brzi pregled
+  const hasMasterInActiveTab = filtriraniPaketi.some(p => getPaketPreviewSlotCount(p) === 20);
+  const topStripSlotCount = hasMasterInActiveTab ? 20 : 10;
   const activeTabPreviewThumbs = filtriraniPaketi
     .flatMap(p => (p.primeri && p.primeri.length > 0 ? p.primeri : p.previewUrl ? [p.previewUrl] : []))
-    .slice(0, 10);
+    .slice(0, topStripSlotCount);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#090C12] via-[#0E131D] to-[#090C12] text-[#EAE6DF] font-sans relative pb-28">
       <Helmet>
-        <title>Luxury Commercial 150MP + 4K Campaign Archive | AI Tools Pro Smart</title>
+        <title>Luxury Commercial 150MP + 4K + WebP Campaign Archive | AI Tools Pro Smart</title>
         <meta
           name="description"
-          content="100% IP-safe commercial 150MP print & 4K UHD visual campaign packages for luxury goods, beauty & skincare, private aviation, superyachts, and Michelin food."
+          content="100% IP-safe commercial 150MP print, 4K UHD & WebP visual packages with Standard Commercial & Global Enterprise licensing options."
         />
       </Helmet>
 
       <div className="relative z-10 pt-28 px-4 sm:px-6 max-w-[1600px] mx-auto">
 
         {/* =================================================================== */}
-        {/* 1. VELVET OBSIDIAN & CHAMPAGNE GOLD HERO SECTION (BEZ BELE BOJE)    */}
+        {/* 1. HERO SEKCIJA SA SVIM V10 I OBSIDIAN DUGMIĆIMA                    */}
         {/* =================================================================== */}
         <div className="rounded-[2.25rem] bg-[#121722] border border-[#C5A059]/30 shadow-[0_25px_70px_rgba(0,0,0,0.65)] p-8 md:p-14 mb-8 text-center relative overflow-hidden">
           <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#C5A059] to-transparent" />
@@ -635,31 +895,34 @@ const V8StockBerzaBase = () => {
           <div className="inline-flex flex-wrap items-center justify-center gap-2 px-4 py-1.5 rounded-full bg-[#1A2130] border border-[#C5A059]/40 text-[#F3E5AB] text-[10px] md:text-[11px] font-extrabold uppercase tracking-[0.22em] mb-6">
             <span>100% IP-Safe Unbranded Commercial Archive</span>
             <span className="text-[#C5A059]">•</span>
-            <span>Dual Delivery: 10× 4K UHD + 10× 150MP Master Print</span>
+            <span>Standard Commercial &amp; Global Enterprise Licensing</span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl lg:text-[52px] font-black uppercase tracking-tight text-[#F7F4EE] max-w-5xl mx-auto leading-[1.08] mb-5">
+          <h1 className="text-3xl sm:text-5xl lg:text-[50px] font-black uppercase tracking-tight text-[#F7F4EE] max-w-5xl mx-auto leading-[1.08] mb-5">
             {currentTabInfo.headline}
           </h1>
 
-          <p className="text-slate-400 text-xs sm:text-[13px] font-semibold uppercase tracking-[0.14em] max-w-4xl mx-auto leading-relaxed mb-10">
+          <p className="text-slate-400 text-xs sm:text-[13px] font-semibold uppercase tracking-[0.14em] max-w-4xl mx-auto leading-relaxed mb-9">
             {currentTabInfo.subheadline}
           </p>
 
-          {/* KATEGORIJSKI DUGMIĆI U TAMNOM LUKSUZNOM STILU */}
           <div className="flex flex-wrap items-center justify-center gap-2.5 max-w-6xl mx-auto">
             {INDUSTRY_TABS.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
               const count = getCountForTab(tab.id);
+              const isObsidianBtn = tab.id.startsWith('obsidian_');
+
               return (
                 <button
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
-                  className={`px-4 py-3.5 sm:px-5 sm:py-3.5 rounded-xl font-extrabold text-[11px] sm:text-xs uppercase tracking-wider transition-all flex items-center gap-2.5 cursor-pointer border ${
+                  className={`px-3.5 py-3 sm:px-4 sm:py-3 rounded-xl font-extrabold text-[10px] sm:text-xs uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer border ${
                     isActive
                       ? 'bg-gradient-to-r from-[#C5A059] via-[#E2C383] to-[#C5A059] text-[#0B0E14] border-[#F3E5AB] shadow-[0_10px_28px_rgba(197,160,89,0.28)] scale-[1.02]'
+                      : isObsidianBtn
+                      ? 'bg-[#0F1522] text-[#F3E5AB] border-[#C5A059]/35 hover:bg-[#182235] hover:border-[#F3E5AB]'
                       : 'bg-[#171E2C] text-slate-300 border-white/10 hover:bg-[#1E2738] hover:border-[#C5A059]/50 hover:text-white'
                   }`}
                 >
@@ -675,51 +938,41 @@ const V8StockBerzaBase = () => {
             })}
           </div>
 
-          {/* 10 MALIH SLIČICA ZA TRENUTNO IZABRANO DUGME */}
           {activeTabPreviewThumbs.length > 0 && (
             <div className="mt-8 pt-6 border-t border-white/10 max-w-5xl mx-auto">
               <div className="flex items-center justify-between mb-3 px-1">
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#C5A059]">
-                  {currentTabInfo.shortLabel} — 10-IMAGE INSTANT PREVIEW STRIP
+                  {currentTabInfo.shortLabel} — {activeTabPreviewThumbs.length}-IMAGE INSTANT WEBP PREVIEW STRIP
                 </span>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   Click any thumbnail to inspect 150MP detail
                 </span>
               </div>
               <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
-                {Array.from({ length: 10 }).map((_, idx) => {
-                  const thumbUrl = activeTabPreviewThumbs[idx];
-                  return thumbUrl ? (
-                    <div
-                      key={idx}
-                      onClick={() => setFullScreenImageUrl(thumbUrl)}
-                      className="aspect-square rounded-xl overflow-hidden border border-[#C5A059]/40 hover:border-[#F3E5AB] bg-[#0B0E14] cursor-zoom-in group relative"
-                    >
-                      <img
-                        src={thumbUrl}
-                        alt={`Preview ${idx + 1}`}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                      <span className="absolute bottom-0.5 right-1 text-[8px] font-black text-[#F3E5AB] bg-black/75 px-1 rounded">
-                        #{idx + 1}
-                      </span>
-                    </div>
-                  ) : (
-                    <div
-                      key={idx}
-                      className="aspect-square rounded-xl border border-dashed border-white/15 bg-[#0B0E14]/60 flex items-center justify-center text-[9px] font-bold text-slate-500"
-                    >
+                {activeTabPreviewThumbs.map((thumbUrl, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => setFullScreenImageUrl(thumbUrl)}
+                    className="aspect-square rounded-xl overflow-hidden border border-[#C5A059]/40 hover:border-[#F3E5AB] bg-[#0B0E14] cursor-zoom-in group relative"
+                  >
+                    <img
+                      src={toFastWebp(thumbUrl, 320)}
+                      loading="lazy"
+                      alt={`Preview ${idx + 1}`}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                    <span className="absolute bottom-0.5 right-1 text-[8px] font-black text-[#F3E5AB] bg-black/75 px-1 rounded">
                       #{idx + 1}
-                    </div>
-                  );
-                })}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
           )}
         </div>
 
         {/* =================================================================== */}
-        {/* 2. B2B LEAD MAGNET BAR (TAMNI SMARAGD & ŠAMPANJAC ZLATO)            */}
+        {/* 2. B2B LEAD MAGNET BAR                                              */}
         {/* =================================================================== */}
         <div className="mb-14 rounded-3xl bg-gradient-to-r from-[#111927] via-[#162235] to-[#111927] border border-[#C5A059]/40 p-6 sm:p-9 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
@@ -728,10 +981,10 @@ const V8StockBerzaBase = () => {
                 <CheckCircle2 className="w-3.5 h-3.5" /> Agency Quality Verification • Zero Risk
               </div>
               <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-[#F7F4EE]">
-                Inspect True 150MP + 4K Resolution Before Licensing
+                Inspect True 150MP + 4K + WebP Files Before Licensing
               </h2>
               <p className="text-xs sm:text-sm text-slate-300 mt-1.5 leading-relaxed">
-                Creative directors & designers: enter your work email to instantly unlock a complimentary <strong className="text-[#F3E5AB]">150MP Master Print + 4K UHD Commercial Sample</strong> with embedded sRGB ICC profile and zero watermarks.
+                Creative directors &amp; designers: enter your work email to instantly unlock a complimentary <strong className="text-[#F3E5AB]">150MP Master Print + 4K UHD + WebP Sample</strong> with embedded sRGB ICC profile and zero watermarks.
               </p>
             </div>
 
@@ -784,7 +1037,7 @@ const V8StockBerzaBase = () => {
                 type="url"
                 value={adminSampleInput}
                 onChange={(e) => setAdminSampleInput(e.target.value)}
-                placeholder="Paste Google Drive link to your 1-image Free 150MP + 4K Sample ZIP..."
+                placeholder="Paste Google Drive link to your 1-image Free 150MP + 4K + WebP Sample ZIP..."
                 className="flex-1 w-full bg-[#0B0E14] border border-[#C5A059]/40 rounded-lg px-3 py-2 text-xs text-[#F7F4EE] font-semibold outline-none"
               />
               <button
@@ -799,13 +1052,13 @@ const V8StockBerzaBase = () => {
         </div>
 
         {/* =================================================================== */}
-        {/* 3. ADMIN FORMA SA VOL. NASLOVOM, OBLAČIĆEM I 10 SLOTOVA             */}
+        {/* 3. ADMIN FORMA SA OBE CENE LICENCI (STANDARD COMMERCIAL + ENTERPRISE) */}
         {/* =================================================================== */}
         {isAdmin && (
           <form onSubmit={dodajPaket} className="bg-[#121722] border-2 border-[#C5A059]/40 rounded-[2rem] p-6 md:p-8 mb-16 shadow-[0_20px_60px_rgba(0,0,0,0.65)] max-w-5xl mx-auto">
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4 mb-6">
               <h2 className="text-lg md:text-xl font-black text-[#F7F4EE] uppercase tracking-widest flex items-center gap-2">
-                <Zap className="w-5 h-5 text-[#C5A059]" /> {editingPaketId ? 'EDIT B2B CAMPAIGN PACKAGE' : 'PUBLISH NEW B2B PACKAGE (10x 4K + 10x 150MP)'}
+                <Zap className="w-5 h-5 text-[#C5A059]" /> {editingPaketId ? 'EDIT B2B CAMPAIGN PACKAGE' : 'PUBLISH UNIFIED V10 PACKAGE (DUAL LICENSE TIERS)'}
               </h2>
               {editingPaketId && (
                 <button type="button" onClick={stoziEdit} className="text-xs font-bold uppercase px-4 py-2 bg-[#1B2232] hover:bg-[#252F45] rounded-lg text-[#F3E5AB] cursor-pointer">
@@ -814,7 +1067,44 @@ const V8StockBerzaBase = () => {
               )}
             </div>
 
-            {/* GORNJI RED SA POSEBNIM VOL. POLJEM KAO NASLOVOM */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 p-3.5 bg-[#0B0E14] rounded-2xl border border-[#C5A059]/30">
+              <button
+                type="button"
+                onClick={() => handleSelectTierPreset('standard')}
+                className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between ${
+                  paketTier === 'standard'
+                    ? 'bg-gradient-to-r from-[#C5A059] to-[#E2C383] text-[#0B0E14] border-[#F3E5AB] shadow-md'
+                    : 'bg-[#121722] text-slate-300 border-white/10 hover:border-[#C5A059]/50'
+                }`}
+              >
+                <div>
+                  <div className="text-xs font-black uppercase tracking-wider">1. Standard Campaign Pack (20 Scenes)</div>
+                  <div className={`text-[10px] font-bold mt-0.5 ${paketTier === 'standard' ? 'text-[#0B0E14]/80' : 'text-slate-400'}`}>
+                    Standard Commercial: $149 • Global Enterprise: $299 • 10 Slots
+                  </div>
+                </div>
+                <span className="text-xs font-black">$149 / $299</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSelectTierPreset('master')}
+                className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between ${
+                  paketTier === 'master'
+                    ? 'bg-gradient-to-r from-[#C5A059] to-[#E2C383] text-[#0B0E14] border-[#F3E5AB] shadow-md'
+                    : 'bg-[#121722] text-slate-300 border-white/10 hover:border-[#C5A059]/50'
+                }`}
+              >
+                <div>
+                  <div className="text-xs font-black uppercase tracking-wider">2. Executive Agency Bundle (45 Scenes)</div>
+                  <div className={`text-[10px] font-bold mt-0.5 ${paketTier === 'master' ? 'text-[#0B0E14]/80' : 'text-slate-400'}`}>
+                    Standard Commercial: $499 • Global Enterprise: $890 • 20 Slots
+                  </div>
+                </div>
+                <span className="text-xs font-black">$499 / $890</span>
+              </button>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
               <div className="flex flex-col gap-2">
                 <label className="flex items-center gap-2 text-[#F3E5AB] font-extrabold text-[11px] tracking-widest uppercase">
@@ -824,7 +1114,7 @@ const V8StockBerzaBase = () => {
                   type="text"
                   value={noviVolNaslov}
                   onChange={(e) => setNoviVolNaslov(e.target.value)}
-                  placeholder="E.g. VOL. 01"
+                  placeholder="E.g. VOL. 01 or AGENCY BUNDLE"
                   className="bg-[#0B0E14] border border-[#C5A059]/50 p-3.5 rounded-xl text-sm font-black uppercase tracking-wider text-[#F3E5AB] placeholder:text-slate-500 outline-none focus:border-[#F3E5AB]"
                 />
               </div>
@@ -837,7 +1127,7 @@ const V8StockBerzaBase = () => {
                   type="text"
                   value={noviNazivEn}
                   onChange={(e) => setNoviNazivEn(e.target.value)}
-                  placeholder="E.g. Obsidian Luxury Goods"
+                  placeholder="E.g. Forged Carbon & Ceramic Brakes"
                   className="bg-[#0B0E14] border border-white/15 p-3.5 rounded-xl text-sm font-bold text-[#F7F4EE] placeholder:text-slate-500 outline-none focus:border-[#C5A059]"
                   required
                 />
@@ -851,7 +1141,7 @@ const V8StockBerzaBase = () => {
                   type="text"
                   value={novaKategorijaEn}
                   onChange={(e) => setNovaKategorijaEn(e.target.value)}
-                  placeholder="E.g. Luxury Goods / Private Jets"
+                  placeholder="E.g. Exotic Auto / Beverage Splash"
                   className="bg-[#0B0E14] border border-white/15 p-3.5 rounded-xl text-sm font-bold text-[#F7F4EE] placeholder:text-slate-500 outline-none focus:border-[#C5A059]"
                   required
                 />
@@ -865,7 +1155,7 @@ const V8StockBerzaBase = () => {
                   type="text"
                   value={noviVolume}
                   onChange={(e) => setNoviVolume(e.target.value)}
-                  placeholder="10x 4K UHD + 10x 150MP"
+                  placeholder="20x 150MP + 20x 4K + 20x WEBP"
                   className="bg-[#0B0E14] border border-white/15 p-3.5 rounded-xl text-sm font-bold text-[#F7F4EE] placeholder:text-slate-500 outline-none focus:border-[#C5A059]"
                 />
               </div>
@@ -879,36 +1169,82 @@ const V8StockBerzaBase = () => {
                 <textarea
                   value={noviOpisEn}
                   onChange={(e) => setNoviOpisEn(e.target.value)}
-                  rows={7}
+                  rows={9}
                   className="bg-[#0B0E14] border border-white/15 p-3.5 rounded-xl text-xs font-medium text-slate-200 outline-none focus:border-[#C5A059] resize-none h-full leading-relaxed"
                   required
                 />
               </div>
 
               <div className="flex flex-col gap-5 md:col-span-2">
-                <div className="flex flex-col gap-2">
-                  <label className="flex items-center gap-2 text-slate-300 font-extrabold text-[11px] tracking-widest uppercase">
-                    <Wallet size={14} className="text-[#C5A059]" /> COMMERCIAL LICENSE PRICE (USD)
-                  </label>
-                  <input
-                    type="text"
-                    value={novaCena}
-                    onChange={(e) => setNovaCena(e.target.value)}
-                    disabled={isFree}
-                    placeholder="79.00"
-                    className="bg-[#0B0E14] border border-white/15 p-3.5 rounded-xl text-sm font-black text-[#F3E5AB] outline-none focus:border-[#C5A059]"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <label className="flex items-center gap-1.5 text-slate-300 font-extrabold text-[10px] tracking-widest uppercase">
+                      <Wallet size={13} className="text-[#C5A059]" /> STANDARD COMMERCIAL ($)
+                    </label>
+                    <input
+                      type="text"
+                      value={novaCena}
+                      onChange={(e) => setNovaCena(e.target.value)}
+                      disabled={isFree}
+                      placeholder="149.00"
+                      className="bg-[#0B0E14] border border-white/15 p-3.5 rounded-xl text-sm font-black text-[#F7F4EE] outline-none focus:border-[#C5A059]"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label className="flex items-center gap-1.5 text-[#F3E5AB] font-extrabold text-[10px] tracking-widest uppercase">
+                      <Crown size={13} className="text-[#C5A059]" /> GLOBAL ENTERPRISE ($)
+                    </label>
+                    <input
+                      type="text"
+                      value={novaEnterpriseCena}
+                      onChange={(e) => setNovaEnterpriseCena(e.target.value)}
+                      disabled={isFree}
+                      placeholder="299.00"
+                      className="bg-[#0B0E14] border border-[#C5A059]/50 p-3.5 rounded-xl text-sm font-black text-[#F3E5AB] outline-none focus:border-[#F3E5AB]"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label className="flex items-center gap-1.5 text-slate-300 font-extrabold text-[10px] tracking-widest uppercase">
+                      <Layers size={13} className="text-[#C5A059]" /> PREVIEW SLOTS
+                    </label>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setAdminSlotLimit(10)}
+                        className={`p-3.5 rounded-xl text-[11px] font-black uppercase border cursor-pointer transition ${
+                          adminSlotLimit === 10
+                            ? 'bg-[#C5A059] text-[#0B0E14] border-[#F3E5AB]'
+                            : 'bg-[#0B0E14] text-slate-300 border-white/15 hover:border-[#C5A059]'
+                        }`}
+                      >
+                        10 Slots
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAdminSlotLimit(20)}
+                        className={`p-3.5 rounded-xl text-[11px] font-black uppercase border cursor-pointer transition ${
+                          adminSlotLimit === 20
+                            ? 'bg-[#C5A059] text-[#0B0E14] border-[#F3E5AB]'
+                            : 'bg-[#0B0E14] text-slate-300 border-white/15 hover:border-[#C5A059]'
+                        }`}
+                      >
+                        20 Slots
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex flex-col gap-2">
                   <label className="flex items-center gap-2 text-slate-300 font-extrabold text-[11px] tracking-widest uppercase">
                     <MonitorPlay size={14} className="text-[#C5A059]" /> SELECT TARGET B2B INDUSTRY TAB
                   </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                     {INDUSTRY_TABS.filter(t => t.id !== 'all').map((t) => (
                       <label
                         key={t.formatCode}
-                        className={`cursor-pointer p-3.5 rounded-xl border text-center font-extrabold text-[11px] uppercase tracking-wider transition-all ${
+                        className={`cursor-pointer p-3 rounded-xl border text-center font-extrabold text-[10px] uppercase tracking-wider transition-all flex items-center justify-center ${
                           noviFormat === t.formatCode
                             ? 'bg-gradient-to-r from-[#C5A059] to-[#D4AF37] text-[#0B0E14] border-[#F3E5AB] shadow-md'
                             : 'bg-[#0B0E14] border-white/15 text-slate-300 hover:border-[#C5A059]/60 hover:text-white'
@@ -934,7 +1270,7 @@ const V8StockBerzaBase = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
                 <div className="flex flex-col gap-2">
                   <label className="flex items-center gap-2 text-slate-300 font-extrabold text-[11px] tracking-widest uppercase">
-                    <LinkIcon size={14} className="text-[#C5A059]" /> GOOGLE DRIVE ZIP LINK (10x 4K + 10x 150MP)
+                    <LinkIcon size={14} className="text-[#C5A059]" /> GOOGLE DRIVE ZIP LINK (150MP JPG + 4K JPG + WEBP)
                   </label>
                   <input
                     type="url"
@@ -955,7 +1291,8 @@ const V8StockBerzaBase = () => {
                     onClick={() => {
                       const next = !isFree;
                       setIsFree(next);
-                      setNovaCena(next ? "0.00" : "79.00");
+                      setNovaCena(next ? "0.00" : (paketTier === 'master' ? "499.00" : "149.00"));
+                      setNovaEnterpriseCena(next ? "0.00" : (paketTier === 'master' ? "890.00" : "299.00"));
                     }}
                     className={`w-full p-3.5 rounded-xl font-extrabold text-xs tracking-widest uppercase border transition-all cursor-pointer ${
                       isFree
@@ -963,27 +1300,23 @@ const V8StockBerzaBase = () => {
                         : 'bg-[#0B0E14] border-white/15 text-slate-300 hover:border-[#C5A059]'
                     }`}
                   >
-                    {isFree ? "⚡ FREE LEAD-MAGNET PACKAGE ($0.00)" : "PAID COMMERCIAL LICENSE"}
+                    {isFree ? "⚡ FREE LEAD-MAGNET PACKAGE ($0.00)" : "PAID DUAL-LICENSE PACKAGE"}
                   </button>
                 </div>
               </div>
 
-              {/* =============================================================== */}
-              {/* 1 GLAVNI COVER + 10 FIKSNIH MALIH SLIČICA SA OBLAČIĆEM           */}
-              {/* =============================================================== */}
               <div className="p-4 sm:p-5 bg-[#0B0E14] rounded-2xl border border-white/10 mb-6">
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                   <span className="text-[11px] font-black uppercase tracking-widest text-[#F3E5AB] flex items-center gap-2">
                     <UploadCloud size={16} className="text-[#C5A059]" />
-                    PACKAGE VISUAL SLOTS: 1 MAIN COVER + 10 SMALL PREVIEW THUMBNAILS ({primeriUrls.length}/10)
+                    PACKAGE VISUAL SLOTS: 1 MAIN COVER + {adminSlotLimit} SMALL PREVIEW THUMBNAILS ({Math.min(primeriUrls.length, adminSlotLimit)}/{adminSlotLimit})
                   </span>
                   <span className="text-[10px] font-semibold text-slate-400">
-                    Click any empty slot below to upload directly from your computer
+                    Tip: Upload from your 03_Web_Ready_WEBP folder for instant loading
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-6 lg:grid-cols-11 gap-2.5">
-                  {/* GLAVNI COVER SLOT */}
+                <div className="grid grid-cols-3 sm:grid-cols-6 lg:grid-cols-11 gap-2.5">
                   <div
                     onClick={() => !previewUrl && mainImageRef.current.click()}
                     className={`aspect-square rounded-xl overflow-hidden relative flex flex-col items-center justify-center border-2 transition ${
@@ -1004,7 +1337,7 @@ const V8StockBerzaBase = () => {
                         >
                           <X size={10} />
                         </button>
-                        <img src={previewUrl} alt="Main Cover" className="w-full h-full object-cover" />
+                        <img src={toFastWebp(previewUrl, 300)} alt="Main Cover" className="w-full h-full object-cover" />
                       </>
                     ) : (
                       <div className="flex flex-col items-center text-center p-1">
@@ -1014,8 +1347,7 @@ const V8StockBerzaBase = () => {
                     )}
                   </div>
 
-                  {/* 10 MALIH SLIČICA (SLOTOVI #1 DO #10 UVEK VIDLJIVI) */}
-                  {Array.from({ length: 10 }).map((_, idx) => {
+                  {Array.from({ length: adminSlotLimit }).map((_, idx) => {
                     const url = primeriUrls[idx];
                     return (
                       <div
@@ -1042,7 +1374,7 @@ const V8StockBerzaBase = () => {
                             >
                               <X size={10} />
                             </button>
-                            <img src={url} alt={`Slot ${idx + 1}`} className="w-full h-full object-cover" />
+                            <img src={toFastWebp(url, 300)} alt={`Slot ${idx + 1}`} className="w-full h-full object-cover" />
                           </>
                         ) : (
                           <div className="flex flex-col items-center text-center p-1 opacity-75">
@@ -1056,7 +1388,6 @@ const V8StockBerzaBase = () => {
                 </div>
               </div>
 
-              {/* GLAVNI TASTERI SA OBLAČIĆEM ("UPLOAD FROM COMPUTER") */}
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="flex flex-wrap gap-3">
                   <button
@@ -1075,7 +1406,7 @@ const V8StockBerzaBase = () => {
                     className="bg-[#182030] hover:bg-[#222D42] text-[#F7F4EE] border border-[#C5A059]/40 px-5 py-3.5 rounded-xl font-extrabold text-xs uppercase tracking-wider transition flex items-center gap-2.5 cursor-pointer"
                   >
                     <UploadCloud size={17} className="text-[#C5A059]" />
-                    {isUploadingPrimer ? 'Uploading...' : `Upload 10 Thumbnails from Computer (${primeriUrls.length}/10)`}
+                    {isUploadingPrimer ? 'Uploading...' : `Upload ${adminSlotLimit} Thumbnails from Computer (${Math.min(primeriUrls.length, adminSlotLimit)}/${adminSlotLimit})`}
                   </button>
                   <input type="file" accept="image/*" multiple ref={galleryImagesRef} onChange={handleUploadPrimeri} className="hidden" />
                 </div>
@@ -1092,16 +1423,16 @@ const V8StockBerzaBase = () => {
         )}
 
         {/* =================================================================== */}
-        {/* 4. DARK OBSIDIAN PRODUCT CARDS (SA VOL. NASLOVOM I 10 SLIČICA)      */}
+        {/* 4. PRODUCT CARDS (OTKLJUČAVAJU SE ISKLJUČIVO KADA FIREBASE ZABELEŽI isPaid === true) */}
         {/* =================================================================== */}
         {filtriraniPaketi.length === 0 ? (
           <div className="text-center py-20 bg-[#121722] border border-white/10 rounded-3xl mb-16 shadow-xl">
             <Aperture className="w-11 h-11 text-[#C5A059] mx-auto mb-3" />
             <h3 className="text-lg font-black uppercase tracking-widest text-[#F7F4EE]">
-              New 150MP + 4K Campaign Vaults Arriving in {currentTabInfo.shortLabel}
+              New 150MP + 4K + WebP Vaults Arriving in {currentTabInfo.shortLabel}
             </h3>
             <p className="text-xs text-slate-400 mt-2 mb-6">
-              Switch to "ALL VAULTS" to browse all currently published commercial packages, or upload a new ZIP above.
+              Switch to "ALL VAULTS" to browse all currently published commercial packages, or publish a new ZIP in {currentTabInfo.shortLabel} above.
             </p>
             {activeTab !== 'all' && (
               <button
@@ -1116,14 +1447,29 @@ const V8StockBerzaBase = () => {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-20">
             {filtriraniPaketi.map((paket) => {
-              const isOwned = kupljeniPaketiIds?.includes(paket.id) || paket.isFree || parseFloat(paket.cena) === 0;
-              const matchedTab = INDUSTRY_TABS.find(t => t.id === detectIndustry(paket)) || INDUSTRY_TABS[1];
+              const isFreePkg = paket.isFree || parseFloat(paket.cena) === 0;
+              const isPaidInFirebase = kupljeniPaketiIds?.includes(paket.id);
+              const isOwned = isPaidInFirebase || isFreePkg;
+
+              const detectedId = detectIndustry(paket);
+              const matchedTab = INDUSTRY_TABS.find(t => t.id === detectedId) || INDUSTRY_TABS[10];
+              const cardSlotCount = getPaketPreviewSlotCount(paket);
+              const isObsidianHero = detectedId.startsWith('obsidian_');
+
+              // Ako je kupac već platio u Firebase-u, dajemo mu PDF licencu koju je zaista platio!
+              const activeLic = isPaidInFirebase ? (kupljeneLicencePoPaketu[paket.id] || getActiveCardLicense(paket.id)) : getActiveCardLicense(paket.id);
+              const { isEnt: isCardEnt, licensePdf: activeLicensePdf } = resolveStockLicenseMeta(activeLic);
+              const stdPrice = getStandardCena(paket);
+              const entPrice = getEnterpriseCena(paket);
+              const displayedPrice = isFreePkg ? '0.00' : (isCardEnt ? entPrice : stdPrice);
+
               return (
                 <div
                   key={paket.id}
-                  className="bg-[#121722] border border-white/10 hover:border-[#C5A059]/60 rounded-[2rem] overflow-hidden shadow-[0_18px_50px_rgba(0,0,0,0.55)] transition-all duration-300 flex flex-col"
+                  className={`bg-[#121722] border ${
+                    isCardEnt || cardSlotCount === 20 ? 'border-[#C5A059]/60' : 'border-white/10'
+                  } hover:border-[#C5A059]/90 rounded-[2rem] overflow-hidden shadow-[0_18px_50px_rgba(0,0,0,0.55)] transition-all duration-300 flex flex-col`}
                 >
-                  {/* SLIKA U TAMNOM OBSIDIAN OKVIRU */}
                   <div className="p-4 sm:p-5 relative bg-[#0D111A] border-b border-white/10">
                     <div className="absolute top-7 left-7 z-20 flex flex-wrap gap-2">
                       {paket.volTitle && (
@@ -1132,7 +1478,7 @@ const V8StockBerzaBase = () => {
                         </span>
                       )}
                       <span className="bg-[#0B0E14]/90 backdrop-blur-md border border-white/15 text-[#F7F4EE] text-[10px] font-extrabold uppercase tracking-widest px-3 py-1.5 rounded-full shadow-sm">
-                        {paket.volume || '10× 4K UHD + 10× 150MP'}
+                        {paket.volume || '20× 150MP + 20× 4K + 20× WEBP'}
                       </span>
                       <span className="bg-[#182030]/90 backdrop-blur-md border border-[#C5A059]/50 text-[#F3E5AB] text-[10px] font-extrabold uppercase tracking-wider px-3 py-1.5 rounded-full shadow-sm">
                         {paket.kategorijaEn || matchedTab.shortLabel}
@@ -1141,7 +1487,7 @@ const V8StockBerzaBase = () => {
 
                     <div className="absolute top-7 right-7 z-20">
                       <span className="bg-[#0B0E14]/90 backdrop-blur-md border border-[#C5A059]/60 text-[#F3E5AB] text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-sm">
-                        IP-SAFE COMMERCIAL
+                        {isObsidianHero ? '21:9 + 16:9 + WEBP' : '150MP + 4K + WEBP'}
                       </span>
                     </div>
 
@@ -1150,7 +1496,8 @@ const V8StockBerzaBase = () => {
                       className="w-full aspect-[16/9] rounded-2xl overflow-hidden cursor-zoom-in relative group border border-white/10 bg-[#080A0F]"
                     >
                       <img
-                        src={paket.previewUrl}
+                        src={toFastWebp(paket.previewUrl, 1200)}
+                        loading="lazy"
                         alt={formatPaketDisplayTitle(paket)}
                         className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700"
                       />
@@ -1161,9 +1508,8 @@ const V8StockBerzaBase = () => {
                       </div>
                     </div>
 
-                    {/* 10 MALIH SLIČICA ISPOD GLAVNE SLIKE NA SVAKOJ KARTICI */}
-                    <div className="grid grid-cols-5 gap-2 mt-3">
-                      {Array.from({ length: 10 }).map((_, idx) => {
+                    <div className={`grid ${cardSlotCount === 20 ? 'grid-cols-5 sm:grid-cols-10' : 'grid-cols-5'} gap-2 mt-3`}>
+                      {Array.from({ length: cardSlotCount }).map((_, idx) => {
                         const thumb = paket.primeri && paket.primeri[idx];
                         return thumb ? (
                           <div
@@ -1172,7 +1518,8 @@ const V8StockBerzaBase = () => {
                             className="aspect-square rounded-xl overflow-hidden cursor-zoom-in border border-white/15 hover:border-[#C5A059] transition bg-[#080A0F] relative group"
                           >
                             <img
-                              src={thumb}
+                              src={toFastWebp(thumb, 320)}
+                              loading="lazy"
                               alt={`Asset ${idx + 1}`}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />
@@ -1193,14 +1540,13 @@ const V8StockBerzaBase = () => {
                     </div>
                   </div>
 
-                  {/* OPIS, VOL. NASLOV, SPECIFIKACIJE I KUPOVINA */}
                   <div className="p-6 sm:p-8 flex flex-col flex-grow bg-[#121722]">
                     <div className="flex items-center justify-between gap-2 mb-2">
                       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#C5A059]">
                         {paket.volTitle ? `${paket.volTitle} • ` : ''}{matchedTab.shortLabel} VAULT
                       </span>
                       <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400">
-                        ● Instant Digital Delivery
+                        ● Verified ZIP + License Delivery
                       </span>
                     </div>
 
@@ -1217,28 +1563,87 @@ const V8StockBerzaBase = () => {
                       <div className="bg-[#0B0E14] border border-white/10 rounded-xl p-3 flex items-center gap-2.5">
                         <Aperture className="w-4 h-4 text-[#C5A059] shrink-0" />
                         <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-200">
-                          Dual Resolution: 4K Web + 150MP Print
+                          {isObsidianHero ? '21:9 + 16:9 + WebP Ready' : '150MP Print + 4K + WebP'}
                         </span>
                       </div>
                       <div className="bg-emerald-950/40 border border-emerald-500/30 rounded-xl p-3 flex items-center gap-2.5">
                         <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
                         <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-300">
-                          Zero Logos • Commercial License
+                          Zero Logos • 100% IP-Safe
                         </span>
                       </div>
                     </div>
 
                     <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-line mb-6 flex-grow font-medium">
-                      {paket.opisEn || DEFAULT_DESCRIPTIONS[paket.format] || DEFAULT_DESCRIPTIONS['V10 LUXURY GOODS (10x 4K + 10x 150MP)']}
+                      {paket.opisEn || buildUnifiedDescription(paket.format || '', cardSlotCount === 20)}
                     </p>
+
+                    {!isFreePkg && (
+                      <div className="mb-5 p-3 rounded-2xl bg-[#0B0E14] border border-[#C5A059]/30">
+                        <div className="flex items-center justify-between mb-2 px-1">
+                          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[#F3E5AB]">
+                            SELECT COMMERCIAL LICENSE TIER:
+                          </span>
+                          <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                            <Lock size={11} className="text-[#C5A059]" /> PDF Unlocks After Payment
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setCardLicense(paket.id, 'standard')}
+                            className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                              !isCardEnt
+                                ? 'bg-[#182235] border-[#C5A059] shadow-[0_0_20px_rgba(197,160,89,0.18)]'
+                                : 'bg-[#111622] border-white/10 opacity-75 hover:opacity-100 hover:border-white/25'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-[11px] font-black uppercase tracking-wider text-[#F7F4EE]">
+                                Standard Commercial
+                              </span>
+                              <span className="text-sm font-black text-[#F3E5AB]">${stdPrice}</span>
+                            </div>
+                            <div className="text-[10px] text-slate-400 font-semibold mt-1 leading-snug">
+                              1 Project / 1 Client • Web, Social &amp; Print ≤5K • No TV / OOH
+                            </div>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setCardLicense(paket.id, 'enterprise')}
+                            className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                              isCardEnt
+                                ? 'bg-gradient-to-br from-[#231E15] to-[#171E2E] border-[#F3E5AB] shadow-[0_0_24px_rgba(197,160,89,0.28)]'
+                                : 'bg-[#111622] border-white/10 opacity-75 hover:opacity-100 hover:border-[#C5A059]/50'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-[11px] font-black uppercase tracking-wider text-[#F3E5AB] flex items-center gap-1">
+                                <Crown size={12} className="text-[#C5A059]" /> Global Enterprise
+                              </span>
+                              <span className="text-sm font-black text-[#F3E5AB]">${entPrice}</span>
+                            </div>
+                            <div className="text-[10px] text-slate-300 font-semibold mt-1 leading-snug">
+                              Unlimited Clients • TV Broadcast, OOH Billboards &amp; Packaging
+                            </div>
+                          </button>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="pt-5 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 mt-auto">
                       <div className="text-center sm:text-left">
                         <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-0.5">
-                          Instant .ZIP Delivery • Full Commercial Rights
+                          {isFreePkg
+                            ? 'Free Complimentary Sample'
+                            : isCardEnt
+                            ? 'Global Enterprise • Unlimited Multi-Client, TV & OOH'
+                            : 'Standard Commercial • Single-Project Rights'}
                         </span>
                         <span className="text-3xl sm:text-4xl font-black text-[#F3E5AB]">
-                          ${getGlobalCena(paket.cena)}
+                          ${displayedPrice}
                         </span>
                       </div>
 
@@ -1249,7 +1654,7 @@ const V8StockBerzaBase = () => {
                             if (isAdmin || isOwned) {
                               window.open(paket.zipLink, '_blank');
                             } else {
-                              prijavaIKupovina(paket);
+                              prijavaIKupovina(paket, activeLic);
                             }
                           }}
                           className={`flex-1 sm:flex-initial px-7 py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg ${
@@ -1260,10 +1665,25 @@ const V8StockBerzaBase = () => {
                         >
                           {(isAdmin || isOwned) ? (
                             <><DownloadCloud size={16} /> Download ZIP</>
+                          ) : isCardEnt ? (
+                            <><Crown size={15} /> Buy Enterprise License</>
                           ) : (
-                            <><Diamond size={15} /> Buy Commercial Pack</>
+                            <><Diamond size={15} /> Buy Standard License</>
                           )}
                         </button>
+
+                        {/* 🔒 DUGME ZA PREUZIMANJE PDF LICENCE VIDI SAMO ADMIN ILI KUPAC ČIJA JE UPLATA POTVRĐENA U FIREBASE-U! */}
+                        {!isFreePkg && (isAdmin || isPaidInFirebase) && (
+                          <a
+                            href={activeLicensePdf}
+                            download
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-4 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest bg-[#1A2232] hover:bg-[#243047] text-[#F3E5AB] border border-[#C5A059]/50 transition flex items-center justify-center gap-1.5"
+                          >
+                            <FileText size={14} /> License PDF
+                          </a>
+                        )}
                       </div>
                     </div>
 
@@ -1293,7 +1713,7 @@ const V8StockBerzaBase = () => {
         )}
 
         {/* =================================================================== */}
-        {/* 5. SKLOPLJEN TEHNIČKI SERTIFIKAT NA DNU (TAMNA VERZIJA)             */}
+        {/* 5. SKLOPLJEN TEHNIČKI SERTIFIKAT NA DNU                             */}
         {/* =================================================================== */}
         <div className="max-w-5xl mx-auto border border-[#C5A059]/30 bg-[#121722] rounded-3xl overflow-hidden shadow-xl">
           <button
@@ -1303,10 +1723,10 @@ const V8StockBerzaBase = () => {
           >
             <div>
               <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#C5A059] block">
-                V10 Master Engine • Agency Quality Assurance
+                V10 Master Engine • Unified Packaging &amp; Dual B2B Licensing
               </span>
               <h3 className="text-base sm:text-lg font-black uppercase tracking-tight text-[#F7F4EE] mt-0.5">
-                View 150MP Technical Pipeline, Color Science & IP-Safe Certification
+                View Triple Delivery (150MP + 4K + WebP), Color Science &amp; Licensing Scope
               </h3>
             </div>
             <ChevronDown className={`w-6 h-6 text-[#C5A059] transition-transform ${showTechSpecs ? 'rotate-180' : ''}`} />
@@ -1315,28 +1735,25 @@ const V8StockBerzaBase = () => {
           {showTechSpecs && (
             <div className="p-6 pt-2 border-t border-white/10 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300">
               <div className="p-4 bg-[#0B0E14] rounded-xl border border-white/10">
-                <strong className="text-[#F3E5AB] uppercase block mb-1">1. Dual Commercial Delivery (4K + 150MP)</strong>
-                Every campaign bundle includes 10× 4K UHD files optimized for websites, social ads, and pitch decks, plus the exact same 10 visuals upscaled to 150MP for billboards and luxury print.
+                <strong className="text-[#F3E5AB] uppercase block mb-1">1. Unified Triple Commercial Delivery</strong>
+                Every ZIP bundle (20-Scene Standard Pack or 45-Scene Executive Agency Bundle) is structured into 3 production folders: <code className="text-[#F3E5AB]">01_Master_Resolution_JPG</code> (150MP print), <code className="text-[#F3E5AB]">02_4K_UHD_JPG</code>, and <code className="text-[#F3E5AB]">03_Web_Ready_WEBP</code>.
               </div>
               <div className="p-4 bg-[#0B0E14] rounded-xl border border-white/10">
-                <strong className="text-[#F3E5AB] uppercase block mb-1">2. 100% IP-Safe & Unbranded Cleanliness</strong>
+                <strong className="text-[#F3E5AB] uppercase block mb-1">2. 100% IP-Safe &amp; Unbranded Cleanliness</strong>
                 Zero third-party logos, zero readable text, zero identifiable celebrity likenesses, and stripped EXIF metadata—ready for corporate legal approval.
               </div>
               <div className="p-4 bg-[#0B0E14] rounded-xl border border-white/10">
-                <strong className="text-[#F3E5AB] uppercase block mb-1">3. LANCZOS + Anti-Plastic Micro-Grain</strong>
-                Processed with precision LANCZOS interpolation, MedianFilter noise cleanup, highlight rolloff protection, and subtle organic grain for authentic medium-format camera realism.
+                <strong className="text-[#F3E5AB] uppercase block mb-1">3. Phase One 150MP + ARRI Alexa 65 Optics</strong>
+                Engineered with medium-format Tilt-Shift &amp; Macro optical physics, LANCZOS scaling, and ARRI LogC4 highlight rolloff protection.
               </div>
               <div className="p-4 bg-[#0B0E14] rounded-xl border border-white/10 flex flex-col justify-between">
                 <div>
-                  <strong className="text-[#F3E5AB] uppercase block mb-1">4. Embedded sRGB ICC & Enterprise License</strong>
-                  Calibrated color accuracy across reference monitors and print RIP systems.
+                  <strong className="text-[#F3E5AB] uppercase block mb-1">4. Verified Ledger Delivery</strong>
+                  Official PDF License Certificates (Standard Commercial or Global Enterprise) and Master ZIP archives unlock automatically once payment is recorded and verified in our Firebase ledger.
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <a href="/PREMIUM ENTERPRISE LICENSE.pdf" target="_blank" rel="noopener noreferrer" download className="text-[10px] font-extrabold uppercase px-3 py-2 bg-[#C5A059] text-[#0B0E14] hover:bg-[#D4AF37] rounded-lg transition">
-                    Download Enterprise License PDF
-                  </a>
-                  <button type="button" onClick={() => navigate('/stock-2')} className="text-[10px] font-extrabold uppercase px-3 py-2 bg-[#182030] border border-white/15 text-[#F3E5AB] hover:border-[#C5A059] rounded-lg transition cursor-pointer">
-                    Open Legacy Mystic/Ancient Vault →
+                  <button type="button" onClick={() => navigate('/stock-2')} className="text-[10px] font-extrabold uppercase px-3 py-2 bg-[#182030] border border-white/15 text-slate-300 hover:border-[#C5A059] rounded-lg transition cursor-pointer">
+                    Legacy Vault →
                   </button>
                 </div>
               </div>
@@ -1348,12 +1765,12 @@ const V8StockBerzaBase = () => {
 
       <LoginRequiredModal
         isOpen={loginRequiredData.isOpen}
-        onClose={() => setLoginRequiredData({ isOpen: false, paket: null, name: '', price: 0 })}
+        onClose={() => setLoginRequiredData({ isOpen: false, paket: null, licenseTier: 'standard', name: '', price: 0 })}
         packageName={loginRequiredData.name}
         price={loginRequiredData.price}
         onLoginSuccess={async (user) => {
-          if (loginRequiredData.paket) await otvoriCheckoutIliPaddle(user, loginRequiredData.paket);
-          setLoginRequiredData({ isOpen: false, paket: null, name: '', price: 0 });
+          if (loginRequiredData.paket) await otvoriCheckoutIliPaddle(user, loginRequiredData.paket, loginRequiredData.licenseTier);
+          setLoginRequiredData({ isOpen: false, paket: null, licenseTier: 'standard', name: '', price: 0 });
         }}
       />
       <FullScreenLightbox imageUrl={fullScreenImageUrl} onClose={() => setFullScreenImageUrl(null)} />
@@ -1361,10 +1778,12 @@ const V8StockBerzaBase = () => {
         {checkoutData.isOpen && (
           <V8SecureCheckout
             isOpen={checkoutData.isOpen}
+            paketId={checkoutData.paketId}
             productName={checkoutData.name}
             price={checkoutData.price}
-            zipLink={checkoutData.zipLink}
-            onClose={() => setCheckoutData({ isOpen: false, name: '', price: 0, zipLink: '' })}
+            licenseTier={checkoutData.licenseTier}
+            projectImage={checkoutData.previewUrl || "/v8-secure-blue.webp"}
+            onClose={() => setCheckoutData({ isOpen: false, paketId: null, name: '', price: 0, licenseTier: 'standard', previewUrl: '' })}
           />
         )}
       </AnimatePresence>
@@ -1379,4 +1798,4 @@ const V8StockBerza = () => (
 );
 
 export default V8StockBerza;
-// KRAJ FAJLA: src/V8StockBerza.jsx
+// KRAJ FAJLA: src/componentsStockBerza/V8StockBerza.jsx

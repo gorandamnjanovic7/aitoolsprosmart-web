@@ -5,7 +5,7 @@ import {
   Globe, ChevronDown, Layers, Image as ImageIcon, Zap, Settings,
   ShieldAlert, Lock, LogOut, User, MonitorPlay, FileText, ShieldCheck,
   LayoutGrid, Cpu, Gift, Menu, X, Briefcase, Sparkles, Bot,
-  Crown, Compass, Diamond, ShoppingBag, Plane, Anchor, Watch, Glasses, Droplets
+  Crown, Compass, Diamond, ShoppingBag, Plane, Anchor, Watch, Glasses, Droplets, Utensils
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -19,7 +19,7 @@ import navBg from './navbar-bg.webp';
 import { trackV8Action } from './utils/analytics';
 
 // ============================================================================
-// 8 RAZDVOJENIH HIGH-TICKET TURNKEY BRAND PAKETA (SVIH 8 SU LIVE, GLAVNI OTVARA PRVO AVIONE)
+// 9 RAZDVOJENIH HIGH-TICKET TURNKEY BRAND PAKETA (RESTORAN ODMAH POSLE SATOVA)
 // ============================================================================
 const TURNKEY_KITS_MENU = [
   {
@@ -40,17 +40,25 @@ const TURNKEY_KITS_MENU = [
   },
   {
     title: 'Luxury Watches Kit',
-    subtitle: 'Haute Horlogerie UI + 20× 150MP + 3 PSD',
+    subtitle: 'Zero-G Antigravity UI + 52× 150MP Horology',
     price: '$349 / $1,490',
-    path: '/watch-page-1',
+    path: '/abyss-chronograph',
     icon: Watch,
+    status: 'LIVE'
+  },
+  {
+    title: 'Fine Dining & Restaurant',
+    subtitle: 'Ignis & Gold Torchlight UI + Menu & Booking',
+    price: '$349 / $1,490',
+    path: '/ignis-gold-restaurant',
+    icon: Utensils,
     status: 'LIVE'
   },
   {
     title: 'Diamonds & High Jewelry',
     subtitle: 'Atelier Bijoux UI + 20× 150MP + 3 PSD',
     price: '$349 / $1,490',
-    path: '/aviation-charter-kit',
+    path: '/diamonds-kit',
     icon: Diamond,
     status: 'LIVE'
   },
@@ -266,7 +274,7 @@ const V8Navbar = ({ handleHomeClick }) => {
               </div>
             </div>
 
-            {/* 🔥 POSEBNO DUGME: TURNKEY KITS - OTVARA PRVO AVIONE, SVIH 8 SU LIVE 🔥 */}
+            {/* 🔥 POSEBNO DUGME: TURNKEY KITS - SADA 9 NIŠA (RESTORAN ODMAH POSLE SATOVA) 🔥 */}
             <div className="relative group">
               <Link
                 to="/aviation-charter-kit"
@@ -276,18 +284,18 @@ const V8Navbar = ({ handleHomeClick }) => {
                 <Crown className="w-3.5 h-3.5 text-black shrink-0" />
                 <span>TURNKEY KITS</span>
                 <span className="bg-black text-amber-300 text-[8px] font-black px-1.5 py-0.5 rounded uppercase leading-none shadow-sm">
-                  8 NICHES
+                  9 NICHES
                 </span>
                 <ChevronDown className="w-3 h-3 text-black group-hover:rotate-180 transition-transform duration-300 shrink-0" />
               </Link>
 
               <div className="absolute top-full left-0 pt-4 opacity-0 translate-y-4 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all duration-400 z-[9999]">
-                <div className="bg-[#0b0c10]/95 backdrop-blur-2xl border-2 border-amber-400/70 rounded-2xl p-3 w-[660px] shadow-[0_30px_70px_rgba(251,191,36,0.25)] flex flex-col gap-2 relative overflow-hidden">
+                <div className="bg-[#0b0c10]/95 backdrop-blur-2xl border-2 border-amber-400/70 rounded-2xl p-3 w-[680px] max-h-[82vh] overflow-y-auto shadow-[0_30px_70px_rgba(251,191,36,0.25)] flex flex-col gap-2 relative">
                   <div className="absolute -top-12 -right-12 w-48 h-48 bg-amber-400/20 rounded-full blur-[60px] pointer-events-none z-0"></div>
 
                   <div className="px-3 py-2 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center justify-between relative z-10">
                     <span className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-300">
-                      ✨ 8 Standalone React + 150MP Luxury Brand Kits ✨
+                      ✨ 9 Standalone React + 150MP Luxury Brand Kits ✨
                     </span>
                     <span className="text-[8px] font-black text-white bg-amber-500 px-2 py-0.5 rounded uppercase shadow">$349 Agency / $1,490 Buyout</span>
                   </div>
@@ -611,10 +619,10 @@ const V8Navbar = ({ handleHomeClick }) => {
 
               <div className="flex flex-col gap-6 w-full min-w-0">
 
-                {/* 🔥 SVIH 8 TURNKEY BRAND PAKETA U MOBILNOM MENIJU (SVI LIVE) 🔥 */}
+                {/* 🔥 SVIH 9 TURNKEY BRAND PAKETA U MOBILNOM MENIJU (SVI LIVE) 🔥 */}
                 <div className="flex flex-col gap-2.5 w-full">
                   <h4 className="text-[10px] text-amber-400 font-black uppercase tracking-[0.2em] border-b border-amber-500/20 pb-2 truncate w-full flex items-center gap-1.5">
-                    <Crown className="w-3.5 h-3.5 shrink-0" /> 8 Turnkey Brand Kits ($349 / $1,490)
+                    <Crown className="w-3.5 h-3.5 shrink-0" /> 9 Turnkey Brand Kits ($349 / $1,490)
                   </h4>
 
                   {TURNKEY_KITS_MENU.map((kit, idx) => {
@@ -730,7 +738,7 @@ const V8Navbar = ({ handleHomeClick }) => {
                     </div>
                   </Link>
                   
-                  <Link to="/showroom" onClick={handleMobileLinkClick} className="flex items-center justify-between bg-black border border-white/5 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
+                  <Link to="/showroom" onClick={handleMobileLinkClick} className="flex items-center gap-3 sm:gap-4 bg-black border border-white/5 p-3 sm:p-4 rounded-2xl active:scale-95 transition-transform w-full min-w-0">
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0 w-full">
                       <div className="bg-purple-500/10 p-2.5 sm:p-3 rounded-xl shrink-0"><ImageIcon className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500" /></div>
                       <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-widest text-white truncate w-full">V8 Showroom</span>

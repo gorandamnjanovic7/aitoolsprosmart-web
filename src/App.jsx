@@ -99,6 +99,20 @@ import V10MyVault from './ux/V10MyVault';
 
 import MidnightAltitude from './pages/kits/aviation/MidnightAltitude';
 
+//RESTORANI
+import IgnisGoldRestaurant from './pages/kits/restaurants/IgnisGoldRestaurant';
+import VillaSolisAmalfi from './pages/kits/restaurants/VillaSolisAmalfi';
+import KurokawaKaiseki from './pages/kits/restaurants/KurokawaKaiseki';
+import MaisonLumiereParis from './pages/kits/restaurants/MaisonLumiereParis';
+import SolYObsidianaNikkei from './pages/kits/restaurants/SolYObsidianaNikkei';
+
+
+
+
+
+//moja ruta goran
+import V10PromptGenerator from './hide/V10PromptGenerator';
+
 if (typeof window !== 'undefined') {
   if ('scrollRestoration' in window.history) { window.history.scrollRestoration = 'manual'; }
   if (window.location.hash) { window.history.replaceState(null, '', window.location.pathname); }
@@ -611,8 +625,9 @@ function AppContent({ appsData, refreshData }) {
         {!isPublicMenuRoute && <V8UnlockModal />}
         <div className={`flex-1 text-left ${isPublicMenuRoute ? '' : 'pt-20'}`}>
           <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
-           <Routes location={location} key={location.pathname}>
+          <Routes location={location} key={location.pathname}>
               <Route path="/" element={<V8PageWrapper><HomePage apps={appsData} openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+              <Route path="/goran" element={<V10PromptGenerator />} />
               <Route path="/v8-standard-16mp" element={<V8PageWrapper><V8Standard16MPWorkspace openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               <Route path="/master-33mp" element={<V8PageWrapper><V8MasterEngine33MP openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
               <Route path="/master-45mp" element={<V8PageWrapper><V8MasterEngine45MP openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
@@ -635,12 +650,14 @@ function AppContent({ appsData, refreshData }) {
               <Route path="/dashboard" element={<V8PageWrapper><V8AdminDashboard /></V8PageWrapper>} />
               <Route path="/admin-payoneer" element={<V8PageWrapper><V8PayoneerDashboard /></V8PageWrapper>} />
               
-              {/* 🔥 5 JETS KITS (5th page correctly bound to SkyglassAviation and explicit filename path) 🔥 */}
+              {/* 🔥 5 JETS KITS 🔥 */}
               <Route path="/aviation-charter-kit" element={<V8PageWrapper><PrivateAviationKit /></V8PageWrapper>} />
               <Route path="/aviation-atelier-kit" element={<V8PageWrapper><AeroPriveAtelier /></V8PageWrapper>} />
               <Route path="/aviation-cloudline-kit" element={<V8PageWrapper><CloudlinePrestige /></V8PageWrapper>} />
+              <Route path="/aviation-midnight-kit" element={<MidnightAltitude />} />
               <Route path="/aviation-runway-kit" element={<V8PageWrapper><RunwayReserve /></V8PageWrapper>} />
               <Route path="/aviation-skyglass-aviation" element={<V8PageWrapper><SkyglassAviation /></V8PageWrapper>} />
+              <Route path="/aviation-skyglass-kit" element={<SkyglassAviation />} />
               <Route path="/aviation-page-5" element={<V8PageWrapper><SkyglassAviation /></V8PageWrapper>} />
 
               {/* 🔥 SUPERYACHT KITS (1 TO 5) 🔥 */}
@@ -672,6 +689,14 @@ function AppContent({ appsData, refreshData }) {
 
               <Route path="/monarch-timepieces" element={<MonarchTimepieces />} />
               <Route path="/watch-page-5" element={<MonarchTimepieces />} />
+              
+              {/* 🔥 RESTORANI KITS (1 TO 5) 🔥 */}
+            <Route path="/ignis-gold-restaurant" element={<IgnisGoldRestaurant />} />
+            <Route path="/ignis-gold" element={<IgnisGoldRestaurant />} />
+            <Route path="/villa-solis" element={<VillaSolisAmalfi />} />
+            <Route path="/kurokawa-kaiseki" element={<KurokawaKaiseki />} />
+            <Route path="/maison-lumiere" element={<MaisonLumiereParis />} />
+            <Route path="/sol-y-obsidiana" element={<SolYObsidianaNikkei />} />
 
               {/* 🔥 DIAMOND KITS (1 TO 5) 🔥 */}
               <Route path="/diamonds-kit" element={<VerdantOrangerieJewels />} />
@@ -697,15 +722,7 @@ function AppContent({ appsData, refreshData }) {
               <Route path="/ui-ux/commercial" element={<V8PageWrapper><CommercialOps /></V8PageWrapper>} /> 
               <Route path="/ui-ux/project/:projectId" element={<V8PageWrapper><V10SplitScreen /></V8PageWrapper>} />
               <Route path="/my-vault" element={<V8PageWrapper><V10MyVault /></V8PageWrapper>} />
-                    <Route path="/aviation-charter-kit" element={<PrivateAviationKit />} />
-              <Route path="/aviation-atelier-kit" element={<AeroPriveAtelier />} />
-              <Route path="/aviation-cloudline-kit" element={<CloudlinePrestige />} />
-              <Route path="/aviation-midnight-kit" element={<MidnightAltitude />} />
-              <Route path="/aviation-runway-kit" element={<MidnightAltitude />} />
-              <Route path="/aviation-page-5" element={<SkyglassAviation />} />
-              <Route path="/aviation-skyglass-aviation" element={<SkyglassAviation />} />
-              <Route path="/aviation-skyglass-kit" element={<SkyglassAviation />} />
-      </Routes>
+          </Routes>
           </AnimatePresence>
         </div>
         {!isPublicMenuRoute && <SmartScrollButton />}

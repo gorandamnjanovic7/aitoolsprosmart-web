@@ -22,8 +22,8 @@ import V8SecureCheckout from '../../../V8SecureCheckout';
 import LoginRequiredModal from '../../../LoginRequiredModal';
 import { trackV8Action } from '../../../utils/analytics';
 
-const WEBHOOK_URL = 'https://n8n-production-720dcf20.up.railway.app/webhook/YACHT_Concierge_And_Calendar';
-const FALLBACK_WEBHOOK_URL = 'https://n8n-production-720dcf20.up.railway.app/webhook/AVIATION_Concierge_And_Calendar';
+const WEBHOOK_URL = 'https://n8n-production-720dcf20.up.railway.app/webhook/v10-concierge-webhook';
+const FALLBACK_WEBHOOK_URL = 'https://n8n-production-720dcf20.up.railway.app/webhook/v10-concierge-webhook';
 
 // ============================================================================
 // 16:9 VIDEO PLACEHOLDER SLOTS (PASTE YOUR SEEDANCE 2.5 / KLING 4.0 .MP4/.WEBM)
@@ -62,7 +62,7 @@ const KIT_CONFIG = {
   "prevPageRoute": "/sapphire-yacht-kit",
   "prevPageLabel": "Prev Yacht: Sapphire Voyage (4/5)",
   "nextLandingRoute": "/abyss-chronograph",
-  "nextLandingLabel": "Next Niche: Watches (1/5)",
+  "nextLandingLabel": "Next: Abyss Chronograph (1/5)",
   "zones": [
     {
       "id": "tide-z1",
@@ -366,22 +366,29 @@ const TideglassYachtSociety = () => {
 
     const currentZone = KIT_CONFIG.zones[activeZoneIdx];
     const slotClean = flightSlot.replace('Calendar Slot: ', '');
+    const guestName = clientName.trim() || currentUser?.displayName || 'VIP Yacht Principal';
+    const guestEmail = clientEmail.trim() || currentUser?.email || 'vip@superyacht-desk.com';
 
     setChatMessages((prev) => [...prev, { role: 'user', text: trimmed }]);
     setChatInput('');
     setIsAiThinking(true);
 
     const payload = {
-      sessionId: clientEmail.trim() || `tideglassyachtsociety-${Date.now()}`,
-      clientName: clientName.trim() || currentUser?.displayName || 'VIP Yacht Principal',
-      clientEmail: clientEmail.trim() || currentUser?.email || 'vip@superyacht-desk.com',
+      name: guestName,
+      email: guestEmail,
+      category: 'Turnkey B2B Luxury Superyacht Web Kits',
+      item: `Tideglass Society Superyacht Kit (${selectedVessel})`,
+      budget: `$${agencyPriceNum} Agency / $${buyoutPriceNum} Exclusive Buyout`,
+      date: `${flightDate} at ${slotClean}`,
+      sessionId: guestEmail || `tideglassyachtsociety-${Date.now()}`,
+      clientName: guestName,
+      clientEmail: guestEmail,
       bookingDate: flightDate,
       bookingSlot: slotClean,
-      date: `${flightDate} at ${slotClean}`,
       aircraft: selectedVessel,
       activeZone: currentZone.zone,
       page: "Tideglass Society (Yacht Kit 05 / 05 • Sea-Glass Slate, Frosted Mint & Brushed Platinum)",
-      message: `[Superyacht Charter Concierge Context: Tideglass Society | Vessel: ${selectedVessel}] ${trimmed}`,
+      message: `[Superyacht Charter Concierge Context: Tideglass Society | Vessel: ${selectedVessel} | Active Zone: ${currentZone.zone}] ${trimmed}`,
       chatInput: `[Superyacht Charter Concierge Context: Tideglass Society | Vessel: ${selectedVessel} | Date: ${flightDate} at ${slotClean}] ${trimmed}`
     };
 
@@ -399,7 +406,7 @@ const TideglassYachtSociety = () => {
         });
       }
       const data = await res.json().catch(() => null);
-      const rawReply = data?.reply || data?.output || data?.agent_reply || data?.text;
+      const rawReply = data?.agent_reply || data?.reply || data?.output || data?.text;
       if (res.ok && rawReply && !String(rawReply).toLowerCase().includes('error in workflow')) {
         setChatMessages((prev) => [...prev, { role: 'assistant', text: String(rawReply) }]);
       } else {
@@ -456,7 +463,7 @@ const TideglassYachtSociety = () => {
 
       {/* TOP MARITIME RIBBON */}
       <div className={`border-b px-4 py-2 text-center text-[11px] font-black uppercase tracking-[0.2em] ${THEME.ribbonBg}`}>
-        TIDEGLASS ARCHITECTURAL SOCIETY ✦ 16:9 SOLAR-GLASS CINEMA READY ✦ NEXT NICHE: HOROLOGY
+        TIDEGLASS ARCHITECTURAL SOCIETY ✦ 16:9 SOLAR-GLASS CINEMA READY ✦ NEXT NICHE: ABYSS CHRONOGRAPH
       </div>
 
       {/* SUB-HEADER */}
@@ -621,7 +628,7 @@ const TideglassYachtSociety = () => {
               [Video, '16:9 Seedance 2.5 & Kling 4.0 Slot'],
               [ShieldCheck, 'Zero Duplicate 150MP Visuals'],
               [Sparkles, '24/7 AI Charter & Calendar Desk']
-            ].map(([Icon, label], idx) => (
+            ].map(([Icon, label]) => (
               <div key={label} className={`flex items-center gap-3 text-xs font-extrabold uppercase tracking-wider ${THEME.textMain}`}>
                 <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border ${THEME.badge}`}>
                   <Icon size={16} />
@@ -650,7 +657,6 @@ const TideglassYachtSociety = () => {
                 </p>
               </div>
 
-              {/* REEL 01 / REEL 02 SELECTOR TABS ON ALL 5 YACHT PAGES */}
               <div className="flex flex-wrap gap-2.5 shrink-0">
                 {KIT_CONFIG.cinemaVideos.map((clip, idx) => (
                   <button
@@ -673,7 +679,6 @@ const TideglassYachtSociety = () => {
               </div>
             </div>
 
-            {/* TRUE 16:9 WIDESCREEN ASPECT-VIDEO CONTAINER */}
             <div className="relative w-full aspect-video overflow-hidden rounded-3xl border-2 border-white/25 bg-black shadow-2xl">
               {hasLiveVideoFile ? (
                 <video
@@ -691,7 +696,6 @@ const TideglassYachtSociety = () => {
                   <source src={effectiveVideoUrl} type="video/webm" />
                 </video>
               ) : (
-                /* CINEMATIC 16:9 MOTION PLACEHOLDER PREVIEW (WHEN NO .MP4 IS LOADED YET) */
                 <div className="relative h-full w-full overflow-hidden bg-black">
                   <motion.img
                     key={activeCinema.poster}
@@ -706,7 +710,6 @@ const TideglassYachtSociety = () => {
                     className="h-full w-full object-cover opacity-90"
                   />
 
-                  {/* CENTER 16:9 VIDEO PLACEHOLDER HUD */}
                   <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-4">
                     <div className="rounded-3xl border border-white/25 bg-black/75 px-6 py-4 text-center backdrop-blur-xl shadow-2xl max-w-md">
                       <span className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full border border-emerald-400/50 bg-emerald-400/15 text-emerald-300">
@@ -728,7 +731,6 @@ const TideglassYachtSociety = () => {
 
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/45" />
 
-              {/* TOP 16:9 FRAME BADGES */}
               <div className="absolute left-4 right-4 top-4 sm:left-5 sm:right-5 sm:top-5 flex flex-wrap items-center justify-between gap-2">
                 <span className="rounded-full border border-white/25 bg-black/85 px-4 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-white backdrop-blur-md">
                   {activeCinema.badge}
@@ -738,7 +740,6 @@ const TideglassYachtSociety = () => {
                 </span>
               </div>
 
-              {/* BOTTOM VIDEO CONTROLS + LIVE CUSTOM URL INPUT BAR */}
               <div className="absolute bottom-4 left-4 right-4 sm:bottom-5 sm:left-5 sm:right-5 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
                   <button
@@ -844,7 +845,7 @@ const TideglassYachtSociety = () => {
               <div>
                 <span className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] ${THEME.badge}`}>
                   <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                  LIVE RAILWAY N8N + GOOGLE CALENDAR
+                  LIVE RAILWAY N8N + GROQ AI ENGINE
                 </span>
                 <h2 className={`mt-4 text-3xl sm:text-5xl font-black uppercase leading-[1.06] ${THEME.textMain}`}>
                   24/7 TIDEGLASS SYNDICATE & CHARTER DESK
@@ -902,7 +903,7 @@ const TideglassYachtSociety = () => {
                 <div ref={chatScrollRef} className={`mt-4 h-72 space-y-3 overflow-y-auto rounded-2xl border p-4 ${THEME.chatBox}`}>
                   {chatMessages.map((msg, i) => (
                     <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs leading-relaxed ${msg.role === 'user' ? THEME.userBubble : THEME.aiBubble}`}>
+                      <div className={`max-w-[85%] whitespace-pre-line rounded-2xl px-4 py-3 text-xs leading-relaxed ${msg.role === 'user' ? THEME.userBubble : THEME.aiBubble}`}>
                         {msg.text}
                       </div>
                     </div>
@@ -1067,14 +1068,18 @@ const TideglassYachtSociety = () => {
             <img src={KIT_CONFIG.ctaBannerImage} alt="Superyacht Horizon" loading="lazy" className="absolute inset-0 h-full w-full object-cover opacity-55" />
             <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-transparent" />
             <div className="relative max-w-2xl px-6 py-14 sm:px-12 sm:py-18 text-white">
-              <span className="text-xs font-black uppercase tracking-[0.22em] text-amber-200">Tideglass Society</span>
-              <h2 className="mt-3 text-3xl sm:text-5xl font-black leading-tight">Set your course beyond crowded harbors.</h2>
+              <span className="text-xs font-black uppercase tracking-[0.22em] text-amber-200">Tideglass Society • Final Superyacht Edition</span>
+              <h2 className="mt-3 text-3xl sm:text-5xl font-black leading-tight">Enter the Zero-Gravity Horology Vault.</h2>
               <div className="mt-7 flex flex-wrap gap-3">
-                <button type="button" onClick={() => scrollTo('charter-request')} className={`rounded-full px-7 py-4 text-xs font-black uppercase tracking-wider cursor-pointer ${THEME.btnPrimary}`}>
-                  Open 24/7 Yacht Desk →
+                <button
+                  type="button"
+                  onClick={() => navigate(KIT_CONFIG.nextLandingRoute)}
+                  className={`rounded-full px-7 py-4 text-xs font-black uppercase tracking-wider cursor-pointer flex items-center gap-2 ${THEME.btnPrimary}`}
+                >
+                  {KIT_CONFIG.nextLandingLabel} <ArrowRight size={15} />
                 </button>
-                <button type="button" onClick={() => navigate('/stock')} className="rounded-full border border-white/40 bg-black/60 px-6 py-4 text-xs font-black uppercase tracking-wider text-white cursor-pointer">
-                  Back to Stock Vaults
+                <button type="button" onClick={() => scrollTo('charter-request')} className="rounded-full border border-white/40 bg-black/60 px-6 py-4 text-xs font-black uppercase tracking-wider text-white cursor-pointer">
+                  Open 24/7 Yacht Desk
                 </button>
               </div>
             </div>

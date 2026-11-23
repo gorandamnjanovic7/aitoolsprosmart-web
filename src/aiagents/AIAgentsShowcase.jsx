@@ -39,13 +39,27 @@ const b2bEcosystemSystems = [
   { path: '/standard-mocup', name: '150MP SaaS MOCKUPS', desc: 'Glass Plaque, Wall & Billboard', icon: MonitorPlay, color: 'text-orange-400', bg: 'bg-orange-500/20', hover: 'group-hover:bg-orange-500/40', border: 'border-orange-500/40' },
   { path: '/ui-ux/vault', name: 'UI/UX DESIGN VAULT', desc: 'Enterprise Web Systems', icon: LayoutGrid, color: 'text-emerald-400', bg: 'bg-emerald-500/20', hover: 'group-hover:bg-emerald-500/40', border: 'border-emerald-500/40' },
   { path: '/pdf-translator', name: 'V10 PDF TRANSLATOR', desc: '100% Layout DTP Neural Engine', icon: FileText, color: 'text-teal-400', bg: 'bg-teal-500/20', hover: 'group-hover:bg-teal-500/40', border: 'border-teal-500/40' },
+  { path: '/stock', name: '150MP COMMERCIAL STOCK', desc: 'Ultra-Print & 4K UHD Visuals', icon: ImageIcon, color: 'text-sky-400', bg: 'bg-sky-500/20', hover: 'group-hover:bg-sky-500/40', border: 'border-sky-500/40' },
   { path: '/premium-menu', name: 'QR MENU BUILDER', desc: 'Premium Hospitality System', icon: ScanLine, color: 'text-purple-400', bg: 'bg-purple-500/20', hover: 'group-hover:bg-purple-500/40', border: 'border-purple-500/40' }
 ];
 
 // ============================================================================
-// 🔥 4 HIGH-PRIORITY FLAGSHIP B2B SYSTEMS (TOP REVENUE GENERATORS)
+// 🔥 HIGH-PRIORITY FLAGSHIP B2B SYSTEMS (TOP REVENUE GENERATORS)
 // ============================================================================
 const priorityFlagshipSystems = [
+  {
+    id: 'priority-aurelia-pulse',
+    badge: '✨ NEW LIVE N8N + GROQ BOOKING BAR',
+    roiTag: '$199 B2B Kit • Works on Any Website',
+    name: 'Aurelia Pulse — 24/7 AI Concierge & Booking Bar',
+    shortDesc: 'Standalone Drop-In Booking Bar + Multilingual AI Desk + Instant Mobile Alarm',
+    longDesc: 'Universal standalone floating booking bar and live AI concierge widget that plugs into any existing HTML, WordPress, Webflow, or React website in 60 seconds. Visitors pick a service, date, and CET time slot, chat in their native language (Serbian, English, German, French, etc.), and trigger an instant push alarm straight to the owner\'s phone via n8n.',
+    deliverables: 'Standalone index.html Widget + 6-Node Railway n8n Workflow (/webhook/aurelia-pulse .JSON) + Mobile Push Alert Setup',
+    whiteLabelPrice: '$199 Kit / $2,900 Buyout',
+    icon: Sparkles,
+    colorTheme: 'amber',
+    hasAureliaPulseStudio: true
+  },
   {
     id: 'priority-project-scoper',
     badge: '🔥 TOP AGENCY CLOSER (LIVE GROQ ENGINE)',
@@ -61,15 +75,16 @@ const priorityFlagshipSystems = [
   },
   {
     id: 'priority-lead-harvester',
-    badge: '⚡ HIGH-TICKET OUTREACH ENGINE',
-    roiTag: '10x Cold Email Conversion',
-    name: 'Autonomous B2B Lead Harvester & Outreach Engine',
-    shortDesc: 'Live Website Scraper + Hyper-Personalized Cold Emailer',
-    longDesc: 'Input any prospect URL and let the engine crawl their live website, detect specific SEO/UX/conversion gaps, and draft a hyper-personalized executive outreach email that proves you researched their business. Built for agencies looking to fill their calendar on autopilot.',
-    deliverables: 'Lead Harvester Dashboard UI + n8n DOM Scraper & Outreach Workflow (.JSON)',
-    whiteLabelPrice: '$5,000 – $9,000',
+    badge: '🎯 170-CITY SCRAPER + 20:00 CET CLOSER',
+    roiTag: '55 Personalized B2B Emails/Day',
+    name: 'V10 Autonomous B2B Lead Hunter & 20:00h Closer',
+    shortDesc: '5-Engine Python Scraper + Google Sheets CRM + n8n EN/DE Outreach',
+    longDesc: 'Complete autonomous B2B acquisition machine. Scrapes verified corporate emails across 170 affluent cities (USA, Germany, Netherlands, Denmark, UK, Switzerland & UAE) and 14 high-ticket niches via a 5-engine anti-block pipeline, syncs leads to Google Sheets, sends 55 localized EN/DE partnership & B2B offers daily (every 12 mins), and delivers an executive 24h performance report every evening at 20:00 CET.',
+    deliverables: 'V10_LEAD_HUNTER-v5.py (Tkinter GUI) + Google Sheets Cloud Schema + n8n 20:00h Autonomous Engine (.JSON)',
+    whiteLabelPrice: '$5,500 – $9,500',
     icon: Crosshair,
-    colorTheme: 'cyan'
+    colorTheme: 'cyan',
+    hasLeadHunterStudio: true
   },
   {
     id: 'priority-saas-launch-kit',
@@ -101,9 +116,31 @@ const priorityFlagshipSystems = [
 ];
 
 // ============================================================================
-// COMPLETE CATALOG OF AGENTS (27 WHITE-LABEL BUYOUT SYSTEMS)
+// COMPLETE CATALOG OF AGENTS (29 WHITE-LABEL BUYOUT & COMMERCIAL SYSTEMS)
 // ============================================================================
 const aiAgentsList = [
+  {
+    id: 'aurelia-pulse-booking-bar',
+    name: 'Aurelia Pulse — 24/7 AI Concierge & Booking Bar',
+    shortDesc: 'Standalone Universal Booking Bar + Groq AI + Instant Phone Alarm',
+    longDesc: 'Drop-in floating booking bar and 24/7 multilingual AI concierge desk connected directly to a 6-node Railway n8n workflow (`/webhook/aurelia-pulse`). Clients choose a service, date, and time slot on any website, ask questions in their native language, and trigger an instant mobile push alert to your phone.',
+    deliverables: 'Standalone index.html Bar & Chat Widget + Aurelia Pulse 6-Node n8n Workflow (.JSON) + ntfy Mobile Push Guide',
+    whiteLabelPrice: '$199 Kit / $2,900 Buyout',
+    icon: Sparkles,
+    colorTheme: 'amber',
+    hasAureliaPulseStudio: true
+  },
+  {
+    id: 'v10-autonomous-b2b-lead-hunter-20h',
+    name: 'V10 Autonomous B2B Lead Hunter & 20:00h Partnership Closer',
+    shortDesc: '170-City 5-Engine Scraper + Cloud CRM + 20:00 CET Daily Report',
+    longDesc: 'Extracts verified decision-maker emails across 170 global business hubs and 14 luxury/B2B industries without GUI freezing, pushes leads directly via Webhook into Google Sheets (`READY_FOR_AGENT`), dispatches 55 hyper-personalized English/German B2B & White-Label partnership emails per day at safe 12-minute intervals, and emails you a complete 24-hour executive breakdown at 20:00 CET.',
+    deliverables: 'V10_LEAD_HUNTER-v5.py (Multi-City GUI + TXT/CSV) + Google Sheets CRM Template + V10_N8N_AUTONOMOUS_B2B_ENGINE_20H.json',
+    whiteLabelPrice: '$5,500 – $9,500',
+    icon: Crosshair,
+    colorTheme: 'cyan',
+    hasLeadHunterStudio: true
+  },
   {
     id: 'viber-sales-alert-agent',
     name: 'Instant Sale & Lead Alert Agent (Viber / Telegram / WhatsApp)',
@@ -169,6 +206,77 @@ const AVAILABLE_TIME_SLOTS = [
   '18:00 CET'
 ];
 
+const AURELIA_SERVICES = [
+  'Private VIP Consultation',
+  'B2B Turnkey Kit Demo ($199)',
+  'White-Label Agency Buyout ($2,900)',
+  'Custom n8n + AI Architecture Call'
+];
+
+const LEAD_HUNTER_SAMPLE_CITIES = [
+  { label: 'Zurich, Switzerland (DE)', city: 'Zurich', country: 'Switzerland', lang: 'German' },
+  { label: 'New York, USA (EN)', city: 'New York', country: 'USA', lang: 'English' },
+  { label: 'Munich, Germany (DE)', city: 'Munich', country: 'Germany', lang: 'German' },
+  { label: 'Amsterdam, Netherlands (EN)', city: 'Amsterdam', country: 'Netherlands', lang: 'English' },
+  { label: 'Copenhagen, Denmark (EN)', city: 'Copenhagen', country: 'Denmark', lang: 'English' },
+  { label: 'London, United Kingdom (EN)', city: 'London', country: 'UK', lang: 'English' },
+  { label: 'Miami, USA (EN)', city: 'Miami', country: 'USA', lang: 'English' },
+  { label: 'Dubai, UAE (EN)', city: 'Dubai', country: 'UAE', lang: 'English' }
+];
+
+const LEAD_HUNTER_INDUSTRIES = [
+  {
+    name: '01. Digital Marketing, Branding, Advertising & SEO Agencies',
+    mode: 'AGENCY_PARTNERSHIP',
+    offer: 'White-Label AI Agents Resell Partnership + 150MP Billboard/Wall/Glass Plaque Mockups + UI/UX Vault + Neural PDF Translator',
+    sampleLeads: [
+      { email: 'hello@alpinebrandstudio.example', domain: 'alpinebrandstudio.com', title: 'Alpine Brand & Digital Studio' },
+      { email: 'partner@velox-creative.example', domain: 'velox-creative.io', title: 'Velox Creative & Performance Agency' },
+      { email: 'info@nordicpulse-media.example', domain: 'nordicpulse-media.com', title: 'NordicPulse B2B Branding Group' }
+    ]
+  },
+  {
+    name: '04. Luxury Real Estate, Architecture & Interior Design Studios',
+    mode: 'DIRECT_AND_PARTNERSHIP',
+    offer: '150MP Wall & Interior Mockups + Real Estate AI Concierge & Voice Agent + Turnkey Real Estate Web Kit + 1000-Page PDF Translator',
+    sampleLeads: [
+      { email: 'studio@kronos-arch.example', domain: 'kronos-architecture.com', title: 'Kronos Luxury Architecture & Interiors' },
+      { email: 'info@aurelia-estates.example', domain: 'aurelia-estates.com', title: 'Aurelia Prime Real Estate Advisory' },
+      { email: 'office@atelier-vance.example', domain: 'atelier-vance.design', title: 'Atelier Vance Spatial Design Studio' }
+    ]
+  },
+  {
+    name: '05. Fine Jewelry, Diamond Dealers & Luxury Watch Boutiques',
+    mode: 'DIRECT_B2B',
+    offer: 'Turnkey Luxury Watches & Diamonds Web Kits ($349/$1,490) + 150MP Product Renders & Glass Plaques + 24/7 VIP AI Concierge',
+    sampleLeads: [
+      { email: 'concierge@meridian-horology.example', domain: 'meridian-horology.com', title: 'Meridian Haute Horlogerie Boutique' },
+      { email: 'info@lumina-diamonds.example', domain: 'lumina-diamonds.com', title: 'Lumina Fine Diamonds & Bespoke Joaillerie' },
+      { email: 'sales@geneva-timevault.example', domain: 'geneva-timevault.ch', title: 'TimeVault Collector Watch House' }
+    ]
+  },
+  {
+    name: '10. Aesthetic Clinics, Cosmetic Dentistry & Longevity Centers',
+    mode: 'DIRECT_B2B',
+    offer: '24/7 AI Voice Receptionist & Calendar Appointment Setter + Clinical Longevity Web Kit + Medical Tourism Neural PDF Translator',
+    sampleLeads: [
+      { email: 'info@artis-longevity.example', domain: 'artis-longevity.ch', title: 'Artis Aesthetic Medicine & Longevity Clinic' },
+      { email: 'contact@utoquai-med.example', domain: 'utoquai-med.ch', title: 'Utoquai Private Plastic Surgery & Laser' },
+      { email: 'reception@pure-dentalstudio.example', domain: 'pure-dentalstudio.com', title: 'Pure Boutique Cosmetic Dentistry' }
+    ]
+  },
+  {
+    name: '03. Large-Format Printing, OOH Billboards & Signage Companies',
+    mode: 'AGENCY_PARTNERSHIP',
+    offer: '150MP Billboard Mockups, Wall Mockups & Executive Glass Plaque Mockups + 150MP Ultra-Print Stock Images + AI Mockup Studio',
+    sampleLeads: [
+      { email: 'sales@metrobigprint.example', domain: 'metrobigprint.com', title: 'Metro OOH & Large Format Print Hub' },
+      { email: 'info@titan-signage.example', domain: 'titan-signage.de', title: 'Titan Architectural Signage & Billboards' },
+      { email: 'studio@prism-ooh.example', domain: 'prism-ooh.com', title: 'Prism Urban Display & Ultra-Print Media' }
+    ]
+  }
+];
+
 // B2B AGENCY CASE STUDIES & SOCIAL PROOF
 const b2bCaseStudies = [
   {
@@ -195,9 +303,11 @@ export default function AIAgentsShowcase() {
   const [activeModalAgent, setActiveModalAgent] = useState(null);
 
   // =========================================================
-  // ACTIVE N8N WEBHOOK ENDPOINTS (LOCALHOST:5678 GROQ ENGINE)
+  // ACTIVE N8N WEBHOOK ENDPOINTS (RAILWAY + LOCALHOST GROQ)
   // =========================================================
+  const N8N_AURELIA_PULSE_WEBHOOK = 'https://n8n-production-720dcf20.up.railway.app/webhook/aurelia-pulse';
   const N8N_B2B_CONCIERGE_WEBHOOK = 'https://n8n-production-720dcf20.up.railway.app/webhook/v10-concierge-webhook';
+  const N8N_LEAD_HUNTER_INTAKE_WEBHOOK = 'https://n8n-production-720dcf20.up.railway.app/webhook/v10-b2b-intake';
   const N8N_FLOATING_CHAT_WEBHOOK = 'http://localhost:5678/webhook/237acb8c-83c6-4f97-a800-1426e24e7993/chat';
   const N8N_MOCKUP_WEBHOOK = 'http://localhost:5678/webhook/mockup-engine';
   const N8N_SEO_WEBHOOK = 'http://localhost:5678/webhook/seo-auditor';
@@ -279,7 +389,7 @@ export default function AIAgentsShowcase() {
   const [bookingStatus, setBookingStatus] = useState('Calendar Synced & Live');
 
   // =========================================================
-  // 6. NEW: LIVE V10 B2B WEBHOOK & MULTILINGUAL SCOPER STUDIO
+  // 6. LIVE V10 B2B WEBHOOK & MULTILINGUAL SCOPER STUDIO
   // =========================================================
   const [isB2BWebhookStudioOpen, setIsB2BWebhookStudioOpen] = useState(false);
   const [b2bLeadName, setB2bLeadName] = useState('Apex Luxury Aviation Holdings');
@@ -291,6 +401,42 @@ export default function AIAgentsShowcase() {
   const [b2bAgentReply, setB2bAgentReply] = useState('');
   const [b2bWhatsappLink, setB2bWhatsappLink] = useState('https://wa.me/381648201496');
   const [b2bStatus, setB2bStatus] = useState('Connected to localhost:5678 (Groq openai/gpt-oss-120b)');
+
+  // =========================================================
+  // 7. V10 AUTONOMOUS B2B LEAD HUNTER & 20:00H CLOSER STUDIO
+  // =========================================================
+  const [isLeadHunterStudioOpen, setIsLeadHunterStudioOpen] = useState(false);
+  const [hunterCityIdx, setHunterCityIdx] = useState(0);
+  const [hunterIndIdx, setHunterIndIdx] = useState(0);
+  const [hunterLangMode, setHunterLangMode] = useState('Auto-Detect (EN / DE)');
+  const [hunterTab, setHunterTab] = useState('pipeline'); // 'pipeline' | 'email' | 'report20h'
+  const [isHunterRunning, setIsHunterRunning] = useState(false);
+  const [hunterSimulated, setHunterSimulated] = useState(true);
+  const [hunterStatus, setHunterStatus] = useState('5-Engine Scraper + 20:00 CET Autonomous Closer Ready');
+
+  // =========================================================
+  // 8. NEW: AURELIA PULSE — 24/7 AI CONCIERGE & BOOKING BAR
+  // =========================================================
+  const [isAureliaStudioOpen, setIsAureliaStudioOpen] = useState(false);
+  const [isAureliaBarVisible, setIsAureliaBarVisible] = useState(true);
+  const [isAureliaDrawerOpen, setIsAureliaDrawerOpen] = useState(false);
+  const [aureliaService, setAureliaService] = useState(AURELIA_SERVICES[0]);
+  const [aureliaDate, setAureliaDate] = useState(() => {
+    const tomorrow = new Date(Date.now() + 86400000);
+    return tomorrow.toISOString().split('T')[0];
+  });
+  const [aureliaSlot, setAureliaSlot] = useState('13:00 CET');
+  const [aureliaName, setAureliaName] = useState('');
+  const [aureliaContact, setAureliaContact] = useState('');
+  const [aureliaInput, setAureliaInput] = useState('');
+  const [isAureliaSending, setIsAureliaSending] = useState(false);
+  const [aureliaStatus, setAureliaStatus] = useState('Live Railway Webhook Connected (/webhook/aurelia-pulse)');
+  const [aureliaMessages, setAureliaMessages] = useState([
+    {
+      role: 'assistant',
+      text: 'Welcome to Aurelia Pulse VIP Desk. Select your preferred service, date, and CET slot, then ask any question in English, Serbian, German, or any language.'
+    }
+  ]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -307,6 +453,9 @@ export default function AIAgentsShowcase() {
         setIsAlertStudioOpen(false);
         setIsBookingStudioOpen(false);
         setIsB2BWebhookStudioOpen(false);
+        setIsLeadHunterStudioOpen(false);
+        setIsAureliaStudioOpen(false);
+        setIsAureliaDrawerOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -437,7 +586,7 @@ export default function AIAgentsShowcase() {
     }
   };
 
-  // HANDLER 4: Instant Viber / Telegram / WhatsApp Alert Simulator (Connected to V10 B2B Webhook)
+  // HANDLER 4: Instant Viber / Telegram / WhatsApp Alert Simulator
   const handleSimulateSaleAlert = async (e) => {
     e.preventDefault();
     setIsSendingAlert(true);
@@ -473,7 +622,7 @@ export default function AIAgentsShowcase() {
     }
   };
 
-  // HANDLER 5: Autonomous Calendar & Appointment Setter (Connected to V10 B2B Webhook)
+  // HANDLER 5: Autonomous Calendar & Appointment Setter
   const handleConfirmAppointment = async (e) => {
     e.preventDefault();
     setIsBookingSubmitting(true);
@@ -550,6 +699,138 @@ export default function AIAgentsShowcase() {
     }
   };
 
+  // HANDLER 7: V10 Autonomous B2B Lead Hunter & 20:00h Closer Interactive Simulation
+  const handleRunLeadHunterDemo = (e) => {
+    e.preventDefault();
+    setIsHunterRunning(true);
+    const chosenCity = LEAD_HUNTER_SAMPLE_CITIES[hunterCityIdx];
+    setHunterStatus(`Scanning ${chosenCity.city} (${chosenCity.country}) across 5 Search Engines...`);
+
+    setTimeout(() => {
+      setIsHunterRunning(false);
+      setHunterSimulated(true);
+      setHunterStatus(`✓ Verified B2B Leads Synced to Google Sheets (${chosenCity.city}) • Queued for 12-Min Drip & 20:00 CET Report`);
+    }, 850);
+  };
+
+  // HANDLER 8: Aurelia Pulse 24/7 Booking Bar & Live Multilingual Desk
+  const handleAureliaSend = async (e, customPrompt) => {
+    if (e) e.preventDefault();
+    const messageToSend = (customPrompt !== undefined ? customPrompt : aureliaInput).trim();
+    if (!messageToSend || isAureliaSending) return;
+
+    const clientName = aureliaName.trim() || 'VIP Visitor';
+    const rawContact = aureliaContact.trim();
+    const isEmail = rawContact.includes('@');
+
+    setAureliaMessages((prev) => [...prev, { role: 'user', text: messageToSend }]);
+    if (customPrompt === undefined) setAureliaInput('');
+    setIsAureliaSending(true);
+    setAureliaStatus('Dispatching to Railway n8n + Mobile Push Alarm...');
+
+    const payload = {
+      brandName: 'Aurelia Pulse VIP Desk',
+      name: clientName,
+      email: isEmail ? rawContact : 'vip-lead@aitoolsprosmart.com',
+      phone: !isEmail && rawContact ? rawContact : '+381648201496',
+      category: 'Direct Website Booking',
+      item: aureliaService,
+      budget: 'VIP Priority',
+      date: `${aureliaDate} at ${aureliaSlot}`,
+      pageUrl: typeof window !== 'undefined' ? window.location.href : 'https://aitoolsprosmart.com/ai-agents',
+      message: messageToSend
+    };
+
+    try {
+      const res = await fetch(N8N_AURELIA_PULSE_WEBHOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      const replyText =
+        data?.reply ||
+        data?.agent_reply ||
+        data?.output ||
+        data?.message ||
+        `Thank you, ${clientName}. Your booking inquiry for "${aureliaService}" on ${aureliaDate} at ${aureliaSlot} has been logged and an instant alert has been sent to our manager.`;
+
+      setAureliaMessages((prev) => [...prev, { role: 'assistant', text: replyText }]);
+      setAureliaStatus(`✓ Live Reply & Mobile Push Dispatched (${aureliaDate} @ ${aureliaSlot})`);
+    } catch (err) {
+      setAureliaMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          text: `Thank you, ${clientName}. Your slot request for "${aureliaService}" (${aureliaDate} at ${aureliaSlot}) is noted. For immediate VIP priority, connect on WhatsApp (+381648201496).`
+        }
+      ]);
+      setAureliaStatus('Fallback Confirmation Active');
+    } finally {
+      setIsAureliaSending(false);
+    }
+  };
+
+  const selectedHunterCity = LEAD_HUNTER_SAMPLE_CITIES[hunterCityIdx] || LEAD_HUNTER_SAMPLE_CITIES[0];
+  const selectedHunterInd = LEAD_HUNTER_INDUSTRIES[hunterIndIdx] || LEAD_HUNTER_INDUSTRIES[0];
+  const effectiveHunterLang =
+    hunterLangMode === 'German (DE)'
+      ? 'German'
+      : hunterLangMode === 'English (EN)'
+      ? 'English'
+      : selectedHunterCity.lang;
+
+  const sampleCompanyTitle = selectedHunterInd.sampleLeads[0]?.title || 'Executive Partner Studio';
+  const isPartnerPitch = selectedHunterInd.mode.includes('PARTNERSHIP');
+
+  const generatedSampleEmailSubject =
+    effectiveHunterLang === 'German'
+      ? isPartnerPitch
+        ? `B2B & White-Label Partnerschaft für ${sampleCompanyTitle} | AI Agents, 150MP Mockups & Neural PDF`
+        : `Maßgeschneiderte AI-Automatisierung & 150MP Visual-Systeme für ${sampleCompanyTitle}`
+      : isPartnerPitch
+      ? `B2B & White-Label Partnership with ${sampleCompanyTitle} | AI Agents, 150MP Mockups & UI/UX`
+      : `24/7 AI Automation & 150MP Visual Infrastructure for ${sampleCompanyTitle}`;
+
+  const generatedSampleEmailBody =
+    effectiveHunterLang === 'German'
+      ? `Guten Tag liebes Team von ${sampleCompanyTitle},
+
+ich bin auf Ihre Arbeit in ${selectedHunterCity.city} (${selectedHunterCity.country}) aufmerksam geworden und möchte Ihnen eine direkte B2B- & White-Label-Kooperation vorschlagen.
+
+Empfohlener Fokus für Ihr Profil: ${selectedHunterInd.offer}.
+
+Unser gesamtes sofort verfügbares B2B-Ökosystem (100 % IP-Übertragung, keine monatlichen SaaS-Gebühren):
+- White-Label AI Agents & Turnkey Luxury Web Kits ($349 / $1,490 Buyout): https://aitoolsprosmart.com/ai-agents
+- 150MP Master Mockups (Wall, Billboard & Executive Glass Plaques): https://aitoolsprosmart.com/standard-mocup
+- UI/UX Design & V10 Vault (inkl. Master .PSD-Dateien): https://aitoolsprosmart.com/ui-ux/vault
+- Massive Neural PDF Translator (bis zu 1.000 Seiten, 100 % identisches Layout): https://aitoolsprosmart.com/pdf-translator
+- 150MP Ultra-Print & 4K UHD Commercial Stock (kostenloses Testpaket): https://aitoolsprosmart.com/stock
+
+Hätten Sie diese Woche 10 Minuten Zeit für einen kurzen Austausch zu einer Partnerschaft?
+
+Beste Grüße
+Goran Damnjanovic
+Founder | AI Tools Pro Smart (Visionary Factory V10)`
+      : `Hello ${sampleCompanyTitle} Team,
+
+I recently reviewed your work in ${selectedHunterCity.city} (${selectedHunterCity.country}) and wanted to reach out regarding a direct B2B & White-Label partnership.
+
+Top recommended fit for your operations: ${selectedHunterInd.offer}.
+
+Explore our complete live B2B commercial ecosystem (one-time buyout, zero monthly SaaS fees):
+- Custom White-Label AI Agents & Turnkey Luxury Web Kits ($349 / $1,490 Buyout): https://aitoolsprosmart.com/ai-agents
+- 150MP Master Mockups (Architectural Wall, Billboard & Glass Plaques): https://aitoolsprosmart.com/standard-mocup
+- UI/UX Design & V10 Vault (with open Master .PSD source files): https://aitoolsprosmart.com/ui-ux/vault
+- Massive Neural PDF Translator (up to 1,000 pages, 100% intact layout — 5 pages free): https://aitoolsprosmart.com/pdf-translator
+- 150MP Ultra-Print & 4K UHD Commercial Stock (free 150MP sample): https://aitoolsprosmart.com/stock
+
+Would you be open to a quick conversation regarding an agency/B2B partnership or testing a complimentary sample?
+
+Best regards,
+Goran Damnjanovic
+Founder | AI Tools Pro Smart (Visionary Factory V10)`;
+
   const copyToClipboard = (text) => {
     if (!text) return;
     navigator.clipboard.writeText(text);
@@ -614,10 +895,567 @@ export default function AIAgentsShowcase() {
   };
 
   return (
-    <div className="min-h-screen bg-[#02040a] text-white py-24 px-4 sm:px-6 font-sans relative z-10">
+    <div className="min-h-screen bg-[#02040a] text-white py-24 pb-36 px-4 sm:px-6 font-sans relative z-10">
 
       {/* ========================================================= */}
-      {/* 6. NEW: LIVE V10 B2B WEBHOOK & MULTILINGUAL SCOPER MODAL  */}
+      {/* 8. NEW: AURELIA PULSE — 24/7 AI CONCIERGE & BOOKING MODAL */}
+      {/* ========================================================= */}
+      {isAureliaStudioOpen && (
+        <div
+          onClick={() => setIsAureliaStudioOpen(false)}
+          className="fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-3 sm:p-6 backdrop-blur-xl overflow-y-auto pt-20"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-[#070a14] border-2 border-[#eab308]/50 rounded-3xl max-w-6xl w-full relative shadow-[0_0_95px_rgba(234,179,8,0.22)] p-5 sm:p-8 my-auto"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#facc15] to-[#ca8a04] flex items-center justify-center font-black text-black shadow-lg shadow-amber-500/25">
+                  <Sparkles size={22} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-lg sm:text-xl font-black uppercase tracking-tight text-white">
+                      Aurelia Pulse — 24/7 AI Concierge & Booking Bar
+                    </h2>
+                    <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded-full">
+                      ● LIVE RAILWAY N8N + GROQ
+                    </span>
+                    <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-400/40 rounded-full">
+                      $199 COMMERCIAL KIT / $2,900 BUYOUT
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Active Webhook: <code className="text-amber-300">{N8N_AURELIA_PULSE_WEBHOOK}</code> • Multilingual AI + Instant Phone Push Alarm
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsAureliaStudioOpen(false)}
+                className="relative z-50 text-white bg-red-500/20 hover:bg-red-500 border border-red-500/40 p-2.5 rounded-full transition-all cursor-pointer"
+              >
+                <X size={22} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              {/* LEFT BOOKING BAR & CLIENT CONFIG */}
+              <form onSubmit={(e) => handleAureliaSend(e)} className="lg:col-span-5 space-y-4 bg-black/60 border border-white/10 rounded-2xl p-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+                      1. Your Name
+                    </label>
+                    <input
+                      type="text"
+                      value={aureliaName}
+                      onChange={(e) => setAureliaName(e.target.value)}
+                      placeholder="e.g. Goran / Client Name"
+                      className="w-full bg-[#05070f] border border-white/15 rounded-xl p-2.5 text-xs text-white focus:border-[#facc15] focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+                      2. Phone / WhatsApp / Email
+                    </label>
+                    <input
+                      type="text"
+                      value={aureliaContact}
+                      onChange={(e) => setAureliaContact(e.target.value)}
+                      placeholder="+38164... or client@company.com"
+                      className="w-full bg-[#05070f] border border-white/15 rounded-xl p-2.5 text-xs text-white focus:border-[#facc15] focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+                    3. Service on Booking Bar
+                  </label>
+                  <select
+                    value={aureliaService}
+                    onChange={(e) => setAureliaService(e.target.value)}
+                    className="w-full bg-[#05070f] border border-white/15 rounded-xl p-2.5 text-xs text-amber-300 font-bold focus:border-[#facc15] focus:outline-none"
+                  >
+                    {AURELIA_SERVICES.map((srv) => (
+                      <option key={srv} value={srv}>{srv}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+                      4. Preferred Date
+                    </label>
+                    <input
+                      type="date"
+                      value={aureliaDate}
+                      onChange={(e) => setAureliaDate(e.target.value)}
+                      className="w-full bg-[#05070f] border border-white/15 rounded-xl p-2.5 text-xs text-white focus:border-[#facc15] focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+                      5. CET Time Slot
+                    </label>
+                    <select
+                      value={aureliaSlot}
+                      onChange={(e) => setAureliaSlot(e.target.value)}
+                      className="w-full bg-[#05070f] border border-white/15 rounded-xl p-2.5 text-xs text-emerald-400 font-bold focus:border-[#facc15] focus:outline-none"
+                    >
+                      {AVAILABLE_TIME_SLOTS.map((slot) => (
+                        <option key={slot} value={slot}>{slot}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                      6. Ask AI or Confirm Slot (Any Language)
+                    </label>
+                    <span className="text-[10px] text-amber-400 font-bold">SR / EN / DE / FR+</span>
+                  </div>
+                  <textarea
+                    rows="3"
+                    value={aureliaInput}
+                    onChange={(e) => setAureliaInput(e.target.value)}
+                    placeholder="Write in any language to book or ask..."
+                    className="w-full bg-[#05070f] border border-white/15 rounded-xl p-2.5 text-xs text-white focus:border-[#facc15] focus:outline-none resize-none"
+                  />
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setAureliaInput('Dobar dan, želim da potvrdim ovaj termin u 13h i zanima me kako funkcioniše Aurelia Pulse paket za naš sajt?')}
+                      className="text-[10px] bg-white/5 hover:bg-white/10 text-slate-300 px-2.5 py-1 rounded border border-white/10 transition cursor-pointer"
+                    >
+                      🇷🇸 Srpski Test
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAureliaInput('Hello, I want to lock in this slot and get the $199 Aurelia Pulse AI Booking Bar installed on our company website.')}
+                      className="text-[10px] bg-white/5 hover:bg-white/10 text-slate-300 px-2.5 py-1 rounded border border-white/10 transition cursor-pointer"
+                    >
+                      🇬🇧 English Test
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAureliaInput('Hallo, ist dieser Termin noch frei? Wir möchten die Aurelia Pulse AI-Buchungsleiste für unsere Agentur erwerben.')}
+                      className="text-[10px] bg-white/5 hover:bg-white/10 text-slate-300 px-2.5 py-1 rounded border border-white/10 transition cursor-pointer"
+                    >
+                      🇩🇪 Deutsch Test
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isAureliaSending}
+                  className="w-full py-3.5 bg-gradient-to-r from-[#facc15] to-[#eab308] hover:from-amber-300 hover:to-amber-400 text-black font-black uppercase tracking-widest rounded-xl text-xs shadow-lg shadow-amber-500/25 transition-all cursor-pointer"
+                >
+                  {isAureliaSending ? 'Sending to Aurelia Pulse n8n...' : '✦ Ask AI / Book Slot Now ↗'}
+                </button>
+
+                <a
+                  href={`https://wa.me/381648201496?text=${encodeURIComponent('Hi Goran, I want to get the Aurelia Pulse — 24/7 AI Concierge & Booking Bar ($199 Commercial Kit / $2,900 White-Label Buyout).')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full text-center py-3 bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 font-black uppercase tracking-wider rounded-xl text-[11px] transition"
+                >
+                  💬 Get $199 Kit or Agency White-Label on WhatsApp
+                </a>
+              </form>
+
+              {/* RIGHT LIVE AURELIA PULSE DESK CONVERSATION */}
+              <div className="lg:col-span-7 bg-[#090c15] border border-[#eab308]/30 rounded-2xl p-5 min-h-[490px] flex flex-col justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2.5 h-2.5 rounded-full ${isAureliaSending ? 'bg-amber-400 animate-ping' : 'bg-emerald-400'}`}></span>
+                    <span className="text-xs font-black uppercase tracking-wider text-[#facc15]">✦ AURELIA PULSE LIVE DESK</span>
+                  </div>
+                  <span className="text-[10px] font-mono text-slate-400">{aureliaStatus}</span>
+                </div>
+
+                <div className="flex-1 my-4 space-y-3 max-h-[340px] overflow-y-auto pr-2">
+                  {aureliaMessages.map((msg, idx) => (
+                    <div
+                      key={idx}
+                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div
+                        className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs leading-relaxed ${
+                          msg.role === 'user'
+                            ? 'bg-gradient-to-r from-[#facc15] to-[#eab308] text-black font-bold shadow-md'
+                            : 'bg-[#121726] border border-white/10 text-slate-200'
+                        }`}
+                      >
+                        {msg.text}
+                      </div>
+                    </div>
+                  ))}
+                  {isAureliaSending && (
+                    <div className="flex justify-start">
+                      <div className="bg-[#121726] border border-amber-500/30 text-amber-300 rounded-2xl px-4 py-2.5 text-xs font-semibold animate-pulse">
+                        Aurelia Pulse is processing your booking & notifying mobile desk...
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="border-t border-white/10 pt-3 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
+                  <span>Selected Bar State: <strong className="text-white">{aureliaService}</strong> • <strong className="text-amber-300">{aureliaDate} @ {aureliaSlot}</strong></span>
+                  <span className="text-emerald-400 font-bold">6-Node n8n + Instant Mobile Alert</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* 7. V10 AUTONOMOUS B2B LEAD HUNTER & 20:00H STUDIO         */}
+      {/* ========================================================= */}
+      {isLeadHunterStudioOpen && (
+        <div
+          onClick={() => setIsLeadHunterStudioOpen(false)}
+          className="fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-3 sm:p-6 backdrop-blur-xl overflow-y-auto pt-20"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-[#060b16] border-2 border-cyan-400/50 rounded-3xl max-w-6xl w-full relative shadow-[0_0_95px_rgba(6,182,212,0.25)] p-5 sm:p-8 my-auto"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan-400 to-emerald-500 flex items-center justify-center font-black text-black shadow-lg shadow-cyan-500/20">
+                  <Crosshair size={22} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-lg sm:text-xl font-black uppercase tracking-tight text-white">
+                      V10 Autonomous B2B Lead Hunter & 20:00 CET Closer
+                    </h2>
+                    <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 rounded-full">
+                      170 CITIES • 14 B2B NICHES • WHITE-LABEL ($5,500 – $9,500)
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    Python V5 5-Engine Scraper + Google Sheets Cloud CRM + Railway n8n 12-Min Drip & Exact 20:00&rarr;20:00 CET Daily Report
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsLeadHunterStudioOpen(false)}
+                className="relative z-50 text-white bg-red-500/20 hover:bg-red-500 border border-red-500/40 p-2.5 rounded-full transition-all cursor-pointer"
+              >
+                <X size={22} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              {/* LEFT CONFIGURATION PANEL */}
+              <form onSubmit={handleRunLeadHunterDemo} className="lg:col-span-4 space-y-4 bg-black/60 border border-white/10 rounded-2xl p-5">
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+1. Target Global City (170-City Database)
+                  </label>
+                  <select
+                    value={hunterCityIdx}
+                    onChange={(e) => setHunterCityIdx(Number(e.target.value))}
+                    className="w-full bg-[#05070f] border border-white/15 rounded-xl p-2.5 text-xs text-white focus:border-cyan-400 focus:outline-none"
+                  >
+                    {LEAD_HUNTER_SAMPLE_CITIES.map((c, idx) => (
+                      <option key={c.label} value={idx}>{c.label}</option>
+                    ))}
+                  </select>
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Includes USA (50), Germany (28), Netherlands (16), Denmark (12) & 64 Global Wealth Hubs.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+2. Target B2B Industry (14 Verticals)
+                  </label>
+                  <select
+                    value={hunterIndIdx}
+                    onChange={(e) => setHunterIndIdx(Number(e.target.value))}
+                    className="w-full bg-[#05070f] border border-white/15 rounded-xl p-2.5 text-xs text-white focus:border-cyan-400 focus:outline-none"
+                  >
+                    {LEAD_HUNTER_INDUSTRIES.map((ind, idx) => (
+                      <option key={ind.name} value={idx}>{ind.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+3. AI Outreach Language
+                    </label>
+                    <select
+                      value={hunterLangMode}
+                      onChange={(e) => setHunterLangMode(e.target.value)}
+                      className="w-full bg-[#05070f] border border-white/15 rounded-xl p-2.5 text-xs text-cyan-300 font-bold focus:border-cyan-400 focus:outline-none"
+                    >
+                      <option value="Auto-Detect (EN / DE)">Auto (EN / DE)</option>
+                      <option value="English (EN)">English Only</option>
+                      <option value="German (DE)">Deutsch (DACH)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+4. Drip Cadence
+                    </label>
+                    <div className="w-full bg-[#05070f] border border-emerald-500/30 rounded-xl p-2.5 text-[11px] font-black text-emerald-400 text-center">
+                      Every 12m (55/Day)
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-cyan-950/20 border border-cyan-500/30 rounded-xl p-3 space-y-1.5 text-[11px] text-slate-300">
+                  <div className="font-black uppercase text-cyan-400 tracking-wider text-[10px]">
+                    3-Flow Autonomous Architecture:
+                  </div>
+                  <div>• <strong>Flow 1:</strong> Python V5 &rarr; Webhook (`{N8N_LEAD_HUNTER_INTAKE_WEBHOOK.split('/webhook')[1]}`) &rarr; Google Sheets</div>
+                  <div>• <strong>Flow 2:</strong> 09:00–19:48 CET Drip Closer (`READY_FOR_AGENT` &rarr; `SENT`)</div>
+                  <div>• <strong>Flow 3:</strong> Exact <strong>20:00 CET</strong> 24h Executive HTML Report</div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isHunterRunning}
+                  className="w-full py-3.5 bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-black font-black uppercase tracking-widest rounded-xl text-xs shadow-lg shadow-cyan-500/25 transition-all cursor-pointer"
+                >
+                  {isHunterRunning ? 'Scanning 5 Search Engines...' : '🎯 Simulate City Hunt + 20:00h Engine'}
+                </button>
+
+                <a
+                  href={`https://wa.me/381648201496?text=${encodeURIComponent('Hi Goran, I want to acquire the V10 Autonomous B2B Lead Hunter & 20:00h Closer Turnkey System ($5,500 - $9,500).')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full text-center py-3 bg-white/10 hover:bg-white/20 border border-white/15 text-white font-black uppercase tracking-wider rounded-xl text-[11px] transition"
+                >
+                  💬 Acquire Full Python + n8n Buyout on WhatsApp
+                </a>
+              </form>
+
+              {/* RIGHT 3-TAB LIVE PREVIEW PANEL */}
+              <div className="lg:col-span-8 bg-black/60 border border-white/10 rounded-2xl p-5 min-h-[490px] flex flex-col justify-between">
+                <div>
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3 mb-4">
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2.5 h-2.5 rounded-full ${isHunterRunning ? 'bg-amber-400 animate-ping' : 'bg-emerald-400'}`}></span>
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-300">{hunterStatus}</span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setHunterTab('pipeline')}
+                        className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition cursor-pointer ${
+                          hunterTab === 'pipeline'
+                            ? 'bg-cyan-400 text-black'
+                            : 'bg-white/5 text-slate-300 hover:bg-white/10'
+                        }`}
+                      >
+1. Scraper & Sheets CRM
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setHunterTab('email')}
+                        className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition cursor-pointer ${
+                          hunterTab === 'email'
+                            ? 'bg-emerald-400 text-black'
+                            : 'bg-white/5 text-slate-300 hover:bg-white/10'
+                        }`}
+                      >
+2. AI Email ({effectiveHunterLang})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setHunterTab('report20h')}
+                        className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition cursor-pointer ${
+                          hunterTab === 'report20h'
+                            ? 'bg-amber-400 text-black'
+                            : 'bg-white/5 text-slate-300 hover:bg-white/10'
+                        }`}
+                      >
+3. 20:00 CET Report
+                      </button>
+                    </div>
+                  </div>
+
+                  {isHunterRunning ? (
+                    <div className="py-20 text-center">
+                      <div className="inline-block w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mb-4"></div>
+                      <h4 className="text-sm font-bold uppercase tracking-widest text-white">
+                        Crawling DDGS + Brave + Bing Base64 + DDG + Mojeek...
+                      </h4>
+                      <p className="text-xs text-slate-400 mt-1">
+                        Filtering duplicates, decoding ROT13 emails, and syncing English schema to Google Sheets
+                      </p>
+                    </div>
+                  ) : hunterSimulated && hunterTab === 'pipeline' ? (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div className="bg-[#081022] border border-cyan-500/30 rounded-xl p-3 text-center">
+                          <div className="text-[10px] uppercase font-bold text-slate-400">Verified Database</div>
+                          <div className="text-xl font-black text-cyan-400 mt-0.5">2,321+</div>
+                          <div className="text-[10px] text-slate-500">Clean B2B Leads</div>
+                        </div>
+                        <div className="bg-[#081022] border border-emerald-500/30 rounded-xl p-3 text-center">
+                          <div className="text-[10px] uppercase font-bold text-slate-400">Daily Drip Speed</div>
+                          <div className="text-xl font-black text-emerald-400 mt-0.5">55 / Day</div>
+                          <div className="text-[10px] text-slate-500">09:00–19:48 CET</div>
+                        </div>
+                        <div className="bg-[#081022] border border-amber-500/30 rounded-xl p-3 text-center">
+                          <div className="text-[10px] uppercase font-bold text-slate-400">Partnership Mode</div>
+                          <div className="text-xs font-black text-amber-400 mt-2">{selectedHunterInd.mode}</div>
+                          <div className="text-[10px] text-slate-500 mt-0.5">Auto-Detected</div>
+                        </div>
+                        <div className="bg-[#081022] border border-indigo-500/30 rounded-xl p-3 text-center">
+                          <div className="text-[10px] uppercase font-bold text-slate-400">Executive Report</div>
+                          <div className="text-xl font-black text-indigo-400 mt-0.5">20:00 CET</div>
+                          <div className="text-[10px] text-slate-500">24h Window Sync</div>
+                        </div>
+                      </div>
+
+                      <div className="bg-[#070c18] border border-white/10 rounded-2xl p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-xs font-black uppercase tracking-wider text-cyan-300">
+                            Live Google Sheets CRM Queue Preview ({selectedHunterCity.city}, {selectedHunterCity.country})
+                          </span>
+                          <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
+                            100% English Schema + TXT/CSV Export
+                          </span>
+                        </div>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left border-collapse text-xs">
+                            <thead>
+                              <tr className="border-b border-white/10 text-[10px] uppercase text-slate-400">
+                                <th className="py-2 pr-3">Corporate Email</th>
+                                <th className="py-2 pr-3">Company & Location</th>
+                                <th className="py-2 pr-3">Mode / Lang</th>
+                                <th className="py-2">CRM Status</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5 text-slate-200">
+                              {selectedHunterInd.sampleLeads.map((ld, idx) => (
+                                <tr key={ld.email}>
+                                  <td className="py-2.5 pr-3 font-mono text-cyan-300">{ld.email}</td>
+                                  <td className="py-2.5 pr-3">
+                                    <div className="font-bold text-white">{ld.title}</div>
+                                    <div className="text-[10px] text-slate-400">{selectedHunterCity.city}, {selectedHunterCity.country} • {ld.domain}</div>
+                                  </td>
+                                  <td className="py-2.5 pr-3 text-[11px]">
+                                    <span className="text-amber-300 font-semibold">{effectiveHunterLang}</span> • {isPartnerPitch ? 'White-Label' : 'Direct B2B'}
+                                  </td>
+                                  <td className="py-2.5">
+                                    {idx === 0 ? (
+                                      <span className="px-2 py-0.5 text-[10px] font-black uppercase rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                                        SENT ✓
+                                      </span>
+                                    ) : (
+                                      <span className="px-2 py-0.5 text-[10px] font-black uppercase rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                                        READY_FOR_AGENT
+                                      </span>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  ) : hunterTab === 'email' ? (
+                    <div className="bg-[#070c18] border border-emerald-500/30 rounded-2xl p-4 space-y-3">
+                      <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
+                        <div>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 block">
+                            Autonomous B2B & Partnership Email Composer ({effectiveHunterLang})
+                          </span>
+                          <span className="text-xs font-bold text-white">Subject: {generatedSampleEmailSubject}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard(`Subject: ${generatedSampleEmailSubject}\n\n${generatedSampleEmailBody}`)}
+                          className="text-[10px] bg-white/10 hover:bg-white/20 px-2.5 py-1.5 rounded-lg text-white font-bold flex items-center gap-1 cursor-pointer"
+                        >
+                          <Copy size={12} /> Copy Email
+                        </button>
+                      </div>
+                      <pre className="text-xs text-slate-200 whitespace-pre-wrap font-sans leading-relaxed max-h-[290px] overflow-y-auto pr-2">
+                        {generatedSampleEmailBody}
+                      </pre>
+                    </div>
+                  ) : (
+                    <div className="bg-[#091122] border border-amber-500/40 rounded-2xl p-5 space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
+                        <div>
+                          <div className="text-xs font-black uppercase tracking-wider text-amber-400">
+                            📊 V10 AUTONOMOUS AGENT — DAILY 20:00 CET EXECUTIVE REPORT
+                          </div>
+                          <div className="text-[11px] text-slate-400">
+                            Exact 24h Window: Yesterday 20:00 CET &rarr; Today 20:00 CET • Delivered Automatically to Owner Inbox
+                          </div>
+                        </div>
+                        <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                          CRON: 0 20 * * *
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center">
+                        <div className="bg-black/50 border border-white/10 rounded-xl p-2.5">
+                          <div className="text-[10px] text-slate-400 uppercase font-bold">Sent (20h–20h)</div>
+                          <div className="text-lg font-black text-emerald-400">55 Offers</div>
+                        </div>
+                        <div className="bg-black/50 border border-white/10 rounded-xl p-2.5">
+                          <div className="text-[10px] text-slate-400 uppercase font-bold">Agency Pitches</div>
+                          <div className="text-lg font-black text-cyan-400">24 Studios</div>
+                        </div>
+                        <div className="bg-black/50 border border-white/10 rounded-xl p-2.5">
+                          <div className="text-[10px] text-slate-400 uppercase font-bold">New Scraped</div>
+                          <div className="text-lg font-black text-amber-400">+180 Leads</div>
+                        </div>
+                        <div className="bg-black/50 border border-white/10 rounded-xl p-2.5">
+                          <div className="text-[10px] text-slate-400 uppercase font-bold">Queue Remaining</div>
+                          <div className="text-lg font-black text-white">2,266 Ready</div>
+                        </div>
+                      </div>
+
+                      <div className="bg-black/50 border border-white/10 rounded-xl p-3 text-[11px] text-slate-300 space-y-1">
+                        <div className="font-bold text-white uppercase text-[10px] tracking-wider mb-1">
+                          Included Ecosystem Routes Verified in Every Outbound Email:
+                        </div>
+                        <div>• <code className="text-cyan-300">/standard-mocup</code> (150MP Wall, Billboard & Glass Plaque Mockups)</div>
+                        <div>• <code className="text-cyan-300">/ui-ux/vault</code> (Luxury Retail, Culinary UI & Master .PSD Suites)</div>
+                        <div>• <code className="text-cyan-300">/pdf-translator</code> (1,000-Page Neural DTP Layout Translator)</div>
+                        <div>• <code className="text-cyan-300">/stock</code> &amp; <code className="text-cyan-300">/ai-agents</code> (150MP Stock &amp; White-Label AI Buyouts)</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="border-t border-white/10 pt-3 mt-4 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500">
+                  <span>Deliverables: <code className="text-slate-300">V10_LEAD_HUNTER-v5.py</code> + <code className="text-slate-300">V10_N8N_AUTONOMOUS_B2B_ENGINE_20H.json</code> + CRM Schema</span>
+                  <span className="text-cyan-400 font-bold">100% Turnkey White-Label Ownership ($5,500 – $9,500)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* 6. LIVE V10 B2B WEBHOOK & MULTILINGUAL SCOPER MODAL       */}
       {/* ========================================================= */}
       {isB2BWebhookStudioOpen && (
         <div
@@ -661,7 +1499,7 @@ export default function AIAgentsShowcase() {
               <form onSubmit={handleB2BWebhookSubmit} className="lg:col-span-5 space-y-4 bg-black/60 border border-white/10 rounded-2xl p-5">
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
-                    1. Name / Company
+1. Name / Company
                   </label>
                   <input
                     type="text"
@@ -674,7 +1512,7 @@ export default function AIAgentsShowcase() {
 
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
-                    2. Corporate Email or WhatsApp Phone
+2. Corporate Email or WhatsApp Phone
                   </label>
                   <input
                     type="text"
@@ -688,7 +1526,7 @@ export default function AIAgentsShowcase() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
-                      3. Ecosystem Category
+3. Ecosystem Category
                     </label>
                     <select
                       value={b2bLeadCategory}
@@ -705,7 +1543,7 @@ export default function AIAgentsShowcase() {
 
                   <div>
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
-                      4. Selected License / Package
+4. Selected License / Package
                     </label>
                     <select
                       value={b2bLeadItem}
@@ -723,7 +1561,7 @@ export default function AIAgentsShowcase() {
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
-                      5. Client Inquiry (Write in ANY Language)
+5. Client Inquiry (Write in ANY Language)
                     </label>
                     <span className="text-[10px] text-amber-400 font-bold">Auto-Detects Language</span>
                   </div>
@@ -892,7 +1730,7 @@ export default function AIAgentsShowcase() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
-                      1. Executive / Client Name
+1. Executive / Client Name
                     </label>
                     <input
                       type="text"
@@ -904,7 +1742,7 @@ export default function AIAgentsShowcase() {
                   </div>
                   <div>
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
-                      2. Corporate Email
+2. Corporate Email
                     </label>
                     <input
                       type="email"
@@ -918,7 +1756,7 @@ export default function AIAgentsShowcase() {
 
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
-                    3. Consultation Topic / System of Interest
+3. Consultation Topic / System of Interest
                   </label>
                   <select
                     value={bookingTopic}
@@ -926,6 +1764,7 @@ export default function AIAgentsShowcase() {
                     className="w-full bg-[#05070f] border border-white/15 rounded-xl p-2.5 text-xs text-white focus:border-cyan-400 focus:outline-none"
                   >
                     <option value="Full White-Label AI System Buyout & Custom Deployment">Full White-Label AI System Buyout ($3,000–$8,500)</option>
+                    <option value="V10 Autonomous B2B Lead Hunter & 20:00h Closer Buyout">V10 Autonomous B2B Lead Hunter & 20:00h Closer ($5,500–$9,500)</option>
                     <option value="Micro-SaaS in a Box — Turnkey AI Business Launch">Micro-SaaS in a Box — Turnkey AI Business ($6,000–$10,000)</option>
                     <option value="150MP Luxury Brand Visual Kit + Custom React Architecture">150MP Luxury Visual Kit + Custom React Architecture ($1,490)</option>
                     <option value="Custom Multi-Agent n8n Automation Infrastructure">Custom Multi-Agent n8n Automation Infrastructure</option>
@@ -935,7 +1774,7 @@ export default function AIAgentsShowcase() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
-                      4. Select Date
+4. Select Date
                     </label>
                     <input
                       type="date"
@@ -947,7 +1786,7 @@ export default function AIAgentsShowcase() {
                   </div>
                   <div>
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
-                      5. Allocated Project Budget
+5. Allocated Project Budget
                     </label>
                     <select
                       value={bookingBudget}
@@ -963,7 +1802,7 @@ export default function AIAgentsShowcase() {
 
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-2">
-                    6. Available Time Slots (Real-Time CET Sync)
+6. Available Time Slots (Real-Time CET Sync)
                   </label>
                   <div className="grid grid-cols-3 gap-2">
                     {AVAILABLE_TIME_SLOTS.map((slot) => (
@@ -1122,7 +1961,7 @@ export default function AIAgentsShowcase() {
               <form onSubmit={handleSimulateSaleAlert} className="lg:col-span-5 space-y-4 bg-black/50 border border-white/10 rounded-2xl p-5">
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-2">
-                    1. Select Mobile Notification Channel
+1. Select Mobile Notification Channel
                   </label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
@@ -1149,7 +1988,7 @@ export default function AIAgentsShowcase() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
-                      2. Simulated Buyer Name
+2. Simulated Buyer Name
                     </label>
                     <input
                       type="text"
@@ -1161,7 +2000,7 @@ export default function AIAgentsShowcase() {
                   </div>
                   <div>
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
-                      3. Buyer Corporate Email
+3. Buyer Corporate Email
                     </label>
                     <input
                       type="email"
@@ -1175,7 +2014,7 @@ export default function AIAgentsShowcase() {
 
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
-                    4. Purchased Package / B2B Kit
+4. Purchased Package / B2B Kit
                   </label>
                   <select
                     value={alertProduct}
@@ -1183,6 +2022,7 @@ export default function AIAgentsShowcase() {
                     className="w-full bg-[#05070f] border border-white/15 rounded-xl p-2.5 text-xs text-white focus:border-amber-400 focus:outline-none"
                   >
                     <option value="Sapphire Voyages Exclusive Yacht Buyout + 150MP Kit">Sapphire Voyages Exclusive Yacht Buyout ($1,490)</option>
+                    <option value="V10 Autonomous B2B Lead Hunter & 20:00h Closer Buyout">V10 Autonomous B2B Lead Hunter & 20:00h Closer ($7,500)</option>
                     <option value="Private Aviation Turnkey React Kit + 60 Files">Private Aviation Turnkey Agency License ($349)</option>
                     <option value="B2B Project Scoper & AI Quote Calculator Buyout">B2B Project Scoper White-Label AI ($6,500)</option>
                     <option value="V10 UI/UX Commercial Vault Bundle">V10 UI/UX Commercial Vault ($299)</option>
@@ -1192,7 +2032,7 @@ export default function AIAgentsShowcase() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
-                      5. Order Value
+5. Order Value
                     </label>
                     <input
                       type="text"
@@ -1203,7 +2043,7 @@ export default function AIAgentsShowcase() {
                   </div>
                   <div>
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
-                      6. Payment Gateway
+6. Payment Gateway
                     </label>
                     <select
                       value={alertPaymentMethod}
@@ -1366,7 +2206,7 @@ export default function AIAgentsShowcase() {
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
-                      1. Subject / Product / Brand Description
+1. Subject / Product / Brand Description
                     </label>
                     <span className="text-[10px] text-cyan-400 font-semibold">Required</span>
                   </div>
@@ -1393,7 +2233,7 @@ export default function AIAgentsShowcase() {
 
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-2">
-                    2. Commercial Scene Preset
+2. Commercial Scene Preset
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {STUDIO_ENVIRONMENTS.map((env, i) => (
@@ -1417,7 +2257,7 @@ export default function AIAgentsShowcase() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1.5">
-                      3. Lighting Mood
+3. Lighting Mood
                     </label>
                     <select 
                       value={mockupLighting}
@@ -1433,7 +2273,7 @@ export default function AIAgentsShowcase() {
 
                   <div>
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1.5">
-                      4. Aspect Ratio
+4. Aspect Ratio
                     </label>
                     <div className="grid grid-cols-3 gap-1.5">
                       {['16:9', '9:16', '21:9'].map((ratio) => (
@@ -1621,7 +2461,7 @@ export default function AIAgentsShowcase() {
               <form onSubmit={handleSeoAudit} className="lg:col-span-4 space-y-5 bg-black/50 border border-white/10 rounded-2xl p-5">
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-2">
-                    1. Target Website URL
+1. Target Website URL
                   </label>
                   <input 
                     type="url"
@@ -1643,7 +2483,7 @@ export default function AIAgentsShowcase() {
 
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-2">
-                    2. Primary Conversion Goal / Niche
+2. Primary Conversion Goal / Niche
                   </label>
                   <select 
                     value={auditGoal}
@@ -1847,7 +2687,7 @@ export default function AIAgentsShowcase() {
               <form onSubmit={handleCampaignSynthesis} className="lg:col-span-4 space-y-4 bg-black/50 border border-white/10 rounded-2xl p-5">
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1.5">
-                    1. Product / Brand Name
+1. Product / Brand Name
                   </label>
                   <input 
                     type="text"
@@ -1861,7 +2701,7 @@ export default function AIAgentsShowcase() {
 
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1.5">
-                    2. Target B2B Audience
+2. Target B2B Audience
                   </label>
                   <input 
                     type="text"
@@ -1875,7 +2715,7 @@ export default function AIAgentsShowcase() {
 
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1.5">
-                    3. Core Offer & Value Proposition
+3. Core Offer & Value Proposition
                   </label>
                   <textarea 
                     rows="3"
@@ -1913,7 +2753,7 @@ export default function AIAgentsShowcase() {
 
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1.5">
-                    4. Brand Tone & Style
+4. Brand Tone & Style
                   </label>
                   <select 
                     value={campTone}
@@ -2079,7 +2919,7 @@ export default function AIAgentsShowcase() {
       )}
 
       {/* ========================================================= */}
-      {/* GLOBAL MODAL FOR ALL AGENTS (ONLY WHITE-LABEL BUYOUT)     */}
+      {/* GLOBAL MODAL FOR ALL AGENTS (WHITE-LABEL & KITS)          */}
       {/* ========================================================= */}
       {activeModalAgent && (
         <div 
@@ -2116,7 +2956,7 @@ export default function AIAgentsShowcase() {
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-sm md:text-base font-black text-white uppercase tracking-wider flex items-center gap-2">
                     <Award className={`w-5 h-5 ${getColorClasses(activeModalAgent.colorTheme).text}`} />
-                    Full White-Label Buyout (Turnkey Acquisition)
+                    Full Turnkey & White-Label Acquisition
                   </h4>
                   <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 bg-white/10 text-white rounded-full">
                     Zero Monthly Fees
@@ -2153,6 +2993,30 @@ export default function AIAgentsShowcase() {
             </div>
 
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
+              {activeModalAgent.hasAureliaPulseStudio && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveModalAgent(null);
+                    setIsAureliaStudioOpen(true);
+                  }}
+                  className="flex-1 bg-gradient-to-r from-[#facc15] to-[#eab308] hover:from-amber-300 hover:to-amber-400 text-black text-xs sm:text-sm font-black uppercase tracking-widest py-3.5 md:py-4 rounded-xl transition shadow-lg cursor-pointer"
+                >
+                  ✦ Launch Aurelia Pulse Studio
+                </button>
+              )}
+              {activeModalAgent.hasLeadHunterStudio && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveModalAgent(null);
+                    setIsLeadHunterStudioOpen(true);
+                  }}
+                  className="flex-1 bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-black text-xs sm:text-sm font-black uppercase tracking-widest py-3.5 md:py-4 rounded-xl transition shadow-lg cursor-pointer"
+                >
+                  🎯 Launch Lead Hunter & 20:00h Studio
+                </button>
+              )}
               {activeModalAgent.hasB2BWebhookStudio && (
                 <button
                   type="button"
@@ -2245,6 +3109,140 @@ export default function AIAgentsShowcase() {
         </div>
       )}
 
+      {/* ========================================================= */}
+      {/* FLOATING AURELIA PULSE 24/7 BOOKING BAR + LIVE CHAT DESK  */}
+      {/* ========================================================= */}
+      {isAureliaDrawerOpen && (
+        <div className="fixed bottom-24 right-4 sm:right-6 z-[9990] w-[92vw] max-w-[390px] bg-[#0b0e17]/95 backdrop-blur-xl border border-[#eab308]/50 rounded-2xl shadow-[0_20px_70px_rgba(0,0,0,0.85)] overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 bg-black/60 border-b border-white/10">
+            <span className="text-[11px] font-black uppercase tracking-widest text-[#facc15] flex items-center gap-1.5">
+              ✦ AURELIA PULSE LIVE DESK
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsAureliaDrawerOpen(false)}
+              className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition cursor-pointer"
+            >
+              <X size={16} />
+            </button>
+          </div>
+
+          <div className="p-3.5 space-y-2.5">
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="text"
+                value={aureliaName}
+                onChange={(e) => setAureliaName(e.target.value)}
+                placeholder="Your Name"
+                className="bg-[#05070f] border border-white/15 rounded-lg px-2.5 py-2 text-[11px] text-white placeholder-slate-500 focus:border-[#facc15] focus:outline-none"
+              />
+              <input
+                type="text"
+                value={aureliaContact}
+                onChange={(e) => setAureliaContact(e.target.value)}
+                placeholder="Phone / WhatsApp / Email"
+                className="bg-[#05070f] border border-white/15 rounded-lg px-2.5 py-2 text-[11px] text-white placeholder-slate-500 focus:border-[#facc15] focus:outline-none"
+              />
+            </div>
+
+            <div className="bg-[#060811] border border-white/10 rounded-xl p-3 h-52 overflow-y-auto space-y-2.5">
+              {aureliaMessages.map((msg, idx) => (
+                <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div
+                    className={`max-w-[85%] rounded-xl px-3 py-2 text-[11px] leading-relaxed ${
+                      msg.role === 'user'
+                        ? 'bg-[#facc15] text-black font-bold'
+                        : 'bg-[#141928] border border-white/10 text-slate-200'
+                    }`}
+                  >
+                    {msg.text}
+                  </div>
+                </div>
+              ))}
+              {isAureliaSending && (
+                <div className="text-[11px] text-amber-300 animate-pulse px-1">
+                  Connecting to Aurelia Pulse...
+                </div>
+              )}
+            </div>
+
+            <form onSubmit={(e) => handleAureliaSend(e)} className="flex items-center gap-2">
+              <input
+                type="text"
+                value={aureliaInput}
+                onChange={(e) => setAureliaInput(e.target.value)}
+                placeholder="Write in any language to book or ask..."
+                className="flex-1 bg-[#05070f] border border-white/15 rounded-xl px-3 py-2.5 text-xs text-white placeholder-slate-500 focus:border-[#facc15] focus:outline-none"
+              />
+              <button
+                type="submit"
+                disabled={isAureliaSending}
+                className="px-4 py-2.5 bg-gradient-to-r from-[#facc15] to-[#eab308] hover:from-amber-300 hover:to-amber-400 text-black font-black uppercase tracking-wider rounded-xl text-[11px] transition cursor-pointer shrink-0"
+              >
+                SEND
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {isAureliaBarVisible && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[9985] w-[95vw] max-w-4xl bg-[#090d18]/95 backdrop-blur-xl border border-[#eab308]/40 rounded-full px-4 py-2.5 shadow-[0_12px_45px_rgba(0,0,0,0.85)] flex flex-wrap items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2 pl-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-white">
+              AURELIA PULSE — 24/7 VIP BOOKING
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 ml-auto">
+            <select
+              value={aureliaService}
+              onChange={(e) => setAureliaService(e.target.value)}
+              className="bg-[#111729] border border-white/15 rounded-full px-3 py-1.5 text-[11px] font-semibold text-white focus:border-[#facc15] focus:outline-none"
+            >
+              {AURELIA_SERVICES.map((srv) => (
+                <option key={srv} value={srv}>{srv}</option>
+              ))}
+            </select>
+
+            <input
+              type="date"
+              value={aureliaDate}
+              onChange={(e) => setAureliaDate(e.target.value)}
+              className="hidden sm:block bg-[#111729] border border-white/15 rounded-full px-3 py-1.5 text-[11px] text-white focus:border-[#facc15] focus:outline-none"
+            />
+
+            <select
+              value={aureliaSlot}
+              onChange={(e) => setAureliaSlot(e.target.value)}
+              className="bg-[#111729] border border-white/15 rounded-full px-3 py-1.5 text-[11px] font-bold text-amber-300 focus:border-[#facc15] focus:outline-none"
+            >
+              {AVAILABLE_TIME_SLOTS.map((slot) => (
+                <option key={slot} value={slot}>{slot}</option>
+              ))}
+            </select>
+
+            <button
+              type="button"
+              onClick={() => setIsAureliaDrawerOpen((prev) => !prev)}
+              className="px-4 py-1.5 bg-gradient-to-r from-[#facc15] to-[#eab308] hover:from-amber-300 hover:to-amber-400 text-black font-black uppercase tracking-wider rounded-full text-[11px] shadow-md shadow-amber-500/20 transition cursor-pointer"
+            >
+              ASK AI / BOOK ↗
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsAureliaBarVisible(false)}
+              title="Minimize Booking Bar"
+              className="text-slate-400 hover:text-white p-1 rounded-full hover:bg-white/10 transition cursor-pointer"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-[1200px] mx-auto space-y-20">
         
         {/* ======================================================= */}
@@ -2273,11 +3271,23 @@ export default function AIAgentsShowcase() {
             </div>
 
             <p className="relative z-10 text-slate-300 text-sm sm:text-base font-medium max-w-2xl mx-auto leading-relaxed">
-              Acquire production-ready AI architectures (HTML/React Frontend UI + Self-Hosted n8n Backend Workflows) for your agency or enterprise. One-time buyout, zero recurring license fees.
+              Acquire production-ready AI architectures (HTML/React Frontend UI + Python Scrapers + Self-Hosted n8n Backend Workflows) for your agency or enterprise. One-time buyout, zero recurring license fees.
             </p>
 
-            {/* HIGH-CONVERSION ABOVE-THE-FOLD CTA BUTTONS (6 LIVE STUDIOS) */}
+            {/* HIGH-CONVERSION ABOVE-THE-FOLD CTA BUTTONS (8 LIVE STUDIOS) */}
             <div className="relative z-10 mt-8 flex flex-wrap items-center justify-center gap-3">
+              <button 
+                onClick={() => setIsAureliaStudioOpen(true)}
+                className="px-5 py-3.5 bg-gradient-to-r from-[#facc15] via-amber-300 to-[#eab308] hover:from-amber-300 hover:to-amber-400 text-black font-black text-xs uppercase tracking-widest rounded-xl shadow-[0_0_28px_rgba(250,204,21,0.5)] transition transform hover:scale-105 cursor-pointer"
+              >
+                ✦ Live Aurelia Pulse Bar ($199 Kit)
+              </button>
+              <button 
+                onClick={() => setIsLeadHunterStudioOpen(true)}
+                className="px-5 py-3.5 bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-black font-black text-xs uppercase tracking-widest rounded-xl shadow-[0_0_28px_rgba(20,184,166,0.5)] transition transform hover:scale-105 cursor-pointer"
+              >
+                🎯 Live B2B Lead Hunter (20:00h Closer)
+              </button>
               <button 
                 onClick={() => setIsB2BWebhookStudioOpen(true)}
                 className="px-5 py-3.5 bg-gradient-to-r from-[#d4af37] to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-black text-xs uppercase tracking-widest rounded-xl shadow-[0_0_25px_rgba(212,175,55,0.45)] transition transform hover:scale-105 cursor-pointer"
@@ -2323,28 +3333,28 @@ export default function AIAgentsShowcase() {
               <ShieldCheck className="w-8 h-8 text-cyan-400 shrink-0" />
               <div>
                 <div className="text-xs font-black uppercase text-white">100% IP & Code Transfer</div>
-                <div className="text-[11px] text-slate-400">JSON + index.html + README.md</div>
+                <div className="text-[11px] text-slate-400">JSON + Python + React/HTML</div>
               </div>
             </div>
             <div className="bg-[#050914] border border-white/10 rounded-2xl p-4 flex items-center gap-3">
               <Code className="w-8 h-8 text-emerald-400 shrink-0" />
               <div>
-                <div className="text-xs font-black uppercase text-white">n8n + Groq 120B Engine</div>
-                <div className="text-[11px] text-slate-400">Replies in any language (&lt; 2.1s)</div>
+                <div className="text-xs font-black uppercase text-white">n8n + Groq / Gemini Engine</div>
+                <div className="text-[11px] text-slate-400">Replies &amp; pitches in SR / EN / DE</div>
               </div>
             </div>
             <div className="bg-[#050914] border border-white/10 rounded-2xl p-4 flex items-center gap-3">
               <Zap className="w-8 h-8 text-amber-400 shrink-0" />
               <div>
                 <div className="text-xs font-black uppercase text-white">Zero Monthly SaaS Fees</div>
-                <div className="text-[11px] text-slate-400">Self-hosted n8n + Free Groq API</div>
+                <div className="text-[11px] text-slate-400">Self-hosted Railway n8n</div>
               </div>
             </div>
             <div className="bg-[#050914] border border-white/10 rounded-2xl p-4 flex items-center gap-3">
               <Award className="w-8 h-8 text-indigo-400 shrink-0" />
               <div>
                 <div className="text-xs font-black uppercase text-white">Agency Resell Rights</div>
-                <div className="text-[11px] text-slate-400">Rebrand & sell to unlimited clients</div>
+                <div className="text-[11px] text-slate-400">Rebrand &amp; sell to unlimited clients</div>
               </div>
             </div>
           </div>
@@ -2363,7 +3373,7 @@ export default function AIAgentsShowcase() {
                   Flagship Revenue & Client-Acquisition Engines
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-3xl">
-                  Engineered specifically for digital agencies, SaaS founders, and B2B operators seeking immediate client acquisition, automated multilingual project quoting, or a complete turnkey AI business in a box.
+                  Engineered specifically for digital agencies, SaaS founders, and B2B operators seeking universal AI booking bars, autonomous 170-city lead generation, multilingual project quoting, or a complete turnkey AI business in a box.
                 </p>
               </div>
               <div className="shrink-0">
@@ -2424,7 +3434,7 @@ export default function AIAgentsShowcase() {
                     <div className="border-t border-white/10 pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
                         <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block">
-                          One-Time Turnkey Buyout
+                          One-Time Turnkey Pricing
                         </span>
                         <span className={`text-xl sm:text-2xl font-black ${theme.text}`}>
                           {item.whiteLabelPrice}
@@ -2432,6 +3442,24 @@ export default function AIAgentsShowcase() {
                       </div>
 
                       <div className="flex flex-wrap gap-2">
+                        {item.hasAureliaPulseStudio && (
+                          <button 
+                            type="button"
+                            onClick={() => setIsAureliaStudioOpen(true)}
+                            className="px-4 py-3 bg-white/10 hover:bg-white/20 text-amber-300 text-xs font-black uppercase tracking-wider rounded-xl transition cursor-pointer"
+                          >
+                            ✦ Live Booking Bar
+                          </button>
+                        )}
+                        {item.hasLeadHunterStudio && (
+                          <button 
+                            type="button"
+                            onClick={() => setIsLeadHunterStudioOpen(true)}
+                            className="px-4 py-3 bg-white/10 hover:bg-white/20 text-cyan-300 text-xs font-black uppercase tracking-wider rounded-xl transition cursor-pointer"
+                          >
+                            🎯 Live Hunter
+                          </button>
+                        )}
                         {item.hasB2BWebhookStudio && (
                           <button 
                             type="button"
@@ -2576,7 +3604,7 @@ export default function AIAgentsShowcase() {
                 Why Agencies Buy Turnkey Instead of Building From Scratch
               </h3>
               <p className="text-xs sm:text-sm text-slate-300 mt-2 leading-relaxed">
-                Hiring in-house frontend developers and n8n automation engineers costs <strong>$12,500+ and 6–8 weeks</strong> of R&D per agent. Acquiring a V10 White-Label package gives your agency immediate source code ownership in <strong>15 minutes</strong>—ready to deploy for unlimited B2B clients.
+                Hiring in-house frontend developers and n8n automation engineers costs <strong>$12,500+ and 6–8 weeks</strong> of R&amp;D per agent. Acquiring a V10 White-Label package gives your agency immediate source code ownership in <strong>15 minutes</strong>—ready to deploy for unlimited B2B clients.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 shrink-0 w-full lg:w-auto">
@@ -2587,7 +3615,7 @@ export default function AIAgentsShowcase() {
               </div>
               <div className="bg-black/60 border border-emerald-500/40 rounded-2xl p-4 text-center">
                 <div className="text-[10px] font-bold uppercase text-emerald-400">V10 Turnkey Buyout</div>
-                <div className="text-xl font-black text-white mt-0.5">$2,500 – $8,500</div>
+                <div className="text-xl font-black text-white mt-0.5">$199 – $9,500</div>
                 <div className="text-[10px] text-emerald-400 font-bold">Instant .ZIP Delivery</div>
               </div>
             </div>
@@ -2620,7 +3648,7 @@ export default function AIAgentsShowcase() {
         <hr className="border-white/10" />
 
         {/* ========================================= */}
-        {/* EXTENDED AGENT CATALOG (27 AGENTS)        */}
+        {/* EXTENDED AGENT CATALOG (29 AGENTS)        */}
         {/* ========================================= */}
         <section>
           <div className="text-center max-w-3xl mx-auto mb-16 relative">
@@ -2638,7 +3666,7 @@ export default function AIAgentsShowcase() {
               return (
                 <div key={agent.id} className="flex flex-col gap-4">
                   <div className={`bg-[#050914] border ${themeClasses.border} rounded-3xl p-6 flex flex-col items-center text-center ${themeClasses.shadow} h-full justify-center relative`}>
-                     {(agent.hasLiveStudio || agent.hasSeoStudio || agent.hasCampaignStudio || agent.hasAlertStudio || agent.hasBookingStudio || agent.hasB2BWebhookStudio) && (
+                     {(agent.hasAureliaPulseStudio || agent.hasLeadHunterStudio || agent.hasLiveStudio || agent.hasSeoStudio || agent.hasCampaignStudio || agent.hasAlertStudio || agent.hasBookingStudio || agent.hasB2BWebhookStudio) && (
                        <span className="absolute top-4 right-4 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 rounded-full">
                          Live Studio Ready
                        </span>
@@ -2653,6 +3681,24 @@ export default function AIAgentsShowcase() {
                      </p>
                   </div>
                   <div className="mt-auto flex flex-col gap-2">
+                    {agent.hasAureliaPulseStudio && (
+                      <button 
+                        type="button"
+                        onClick={() => setIsAureliaStudioOpen(true)}
+                        className="w-full text-center bg-gradient-to-r from-[#facc15] to-[#eab308] hover:from-amber-300 hover:to-amber-400 text-black text-xs font-black uppercase tracking-widest py-3.5 rounded-xl transition shadow-lg shadow-amber-500/20 cursor-pointer"
+                      >
+                        ✦ Launch Aurelia Pulse Bar
+                      </button>
+                    )}
+                    {agent.hasLeadHunterStudio && (
+                      <button 
+                        type="button"
+                        onClick={() => setIsLeadHunterStudioOpen(true)}
+                        className="w-full text-center bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-black text-xs font-black uppercase tracking-widest py-3.5 rounded-xl transition shadow-lg shadow-cyan-500/20 cursor-pointer"
+                      >
+                        🎯 Launch Lead Hunter & 20:00h Studio
+                      </button>
+                    )}
                     {agent.hasB2BWebhookStudio && (
                       <button 
                         type="button"

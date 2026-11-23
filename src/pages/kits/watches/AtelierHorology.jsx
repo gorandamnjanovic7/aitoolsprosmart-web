@@ -1,15 +1,20 @@
 // ============================================================================
-// POČETAK FAJLA: src/pages/kits/watches/AtelierHorology.jsx (STRANICA 2 OD 5)
+// src/pages/kits/watches/AtelierHorology.jsx
+// Atelier Horology — Watch Kit 02 / 05 • Zero-Gravity 18k Rose-Gold & Openworked Tourbillon
+// Antigravity Spatial Engine • Zero Duplicate Visuals • 16:9 Seedance 2.5 / Kling 4.0 Slot
+// + Live 24/7 AI Horology Concierge & Calendar Desk (Groq Webhook Connected)
 // ============================================================================
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Helmet } from 'react-helmet-async';
 import {
-  ArrowRight, ArrowLeft, ArrowUpRight, Calendar, CheckCircle2, ChevronDown,
-  Clock3, Crown, Gem, Lock, Menu, Play, ShieldCheck, Sparkles,
-  Video, Watch, X
+  Aperture, ArrowLeft, ArrowRight, ArrowUpRight, CheckCircle2, ChevronDown,
+  Compass, Crown, DownloadCloud, Film, FolderArchive, Layers, Lock, Maximize2,
+  Menu, Pause, Play, Send, ShieldCheck, Sparkles, Video, Volume2, VolumeX, X, Zap
 } from 'lucide-react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+
 import { db, auth } from '../../../firebase';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -17,330 +22,1314 @@ import V8SecureCheckout from '../../../V8SecureCheckout';
 import LoginRequiredModal from '../../../LoginRequiredModal';
 import { trackV8Action } from '../../../utils/analytics';
 
-const KIT_CONFIG = {
-  standardZipLink: 'https://drive.google.com/your-standard-349-watch-kit-link',
-  buyoutZipLink: 'https://drive.google.com/your-exclusive-1490-watch-buyout-link',
-  freeSampleLink: 'https://drive.google.com/file/d/1B9b3BI5nfkbSDriZUm0dqjYxbZf2GEmp/view?usp=sharing',
+const WEBHOOK_URL = 'https://n8n-production-720dcf20.up.railway.app/webhook/v10-concierge-webhook';
+
+// ============================================================================
+// 16:9 VIDEO PLACEHOLDER SLOTS (PASTE YOUR SEEDANCE 2.5 / KLING 4.0 .MP4/.WEBM)
+// ============================================================================
+const VIDEO_REEL_1_URL = ''; // e.g. '/watches/atelier-reel-01.mp4'
+const VIDEO_REEL_2_URL = ''; // e.g. '/watches/atelier-reel-02.mp4'
+
+const THEME = {
+  pageBg: 'bg-[#090605]',
+  textMain: 'text-white',
+  textMuted: 'text-stone-300',
+  ribbonBg: 'bg-[#170E0A] border-amber-500/35 text-amber-200',
+  headerBg: 'bg-[#090605]/92 border-amber-500/20',
+  cardBg: 'bg-[#140D0A]/92',
+  cardAltBg: 'bg-[#0D0806]',
+  borderSubtle: 'border-white/12',
+  borderAccent: 'border-amber-400/45',
+  accentText: 'text-amber-300',
+  goldText: 'text-orange-200',
+  badge: 'border-amber-400/40 bg-amber-500/10 text-amber-200',
+  btnPrimary: 'bg-gradient-to-r from-amber-400 via-orange-300 to-amber-500 text-[#090605] shadow-[0_0_32px_rgba(251,191,36,0.40)]',
+  btnGold: 'bg-gradient-to-r from-amber-200 via-white to-orange-200 text-[#090605] shadow-[0_0_28px_rgba(253,230,138,0.35)]',
+  btnOutline: 'border-2 border-amber-400/35 bg-[#140D0A]/80 text-amber-100 hover:border-amber-300 hover:text-white',
+  inputCls: 'border-white/15 bg-[#1B120E] text-white placeholder-stone-400 focus:border-amber-400',
+  optionCls: 'bg-[#090605] text-white',
+  chatBox: 'border-white/10 bg-[#0C0806]',
+  aiBubble: 'border border-amber-400/25 bg-[#1A110C] text-stone-100',
+  userBubble: 'bg-gradient-to-r from-amber-300 to-orange-400 text-[#090605] font-bold'
 };
 
-const SITE = {"brand": "Atelier Horology", "descriptor": "Maison of mechanical time", "analyticsLabel": "Atelier_Horology", "topline": "Fine watchmaking • Considered design • A personal way to mark time", "kicker": "The art of keeping time", "titleBefore": "A moment, made ", "titleEmphasis": "timeless.", "titleAfter": "", "description": "A quiet collection of automatic timepieces, shaped by thoughtful proportions, tactile materials and enduring craft.", "footer": "Made for the moments worth remembering.", "heroStyle": "editorial", "cardLayout": "trio", "formLayout": "split", "order": ["collection", "craft", "gallery", "appointment", "licensing", "faq"], "hero": "https://images.unsplash.com/photo-1774776207018-e077044dcd8c?auto=format&fit=crop&w=2200&q=90", "palette": {"canvas": "#F6F1E7", "ink": "#1E2D32", "muted": "#727A78", "accent": "#B38B52", "accentContrast": "#FFFFFF", "panel": "#FFFEFA", "soft": "#EAE1D2", "line": "#D8CCB8", "inverse": "#172B31", "inverseInk": "#FFFFFF"}};
+// ============================================================================
+// EXCLUSIVE WATCH VISUAL SET 02 / 05 (11 UNIQUE ASSETS — ZERO OVERLAP)
+// Assigned exclusively: 1.png, 3.png, 9.png, 14.png, 15.png, 26.png, 27.png,
+// 38.jpeg, 39.jpeg, 41.jpeg, 50.jpeg
+// ============================================================================
+const KIT_CONFIG = {
+  standardZipLink: 'https://drive.google.com/your-atelierhorology-349-link',
+  buyoutZipLink: 'https://drive.google.com/your-atelierhorology-1490-link',
+  freeSampleLink: 'https://drive.google.com/your-atelierhorology-sample-link',
+  prevPageRoute: '/abyss-chronograph',
+  prevPageLabel: 'Prev Watch: Abyss Chronograph (1/5)',
+  nextLandingRoute: '/meridian-watch-house',
+  nextLandingLabel: 'Next Watch: Meridian House (3/5)',
+  zones: [
+    {
+      id: 'atelier-z1',
+      step: 'Zero-G Atelier 01',
+      zone: 'Suspended 18k Rose-Gold Skeleton',
+      title: 'Hand-Beveled Flying Tourbillon.',
+      subtitle: 'Levitating Haute Horlogerie architecture: hand-chamfered 18k 5N rose-gold bridges, exposed double-barrel mainspring, and sapphire optical clarity.',
+      specs: 'Caliber V10-ATELIER • 21,600 vph • 138 Hand-Polished Angles',
+      image: '/watches/1.png'
+    },
+    {
+      id: 'atelier-z2',
+      step: 'Zero-G Atelier 02',
+      zone: 'Obsidian & Gold Dress Chronometer',
+      title: 'Lacquer Enamel & BreguetHands',
+      subtitle: 'Grand Feu jet-black enamel dial suspended inside an ultra-thin rose-gold bezel with diamond-cut indices.',
+      specs: '39.5mm 18k Rose Gold • Micro-Rotor • Geneva Seal Finish',
+      image: '/watches/3.png'
+    },
+    {
+      id: 'atelier-z3',
+      step: 'Zero-G Atelier 03',
+      zone: 'Openworked Perpetual Architecture',
+      title: 'Three-Dimensional Bridge Relief',
+      subtitle: 'Multi-tiered openworked gear train floating beneath a box-domed sapphire crystal with zero distortion.',
+      specs: 'Free-Sprung Gyromax Balance • 96h Twin Barrel • 50M Sealed',
+      image: '/watches/39.jpeg'
+    },
+    {
+      id: 'atelier-z4',
+      step: 'Zero-G Atelier 04',
+      zone: 'Bi-Metallic Tourbillon Cage',
+      title: 'Zero-Mass Titanium & Gold Escapement',
+      subtitle: 'A 0.29-gram flying tourbillon carriage rotating every 60 seconds to neutralize gravitational rate error.',
+      specs: '60s Flying Tourbillon • Grade-5 Cage • Hand-Grained Mainplate',
+      image: '/watches/41.jpeg'
+    },
+    {
+      id: 'atelier-z5',
+      step: 'Zero-G Atelier 05',
+      zone: 'Crimson-Ruby Balance Study',
+      title: 'Exposed Jewel Bearing & Gold Chatons',
+      subtitle: 'Solid 18k gold chatons secured by heat-blued screws framing synthetic ruby escapement bearings in macro detail.',
+      specs: '35 Functional Rubies • Swan-Neck Regulator • 150MP Master',
+      image: '/watches/50.jpeg'
+    }
+  ],
+  cinemaVideos: [
+    {
+      id: 'reel-1',
+      badge: '01 • 16:9 Haute Horlogerie Macro Reel (30s Seedance 2.5 / Kling 4.0)',
+      title: 'Suspended golden gear train & tourbillon heartbeat.',
+      desc: 'True 16:9 widescreen (3840 × 2160) 60fps cinema placeholder engineered for Geneva independent watchmakers, collector vaults, and luxury brand launches.',
+      poster: '/watches/14.png'
+    },
+    {
+      id: 'reel-2',
+      badge: '02 • Atelier Workbench Warmth (16:9 UHD Slot)',
+      title: 'Micro-beveling reflection across 18k rose-gold bridges.',
+      desc: 'Secondary 16:9 widescreen motion placeholder crafted for 30-second Seedance 2.5 or Kling 4.0 movement assembly loops.',
+      poster: '/watches/26.png'
+    }
+  ],
+  collection: [
+    {
+      name: 'Sovereign Rose-Gold Skeleton',
+      meta: 'Piece Unique • 18k 5N Gold',
+      rate: '$64,000 Allocation',
+      desc: 'Architectural openworked movement revealing every hand-finished bevel, barrel ratchet, and escapement pulse.',
+      image: '/watches/9.png'
+    },
+    {
+      name: 'Atelier Warm-Bronze Atelier',
+      meta: 'Limited 18 Pieces • Hand-Wound',
+      rate: '$38,500 Allocation',
+      desc: 'Warm brushed rose-gold casework paired with suspended champagne sub-dials and alligator deployment clasp.',
+      image: '/watches/15.png'
+    },
+    {
+      name: 'Geneva Openworked Cushion',
+      meta: 'Square Haute Complication • 150MP',
+      rate: '$52,900 Allocation',
+      desc: 'Sculpted cushion silhouette showcasing symmetrical twin bridges and floating sapphire chapter ring.',
+      image: '/watches/38.jpeg'
+    }
+  ],
+  vault: [
+    {
+      id: 'atelier-v1',
+      tag: 'Caliber Exploded View',
+      title: 'Golden Gear Train Macro Study',
+      specs: 'Phase One IQ4 150MP Macro • Zero Watermarks • Commercial Rights',
+      image: '/watches/26.png'
+    },
+    {
+      id: 'atelier-v2',
+      tag: 'Exhibition Sanctuary',
+      title: 'Warm Marble & Rose-Gold Pedestal',
+      specs: '150MP Ultra-Print sRGB Master • Lanczos Micro-Contrast',
+      image: '/watches/27.png'
+    }
+  ],
+  ctaBannerImage: '/watches/14.png'
+};
 
-const WATCH_VIDEO_URL = '';
-const ATELIER_HOROLOGY_FREE_SAMPLE_LINK = '';
-
-const WATCHES = [
-  { id: 'meridian-01', category: 'dress', reference: '01 / M-38', name: 'Meridian No. 38', movement: 'Automatic calibre', case: '38 mm / polished steel', image: 'https://images.unsplash.com/photo-1792552728426-01971d490df1?auto=format&fit=crop&w=1400&q=90' },
-  { id: 'deepblue-02', category: 'sport', reference: '02 / D-42', name: 'Deepblue Chronograph', movement: 'Automatic chronograph', case: '42 mm / brushed steel', image: 'https://images.unsplash.com/photo-1792095512661-f75b16475962?auto=format&fit=crop&w=1400&q=90' },
-  { id: 'atelier-03', category: 'skeleton', reference: '03 / A-40', name: 'Atelier Skeleton', movement: 'Open-worked automatic', case: '40 mm / rose gold finish', image: 'https://images.unsplash.com/photo-1756412066727-65ea6e81e0e0?auto=format&fit=crop&w=1400&q=90' },
-  { id: 'heritage-04', category: 'dress', reference: '04 / H-36', name: 'Heritage Moonphase', movement: 'Moonphase automatic', case: '36 mm / champagne dial', image: 'https://images.unsplash.com/photo-1659257328461-374ed5ba399a?auto=format&fit=crop&w=1400&q=90' },
-  { id: 'coastline-05', category: 'sport', reference: '05 / C-41', name: 'Coastline GMT', movement: 'Dual-time automatic', case: '41 mm / ceramic bezel', image: 'https://images.unsplash.com/photo-1774110252880-4136084a83fc?auto=format&fit=crop&w=1400&q=90' },
-  { id: 'nocturne-06', category: 'skeleton', reference: '06 / N-39', name: 'Nocturne Open Heart', movement: 'Open-heart automatic', case: '39 mm / dark titanium', image: 'https://images.unsplash.com/photo-1702865053958-71ec751c4118?auto=format&fit=crop&w=1400&q=90' }
-];
-
-const GALLERY_WATCHES = [
-  { id: "journal-01", reference: "Journal / 01", name: "Journal frame 01", image: "https://images.unsplash.com/photo-1727459047367-61063ad5c0f3?auto=format&fit=crop&w=1400&q=90" },
-  { id: "journal-02", reference: "Journal / 02", name: "Journal frame 02", image: "https://images.unsplash.com/photo-1651735060117-db464f215a6c?auto=format&fit=crop&w=1400&q=90" },
-  { id: "journal-03", reference: "Journal / 03", name: "Journal frame 03", image: "https://images.unsplash.com/photo-1623998021450-85c29c644e0d?auto=format&fit=crop&w=1400&q=90" }
+const CALENDAR_SLOTS = [
+  'Atelier Slot: 09:30 CET',
+  'Atelier Slot: 11:30 CET',
+  'Atelier Slot: 13:30 CET',
+  'Atelier Slot: 15:30 CET',
+  'Atelier Slot: 17:30 CET',
+  'Atelier Slot: 19:30 CET',
+  'Atelier Slot: 21:30 CET',
+  'Atelier Slot: 23:00 CET'
 ];
 
 const FAQS = [
-  ['What is included in the agency license?', 'The package includes the React and Tailwind landing-page source, watch visual scenes, editable mockups and a commercial license for client projects.'],
-  ['Can I change the watch imagery and video?', 'Yes. Replace the gallery images and set WATCH_VIDEO_URL to your MP4 link or public video path. The video slot is visible in the hero.'],
-  ['What does the exclusive buyout include?', 'The one-buyer option includes the complete watch landing-page kit, production visuals and exclusive brand adaptation rights as described in the license section.'],
-  ['Does the appointment form confirm an order?', 'No. It is an interactive front-end preview. Connect it to your CRM, email webhook or boutique team to receive real requests.']
+  {
+    question: 'How does Atelier Horology differ visually from Abyss Chronograph?',
+    answer: 'While Abyss Chronograph explores deep-sea cobalt titanium, Atelier Horology is dedicated to Geneva Haute Horlogerie: warm 18k 5N rose-gold tones, openworked skeleton calibers, and floating golden ember particles.'
+  },
+  {
+    question: 'Are all 11 watch renders on Atelier Horology 100% exclusive to this page?',
+    answer: 'Yes. Assets 1, 3, 9, 14, 15, 26, 27, 38, 39, 41, and 50 from your /watches folder are locked strictly to Atelier Horology with zero overlap across the other 4 watch kits.'
+  },
+  {
+    question: 'Does the 24/7 Atelier Concierge connect to the live Groq AI Quote Scoper?',
+    answer: 'Yes. Every message submits directly to your live Railway n8n webhook (/webhook/v10-concierge-webhook) powered by Groq AI for instant multilingual B2B quotes and collector appointments.'
+  },
+  {
+    question: 'What is included in the $1,490 Exclusive 1-of-1 Buyout?',
+    answer: 'Immediate permanent store removal of Atelier Horology, full source code & 150MP IP transfer, and 10 custom rose-gold/tourbillon renders tailored to your horology house.'
+  }
+];
+
+const GOLDEN_EMBERS = [
+  { left: '7%', top: '82%', size: 4, dur: 10, delay: 0 },
+  { left: '21%', top: '69%', size: 5, dur: 12.5, delay: 1.3 },
+  { left: '36%', top: '86%', size: 3, dur: 8.5, delay: 0.7 },
+  { left: '54%', top: '74%', size: 6, dur: 11.5, delay: 2.0 },
+  { left: '70%', top: '81%', size: 4, dur: 9.8, delay: 0.5 },
+  { left: '84%', top: '66%', size: 5, dur: 13.2, delay: 1.7 },
+  { left: '93%', top: '78%', size: 3, dur: 9.2, delay: 2.6 }
 ];
 
 const Reveal = ({ children, className = '', delay = 0 }) => {
-  const reducedMotion = useReducedMotion();
+  const reduceMotion = useReducedMotion();
   return (
     <motion.div
       className={className}
-      initial={reducedMotion ? false : { opacity: 0, y: 22 }}
+      initial={reduceMotion ? false : { opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.14 }}
-      transition={{ duration: reducedMotion ? 0 : 0.62, delay, ease: [0.22, 1, 0.36, 1] }}
+      viewport={{ once: true, amount: 0.12 }}
+      transition={{ duration: reduceMotion ? 0 : 0.65, delay }}
     >
       {children}
     </motion.div>
   );
 };
 
-const STYLES = '.watch-page{background:var(--wp-canvas);color:var(--wp-ink)}' +
-  '.watch-panel{background:var(--wp-panel);border-color:var(--wp-line)}' +
-  '.watch-soft{background:var(--wp-soft)}' +
-  '.watch-muted{color:var(--wp-muted)}' +
-  '.watch-accent{color:var(--wp-accent)}' +
-  '.watch-accent-bg{background:var(--wp-accent);color:var(--wp-accent-contrast)}' +
-  '.watch-inverse{background:var(--wp-inverse);color:var(--wp-inverse-ink)}' +
-  '.watch-line{border-color:var(--wp-line)}' +
-  '.watch-button{transition:transform .25s ease,filter .25s ease,box-shadow .25s ease}' +
-  '.watch-button:hover{transform:translateY(-2px);filter:brightness(1.04);box-shadow:0 12px 28px rgba(0,0,0,.12)}' +
-  '.watch-hero-stage>.watch-film-frame{height:100%;min-height:100%;border-radius:0}' +
-  '.watch-page ::selection{background:var(--wp-accent);color:var(--wp-accent-contrast)}' +
-  '@media(prefers-reduced-motion:reduce){.watch-button{transition:none}}';
+// ============================================================================
+// INTERACTIVE 3D ANTIGRAVITY CARD WRAPPER
+// ============================================================================
+const AntigravityCard = ({ children, className = '', floatDelay = 0, floatRange = 10 }) => {
+  const reduceMotion = useReducedMotion();
+  const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
 
-const cardLayouts = {
-  trio: 'sm:grid-cols-2 xl:grid-cols-3',
-  editorial: 'sm:grid-cols-2 xl:grid-cols-3',
-  wide: 'sm:grid-cols-2',
-  mosaic: 'sm:grid-cols-2 xl:grid-cols-4',
-  compact: 'sm:grid-cols-2 xl:grid-cols-4'
+  const handleMove = (e) => {
+    if (reduceMotion) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width - 0.5;
+    const py = (e.clientY - rect.top) / rect.height - 0.5;
+    setTilt({ rx: -py * 9, ry: px * 9 });
+  };
+
+  return (
+    <motion.div
+      animate={reduceMotion ? {} : { y: [0, -floatRange, 0] }}
+      transition={{ duration: 5.6 + floatDelay, repeat: Infinity, ease: 'easeInOut', delay: floatDelay }}
+      onMouseMove={handleMove}
+      onMouseLeave={() => setTilt({ rx: 0, ry: 0 })}
+      style={{
+        transform: `perspective(1100px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
+        transition: 'transform 180ms ease-out'
+      }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+const LightboxInspector = ({ imageUrl, onClose }) => {
+  useEffect(() => {
+    document.body.style.overflow = imageUrl ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [imageUrl]);
+
+  if (!imageUrl) return null;
+  return createPortal(
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/95 p-4 backdrop-blur-xl"
+      onClick={onClose}
+    >
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); onClose(); }}
+        className="absolute right-6 top-6 rounded-full bg-amber-300 p-3 text-black shadow-2xl cursor-pointer"
+        aria-label="Close preview"
+      >
+        <X size={22} />
+      </button>
+      <img
+        src={imageUrl}
+        alt="150MP Atelier Horology Master"
+        className="max-h-[90vh] max-w-full rounded-2xl border border-amber-400/45 object-contain shadow-[0_0_60px_rgba(251,191,36,0.28)]"
+        onClick={(e) => e.stopPropagation()}
+      />
+    </motion.div>,
+    document.body
+  );
 };
 
 const AtelierHorology = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const reduceMotion = useReducedMotion();
+  const [currentUser, setCurrentUser] = useState(null);
+  const [activeZoneIdx, setActiveZoneIdx] = useState(0);
+  const [zoomImage, setZoomImage] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [filter, setFilter] = useState('all');
-  const [preview, setPreview] = useState(null);
-  const [videoOpen, setVideoOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState(0);
-  const [selectedWatch, setSelectedWatch] = useState(WATCHES[0].name);
-  const [appointmentDate, setAppointmentDate] = useState('');
+  const [heroTilt, setHeroTilt] = useState({ rx: 0, ry: 0 });
+
+  // 16:9 Video State
+  const [activeCinemaIdx, setActiveCinemaIdx] = useState(0);
+  const [customVideoUrl, setCustomVideoUrl] = useState('');
+  const [isCinemaPlaying, setIsCinemaPlaying] = useState(true);
+  const [isCinemaMuted, setIsCinemaMuted] = useState(true);
+  const [videoError, setVideoError] = useState(false);
+  const cinemaVideoRef = useRef(null);
+
+  // Order Bump (+$199 Motion Pack)
+  const [includeMotionBump, setIncludeMotionBump] = useState(false);
+
+  // 24/7 AI Horology Concierge + Calendar
+  const [selectedTimepiece, setSelectedTimepiece] = useState('Sovereign Rose-Gold Skeleton (18k 5N)');
   const [clientName, setClientName] = useState('');
   const [clientEmail, setClientEmail] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-  const [checkout, setCheckout] = useState({ isOpen: false, name: '', price: '0.00', zipLink: '' });
-  const [login, setLogin] = useState({ isOpen: false, tierName: '', price: '0.00', zipLink: '' });
+  const [salonDate, setSalonDate] = useState('2026-11-26');
+  const [salonSlot, setSalonSlot] = useState('Atelier Slot: 15:30 CET');
+  const [chatInput, setChatInput] = useState('');
+  const [isAiThinking, setIsAiThinking] = useState(false);
+  const [chatMessages, setChatMessages] = useState([
+    {
+      role: 'assistant',
+      text: 'Welcome to Atelier Horology Genève (Watch Kit 02 / 05 • Zero-Gravity 18k Rose-Gold & Tourbillon Edition). Request an instant B2B licensing proposal ($349 Agency / $1,490 1-of-1 Buyout), 150MP caliber macro details, or private salon appointments in any language.'
+    }
+  ]);
+  const chatScrollRef = useRef(null);
+
+  const [checkoutData, setCheckoutData] = useState({ isOpen: false, name: '', price: '0.00', zipLink: '' });
+  const [loginModal, setLoginModal] = useState({ isOpen: false, tierName: '', price: '0.00', zipLink: '' });
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (account) => setUser(account || null));
-    trackV8Action('page_view', { event_category: 'Watch_Landing', event_label: SITE.analyticsLabel });
-    return () => unsubscribe();
+    window.scrollTo(0, 0);
+    const unsub = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user || null);
+      if (user?.displayName) setClientName((prev) => prev || user.displayName);
+      if (user?.email) setClientEmail((prev) => prev || user.email);
+    });
+    trackV8Action('page_view', { event_category: 'High_Ticket_Kit', event_label: 'AtelierHorology' });
+    return () => unsub();
   }, []);
 
-  const goTo = (id) => {
-    setMenuOpen(false);
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-  const visibleWatches = filter === 'all' ? WATCHES : WATCHES.filter((watch) => watch.category === filter);
+  useEffect(() => {
+    setVideoError(false);
+  }, [activeCinemaIdx, customVideoUrl]);
 
-  const recordIntent = async (account, productName, price) => {
+  useEffect(() => {
+    if (chatScrollRef.current) {
+      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+    }
+  }, [chatMessages, isAiThinking]);
+
+  const agencyPriceNum = includeMotionBump ? 548 : 349;
+  const buyoutPriceNum = includeMotionBump ? 1689 : 1490;
+
+  const recordOrderIntent = async (user, productName, price) => {
     try {
       await addDoc(collection(db, 'v8_payoneer_requests'), {
-        ime: account.displayName || 'B2B Agency Client',
-        email: account.email,
-        uid: account.uid,
+        ime: user.displayName || 'B2B Atelier Client',
+        email: user.email,
+        uid: user.uid,
         zeliPaket: productName,
-        paketId: price === '1490.00' ? 'luxury_watch_buyout_1490' : 'luxury_watch_kit_349',
+        paketId: Number(price) >= 1490 ? 'atelierhorology_buyout_1490' : 'atelierhorology_kit_349',
         cenaPaketa: price,
         vreme: serverTimestamp(),
         isPaid: false
       });
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const purchase = async (tier) => {
+  const handlePurchaseTier = async (tier) => {
     const isBuyout = tier === 'buyout';
-    const name = isBuyout
-      ? SITE.brand + ' Exclusive Watch Brand Buyout + React Kit'
-      : SITE.brand + ' Agency License: Watch Landing Page + Visual Scenes';
-    const price = isBuyout ? '1490.00' : '349.00';
+    const baseNum = isBuyout ? buyoutPriceNum : agencyPriceNum;
+    const price = `${baseNum}.00`;
+    const suffix = includeMotionBump ? ' + 30s 4K Tourbillon Motion Pack' : '';
+    const productName = isBuyout
+      ? `1-of-1 Exclusive Buyout: Atelier Horology Antigravity Watch Kit${suffix}`
+      : `Agency License: Atelier Horology Antigravity React + 150MP Kit${suffix}`;
     const zipLink = isBuyout ? KIT_CONFIG.buyoutZipLink : KIT_CONFIG.standardZipLink;
-    trackV8Action('high_ticket_checkout_click', { item_name: name, value: Number(price), currency: 'USD' });
-    const account = user || auth.currentUser;
-    if (account) {
-      await recordIntent(account, name, price);
-      setCheckout({ isOpen: true, name, price, zipLink });
+
+    const activeUser = currentUser || auth.currentUser;
+    if (activeUser) {
+      await recordOrderIntent(activeUser, productName, price);
+      setCheckoutData({ isOpen: true, name: productName, price, zipLink });
     } else {
-      setLogin({ isOpen: true, tierName: name, price, zipLink });
+      setLoginModal({ isOpen: true, tierName: productName, price, zipLink });
     }
   };
 
-  const videoPlaceholder = (
-    <div className="watch-film-frame group relative flex min-h-[250px] w-full items-center justify-center overflow-hidden rounded-[1.3rem] watch-inverse sm:min-h-[340px]">
-      {WATCH_VIDEO_URL ? (
-        <video controls playsInline className="absolute inset-0 h-full w-full object-cover">
-          <source src={WATCH_VIDEO_URL} type="video/mp4" />
-        </video>
-      ) : (
-        <>
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/15" />
-          <button type="button" onClick={() => setVideoOpen(true)} className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-5 text-center text-white">
-            <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/65 bg-white/15 backdrop-blur"><Play size={20} fill="currentColor" /></span>
-            <span className="text-[8px] font-black uppercase tracking-[0.22em]">Watch film placeholder</span>
-            <span className="max-w-sm text-xs leading-5 text-white/75">Add your product video in WATCH_VIDEO_URL</span>
-          </button>
-        </>
-      )}
-      <span className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/25 bg-black/25 px-3 py-2 text-[7px] font-extrabold uppercase tracking-[0.16em] text-white backdrop-blur">Video slot / replace source</span>
-    </div>
-  );
-
-  const hero = SITE.heroStyle === 'cinema' ? (
-    <section className="relative flex min-h-[720px] items-end overflow-hidden px-4 pb-12 pt-32 sm:px-8 sm:pb-16 lg:min-h-[880px]">
-      <div className="watch-hero-stage absolute inset-0">{videoPlaceholder}</div>
-      <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/20 to-transparent" />
-      <div className="relative z-10 mx-auto grid w-full max-w-[1460px] gap-8 pb-5 lg:grid-cols-[1fr_340px] lg:items-end">
-        <Reveal className="max-w-4xl">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-black/20 px-4 py-2 text-[8px] font-extrabold uppercase tracking-[0.2em] text-white"><Sparkles size={12} /> {SITE.kicker}</span>
-          <h1 className="mt-6 text-5xl font-light leading-[0.9] tracking-[-0.06em] text-white sm:text-7xl lg:text-[6.4rem]">{SITE.titleBefore}<span className="font-serif italic watch-accent">{SITE.titleEmphasis}</span>{SITE.titleAfter}</h1>
-          <p className="mt-6 max-w-2xl text-sm leading-7 text-white/75 sm:text-base">{SITE.description}</p>
-          <div className="mt-8 flex flex-wrap gap-3"><button type="button" onClick={() => goTo('appointment')} className="watch-button watch-accent-bg rounded-full px-6 py-4 text-[8px] font-extrabold uppercase tracking-[0.14em]">Book a private viewing <ArrowRight size={14} className="ml-2 inline" /></button><button type="button" onClick={() => goTo('collection')} className="rounded-full border border-white/35 bg-white/10 px-6 py-4 text-[8px] font-extrabold uppercase tracking-[0.14em] text-white">Explore collection <ArrowUpRight size={14} className="ml-2 inline" /></button></div>
-        </Reveal>
-        <Reveal delay={0.14} className="rounded-[1.4rem] border border-white/20 bg-black/35 p-5 text-white backdrop-blur-xl"><span className="text-[8px] font-extrabold uppercase tracking-[0.18em] text-white/60">The collection / 02</span><h2 className="mt-3 text-xl font-semibold">{SITE.brand}</h2><p className="mt-2 text-xs leading-5 text-white/65">Precision mechanics, sculptural finishes and a quieter expression of luxury.</p><div className="mt-5 grid grid-cols-3 border-t border-white/20 pt-4 text-center"><div><strong>06</strong><span className="mt-1 block text-[7px] uppercase tracking-[0.12em] text-white/55">Timepieces</span></div><div><strong>03</strong><span className="mt-1 block text-[7px] uppercase tracking-[0.12em] text-white/55">Families</span></div><div><strong>01</strong><span className="mt-1 block text-[7px] uppercase tracking-[0.12em] text-white/55">Atelier</span></div></div></Reveal>
-      </div>
-    </section>
-  ) : SITE.heroStyle === 'showroom' ? (
-    <section className="mx-auto grid max-w-[1460px] gap-8 px-4 py-10 sm:px-8 sm:py-16 lg:grid-cols-[0.82fr_1.18fr] lg:items-center lg:py-20">
-      <Reveal><span className="text-[8px] font-extrabold uppercase tracking-[0.24em] watch-accent">{SITE.kicker}</span><h1 className="mt-5 max-w-xl text-5xl font-semibold leading-[0.93] tracking-[-0.055em] sm:text-7xl">{SITE.titleBefore}<span className="font-serif italic watch-accent">{SITE.titleEmphasis}</span>{SITE.titleAfter}</h1><p className="mt-6 max-w-lg text-sm leading-7 watch-muted">{SITE.description}</p><div className="mt-8 flex flex-wrap gap-3"><button type="button" onClick={() => goTo('collection')} className="watch-button watch-accent-bg rounded-full px-6 py-4 text-[8px] font-extrabold uppercase tracking-[0.13em]">Discover the watches <ArrowRight size={14} className="ml-2 inline" /></button><button type="button" onClick={() => setVideoOpen(true)} className="inline-flex items-center gap-2 rounded-full border watch-line watch-panel px-5 py-4 text-[8px] font-extrabold uppercase tracking-[0.13em]"><Play size={12} /> View film placeholder</button></div><div className="mt-10 flex gap-6 border-t watch-line pt-5"><div><strong className="text-2xl">06</strong><span className="ml-2 text-[7px] font-bold uppercase tracking-[0.12em] watch-muted">References</span></div><div><strong className="text-2xl">100%</strong><span className="ml-2 text-[7px] font-bold uppercase tracking-[0.12em] watch-muted">Automatic</span></div></div></Reveal>
-      <Reveal delay={0.1} className="relative"><div className="absolute -right-3 -top-3 h-full w-full border watch-line" /><div className="relative min-h-[440px] overflow-hidden watch-inverse sm:min-h-[610px]"><img src={SITE.hero} alt="Luxury timepiece in the studio" className="h-full min-h-[440px] w-full object-cover sm:min-h-[610px]" /><div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" /><span className="absolute bottom-5 left-5 text-[8px] font-extrabold uppercase tracking-[0.18em] text-white/80">Reference / 02 — {WATCHES[0].reference}</span></div></Reveal>
-    </section>
-  ) : SITE.heroStyle === 'mosaic' ? (
-    <section className="mx-auto max-w-[1460px] px-4 pb-12 pt-10 sm:px-8 sm:pb-16 sm:pt-16">
-      <Reveal className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-end"><div><span className="text-[8px] font-extrabold uppercase tracking-[0.22em] watch-accent">{SITE.kicker}</span><h1 className="mt-4 max-w-4xl text-5xl font-semibold leading-[0.92] tracking-[-0.06em] sm:text-7xl">{SITE.titleBefore}<span className="font-serif italic watch-accent">{SITE.titleEmphasis}</span>{SITE.titleAfter}</h1></div><div className="max-w-sm"><p className="text-sm leading-7 watch-muted">{SITE.description}</p><button type="button" onClick={() => goTo('appointment')} className="watch-button watch-accent-bg mt-5 rounded-full px-6 py-4 text-[8px] font-extrabold uppercase tracking-[0.13em]">Arrange a private viewing <ArrowRight size={13} className="ml-2 inline" /></button></div></Reveal>
-      <div className="mt-8 grid gap-3 md:grid-cols-12"><Reveal className="relative min-h-[440px] overflow-hidden rounded-[1.5rem] md:col-span-7 md:row-span-2">{videoPlaceholder}</Reveal><Reveal delay={0.08} className="relative min-h-[210px] overflow-hidden rounded-[1.5rem] md:col-span-5"><img src={WATCHES[1].image} alt={WATCHES[1].name} className="absolute inset-0 h-full w-full object-cover" /><div className="absolute inset-0 bg-gradient-to-t from-black/65 to-transparent" /><p className="absolute bottom-4 left-4 text-sm font-semibold text-white">{WATCHES[1].name}</p></Reveal><Reveal delay={0.13} className="relative min-h-[210px] overflow-hidden rounded-[1.5rem] md:col-span-5"><img src={WATCHES[2].image} alt={WATCHES[2].name} className="absolute inset-0 h-full w-full object-cover" /><div className="absolute inset-0 bg-gradient-to-t from-black/65 to-transparent" /><p className="absolute bottom-4 left-4 text-sm font-semibold text-white">{WATCHES[2].name}</p></Reveal></div>
-    </section>
-  ) : SITE.heroStyle === 'minimal' ? (
-    <section className="mx-auto grid max-w-[1460px] gap-8 px-4 py-12 sm:px-8 sm:py-20 lg:grid-cols-[1fr_0.8fr] lg:items-center">
-      <Reveal><span className="text-[8px] font-extrabold uppercase tracking-[0.24em] watch-accent">{SITE.kicker}</span><h1 className="mt-5 max-w-2xl font-serif text-5xl leading-[0.98] tracking-[-0.05em] sm:text-7xl">{SITE.titleBefore}<span className="italic watch-accent">{SITE.titleEmphasis}</span>{SITE.titleAfter}</h1><p className="mt-6 max-w-xl text-sm leading-7 watch-muted">{SITE.description}</p><button type="button" onClick={() => goTo('collection')} className="watch-button watch-accent-bg mt-8 rounded-full px-7 py-4 text-[8px] font-extrabold uppercase tracking-[0.14em]">See the collection <ArrowRight size={14} className="ml-2 inline" /></button><p className="mt-7 text-[8px] font-bold uppercase tracking-[0.17em] watch-muted">Designed to be worn, remembered and passed on.</p></Reveal>
-      <Reveal delay={0.12} className="relative mx-auto w-full max-w-xl"><div className="absolute -left-4 -top-4 h-full w-full rounded-full border watch-line" />{videoPlaceholder}<div className="absolute -bottom-4 right-4 rounded-xl watch-panel px-4 py-3 shadow-xl"><span className="text-[7px] font-extrabold uppercase tracking-[0.15em] watch-accent">Campaign film</span><p className="mt-1 text-xs font-semibold">A moving study of time.</p></div></Reveal>
-    </section>
-  ) : (
-    <section className="mx-auto grid max-w-[1460px] gap-8 px-4 py-10 sm:px-8 sm:py-16 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:py-20">
-      <Reveal><span className="inline-flex items-center gap-2 rounded-full border watch-line watch-panel px-4 py-2 text-[8px] font-extrabold uppercase tracking-[0.18em] watch-accent"><Watch size={13} /> {SITE.kicker}</span><h1 className="mt-6 max-w-2xl text-5xl font-medium leading-[0.94] tracking-[-0.055em] sm:text-7xl">{SITE.titleBefore}<span className="font-serif italic watch-accent">{SITE.titleEmphasis}</span>{SITE.titleAfter}</h1><p className="mt-6 max-w-xl text-sm leading-7 watch-muted">{SITE.description}</p><div className="mt-8 flex flex-wrap gap-3"><button type="button" onClick={() => goTo('appointment')} className="watch-button watch-accent-bg rounded-full px-6 py-4 text-[8px] font-extrabold uppercase tracking-[0.13em]">Book a viewing <ArrowRight size={13} className="ml-2 inline" /></button><button type="button" onClick={() => goTo('gallery')} className="rounded-full border watch-line watch-panel px-6 py-4 text-[8px] font-extrabold uppercase tracking-[0.13em]">Explore details <ArrowUpRight size={13} className="ml-2 inline" /></button></div></Reveal>
-      <Reveal delay={0.1} className="relative">{videoPlaceholder}<div className="absolute -bottom-4 left-5 rounded-xl watch-panel px-4 py-3 shadow-xl"><span className="text-[7px] font-extrabold uppercase tracking-[0.15em] watch-accent">Selected piece / 01</span><p className="mt-1 text-xs font-semibold">{WATCHES[0].name}</p></div></Reveal>
-    </section>
-  );
-
-  const collectionSection = (
-    <section id="collection" className="scroll-mt-24 px-4 py-16 sm:px-8 sm:py-24">
-      <div className="mx-auto max-w-[1440px]">
-        <Reveal className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><span className="text-[8px] font-extrabold uppercase tracking-[0.2em] watch-accent">The collection</span><h2 className="mt-3 max-w-3xl text-3xl font-semibold tracking-[-0.04em] sm:text-5xl">Made for the moments that matter.</h2></div><p className="max-w-md text-sm leading-6 watch-muted">Discover mechanical character, considered proportions and details that reward a closer look.</p></Reveal>
-        <div className="mt-7 flex flex-wrap gap-2">{[['all','All pieces'],['dress','Dress'],['sport','Sport'],['skeleton','Open-worked']].map(([id,label])=><button key={id} type="button" onClick={()=>setFilter(id)} className={'rounded-full border px-4 py-2.5 text-[8px] font-extrabold uppercase tracking-[0.12em] transition ' + (filter===id ? 'watch-accent-bg border-transparent' : 'watch-panel watch-line')}>{label}</button>)}</div>
-        <div className={'mt-7 grid gap-4 ' + cardLayouts[SITE.cardLayout]}>{visibleWatches.map((watch,index)=><motion.article key={watch.id} layout initial={{opacity:0,y:18}} animate={{opacity:1,y:0}} whileHover={{y:-5}} transition={{delay:index*0.035}} className={'group overflow-hidden rounded-[1.3rem] border watch-line watch-panel ' + (SITE.cardLayout==='mosaic' && index===0 ? 'xl:col-span-2 xl:row-span-2' : '')}><button type="button" onClick={()=>setPreview(watch.image)} className="relative block aspect-[1.15] w-full overflow-hidden watch-inverse text-left"><img src={watch.image} alt={watch.name} loading="lazy" className="h-full w-full object-cover transition duration-700 group-hover:scale-105"/><span className="absolute left-3 top-3 rounded-full bg-black/50 px-3 py-1.5 text-[7px] font-extrabold uppercase tracking-[0.13em] text-white backdrop-blur">{watch.reference}</span><span className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 watch-accent"><ArrowUpRight size={14}/></span></button><div className="p-4 sm:p-5"><span className="text-[7px] font-extrabold uppercase tracking-[0.15em] watch-accent">{watch.category} collection</span><h3 className="mt-2 text-lg font-semibold">{watch.name}</h3><p className="mt-2 text-[10px] leading-5 watch-muted">{watch.movement} <span className="mx-1">•</span> {watch.case}</p><button type="button" onClick={()=>{setSelectedWatch(watch.name);goTo('appointment');}} className="mt-4 inline-flex items-center gap-2 text-[8px] font-extrabold uppercase tracking-[0.13em] watch-accent">Request details <ArrowRight size={12}/></button></div></motion.article>)}</div>
-      </div>
-    </section>
-  );
-
-  const craftSection = (
-    <section id="craft" className="scroll-mt-24 px-4 py-16 sm:px-8 sm:py-24 watch-soft">
-      <div className="mx-auto max-w-[1440px]">
-        <Reveal className="mb-8 max-w-3xl"><span className="text-[8px] font-extrabold uppercase tracking-[0.2em] watch-accent">Inside the atelier</span><h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] sm:text-5xl">Precision you can feel.</h2><p className="mt-4 text-sm leading-6 watch-muted">A closer look at the materials and mechanical decisions behind each timepiece.</p></Reveal>
-        <div className="grid gap-4 md:grid-cols-3">{[['01 / Calibre','A mechanical heartbeat','Automatic movements built for reliable, everyday precision.',Clock3],['02 / Materials','Light across every surface','Sapphire crystal, carefully finished cases and tactile dials.',Gem],['03 / Finishing','The details stay with you','Brushed, polished and hand-checked finishing at every angle.',Sparkles]].map(([number,title,copy,Icon],index)=><Reveal key={number} delay={index*0.07}><article className="h-full rounded-[1.2rem] border watch-line watch-panel p-6 sm:p-8"><span className="flex h-11 w-11 items-center justify-center rounded-full watch-soft watch-accent"><Icon size={18}/></span><p className="mt-6 text-[7px] font-extrabold uppercase tracking-[0.17em] watch-accent">{number}</p><h3 className="mt-2 text-xl font-semibold">{title}</h3><p className="mt-3 text-xs leading-6 watch-muted">{copy}</p></article></Reveal>)}</div>
-      </div>
-    </section>
-  );
-
-  const gallerySection = (
-    <section id="gallery" className="scroll-mt-24 px-4 py-16 sm:px-8 sm:py-24 watch-inverse">
-      <div className="mx-auto max-w-[1440px]">
-        <Reveal className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><span className="text-[8px] font-extrabold uppercase tracking-[0.2em] watch-accent">The watch journal</span><h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] sm:text-5xl">A study in form and time.</h2><p className="mt-3 max-w-xl text-xs leading-6 opacity-65">Product stills, dial details and campaign moments from the collection.</p></div><button type="button" onClick={()=>setVideoOpen(true)} className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/5 px-5 py-3 text-[8px] font-extrabold uppercase tracking-[0.14em]"><Video size={13}/> Open film slot</button></Reveal>
-        <div className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{GALLERY_WATCHES.map((watch,index)=><Reveal key={watch.id} delay={index*0.04}><button type="button" onClick={()=>setPreview(watch.image)} className={'group relative w-full overflow-hidden rounded-[1.2rem] text-left ' + (index===0?'h-[420px] sm:row-span-2':'h-[260px]')}><img src={watch.image} alt={watch.name} loading="lazy" className="h-full w-full object-cover transition duration-700 group-hover:scale-105"/><span className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"/><span className="absolute bottom-4 left-4"><span className="block text-[7px] font-extrabold uppercase tracking-[0.15em] text-white/70">{watch.reference}</span><span className="mt-1 block text-sm font-semibold text-white">{watch.name}</span></span></button></Reveal>)}</div>
-      </div>
-    </section>
-  );
-
-  const appointmentSection = (
-    <section id="appointment" className="scroll-mt-24 px-4 py-16 sm:px-8 sm:py-24">
-      <div className={'mx-auto grid max-w-[1320px] items-center gap-9 ' + (SITE.formLayout==='wide' ? 'lg:grid-cols-1' : 'lg:grid-cols-[0.75fr_1.25fr]')}>
-        <Reveal><span className="inline-flex items-center gap-2 text-[8px] font-extrabold uppercase tracking-[0.2em] watch-accent"><Calendar size={13}/> Private viewing</span><h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em] sm:text-5xl">Meet your next heirloom.</h2><p className="mt-4 max-w-md text-sm leading-6 watch-muted">Tell us which piece caught your eye and our boutique team can prepare a personal viewing.</p><div className="mt-6 flex items-center gap-3 text-[9px] font-semibold"><span className="flex h-10 w-10 items-center justify-center rounded-full watch-soft watch-accent"><Clock3 size={16}/></span> By appointment, at your pace</div></Reveal>
-        <Reveal delay={0.1}><form onSubmit={(event)=>{event.preventDefault();setSubmitted(true);}} className="rounded-[1.4rem] border watch-line watch-panel p-5 shadow-xl sm:p-8"><div className="mb-5 flex items-center justify-between"><div><p className="text-[7px] font-extrabold uppercase tracking-[0.18em] watch-accent">Boutique enquiry</p><h3 className="mt-1 text-lg font-semibold">Arrange a private viewing</h3></div><Watch size={20} className="watch-accent"/></div><div className="grid gap-3 sm:grid-cols-2"><label className="rounded-xl border watch-line watch-soft p-3"><span className="text-[7px] font-extrabold uppercase tracking-[0.12em] watch-muted">Your name</span><input required value={clientName} onChange={(e)=>setClientName(e.target.value)} className="mt-2 w-full bg-transparent text-sm font-semibold outline-none" placeholder="Name"/></label><label className="rounded-xl border watch-line watch-soft p-3"><span className="text-[7px] font-extrabold uppercase tracking-[0.12em] watch-muted">Email</span><input required type="email" value={clientEmail} onChange={(e)=>setClientEmail(e.target.value)} className="mt-2 w-full bg-transparent text-sm font-semibold outline-none" placeholder="you@example.com"/></label><label className="rounded-xl border watch-line watch-soft p-3"><span className="text-[7px] font-extrabold uppercase tracking-[0.12em] watch-muted">Preferred timepiece</span><select value={selectedWatch} onChange={(e)=>setSelectedWatch(e.target.value)} className="mt-2 w-full bg-transparent text-sm font-semibold outline-none">{WATCHES.map((watch)=><option key={watch.id}>{watch.name}</option>)}</select></label><label className="rounded-xl border watch-line watch-soft p-3"><span className="text-[7px] font-extrabold uppercase tracking-[0.12em] watch-muted">Preferred date</span><input type="date" value={appointmentDate} onChange={(e)=>setAppointmentDate(e.target.value)} className="mt-2 w-full bg-transparent text-sm font-semibold outline-none"/></label></div><div className="mt-5 flex flex-col justify-between gap-4 border-t watch-line pt-5 sm:flex-row sm:items-center"><p className="text-[9px] leading-5 watch-muted">{submitted?'Preview sent for '+selectedWatch+' • '+clientName+' • '+clientEmail:'Front-end demo form. Connect to your boutique inbox to receive real enquiries.'}</p><button type="submit" className="watch-button watch-accent-bg inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-[8px] font-extrabold uppercase tracking-[0.13em]">Request appointment <ArrowRight size={13}/></button></div></form></Reveal>
-      </div>
-    </section>
-  );
-
-  const licenseSection = (
-    <section id="licensing" className="scroll-mt-24 px-4 py-16 sm:px-8 sm:py-24 watch-soft">
-      <div className="mx-auto max-w-[1240px]">
-        <Reveal className="mx-auto max-w-3xl text-center"><span className="inline-flex items-center gap-2 rounded-full border watch-line watch-panel px-4 py-2 text-[7px] font-extrabold uppercase tracking-[0.16em] watch-accent"><Crown size={12}/> {SITE.brand} digital kit</span><h2 className="mt-5 text-3xl font-semibold tracking-[-0.04em] sm:text-5xl">The watch experience, ready to launch.</h2><p className="mt-4 text-sm leading-6 watch-muted">A complete React landing page, campaign visuals, responsive gallery and commercial licensing options.</p><button type="button" onClick={()=>ATELIER_HOROLOGY_FREE_SAMPLE_LINK ? window.open(ATELIER_HOROLOGY_FREE_SAMPLE_LINK, '_blank', 'noopener,noreferrer') : goTo('licensing')} className="watch-button watch-accent-bg mt-5 rounded-full px-5 py-3 text-[8px] font-extrabold uppercase tracking-[0.13em]"><Play size={12} className="mr-2 inline"/>Watch free sample</button></Reveal>
-        <div className="mx-auto mt-8 grid max-w-5xl gap-4 lg:grid-cols-2">{[{tier:'standard',name:'Agency license',price:'$349',features:['React + Tailwind JSX','Watch scenes and product gallery','Three editable PSD mockups','Commercial client license']},{tier:'buyout',name:'Exclusive buyout',price:'$1,490',features:['Complete visual and JSX kit','10 custom campaign renders','Watch prompt ruleset','Exclusive brand transfer certificate']}].map((plan,index)=><Reveal key={plan.tier} delay={index*0.08}><article className={'h-full rounded-[1.4rem] border watch-line p-6 sm:p-8 '+(index===0?'watch-panel':'watch-inverse')}><div className="flex items-center justify-between gap-4"><span className="text-[8px] font-extrabold uppercase tracking-[0.15em] watch-accent">{plan.name}</span><span className="text-2xl font-semibold">{plan.price}</span></div><ul className="mt-6 space-y-3 text-[10px] leading-5">{plan.features.map((feature)=><li key={feature} className="flex gap-2"><CheckCircle2 size={14} className="mt-0.5 shrink-0 watch-accent"/>{feature}</li>)}</ul><button type="button" onClick={()=>purchase(plan.tier)} className="watch-button watch-accent-bg mt-7 flex w-full items-center justify-center gap-2 rounded-full px-5 py-4 text-[8px] font-extrabold uppercase tracking-[0.12em]">{index===0?<ShieldCheck size={14}/>:<Lock size={13}/>} Select {plan.price}</button></article></Reveal>)}</div>
-      </div>
-    </section>
-  );
-
-  const faqSection = (
-    <section id="faq" className="scroll-mt-24 px-4 py-16 sm:px-8 sm:py-24">
-      <div className="mx-auto grid max-w-[1240px] gap-8 lg:grid-cols-[0.7fr_1.3fr]"><Reveal><span className="text-[8px] font-extrabold uppercase tracking-[0.18em] watch-accent">Helpful details</span><h2 className="mt-3 text-3xl font-semibold sm:text-4xl">Good to know.</h2></Reveal><div className="divide-y watch-line">{FAQS.map(([question,answer],index)=><div key={question} className="border-b watch-line py-4"><button type="button" onClick={()=>setOpenFaq(openFaq===index?-1:index)} className="flex w-full items-center justify-between gap-4 text-left"><span className="text-xs font-semibold sm:text-sm">{question}</span><ChevronDown size={16} className={'shrink-0 watch-accent transition '+(openFaq===index?'rotate-180':'')}/></button><AnimatePresence initial={false}>{openFaq===index&&<motion.p initial={{height:0,opacity:0}} animate={{height:'auto',opacity:1}} exit={{height:0,opacity:0}} className="overflow-hidden pr-8 pt-3 text-[10px] leading-6 watch-muted">{answer}</motion.p>}</AnimatePresence></div>)}</div></div>
-    </section>
-  );
-
-  const sectionMap = {
-    collection: collectionSection,
-    craft: craftSection,
-    gallery: gallerySection,
-    appointment: appointmentSection,
-    licensing: licenseSection,
-    faq: faqSection
+  const buildHorologyFallback = (msgText, zoneTitle) => {
+    const isSr = /[čćžšđ]|zdravo|ćao|cao|cena|cijena|sat|kupov|licenc|termin/i.test(msgText);
+    const cleanSlot = salonSlot.replace('Atelier Slot: ', '');
+    const guest = clientName.trim() || (isSr ? 'VIP Klijent' : 'Collector Principal');
+    if (isSr) {
+      return `Dobrodošli u Atelier Horology Zero-G Salon, ${guest}. Vaš upit za ${selectedTimepiece} (aktivni kalibar: ${zoneTitle}) i termin ${salonDate} u ${cleanSlot} je evidentiran. Turnkey Antigravity React + 150MP Watch Kit dostupan je odmah za $${agencyPriceNum} (Agency) ili $${buyoutPriceNum} (1-of-1 Buyout).`;
+    }
+    return `Welcome to Atelier Horology Zero-G Salon, ${guest}. Your inquiry regarding ${selectedTimepiece} (Active Caliber: ${zoneTitle}) for ${salonDate} at ${cleanSlot} is logged. Full Turnkey Antigravity React + 150MP Watch Kit licensing is available at $${agencyPriceNum} (Agency) or $${buyoutPriceNum} (1-of-1 Exclusive Buyout).`;
   };
+
+  const handleConciergeSend = async (e) => {
+    e.preventDefault();
+    const trimmed = chatInput.trim();
+    if (!trimmed || isAiThinking) return;
+
+    const currentZone = KIT_CONFIG.zones[activeZoneIdx];
+    const slotClean = salonSlot.replace('Atelier Slot: ', '');
+
+    setChatMessages((prev) => [...prev, { role: 'user', text: trimmed }]);
+    setChatInput('');
+    setIsAiThinking(true);
+
+    const payload = {
+      name: clientName.trim() || currentUser?.displayName || 'Atelier Collector / Agency',
+      email: clientEmail.trim() || currentUser?.email || 'vip@atelier-horology.com',
+      category: 'Turnkey Luxury B2B Watch Web Kits (Antigravity Edition)',
+      item: `Atelier Horology Kit (${selectedTimepiece})`,
+      budget: `$${agencyPriceNum} Agency / $${buyoutPriceNum} Exclusive Buyout`,
+      date: `${salonDate} at ${slotClean}`,
+      message: `[Page: Atelier Horology Watch Kit 2/5 | Rose-Gold Tourbillon Chamber: ${currentZone.zone}] ${trimmed}`
+    };
+
+    try {
+      const res = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json().catch(() => null);
+      const rawReply = data?.agent_reply || data?.reply || data?.output || data?.text;
+      if (res.ok && rawReply) {
+        setChatMessages((prev) => [...prev, { role: 'assistant', text: String(rawReply) }]);
+      } else {
+        setChatMessages((prev) => [...prev, { role: 'assistant', text: buildHorologyFallback(trimmed, currentZone.title) }]);
+      }
+    } catch {
+      setChatMessages((prev) => [...prev, { role: 'assistant', text: buildHorologyFallback(trimmed, currentZone.title) }]);
+    } finally {
+      setIsAiThinking(false);
+    }
+  };
+
+  const handleHeroMouseMove = (e) => {
+    if (reduceMotion) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width - 0.5;
+    const py = (e.clientY - rect.top) / rect.height - 0.5;
+    setHeroTilt({ rx: -py * 12, ry: px * 12 });
+  };
+
+  const configuredReelUrl = activeCinemaIdx === 0 ? VIDEO_REEL_1_URL : VIDEO_REEL_2_URL;
+  const effectiveVideoUrl = customVideoUrl.trim() || configuredReelUrl.trim();
+  const hasLiveVideoFile = Boolean(effectiveVideoUrl) && !videoError;
+
+  const toggleCinemaPlay = () => {
+    if (hasLiveVideoFile && cinemaVideoRef.current) {
+      if (cinemaVideoRef.current.paused) {
+        cinemaVideoRef.current.play();
+        setIsCinemaPlaying(true);
+      } else {
+        cinemaVideoRef.current.pause();
+        setIsCinemaPlaying(false);
+      }
+    } else {
+      setIsCinemaPlaying((prev) => !prev);
+    }
+  };
+
+  const toggleCinemaMute = () => {
+    if (hasLiveVideoFile && cinemaVideoRef.current) {
+      cinemaVideoRef.current.muted = !cinemaVideoRef.current.muted;
+      setIsCinemaMuted(cinemaVideoRef.current.muted);
+    } else {
+      setIsCinemaMuted((prev) => !prev);
+    }
+  };
+
+  const scrollTo = (id) => {
+    setMenuOpen(false);
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const activeZone = KIT_CONFIG.zones[activeZoneIdx];
+  const activeCinema = KIT_CONFIG.cinemaVideos[activeCinemaIdx] || KIT_CONFIG.cinemaVideos[0];
 
   return (
-    <div className="watch-page min-h-screen overflow-hidden font-sans relative" style={{'--wp-canvas':SITE.palette.canvas,'--wp-ink':SITE.palette.ink,'--wp-muted':SITE.palette.muted,'--wp-accent':SITE.palette.accent,'--wp-accent-contrast':SITE.palette.accentContrast,'--wp-panel':SITE.palette.panel,'--wp-soft':SITE.palette.soft,'--wp-line':SITE.palette.line,'--wp-inverse':SITE.palette.inverse,'--wp-inverse-ink':SITE.palette.inverseInk}}>
-      <style>{STYLES}</style>
-      <Helmet><title>{SITE.brand} | Fine Watchmaking</title><meta name="description" content={SITE.description}/><meta name="theme-color" content={SITE.palette.inverse}/></Helmet>
-      
-      {/* PLIVAJUĆA DUGMAD: LEVO NA 1. STRANU (Abyss Chronograph), DESNO NA 3. STRANU (Meridian Watch House) */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1, duration: 0.5 }}
-        className="fixed inset-x-6 bottom-6 z-[9999] flex justify-between items-center pointer-events-none px-4"
-      >
-        <button
-          type="button"
-          onClick={() => navigate('/abyss-chronograph')}
-          className="pointer-events-auto group flex items-center gap-3 rounded-full bg-[#07121B] text-white px-5 py-3.5 shadow-2xl border border-white/25 backdrop-blur-xl hover:bg-[#122B33] transition-all duration-300 cursor-pointer"
-        >
-          <ArrowLeft size={14} className="text-white/70 group-hover:-translate-x-1 transition-transform" />
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#62D6D0] text-[#07121B] group-hover:-rotate-12 transition-transform">
-            <Watch size={16} />
-          </span>
-          <div className="text-left pr-1">
-            <span className="block text-[7px] font-black uppercase tracking-[0.2em] text-[#62D6D0]">Prev Watch (1/5)</span>
-            <span className="block text-[10px] font-extrabold uppercase tracking-widest text-white">Abyss Chronograph</span>
-          </div>
-        </button>
+    <div className={`min-h-screen ${THEME.pageBg} ${THEME.textMain} pb-24 font-sans relative overflow-x-hidden`}>
+      <Helmet>
+        <title>Atelier Horology — Zero-Gravity 18k Rose-Gold Tourbillon & 150MP Watch Kit</title>
+      </Helmet>
 
-        <button
-          type="button"
-          onClick={() => navigate('/meridian-watch-house')}
-          className="pointer-events-auto group flex items-center gap-3 rounded-full bg-[#17334B] text-white px-5 py-3.5 shadow-2xl border border-white/25 backdrop-blur-xl hover:bg-[#173950] transition-all duration-300 cursor-pointer"
-        >
-          <div className="text-right pl-1">
-            <span className="block text-[7px] font-black uppercase tracking-[0.2em] text-[#2B83B9]">Next Watch (3/5)</span>
-            <span className="block text-[10px] font-extrabold uppercase tracking-widest text-white">Meridian Watch House</span>
-          </div>
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#2B83B9] text-white group-hover:rotate-12 transition-transform">
-            <Watch size={16} />
-          </span>
-          <ArrowRight size={14} className="text-white/70 group-hover:translate-x-1 transition-transform" />
-        </button>
-      </motion.div>
+      {/* TOP ZERO-GRAVITY TELEMETRY RIBBON */}
+      <div className={`border-b px-4 py-2 text-center text-[11px] font-black uppercase tracking-[0.22em] ${THEME.ribbonBg}`}>
+        ATELIER HOROLOGY GENÈVE ✦ ZERO-GRAVITY TOURBILLON ENGINE (0.00G) ✦ 18K ROSE-GOLD 150MP MASTERS
+      </div>
 
-      <div className="watch-inverse px-4 py-2 text-center text-[7px] font-extrabold uppercase tracking-[0.2em] sm:text-[8px]">{SITE.topline}</div>
-      <header className="sticky top-0 z-40 border-b watch-line watch-panel backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[1460px] items-center justify-between gap-3 px-4 py-4 sm:px-8">
-          <button type="button" onClick={()=>window.scrollTo({top:0,behavior:'smooth'})} className="flex items-center gap-3 text-left"><span className="flex h-10 w-10 items-center justify-center rounded-full watch-inverse watch-accent"><Watch size={17}/></span><span><span className="block text-[10px] font-black uppercase tracking-[0.21em]">{SITE.brand}</span><span className="mt-1 block text-[7px] font-bold uppercase tracking-[0.16em] watch-muted">{SITE.descriptor}</span></span></button>
-          <nav className="hidden items-center gap-6 text-[7px] font-extrabold uppercase tracking-[0.14em] watch-muted lg:flex" aria-label="Main navigation">
-            <button type="button" onClick={()=>goTo('collection')}>Collection</button>
-            <button type="button" onClick={()=>goTo('craft')}>Craft</button>
-            <button type="button" onClick={()=>goTo('gallery')}>Journal</button>
-            <button type="button" onClick={()=>goTo('licensing')}>The kit</button>
-            <button type="button" onClick={()=>navigate('/abyss-chronograph')} className="text-[#62D6D0] font-black flex items-center gap-1"><Watch size={12}/> Abyss Chronograph</button>
-            <button type="button" onClick={()=>navigate('/meridian-watch-house')} className="text-[#2B83B9] font-black flex items-center gap-1"><Watch size={12}/> Meridian House</button>
+      {/* STICKY SUB-HEADER */}
+      <header className={`sticky top-0 z-40 border-b backdrop-blur-2xl ${THEME.headerBg}`}>
+        <div className="mx-auto flex max-w-[1440px] items-center justify-between px-4 py-3.5 sm:px-7 lg:px-10">
+          <button
+            type="button"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="flex items-center gap-3 text-left cursor-pointer"
+          >
+            <span className={`flex h-10 w-10 items-center justify-center rounded-full ${THEME.btnPrimary}`}>
+              <Crown size={18} />
+            </span>
+            <span>
+              <span className={`block text-sm sm:text-base font-black uppercase tracking-[0.22em] ${THEME.textMain}`}>
+                Atelier Horology
+              </span>
+              <span className={`block text-[10px] font-extrabold uppercase tracking-[0.18em] ${THEME.accentText}`}>
+                Watch Kit 02 / 05 • Antigravity 18k Rose-Gold & Skeleton
+              </span>
+            </span>
+          </button>
+
+          <nav className="hidden items-center gap-7 text-[11px] font-black uppercase tracking-[0.15em] lg:flex text-white">
+            <button type="button" onClick={() => scrollTo('zero-g-chamber')} className="hover:text-amber-300 cursor-pointer">Tourbillon Pod</button>
+            <button type="button" onClick={() => scrollTo('horology-cinema')} className="hover:text-amber-300 cursor-pointer">16:9 Video Slot</button>
+            <button type="button" onClick={() => scrollTo('calibers')} className="hover:text-amber-300 cursor-pointer">Openworked Pieces</button>
+            <button type="button" onClick={() => scrollTo('gallery')} className="hover:text-amber-300 cursor-pointer">150MP Vault</button>
+            <button type="button" onClick={() => scrollTo('commercial-pricing')} className="hover:text-amber-300 cursor-pointer">B2B Licensing</button>
           </nav>
-          <button type="button" onClick={()=>goTo('appointment')} className="watch-button watch-accent-bg hidden rounded-full px-5 py-3 text-[7px] font-extrabold uppercase tracking-[0.13em] sm:inline-flex">Private viewing <ArrowRight size={12} className="ml-2"/></button>
-          <button type="button" onClick={()=>setMenuOpen((value)=>!value)} aria-label="Toggle navigation" className="flex h-10 w-10 items-center justify-center rounded-full border watch-line lg:hidden">{menuOpen?<X size={17}/>:<Menu size={17}/>}</button>
+
+          <div className="hidden items-center gap-3 lg:flex">
+            <button
+              type="button"
+              onClick={() => scrollTo('concierge-desk')}
+              className={`rounded-full px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.14em] transition cursor-pointer ${THEME.btnOutline}`}
+            >
+              24/7 Atelier Desk
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollTo('commercial-pricing')}
+              className={`flex items-center gap-2 rounded-full px-6 py-2.5 text-[11px] font-black uppercase tracking-[0.14em] transition hover:scale-105 cursor-pointer ${THEME.btnGold}`}
+            >
+              Acquire Kit (${agencyPriceNum}) <ArrowRight size={14} />
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setMenuOpen((v) => !v)}
+            className={`flex h-10 w-10 items-center justify-center rounded-full border ${THEME.borderSubtle} lg:hidden`}
+          >
+            {menuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
         </div>
-        <AnimatePresence>{menuOpen&&<motion.nav initial={{height:0,opacity:0}} animate={{height:'auto',opacity:1}} exit={{height:0,opacity:0}} className="overflow-hidden border-t watch-line lg:hidden"><div className="mx-auto flex max-w-[1460px] flex-col px-5 py-3 text-[8px] font-bold uppercase tracking-[0.12em] watch-muted">{[['Collection','collection'],['Craft','craft'],['Journal','gallery'],['Viewing','appointment'],['The kit','licensing']].map(([label,id])=><button key={id} type="button" onClick={()=>goTo(id)} className="py-3 text-left">{label}</button>)}<button type="button" onClick={()=>navigate('/abyss-chronograph')} className="py-3 text-left text-[#62D6D0] font-black">Abyss Chronograph</button><button type="button" onClick={()=>navigate('/meridian-watch-house')} className="py-3 text-left text-[#2B83B9] font-black">Meridian Watch House</button></div></motion.nav>}</AnimatePresence>
+
+        <AnimatePresence>
+          {menuOpen && (
+            <motion.nav
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className={`overflow-hidden border-t ${THEME.borderSubtle} ${THEME.cardBg} px-5 lg:hidden`}
+            >
+              <div className="mx-auto flex max-w-[1440px] flex-col gap-1 py-4">
+                {[
+                  ['Tourbillon Pod', 'zero-g-chamber'],
+                  ['16:9 Video Slot', 'horology-cinema'],
+                  ['Openworked Pieces', 'calibers'],
+                  ['24/7 AI Atelier Desk', 'concierge-desk'],
+                  ['150MP Macro Vault', 'gallery'],
+                  ['B2B Licensing', 'commercial-pricing']
+                ].map(([label, id]) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => scrollTo(id)}
+                    className="py-2.5 text-left text-xs font-black uppercase tracking-wider text-white"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </motion.nav>
+          )}
+        </AnimatePresence>
       </header>
+
       <main>
-        {hero}
-        {SITE.order.map((section)=><React.Fragment key={section}>{sectionMap[section]}</React.Fragment>)}
-        <section className="px-4 py-12 sm:px-8 sm:py-16"><Reveal className="mx-auto max-w-[1440px]"><div className="relative overflow-hidden rounded-[1.5rem] watch-inverse p-7 sm:p-12"><div className="absolute inset-0 bg-gradient-to-r from-black/75 to-black/20"/><div className="relative max-w-3xl"><span className="text-[7px] font-extrabold uppercase tracking-[0.2em] watch-accent">Time, made personal</span><h2 className="mt-4 text-3xl font-semibold leading-tight sm:text-5xl">A closer look begins with a conversation.</h2><p className="mt-4 max-w-xl text-xs leading-6 text-white/70">Explore the watch collection or arrange a private viewing with the boutique team.</p><button type="button" onClick={()=>goTo('appointment')} className="watch-button watch-accent-bg mt-6 rounded-full px-6 py-3.5 text-[8px] font-extrabold uppercase tracking-[0.13em]">Request a viewing <ArrowRight size={13} className="ml-2 inline"/></button></div></div></Reveal></section>
+        {/* ================================================================= */}
+        {/* ANTIGRAVITY HERO CHAMBER: GOLDEN GYROSCOPE + 3D MAGNETIC TILT     */}
+        {/* ================================================================= */}
+        <section id="zero-g-chamber" className="relative border-b border-amber-500/20 bg-[radial-gradient(ellipse_at_top,_#2B180E_0%,_#090605_68%)] py-12 sm:py-16 overflow-hidden">
+          {/* FLOATING GOLDEN EMBER PARTICLES */}
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            {GOLDEN_EMBERS.map((p, i) => (
+              <motion.span
+                key={i}
+                style={{ left: p.left, top: p.top, width: p.size, height: p.size }}
+                animate={reduceMotion ? {} : { y: [0, -135, 0], opacity: [0.18, 0.82, 0.18] }}
+                transition={{ duration: p.dur, repeat: Infinity, delay: p.delay, ease: 'easeInOut' }}
+                className="absolute rounded-full bg-amber-300 shadow-[0_0_14px_rgba(251,191,36,0.9)]"
+              />
+            ))}
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-[1440px] px-4 sm:px-7 lg:px-10">
+            <div className="grid gap-10 lg:grid-cols-12 lg:items-center">
+              {/* RIGHT-TO-LEFT ATELIER VARIATION: STAGE LEFT ON DESKTOP OR CLEAN TELEMETRY */}
+              <div
+                onMouseMove={handleHeroMouseMove}
+                onMouseLeave={() => setHeroTilt({ rx: 0, ry: 0 })}
+                className="lg:col-span-7 order-2 lg:order-1 relative flex flex-col items-center justify-center min-h-[480px] sm:min-h-[580px] rounded-[2.5rem] border border-amber-400/35 bg-[radial-gradient(circle_at_center,_rgba(245,158,11,0.20)_0%,_rgba(12,8,6,0.94)_72%)] p-6 sm:p-10 shadow-[0_0_75px_rgba(217,119,6,0.22)] overflow-hidden"
+              >
+                {/* ORBITING TOURBILLON ESCAPEMENT RINGS */}
+                <motion.div
+                  animate={reduceMotion ? {} : { rotate: 360 }}
+                  transition={{ duration: 42, repeat: Infinity, ease: 'linear' }}
+                  className="pointer-events-none absolute h-[360px] w-[360px] sm:h-[470px] sm:w-[470px] rounded-full border border-dashed border-amber-400/30"
+                />
+                <motion.div
+                  animate={reduceMotion ? {} : { rotate: -360 }}
+                  transition={{ duration: 56, repeat: Infinity, ease: 'linear' }}
+                  className="pointer-events-none absolute h-[285px] w-[285px] sm:h-[375px] sm:w-[375px] rounded-full border border-orange-300/15"
+                />
+
+                <div className="absolute top-5 left-5 right-5 flex flex-wrap items-center justify-between gap-2 z-20">
+                  <span className="rounded-full border border-amber-400/40 bg-black/75 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-amber-300 backdrop-blur-md">
+                    GRAVITY: 0.00 G // FLYING TOURBILLON CAGE
+                  </span>
+                  <span className="rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-white backdrop-blur-md">
+                    3D MAGNETIC PERSPECTIVE
+                  </span>
+                </div>
+
+                {/* LEVITATING WATCH CAPSULE */}
+                <div
+                  style={{
+                    transform: `perspective(1200px) rotateX(${heroTilt.rx}deg) rotateY(${heroTilt.ry}deg)`,
+                    transition: 'transform 160ms ease-out'
+                  }}
+                  className="relative z-10 w-full max-w-[460px] my-6"
+                >
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={activeZone.id}
+                      initial={{ opacity: 0, scale: 0.92, y: 18 }}
+                      animate={
+                        reduceMotion
+                          ? { opacity: 1, scale: 1, y: 0 }
+                          : { opacity: 1, scale: 1, y: [0, -22, 0], rotateZ: [1.1, -1.1, 1.1] }
+                      }
+                      exit={{ opacity: 0, scale: 0.92, y: -18 }}
+                      transition={{
+                        opacity: { duration: 0.35 },
+                        scale: { duration: 0.35 },
+                        y: { duration: 5.4, repeat: Infinity, ease: 'easeInOut' },
+                        rotateZ: { duration: 7.8, repeat: Infinity, ease: 'easeInOut' }
+                      }}
+                      onClick={() => setZoomImage(activeZone.image)}
+                      className="relative aspect-square w-full overflow-hidden rounded-[2.2rem] border-2 border-amber-300/45 bg-black shadow-[0_30px_80px_rgba(245,158,11,0.32)] cursor-zoom-in group"
+                    >
+                      <img
+                        src={activeZone.image}
+                        alt={activeZone.title}
+                        className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                      />
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-amber-500/15 via-transparent to-white/10 opacity-75" />
+                      <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between rounded-xl border border-white/20 bg-black/75 px-4 py-2.5 backdrop-blur-md">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-amber-300">
+                          {activeZone.step}
+                        </span>
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-white">
+                          Click for 150MP Loupe ↗
+                        </span>
+                      </div>
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+
+                {/* REACTIVE ANTIGRAVITY FLOOR SHADOW PULSE */}
+                <motion.div
+                  animate={reduceMotion ? {} : { scaleX: [1, 0.72, 1], opacity: [0.55, 0.22, 0.55] }}
+                  transition={{ duration: 5.4, repeat: Infinity, ease: 'easeInOut' }}
+                  className="h-6 w-64 rounded-full bg-amber-400/40 blur-2xl"
+                />
+              </div>
+
+              {/* TELEMETRY & CAPSULE SELECTOR */}
+              <div className="lg:col-span-5 order-1 lg:order-2 space-y-6">
+                <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/45 bg-amber-500/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.24em] text-amber-300">
+                  <Sparkles size={13} /> HAUTE HORLOGERIE LEVITATION • {activeZone.zone}
+                </div>
+
+                <h1 className="text-4xl sm:text-6xl font-black leading-[1.03] tracking-tight text-white">
+                  {activeZone.title}
+                </h1>
+
+                <p className="text-sm sm:text-base leading-relaxed text-stone-300">
+                  {activeZone.subtitle}
+                </p>
+
+                <div className="rounded-2xl border border-amber-400/30 bg-[#1A100B]/85 px-4 py-3.5 backdrop-blur-xl">
+                  <span className="block text-[10px] font-black uppercase tracking-[0.2em] text-amber-400">
+                    GENEVA MOVEMENT SPECIFICATION
+                  </span>
+                  <span className="mt-1 block text-xs sm:text-sm font-bold text-white">
+                    {activeZone.specs}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap gap-3 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setZoomImage(activeZone.image)}
+                    className={`rounded-full px-6 py-3.5 text-xs font-black uppercase tracking-wider transition hover:scale-105 cursor-pointer flex items-center gap-2 ${THEME.btnPrimary}`}
+                  >
+                    <Aperture size={15} /> Inspect 150MP Bridges
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => scrollTo('horology-cinema')}
+                    className={`rounded-full px-6 py-3.5 text-xs font-black uppercase tracking-wider transition cursor-pointer flex items-center gap-2 ${THEME.btnOutline}`}
+                  >
+                    <Play size={13} className="fill-current" /> 16:9 Motion Slot
+                  </button>
+                </div>
+
+                <div className="pt-2">
+                  <span className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-3">
+                    Select Tourbillon Capsule (5 Exclusive Pieces):
+                  </span>
+                  <div className="grid grid-cols-5 gap-2.5">
+                    {KIT_CONFIG.zones.map((z, idx) => (
+                      <motion.button
+                        key={z.id}
+                        type="button"
+                        onClick={() => setActiveZoneIdx(idx)}
+                        animate={reduceMotion ? {} : { y: [0, -5, 0] }}
+                        transition={{ duration: 3.5 + idx * 0.4, repeat: Infinity, ease: 'easeInOut', delay: idx * 0.25 }}
+                        className={`group relative aspect-square overflow-hidden rounded-2xl border-2 transition cursor-pointer ${
+                          activeZoneIdx === idx
+                            ? 'border-amber-300 shadow-[0_0_22px_rgba(251,191,36,0.5)] scale-105'
+                            : 'border-white/15 opacity-70 hover:opacity-100'
+                        }`}
+                      >
+                        <img src={z.image} alt={z.title} className="h-full w-full object-cover" />
+                        <span className="absolute bottom-1 right-1 rounded bg-black/80 px-1.5 py-0.5 text-[9px] font-black text-amber-300">
+                          0{idx + 1}
+                        </span>
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ANTIGRAVITY SPEC STRIP */}
+        <section className={`border-b ${THEME.borderSubtle} ${THEME.cardAltBg}`}>
+          <div className="mx-auto grid max-w-[1440px] grid-cols-2 gap-5 px-4 py-6 sm:px-7 md:grid-cols-4 lg:px-10">
+            {[
+              [Layers, 'Zero-G 18k Rose-Gold Suspension'],
+              [Video, '16:9 Seedance 2.5 & Kling 4.0 Slot'],
+              [ShieldCheck, '11 Exclusive Tourbillon 150MP Masters'],
+              [Zap, 'Live Groq AI B2B Quote Scoper']
+            ].map(([Icon, label]) => (
+              <div key={label} className="flex items-center gap-3 text-xs font-extrabold uppercase tracking-wider text-white">
+                <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border ${THEME.badge}`}>
+                  <Icon size={16} />
+                </span>
+                <span>{label}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ================================================================= */}
+        {/* DEDICATED 16:9 WIDESCREEN VIDEO PLACEHOLDER (SEEDANCE / KLING)    */}
+        {/* ================================================================= */}
+        <section id="horology-cinema" className="scroll-mt-24 mx-auto max-w-[1440px] px-4 pt-20 pb-10 sm:px-7 lg:px-10">
+          <Reveal className={`overflow-hidden rounded-[2.2rem] border-2 ${THEME.borderAccent} ${THEME.cardBg} p-6 sm:p-10 shadow-2xl`}>
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8">
+              <div>
+                <span className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] ${THEME.badge}`}>
+                  <Video size={14} /> 16:9 Haute Horlogerie Cinema Slot • Seedance 2.5 & Kling 4.0 (30s)
+                </span>
+                <h2 className="mt-4 text-3xl sm:text-5xl font-black leading-tight tracking-tight text-white">
+                  {activeCinema.title}
+                </h2>
+                <p className={`mt-2 max-w-2xl text-sm font-medium ${THEME.textMuted}`}>
+                  {activeCinema.desc}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-2.5 shrink-0">
+                {KIT_CONFIG.cinemaVideos.map((clip, idx) => (
+                  <button
+                    key={clip.id}
+                    type="button"
+                    onClick={() => {
+                      setCustomVideoUrl('');
+                      setActiveCinemaIdx(idx);
+                      setIsCinemaPlaying(true);
+                    }}
+                    className={`px-4 py-3 rounded-xl border text-xs font-black uppercase tracking-wider transition cursor-pointer ${
+                      activeCinemaIdx === idx && !customVideoUrl ? THEME.btnPrimary : THEME.btnOutline
+                    }`}
+                  >
+                    Reel 0{idx + 1} (16:9)
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="relative w-full aspect-video overflow-hidden rounded-3xl border-2 border-amber-400/35 bg-black shadow-2xl">
+              {hasLiveVideoFile ? (
+                <video
+                  ref={cinemaVideoRef}
+                  key={effectiveVideoUrl}
+                  autoPlay
+                  loop
+                  muted={isCinemaMuted}
+                  playsInline
+                  poster={activeCinema.poster}
+                  onError={() => setVideoError(true)}
+                  className="h-full w-full object-cover"
+                >
+                  <source src={effectiveVideoUrl} type="video/mp4" />
+                  <source src={effectiveVideoUrl} type="video/webm" />
+                </video>
+              ) : (
+                <div className="relative h-full w-full overflow-hidden bg-black">
+                  <motion.img
+                    key={activeCinema.poster}
+                    src={activeCinema.poster}
+                    alt={activeCinema.title}
+                    animate={
+                      isCinemaPlaying
+                        ? { scale: [1.02, 1.11, 1.02], y: ['0%', '-2%', '0%'] }
+                        : { scale: 1.02 }
+                    }
+                    transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
+                    className="h-full w-full object-cover opacity-85"
+                  />
+
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-4">
+                    <div className="rounded-3xl border border-amber-400/40 bg-black/80 px-6 py-4 text-center backdrop-blur-xl shadow-2xl max-w-md">
+                      <span className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full border border-amber-400/50 bg-amber-400/15 text-amber-300">
+                        <Film size={22} />
+                      </span>
+                      <span className="block text-[11px] font-black uppercase tracking-[0.22em] text-white">
+                        16:9 TOURBILLON CINEMA PLACEHOLDER
+                      </span>
+                      <span className="mt-1 block text-[11px] font-semibold text-stone-300">
+                        3840 × 2160 UHD (60fps) • Seedance 2.5 & Kling 4.0 Ready
+                      </span>
+                      <span className="mt-1.5 block text-[10px] font-bold uppercase tracking-wider text-amber-300">
+                        Paste any .mp4 / .webm URL below to test live
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/45" />
+
+              <div className="absolute left-4 right-4 top-4 sm:left-5 sm:right-5 sm:top-5 flex flex-wrap items-center justify-between gap-2">
+                <span className="rounded-full border border-white/25 bg-black/85 px-4 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-white backdrop-blur-md">
+                  {activeCinema.badge}
+                </span>
+                <span className="rounded-full bg-amber-400 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-widest text-black shadow-lg">
+                  16:9 ASPECT RATIO LOCKED
+                </span>
+              </div>
+
+              <div className="absolute bottom-4 left-4 right-4 sm:bottom-5 sm:left-5 sm:right-5 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={toggleCinemaPlay}
+                    className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full border-2 border-white/40 bg-black/85 text-white backdrop-blur-md transition hover:bg-white hover:text-black cursor-pointer"
+                  >
+                    {isCinemaPlaying ? <Pause size={18} /> : <Play size={18} />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={toggleCinemaMute}
+                    className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full border-2 border-white/30 bg-black/85 text-white backdrop-blur-md transition hover:border-amber-400 cursor-pointer"
+                  >
+                    {isCinemaMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                  </button>
+                </div>
+
+                <div className="flex flex-1 max-w-xl items-center gap-2 rounded-2xl border border-white/30 bg-black/90 px-4 py-2.5 backdrop-blur-xl">
+                  <Maximize2 size={15} className="text-amber-400 shrink-0" />
+                  <input
+                    type="text"
+                    value={customVideoUrl}
+                    onChange={(e) => setCustomVideoUrl(e.target.value)}
+                    placeholder="Paste any .webm or .mp4 URL here to preview live in 16:9..."
+                    className="w-full bg-transparent text-xs font-semibold text-white placeholder-stone-400 outline-none"
+                  />
+                  {customVideoUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setCustomVideoUrl('')}
+                      className="text-[10px] font-black uppercase text-amber-300 hover:text-white cursor-pointer"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </Reveal>
+        </section>
+
+        {/* ================================================================= */}
+        {/* FLOATING ANTIGRAVITY CALIBER COLLECTION                           */}
+        {/* ================================================================= */}
+        <section id="calibers" className="scroll-mt-24 mx-auto max-w-[1440px] px-4 py-20 sm:px-7 lg:px-10">
+          <Reveal className="mb-12 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+            <div>
+              <span className={`text-xs font-black uppercase tracking-[0.22em] ${THEME.accentText}`}>
+                Independent Geneva Allocation
+              </span>
+              <h2 className="mt-2 text-3xl sm:text-5xl font-black tracking-tight text-white">
+                Levitating 18k rose-gold editions.
+              </h2>
+            </div>
+            <button
+              type="button"
+              onClick={() => scrollTo('concierge-desk')}
+              className={`w-fit text-xs font-black uppercase tracking-[0.16em] ${THEME.goldText} cursor-pointer`}
+            >
+              Request Private Atelier Viewing →
+            </button>
+          </Reveal>
+
+          <div className="grid gap-8 md:grid-cols-3">
+            {KIT_CONFIG.collection.map((watch, idx) => (
+              <AntigravityCard
+                key={watch.name}
+                floatDelay={idx * 0.7}
+                floatRange={11}
+                className={`group overflow-hidden rounded-[1.9rem] border-2 ${THEME.borderSubtle} ${THEME.cardBg} shadow-[0_24px_60px_rgba(245,158,11,0.14)] hover:border-amber-400/60`}
+              >
+                <div onClick={() => setZoomImage(watch.image)} className="relative h-72 overflow-hidden bg-black cursor-zoom-in">
+                  <img
+                    src={watch.image}
+                    alt={watch.name}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                  />
+                  <span className="absolute left-4 top-4 rounded-full border border-amber-400/40 bg-black/80 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-wider text-amber-200 backdrop-blur">
+                    {watch.meta}
+                  </span>
+                  <span className="absolute bottom-4 right-4 rounded-xl bg-amber-300 px-3 py-1 text-xs font-black text-stone-950 shadow">
+                    {watch.rate}
+                  </span>
+                </div>
+                <div className="p-6">
+                  <h3 className="text-xl font-black text-white">{watch.name}</h3>
+                  <p className={`mt-2.5 text-sm leading-relaxed ${THEME.textMuted}`}>{watch.desc}</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedTimepiece(watch.name);
+                      setChatInput(`Please calculate a B2B quote for Atelier Horology Kit + ${watch.name} showcase.`);
+                      scrollTo('concierge-desk');
+                    }}
+                    className={`mt-5 inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.16em] ${THEME.accentText} cursor-pointer`}
+                  >
+                    Scope {watch.name} <ArrowUpRight size={14} />
+                  </button>
+                </div>
+              </AntigravityCard>
+            ))}
+          </div>
+        </section>
+
+        {/* ================================================================= */}
+        {/* 24/7 AI ATELIER CONCIERGE & LIVE GROQ QUOTE SCOPER                */}
+        {/* ================================================================= */}
+        <section id="concierge-desk" className="scroll-mt-24 mx-auto max-w-[1440px] px-4 py-16 sm:px-7 lg:px-10">
+          <Reveal className={`rounded-[2.2rem] border-2 ${THEME.borderAccent} ${THEME.cardBg} p-6 sm:p-10 lg:p-12 shadow-2xl`}>
+            <div className="grid gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:items-center">
+              <div>
+                <span className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] ${THEME.badge}`}>
+                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                  LIVE RAILWAY N8N + GROQ AI ENGINE
+                </span>
+                <h2 className="mt-4 text-3xl sm:text-5xl font-black uppercase leading-[1.06] text-white">
+                  24/7 ATELIER GENÈVE & B2B QUOTE DESK
+                </h2>
+                <p className={`mt-4 text-sm leading-7 ${THEME.textMuted}`}>
+                  Connected directly to your Groq B2B Project Scoper. Test multilingual Haute Horlogerie collector inquiries, private salon slots, or turnkey kit buyout quotes.
+                </p>
+                <div className={`mt-6 space-y-2.5 border-t ${THEME.borderSubtle} pt-5 text-xs font-bold text-white`}>
+                  <div className="flex items-center gap-2.5">
+                    <CheckCircle2 size={16} className={THEME.accentText} />
+                    <span>Active Capsule: {activeZone.zone}</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <CheckCircle2 size={16} className={THEME.goldText} />
+                    <span>Selected Reference: {selectedTimepiece}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className={`rounded-[1.8rem] border ${THEME.borderSubtle} ${THEME.cardAltBg} p-5 sm:p-6 shadow-xl`}>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <input
+                    type="text"
+                    value={clientName}
+                    onChange={(e) => setClientName(e.target.value)}
+                    placeholder="Collector / Maison Name"
+                    className={`rounded-xl border px-4 py-3 text-xs font-semibold outline-none transition ${THEME.inputCls}`}
+                  />
+                  <input
+                    type="email"
+                    value={clientEmail}
+                    onChange={(e) => setClientEmail(e.target.value)}
+                    placeholder="Corporate or VIP Email"
+                    className={`rounded-xl border px-4 py-3 text-xs font-semibold outline-none transition ${THEME.inputCls}`}
+                  />
+                  <input
+                    type="date"
+                    value={salonDate}
+                    onChange={(e) => setSalonDate(e.target.value)}
+                    className={`rounded-xl border px-4 py-3 text-xs font-bold outline-none transition ${THEME.inputCls}`}
+                  />
+                  <select
+                    value={salonSlot}
+                    onChange={(e) => setSalonSlot(e.target.value)}
+                    className={`rounded-xl border px-4 py-3 text-xs font-bold outline-none transition ${THEME.inputCls}`}
+                  >
+                    {CALENDAR_SLOTS.map((slot) => (
+                      <option key={slot} value={slot} className={THEME.optionCls}>
+                        {slot}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div ref={chatScrollRef} className={`mt-4 h-72 space-y-3 overflow-y-auto rounded-2xl border p-4 ${THEME.chatBox}`}>
+                  {chatMessages.map((msg, i) => (
+                    <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[85%] whitespace-pre-line rounded-2xl px-4 py-3 text-xs leading-relaxed ${msg.role === 'user' ? THEME.userBubble : THEME.aiBubble}`}>
+                        {msg.text}
+                      </div>
+                    </div>
+                  ))}
+                  {isAiThinking && (
+                    <p className={`text-xs italic animate-pulse ${THEME.accentText}`}>
+                      Atelier Horology AI Concierge is preparing your bespoke proposal via Groq...
+                    </p>
+                  )}
+                </div>
+
+                <form onSubmit={handleConciergeSend} className="mt-4 flex gap-2.5">
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    placeholder={`Ask in EN / SR / DE about ${selectedTimepiece} or $${agencyPriceNum} kit...`}
+                    className={`flex-1 rounded-xl border px-4 py-3.5 text-xs font-semibold outline-none transition ${THEME.inputCls}`}
+                  />
+                  <button
+                    type="submit"
+                    disabled={isAiThinking}
+                    className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-xs font-black uppercase tracking-wider transition hover:scale-[1.02] disabled:opacity-60 cursor-pointer ${THEME.btnPrimary}`}
+                  >
+                    <Send size={14} /> SEND
+                  </button>
+                </form>
+              </div>
+            </div>
+          </Reveal>
+        </section>
+
+        {/* 150MP VISUAL VAULT GALLERY */}
+        <section id="gallery" className={`scroll-mt-24 border-y ${THEME.borderSubtle} ${THEME.cardAltBg} py-20`}>
+          <div className="mx-auto max-w-[1440px] px-4 sm:px-7 lg:px-10">
+            <Reveal className="mb-10">
+              <span className={`text-xs font-black uppercase tracking-[0.22em] ${THEME.accentText}`}>
+                150MP Master Atelier Vault • Zero Duplicate Renders
+              </span>
+              <h2 className="mt-2 text-3xl sm:text-5xl font-black text-white">
+                Ultra-print golden bridge & escapement macro art.
+              </h2>
+            </Reveal>
+
+            <div className="grid gap-8 md:grid-cols-2">
+              {KIT_CONFIG.vault.map((item, idx) => (
+                <AntigravityCard
+                  key={item.id}
+                  floatDelay={idx * 0.9}
+                  floatRange={8}
+                  className={`group overflow-hidden rounded-[1.8rem] border-2 ${THEME.borderSubtle} ${THEME.cardBg} shadow-xl`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setZoomImage(item.image)}
+                    className="relative block aspect-[1.45] w-full overflow-hidden cursor-zoom-in text-left"
+                  >
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                    />
+                    <span className="absolute left-4 top-4 rounded-full bg-black/80 px-3.5 py-1 text-[10px] font-black uppercase tracking-wider text-amber-300">
+                      {item.tag}
+                    </span>
+                  </button>
+                  <div className="p-6">
+                    <h3 className="text-lg font-black text-white">{item.title}</h3>
+                    <p className={`mt-2 text-xs ${THEME.textMuted}`}>{item.specs}</p>
+                  </div>
+                </AntigravityCard>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* B2B LICENSING & TURNKEY BUYOUT */}
+        <section id="commercial-pricing" className="scroll-mt-24 mx-auto max-w-[1440px] px-4 py-20 sm:px-7 lg:px-10">
+          <Reveal className="mx-auto mb-10 max-w-3xl text-center">
+            <span className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] ${THEME.badge}`}>
+              <Crown size={13} /> Turnkey Antigravity Haute Horlogerie Web + 150MP Kit
+            </span>
+            <h2 className="mt-4 text-3xl sm:text-5xl font-black text-white">
+              License Atelier Horology today.
+            </h2>
+          </Reveal>
+
+          <Reveal className="mx-auto max-w-4xl mb-8">
+            <div
+              onClick={() => setIncludeMotionBump(!includeMotionBump)}
+              className={`rounded-2xl border-2 ${THEME.borderAccent} ${THEME.cardBg} p-5 flex items-start gap-4 cursor-pointer`}
+            >
+              <input type="checkbox" checked={includeMotionBump} onChange={() => {}} className="mt-1 h-5 w-5 cursor-pointer" />
+              <div className="flex-1">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-sm font-black uppercase text-white">
+                    ⚡ Add 30s 4K/60fps Tourbillon Macro Motion Pack (Seedance 2.5 & Kling 4.0)
+                  </span>
+                  <span className={`rounded-full px-3 py-1 text-xs font-black uppercase ${THEME.btnPrimary}`}>+$199 Bump</span>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+
+          <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-2">
+            <div className={`flex flex-col justify-between rounded-[1.8rem] border-2 ${THEME.borderSubtle} ${THEME.cardBg} p-8 shadow-xl`}>
+              <div>
+                <span className={`text-xs font-black uppercase tracking-[0.16em] ${THEME.accentText}`}>Multi-Client Agency License</span>
+                <p className="mt-5 text-5xl font-black text-white">${agencyPriceNum}</p>
+                <ul className={`mt-6 space-y-3 text-xs font-medium ${THEME.textMuted}`}>
+                  <li className="flex items-center gap-2.5"><CheckCircle2 size={15} className={THEME.accentText} /> Complete Atelier Horology Antigravity React + Tailwind JSX</li>
+                  <li className="flex items-center gap-2.5"><CheckCircle2 size={15} className={THEME.accentText} /> 11 Exclusive 4K UHD & 150MP Rose-Gold / Tourbillon Visuals</li>
+                  <li className="flex items-center gap-2.5"><CheckCircle2 size={15} className={THEME.accentText} /> Live n8n + Groq AI Horology Quote Scoper Workflow</li>
+                </ul>
+              </div>
+              <button
+                type="button"
+                onClick={() => handlePurchaseTier('standard')}
+                className={`mt-8 flex w-full items-center justify-center gap-2 rounded-full py-4 text-xs font-black uppercase tracking-wider cursor-pointer ${THEME.btnPrimary}`}
+              >
+                <DownloadCloud size={16} /> License Agency Kit — ${agencyPriceNum}
+              </button>
+            </div>
+
+            <div className={`flex flex-col justify-between rounded-[1.8rem] border-2 ${THEME.borderAccent} ${THEME.cardAltBg} p-8 shadow-2xl`}>
+              <div>
+                <span className={`text-xs font-black uppercase tracking-[0.16em] ${THEME.goldText}`}>1-of-1 Exclusive Buyout</span>
+                <p className="mt-5 text-5xl font-black text-white">${buyoutPriceNum}</p>
+                <ul className={`mt-6 space-y-3 text-xs font-medium ${THEME.textMuted}`}>
+                  <li className="flex items-center gap-2.5"><ShieldCheck size={15} className={THEME.goldText} /> Permanent Store Removal & 100% IP Transfer</li>
+                  <li className="flex items-center gap-2.5"><ShieldCheck size={15} className={THEME.goldText} /> 10 Custom 150MP Unbranded Renders for Your Maison</li>
+                  <li className="flex items-center gap-2.5"><ShieldCheck size={15} className={THEME.goldText} /> Signed Commercial Ownership Certificate</li>
+                </ul>
+              </div>
+              <button
+                type="button"
+                onClick={() => handlePurchaseTier('buyout')}
+                className={`mt-8 flex w-full items-center justify-center gap-2 rounded-full py-4 text-xs font-black uppercase tracking-wider cursor-pointer ${THEME.btnGold}`}
+              >
+                <Lock size={15} /> Acquire 1-of-1 Buyout — ${buyoutPriceNum}
+              </button>
+            </div>
+          </div>
+
+          <div className={`mx-auto mt-8 max-w-5xl flex flex-col md:flex-row items-center justify-between gap-4 rounded-2xl border-2 ${THEME.borderSubtle} ${THEME.cardBg} p-6`}>
+            <div className="flex items-center gap-3.5">
+              <FolderArchive size={22} className={THEME.accentText} />
+              <div>
+                <h3 className="text-sm font-black text-white">Download Free 150MP Rose-Gold Tourbillon Sample + Spec (.TXT)</h3>
+                <p className={`text-xs ${THEME.textMuted}`}>Inspect hand-beveled bridge edges & ruby bearings at 100% zoom.</p>
+              </div>
+            </div>
+            <a
+              href={KIT_CONFIG.freeSampleLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`rounded-full px-6 py-3 text-xs font-black uppercase tracking-wider ${THEME.btnOutline}`}
+            >
+              Download Sample + .TXT
+            </a>
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section className={`border-y ${THEME.borderSubtle} ${THEME.cardAltBg} py-16`}>
+          <div className="mx-auto max-w-[1440px] px-4 sm:px-7 lg:px-10 grid gap-8 lg:grid-cols-[0.7fr_1.3fr]">
+            <div>
+              <span className={`text-xs font-black uppercase tracking-[0.2em] ${THEME.accentText}`}>Atelier FAQ</span>
+              <h2 className="mt-2 text-3xl font-black text-white">Haute Horlogerie notes.</h2>
+            </div>
+            <div className={`divide-y ${THEME.borderSubtle}`}>
+              {FAQS.map((item, idx) => (
+                <div key={item.question} className="py-4">
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaq(openFaq === idx ? -1 : idx)}
+                    className="flex w-full items-center justify-between gap-4 text-left cursor-pointer"
+                  >
+                    <span className="text-sm font-black text-white">{item.question}</span>
+                    <ChevronDown size={18} className={`transition ${openFaq === idx ? 'rotate-180' : ''}`} />
+                  </button>
+                  {openFaq === idx && <p className={`pt-2.5 text-xs leading-6 ${THEME.textMuted}`}>{item.answer}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* CLOSING CTA BANNER */}
+        <section className="mx-auto max-w-[1440px] px-4 py-16 sm:px-7 lg:px-10">
+          <div className="relative overflow-hidden rounded-[2rem] border-2 border-amber-400/35 bg-black">
+            <img
+              src={KIT_CONFIG.ctaBannerImage}
+              alt="Atelier Horology Tourbillon"
+              loading="lazy"
+              className="absolute inset-0 h-full w-full object-cover opacity-50"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#090605] via-[#090605]/80 to-transparent" />
+            <div className="relative max-w-2xl px-6 py-14 sm:px-12 sm:py-18 text-white">
+              <span className="text-xs font-black uppercase tracking-[0.22em] text-amber-300">
+                Watch Kit 02 / 05 • Atelier Horology
+              </span>
+              <h2 className="mt-3 text-3xl sm:text-5xl font-black leading-tight">
+                Proceed to the Meridian Architectural Watch House.
+              </h2>
+              <div className="mt-7 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => navigate(KIT_CONFIG.nextLandingRoute)}
+                  className={`rounded-full px-7 py-4 text-xs font-black uppercase tracking-wider cursor-pointer flex items-center gap-2 ${THEME.btnPrimary}`}
+                >
+                  Next: Meridian Watch House (3/5) <ArrowRight size={15} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate('/ai-agents')}
+                  className="rounded-full border border-white/40 bg-black/60 px-6 py-4 text-xs font-black uppercase tracking-wider text-white cursor-pointer"
+                >
+                  Explore AI Agents
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
-      <footer className="border-t watch-line px-4 py-7 sm:px-8"><div className="mx-auto flex max-w-[1440px] flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left"><div><span className="block text-[10px] font-black uppercase tracking-[0.2em]">{SITE.brand}</span><span className="mt-1 block text-[7px] font-bold uppercase tracking-[0.15em] watch-muted">Maison of mechanical time / {SITE.descriptor}</span></div><p className="text-[9px] watch-muted">{SITE.footer}</p><div className="flex gap-4 items-center flex-wrap"><button type="button" onClick={()=>navigate('/abyss-chronograph')} className="text-[8px] font-extrabold uppercase tracking-[0.12em] text-[#62D6D0] flex items-center gap-1"><Watch size={11}/> Abyss Chronograph</button><button type="button" onClick={()=>navigate('/meridian-watch-house')} className="text-[8px] font-extrabold uppercase tracking-[0.12em] text-[#2B83B9] flex items-center gap-1"><Watch size={11}/> Meridian House</button><button type="button" onClick={()=>navigate('/stock')} className="text-[8px] font-extrabold uppercase tracking-[0.12em] watch-accent">Back to stock vaults <ArrowRight size={11} className="ml-1 inline"/></button></div></div></footer>
-      <AnimatePresence>{preview&&<motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/95 p-4" onClick={()=>setPreview(null)}><button type="button" onClick={()=>setPreview(null)} aria-label="Close image preview" className="absolute right-5 top-5 rounded-full bg-white p-3 text-slate-900"><X size={19}/></button><img src={preview} alt="Luxury watch detail" className="max-h-[90vh] max-w-full rounded-xl object-contain" onClick={(e)=>e.stopPropagation()}/></motion.div>}</AnimatePresence>
-      <AnimatePresence>{videoOpen&&<motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/95 p-4" role="dialog" aria-modal="true" aria-label="Watch campaign video" onClick={()=>setVideoOpen(false)}><button type="button" onClick={()=>setVideoOpen(false)} aria-label="Close video" className="absolute right-5 top-5 rounded-full bg-white p-3 text-slate-900"><X size={19}/></button>{WATCH_VIDEO_URL?<video controls autoPlay playsInline className="max-h-[85vh] max-w-full rounded-xl"><source src={WATCH_VIDEO_URL} type="video/mp4"/></video>:<div className="flex min-h-[340px] w-full max-w-2xl flex-col items-center justify-center rounded-[1.5rem] border border-white/20 bg-[#101a25] p-8 text-center text-white" onClick={(e)=>e.stopPropagation()}><Video size={38} className="watch-accent"/><p className="mt-5 text-[8px] font-extrabold uppercase tracking-[0.2em] watch-accent">Your campaign video goes here</p><h2 className="mt-3 text-2xl font-semibold">Video placeholder</h2><p className="mt-3 max-w-md text-xs leading-6 text-white/65">Set WATCH_VIDEO_URL near the top of this JSX file to your MP4 URL or public path.</p><code className="mt-5 rounded-lg bg-white/10 px-4 py-3 text-[9px] text-white/85">const WATCH_VIDEO_URL = '';</code></div>}</motion.div>}</AnimatePresence>
-      <LoginRequiredModal isOpen={login.isOpen} onClose={()=>setLogin({isOpen:false,tierName:'',price:'0.00',zipLink:''})} packageName={login.tierName} price={login.price} onLoginSuccess={async(account)=>{await recordIntent(account,login.tierName,login.price);setCheckout({isOpen:true,name:login.tierName,price:login.price,zipLink:login.zipLink});setLogin({isOpen:false,tierName:'',price:'0.00',zipLink:''});}}/>
-      <AnimatePresence>{checkout.isOpen&&<V8SecureCheckout isOpen={checkout.isOpen} productName={checkout.name} price={checkout.price} zipLink={checkout.zipLink} onClose={()=>setCheckout({isOpen:false,name:'',price:'0.00',zipLink:''})}/>}</AnimatePresence>
+
+      <LoginRequiredModal
+        isOpen={loginModal.isOpen}
+        onClose={() => setLoginModal({ isOpen: false, tierName: '', price: '0.00', zipLink: '' })}
+        packageName={loginModal.tierName}
+        price={loginModal.price}
+        onLoginSuccess={async (user) => {
+          await recordOrderIntent(user, loginModal.tierName, loginModal.price);
+          setCheckoutData({ isOpen: true, name: loginModal.tierName, price: loginModal.price, zipLink: loginModal.zipLink });
+          setLoginModal({ isOpen: false, tierName: '', price: '0.00', zipLink: '' });
+        }}
+      />
+
+      <LightboxInspector imageUrl={zoomImage} onClose={() => setZoomImage(null)} />
+
+      <AnimatePresence>
+        {checkoutData.isOpen && (
+          <V8SecureCheckout
+            isOpen={checkoutData.isOpen}
+            productName={checkoutData.name}
+            price={checkoutData.price}
+            zipLink={checkoutData.zipLink}
+            onClose={() => setCheckoutData({ isOpen: false, name: '', price: '0.00', zipLink: '' })}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* PREV / NEXT FLOATING NAVIGATION */}
+      <div className="fixed bottom-6 left-6 z-50 hidden sm:block">
+        <button
+          type="button"
+          onClick={() => navigate(KIT_CONFIG.prevPageRoute)}
+          className="group flex items-center gap-3 rounded-full bg-black/90 px-5 py-3.5 text-[11px] font-black uppercase tracking-[0.15em] text-white shadow-2xl border border-white/25 backdrop-blur-md transition hover:scale-105 cursor-pointer"
+        >
+          <span className={`flex h-7 w-7 items-center justify-center rounded-full ${THEME.btnPrimary}`}>
+            <ArrowLeft size={14} />
+          </span>
+          <span>{KIT_CONFIG.prevPageLabel}</span>
+        </button>
+      </div>
+
+      <div className="fixed bottom-6 right-24 z-50">
+        <button
+          type="button"
+          onClick={() => navigate(KIT_CONFIG.nextLandingRoute)}
+          className={`group flex items-center gap-3 rounded-full px-6 py-3.5 text-[11px] font-black uppercase tracking-[0.16em] transition hover:scale-105 cursor-pointer ${THEME.btnGold}`}
+        >
+          <span>{KIT_CONFIG.nextLandingLabel}</span>
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black text-white">
+            <ArrowRight size={14} />
+          </span>
+        </button>
+      </div>
     </div>
   );
 };
 
 export default AtelierHorology;
-// ============================================================================
-// KRAJ FAJLA: AtelierHorology.jsx
-// ============================================================================
