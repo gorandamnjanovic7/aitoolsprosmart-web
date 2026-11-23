@@ -1,5 +1,5 @@
 // ============================================================================
-// POČETAK FAJLA: src/componentsStockBerza/V8StockBerza.jsx (STRICT FIREBASE PAID GATE + DUAL LICENSE)
+// POČETAK FAJLA: src/componentsStockBerza/V8StockBerza.jsx (STRICT FIREBASE PAID GATE + PRIVATE VAULT + DUAL LICENSE)
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Helmet } from 'react-helmet-async';
@@ -8,11 +8,11 @@ import {
   Zap, X, UploadCloud, DownloadCloud, Crown, AlertCircle,
   Type, Hash, Layers, FolderArchive, FileText, Wallet, MonitorPlay, Link as LinkIcon,
   Diamond, RefreshCcw, Aperture, ShieldCheck, Edit, Trash2, Sparkles,
-  Compass, Utensils, Wine, Car, Mail, CheckCircle2, ChevronDown, Cpu, Watch, Home, Sun, Snowflake, Gem, Flame, Lock
+  Compass, Utensils, Wine, Car, Mail, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Cpu, Watch, Home, Sun, Snowflake, Gem, Flame, Lock
 } from 'lucide-react';
 import { db, auth } from '../firebase';
 import {
-  collection, addDoc, deleteDoc, doc, updateDoc, serverTimestamp,
+  collection, addDoc, deleteDoc, deleteField, doc, updateDoc, serverTimestamp,
   query, getDoc, setDoc, where, onSnapshot
 } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -24,7 +24,6 @@ import V8SecureCheckout from '../V8SecureCheckout';
 import LoginRequiredModal from '../LoginRequiredModal';
 import { trackV8Action } from '../utils/analytics';
 
-// Automatska WebP konverzija i kompresija za Cloudinary linkove radi munjevitog učitavanja sajta
 const toFastWebp = (url, width = 800) => {
   if (!url || typeof url !== 'string') return url;
   if (!url.includes('res.cloudinary.com') || !url.includes('/upload/')) return url;
@@ -68,41 +67,191 @@ class V8ErrorGuard extends React.Component {
   }
 }
 
-const FullScreenLightbox = ({ imageUrl, onClose }) => {
+const FullScreenLightbox = ({ images = [], currentIndex = 0, title = '', onClose, onSelectIndex }) => {
+  const [highResLoaded, setHighResLoaded] = useState(false);
+  const total = images.length;
+  const safeIndex = total > 0 ? ((currentIndex % total) + total) % total : 0;
+  const currentUrl = total > 0 ? images[safeIndex] : null;
+
   useEffect(() => {
-    if (imageUrl) {
+    setHighResLoaded(false);
+  }, [currentUrl]);
+
+  useEffect(() => {
+    if (currentUrl) {
       document.body.style.overflow = 'hidden';
-      trackV8Action('image_zoom', { event_category: 'Engagement' });
+      trackV8Action('image_zoom', { event_category: 'Engagement', slide_index: safeIndex + 1 });
     } else {
       document.body.style.overflow = '';
     }
     return () => { document.body.style.overflow = ''; };
-  }, [imageUrl]);
+  }, [currentUrl, safeIndex]);
 
-  if (!imageUrl) return null;
+  // Preload susednih slika u pozadini radi trenutnog listanja bez cekanja
+  useEffect(() => {
+    if (total <= 1) return;
+    const nextUrl = images[(safeIndex + 1) % total];
+    const prevUrl = images[(safeIndex - 1 + total) % total];
+    [nextUrl, prevUrl].forEach((u) => {
+      if (u) {
+        const pre = new window.Image();
+        pre.src = toFastWebp(u, 2400);
+      }
+    });
+  }, [images, safeIndex, total]);
+
+  // Podrska za tastaturu: Strelica Levo, Strelica Desno i ESC
+  useEffect(() => {
+    if (!currentUrl) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      } else if (e.key === 'ArrowRight' && total > 1) {
+        e.preventDefault();
+        onSelectIndex((safeIndex + 1) % total);
+      } else if (e.key === 'ArrowLeft' && total > 1) {
+        e.preventDefault();
+        onSelectIndex((safeIndex - 1 + total) % total);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentUrl, total, safeIndex, onClose, onSelectIndex]);
+
+  if (!currentUrl) return null;
+
+  const goPrev = (e) => {
+    e.stopPropagation();
+    if (total > 1) onSelectIndex((safeIndex - 1 + total) % total);
+  };
+
+  const goNext = (e) => {
+    e.stopPropagation();
+    if (total > 1) onSelectIndex((safeIndex + 1) % total);
+  };
+
   return createPortal(
-    <div className="fixed inset-0 z-[999999] bg-[#06080C]/95 backdrop-blur-xl flex items-center justify-center p-4" onClick={onClose}>
-      <button
-        type="button"
-        onClick={(e) => { e.stopPropagation(); onClose(); }}
-        className="absolute top-6 right-6 md:top-10 md:right-10 bg-[#C5A059] hover:bg-[#D4AF37] text-[#0B0E14] p-3.5 rounded-full font-black z-[1000000] transition-all hover:scale-105 cursor-pointer shadow-2xl"
-      >
-        <X size={26} strokeWidth={2.5} />
-      </button>
-      <img
-        src={toFastWebp(imageUrl, 2400)}
-        alt="150MP Full Screen Inspection"
-        className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl relative z-[999999] border border-[#C5A059]/40"
+    <div
+      className="fixed inset-0 z-[999999] bg-[#06080C]/95 backdrop-blur-xl flex flex-col items-center justify-center p-3 sm:p-6 select-none"
+      onClick={onClose}
+    >
+      {/* Gornja traka: Naziv paketa + Brojac slika + Zatvori (X) */}
+      <div
+        className="w-full max-w-6xl flex items-center justify-between gap-4 mb-3 z-[1000000] px-2"
         onClick={(e) => e.stopPropagation()}
-      />
+      >
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <span className="bg-[#C5A059] text-[#0B0E14] text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg">
+            {safeIndex + 1} / {total}
+          </span>
+          {title && (
+            <span className="text-xs sm:text-sm font-black uppercase tracking-wider text-[#F3E5AB] truncate max-w-[220px] sm:max-w-lg">
+              {title}
+            </span>
+          )}
+          <span className="hidden md:inline-block text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-2">
+            Use ← / → keys or arrows to browse
+          </span>
+        </div>
+
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onClose(); }}
+          className="bg-[#C5A059] hover:bg-[#D4AF37] text-[#0B0E14] p-3 rounded-full font-black transition-all hover:scale-105 cursor-pointer shadow-2xl"
+          title="Close (Esc)"
+        >
+          <X size={24} strokeWidth={2.5} />
+        </button>
+      </div>
+
+      {/* Glavni prostor sa velikom slikom i strelicama Levo / Desno */}
+      <div className="relative w-full max-w-6xl flex-1 flex items-center justify-center min-h-0">
+        {total > 1 && (
+          <button
+            type="button"
+            onClick={goPrev}
+            aria-label="Previous image"
+            className="absolute left-1 sm:left-3 z-[1000000] bg-[#0B0E14]/90 hover:bg-[#C5A059] text-[#F3E5AB] hover:text-[#0B0E14] border-2 border-[#C5A059]/70 p-3 sm:p-4 rounded-full transition-all hover:scale-110 cursor-pointer shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
+          >
+            <ChevronLeft size={28} strokeWidth={2.5} />
+          </button>
+        )}
+
+        <div
+          className="relative flex items-center justify-center max-w-full max-h-[76vh]"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Trenutni brzi prikaz iz kesa (320px/800px) dok se 2400px ucitava bez crnog blica */}
+          {!highResLoaded && (
+            <img
+              src={toFastWebp(currentUrl, 320)}
+              alt={`Preview ${safeIndex + 1}`}
+              className="max-w-full max-h-[76vh] object-contain rounded-2xl border border-[#C5A059]/40 blur-[2px] opacity-90"
+            />
+          )}
+          <img
+            key={currentUrl}
+            src={toFastWebp(currentUrl, 2400)}
+            onLoad={() => setHighResLoaded(true)}
+            alt={`150MP Full Screen Inspection ${safeIndex + 1}`}
+            className={`max-w-full max-h-[76vh] object-contain rounded-2xl shadow-2xl border border-[#C5A059]/40 transition-opacity duration-200 ${
+              highResLoaded ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 m-auto'
+            }`}
+          />
+        </div>
+
+        {total > 1 && (
+          <button
+            type="button"
+            onClick={goNext}
+            aria-label="Next image"
+            className="absolute right-1 sm:right-3 z-[1000000] bg-[#0B0E14]/90 hover:bg-[#C5A059] text-[#F3E5AB] hover:text-[#0B0E14] border-2 border-[#C5A059]/70 p-3 sm:p-4 rounded-full transition-all hover:scale-110 cursor-pointer shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
+          >
+            <ChevronRight size={28} strokeWidth={2.5} />
+          </button>
+        )}
+      </div>
+
+      {/* Donja filmska traka (Thumbnail Strip) za direktan skok na bilo koju sliku */}
+      {total > 1 && (
+        <div
+          className="w-full max-w-5xl mt-3 pt-2 z-[1000000] overflow-x-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-start sm:justify-center gap-2 px-2 pb-1">
+            {images.map((thumbUrl, idx) => {
+              const isSelected = idx === safeIndex;
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => onSelectIndex(idx)}
+                  className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
+                    isSelected
+                      ? 'border-[#F3E5AB] ring-2 ring-[#C5A059] scale-105 opacity-100'
+                      : 'border-white/15 opacity-55 hover:opacity-100 hover:border-[#C5A059]/70'
+                  }`}
+                >
+                  <img
+                    src={toFastWebp(thumbUrl, 320)}
+                    alt={`Thumb ${idx + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                  <span className="absolute bottom-0 right-0.5 text-[8px] font-black text-[#F3E5AB] bg-black/80 px-1 rounded">
+                    #{idx + 1}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>,
     document.body
   );
 };
 
-// ============================================================================
-// SVE KOMERCIJALNE B2B KATEGORIJE
-// ============================================================================
 const INDUSTRY_TABS = [
   {
     id: 'all',
@@ -241,66 +390,63 @@ const INDUSTRY_TABS = [
   }
 ];
 
-// ============================================================================
-// STANDARDIZOVANI OPISI ZA STANDARD CAMPAIGN PACK (20 SCENA) I EXECUTIVE AGENCY BUNDLE (45 SCENA)
-// ============================================================================
 const buildUnifiedDescription = (formatCode, isAgency45 = false) => {
   const count = isAgency45 ? 45 : 20;
   const totalFiles = count * 3;
   const code = (formatCode || '').toUpperCase();
 
   if (code.includes('OBSIDIAN AURUM')) {
-    return `OBSIDIAN AURUM (24K GOLD & AMBER) WEB HERO DELIVERY: ${count} UNIQUE DARK-MODE SCENES (${totalFiles} PRODUCTION FILES: ${count}× 150MP MASTER JPG + ${count}× 21:9/16:9 4K UHD JPG + ${count}× OPTIMIZED WEBP).
+    return `OBSIDIAN AURUM (24K GOLD & AMBER) WEB HERO DELIVERY: ${count} UNIQUE DARK-MODE SCENES (${totalFiles} PRODUCTION FILES: ${count}x 150MP MASTER JPG + ${count}x 21:9/16:9 4K UHD JPG + ${count}x OPTIMIZED WEBP).
 - Calm, low-contrast dark Left Third engineered specifically for Wealth Management, Real Estate, Private Aviation & Haute Gastronomie website headlines and CTA buttons.
-- Glossy liquid-obsidian waves intersected by 24k gold-coated optical glass fins (ARRI Alexa 65 × Panavision Primo 70 50mm physics, Snell's law caustics, cleaned EXIF, zero text, zero watermarks).`;
+- Glossy liquid-obsidian waves intersected by 24k gold-coated optical glass fins (ARRI Alexa 65 x Panavision Primo 70 50mm physics, Snell's law caustics, cleaned EXIF, zero text, zero watermarks).`;
   }
 
   if (code.includes('OBSIDIAN CRYO')) {
-    return `OBSIDIAN CRYO (CRYO-CYAN & PLATINUM) SAAS HERO DELIVERY: ${count} UNIQUE DARK-MODE SCENES (${totalFiles} PRODUCTION FILES: ${count}× 150MP MASTER JPG + ${count}× 21:9/16:9 4K UHD JPG + ${count}× OPTIMIZED WEBP).
+    return `OBSIDIAN CRYO (CRYO-CYAN & PLATINUM) SAAS HERO DELIVERY: ${count} UNIQUE DARK-MODE SCENES (${totalFiles} PRODUCTION FILES: ${count}x 150MP MASTER JPG + ${count}x 21:9/16:9 4K UHD JPG + ${count}x OPTIMIZED WEBP).
 - Calm, low-contrast dark Left Third engineered specifically for AI Platforms, Modern SaaS, Cloud Infrastructure & Cybersecurity website headlines and CTA buttons.
-- Glossy liquid-obsidian waves intersected by dielectric optical glass fins with cryo-cyan, glacial cobalt & platinum-silver reflections (ARRI Alexa 65 × Primo 70 50mm, cleaned EXIF, zero watermarks).`;
+- Glossy liquid-obsidian waves intersected by dielectric optical glass fins with cryo-cyan, glacial cobalt & platinum-silver reflections (ARRI Alexa 65 x Primo 70 50mm, cleaned EXIF, zero watermarks).`;
   }
 
   if (code.includes('OBSIDIAN EMERALD')) {
-    return `OBSIDIAN OPTICS (EMERALD, TEAL & DEEP VIOLET) WEB HERO DELIVERY: ${count} UNIQUE DARK-MODE SCENES (${totalFiles} PRODUCTION FILES: ${count}× 150MP MASTER JPG + ${count}× 21:9/16:9 4K UHD JPG + ${count}× OPTIMIZED WEBP).
+    return `OBSIDIAN OPTICS (EMERALD, TEAL & DEEP VIOLET) WEB HERO DELIVERY: ${count} UNIQUE DARK-MODE SCENES (${totalFiles} PRODUCTION FILES: ${count}x 150MP MASTER JPG + ${count}x 21:9/16:9 4K UHD JPG + ${count}x OPTIMIZED WEBP).
 - Calm, low-contrast dark Left Third engineered specifically for Fintech, Web3, AI Systems & Luxury Tech flagship hero sections.
-- Glossy liquid-obsidian waves intersected by dichroic optical glass fins with muted emerald, teal & deep violet spectral traces (ARRI Alexa 65 × Primo 70 50mm, cleaned EXIF, zero text).`;
+- Glossy liquid-obsidian waves intersected by dichroic optical glass fins with muted emerald, teal & deep violet spectral traces (ARRI Alexa 65 x Primo 70 50mm, cleaned EXIF, zero text).`;
   }
 
   if (code.includes('OBSIDIAN RUBY')) {
-    return `OBSIDIAN RUBY (CRIMSON RUBY & ROSE-COPPER) WEB HERO DELIVERY: ${count} UNIQUE DARK-MODE SCENES (${totalFiles} PRODUCTION FILES: ${count}× 150MP MASTER JPG + ${count}× 21:9/16:9 4K UHD JPG + ${count}× OPTIMIZED WEBP).
+    return `OBSIDIAN RUBY (CRIMSON RUBY & ROSE-COPPER) WEB HERO DELIVERY: ${count} UNIQUE DARK-MODE SCENES (${totalFiles} PRODUCTION FILES: ${count}x 150MP MASTER JPG + ${count}x 21:9/16:9 4K UHD JPG + ${count}x OPTIMIZED WEBP).
 - Calm, low-contrast dark Left Third engineered specifically for Exotic Supercars, Sovereign Horology, Haute Perfumery & Executive Landing Pages.
-- Glossy liquid-obsidian waves intersected by ruby-dichroic optical glass fins with cardinal crimson, deep garnet & warm rose-copper reflections (ARRI Alexa 65 × Primo 70 50mm, cleaned EXIF).`;
+- Glossy liquid-obsidian waves intersected by ruby-dichroic optical glass fins with cardinal crimson, deep garnet & warm rose-copper reflections (ARRI Alexa 65 x Primo 70 50mm, cleaned EXIF).`;
   }
 
   if (code.includes('EXOTIC AUTO')) {
-    return `V10 EXOTIC AUTO & CARBON DELIVERY: ${count} UNIQUE AUTOMOTIVE DETAIL SCENES (${totalFiles} PRODUCTION FILES: ${count}× 150MP MASTER PRINT JPG + ${count}× 4K UHD JPG + ${count}× WEB-READY WEBP).
+    return `V10 EXOTIC AUTO & CARBON DELIVERY: ${count} UNIQUE AUTOMOTIVE DETAIL SCENES (${totalFiles} PRODUCTION FILES: ${count}x 150MP MASTER PRINT JPG + ${count}x 4K UHD JPG + ${count}x WEB-READY WEBP).
 - 100% IP-Safe, Unbranded Luxury Automotive Photography: Forged Carbon Weaves, Ceramic Brakes, Flush Unembossed Alloy Rims, Smoked Headlight Optics & Stitched Leather Interiors (Zero logos, zero badges, zero license plates, zero watermarks).
 - Phase One XF IQ4 150MP Macro optical physics with polarizer-controlled paint reflections, sRGB ICC color profile, and stripped EXIF metadata.`;
   }
 
   if (code.includes('BEVERAGE')) {
-    return `V10 BEVERAGE, ENERGY DRINK & COCKTAIL BAR DELIVERY: ${count} UNIQUE HIGH-SPEED SPLASH & GLASSWARE SCENES (${totalFiles} PRODUCTION FILES: ${count}× 150MP MASTER PRINT JPG + ${count}× 4K UHD JPG + ${count}× WEB-READY WEBP).
+    return `V10 BEVERAGE, ENERGY DRINK & COCKTAIL BAR DELIVERY: ${count} UNIQUE HIGH-SPEED SPLASH & GLASSWARE SCENES (${totalFiles} PRODUCTION FILES: ${count}x 150MP MASTER PRINT JPG + ${count}x 4K UHD JPG + ${count}x WEB-READY WEBP).
 - High-speed frozen liquid splashes, fresh fruit dynamics, crystal glassware & sculpted ice cubes with clean negative space for bottle/can compositing and bar menus.
 - 100% IP-Safe, Unbranded Commercial Assets (Zero logos, zero labels, zero watermarks, stripped EXIF, sRGB ICC color profile).`;
   }
 
   if (code.includes('LUXURY INTERIORS')) {
-    return `V10 LUXURY INTERIOR DESIGN DELIVERY: ${count} UNIQUE ARCHITECTURAL SCENES (${totalFiles} PRODUCTION FILES: ${count}× 150MP MASTER PRINT JPG + ${count}× 4K UHD JPG + ${count}× WEB-READY WEBP).
+    return `V10 LUXURY INTERIOR DESIGN DELIVERY: ${count} UNIQUE ARCHITECTURAL SCENES (${totalFiles} PRODUCTION FILES: ${count}x 150MP MASTER PRINT JPG + ${count}x 4K UHD JPG + ${count}x WEB-READY WEBP).
 - 100% IP-Safe, Unbranded Designer Living Rooms, Marble Kitchens, Dining Suites, Private Libraries, Master Bedrooms, Dressing Rooms & Executive Offices (Zero humans, zero text, zero logos).
 - Phase One XF IQ4 150MP & Hasselblad X2D Tilt-Shift architectural optics with ARRI LogC4 window highlight rolloff, sRGB ICC profile, and stripped EXIF metadata.`;
   }
 
   if (code.includes('LUXURY TECH')) {
-    return `V10 LUXURY TECH & AI HARDWARE DELIVERY: ${count} UNIQUE PRODUCT SCENES (${totalFiles} PRODUCTION FILES: ${count}× 150MP MASTER PRINT JPG + ${count}× 4K UHD JPG + ${count}× WEB-READY WEBP).
+    return `V10 LUXURY TECH & AI HARDWARE DELIVERY: ${count} UNIQUE PRODUCT SCENES (${totalFiles} PRODUCTION FILES: ${count}x 150MP MASTER PRINT JPG + ${count}x 4K UHD JPG + ${count}x WEB-READY WEBP).
 - 100% IP-Safe, Unbranded Black-Titanium AI Core Modules, Smart-Home Hubs, Cybersecurity Hardware Vaults, Optical Sensors & Levitating Launch Objects (Zero clones, zero UI text, zero logos).
 - Phase One IQ4 150MP 120mm Macro optics with anisotropic brushed-metal reflections, sapphire caustics, clean SaaS hero negative space, and stripped EXIF metadata.`;
   }
 
   if (code.includes('WATCHES & HOROLOGY')) {
-    return `V10 LUXURY WATCH & HAUTE HORLOGERIE DELIVERY: ${count} UNIQUE HOROLOGY SCENES (${totalFiles} PRODUCTION FILES: ${count}× 150MP MASTER PRINT JPG + ${count}× 4K UHD JPG + ${count}× WEB-READY WEBP).
+    return `V10 LUXURY WATCH & HAUTE HORLOGERIE DELIVERY: ${count} UNIQUE HOROLOGY SCENES (${totalFiles} PRODUCTION FILES: ${count}x 150MP MASTER PRINT JPG + ${count}x 4K UHD JPG + ${count}x WEB-READY WEBP).
 - 100% IP-Safe, Fictional Unbranded Mechanical Timepieces, Exposed Skeleton Calibres, Tourbillon-Inspired Cages, Sapphire Dials & Collector Displays (Zero dial text, zero numbers, zero brand shapes).
-- Shot-matched Phase One IQ4 150MP × Schneider Kreuznach 120mm Macro LS optics with ruby jewel-bearing caustics, sRGB ICC color profile, and stripped EXIF metadata.`;
+- Shot-matched Phase One IQ4 150MP x Schneider Kreuznach 120mm Macro LS optics with ruby jewel-bearing caustics, sRGB ICC color profile, and stripped EXIF metadata.`;
   }
 
   const labelMap = {
@@ -313,7 +459,7 @@ const buildUnifiedDescription = (formatCode, isAgency45 = false) => {
 
   const nicheTitle = labelMap[formatCode] || 'COMMERCIAL CAMPAIGN';
 
-  return `UNIFIED ${nicheTitle} DELIVERY: ${count} UNIQUE SCENES (${totalFiles} PRODUCTION FILES: ${count}× 150MP MASTER PRINT JPG + ${count}× 4K UHD JPG + ${count}× WEB-READY WEBP).
+  return `UNIFIED ${nicheTitle} DELIVERY: ${count} UNIQUE SCENES (${totalFiles} PRODUCTION FILES: ${count}x 150MP MASTER PRINT JPG + ${count}x 4K UHD JPG + ${count}x WEB-READY WEBP).
 - 100% IP-Safe, Unbranded & Blank-Label Commercial Photography (Zero logos, zero readable text, zero trademarks, zero watermarks).
 - Phase One XF IQ4 150MP & Leica medium-format optical aesthetics with natural highlight rolloff, sRGB ICC color profile, and stripped EXIF metadata.
 - Organized into 3 clean ZIP folders (01_Master_Resolution_JPG, 02_4K_UHD_JPG, 03_Web_Ready_WEBP) + Commercial License included.`;
@@ -339,7 +485,6 @@ const detectIndustry = (paket) => {
   return 'cinematic';
 };
 
-// Određuje da li kartica prikazuje 20 preview sličica (45-scena Agency Bundle) ili 10 (20-scena Standard Pack)
 const getPaketPreviewSlotCount = (paket) => {
   if (paket?.previewSlotCount === 20) return 20;
   if ((paket?.primeri?.length || 0) > 10) return 20;
@@ -356,7 +501,6 @@ const isObsidianFormat = (fmtOrId = '') => {
   return s.includes('OBSIDIAN') || s.includes('21:9');
 };
 
-// Automatski proračun veće (Global Enterprise) cene i za nove i za već objavljene pakete u bazi
 const computeDefaultEnterprisePrice = (standardCena) => {
   const base = parseFloat(standardCena);
   if (isNaN(base) || base <= 0) return '0.00';
@@ -367,9 +511,6 @@ const computeDefaultEnterprisePrice = (standardCena) => {
   return Math.round(base * 1.95).toFixed(2);
 };
 
-// ============================================================================
-// 📜 CENTRALNA FUNKCIJA (3 LINIJE LOGIKE) ZA ODREĐIVANJE STOCK PHOTOS LICENCE
-// ============================================================================
 const resolveStockLicenseMeta = (licenseTier = 'standard') => {
   const isEnt = licenseTier === 'enterprise';
   const licenseTitle = isEnt ? 'GLOBAL ENTERPRISE LICENSE' : 'STANDARD COMMERCIAL LICENSE';
@@ -382,11 +523,10 @@ const V8StockBerzaBase = () => {
   const [paketi, setPaketi] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [isMigratingLinks, setIsMigratingLinks] = useState(false);
 
-  // Čuva izabranu licencu po svakoj kartici ('standard' = manja cena | 'enterprise' = veća cena)
   const [selectedLicenses, setSelectedLicenses] = useState({});
 
-  // 🔒 NE DRŽIMO zipLink U CHECKOUT STATE-u KAKO KLIJENT NE BI MOGAO DA DOĐE DO NJEGA PRE FIREBASE POTVRDE!
   const [checkoutData, setCheckoutData] = useState({
     isOpen: false,
     paketId: null,
@@ -400,14 +540,32 @@ const V8StockBerzaBase = () => {
     paket: null,
     licenseTier: 'standard',
     name: '',
-    price: 0
+    price: 0,
+    customPriceOverride: null
   });
 
   const [isUploading, setIsUploading] = useState(false);
   const [isUploadingPrimer, setIsUploadingPrimer] = useState(false);
   const [primeriUrls, setPrimeriUrls] = useState([]);
   const [editingPaketId, setEditingPaketId] = useState(null);
-  const [fullScreenImageUrl, setFullScreenImageUrl] = useState(null);
+  const [lightboxState, setLightboxState] = useState({
+    isOpen: false,
+    images: [],
+    currentIndex: 0,
+    title: ''
+  });
+
+  const openGalleryLightbox = (imagesArray, startIndex = 0, title = '') => {
+    const validImages = (imagesArray || []).filter(Boolean);
+    if (validImages.length === 0) return;
+    const safeIdx = Math.max(0, Math.min(startIndex, validImages.length - 1));
+    setLightboxState({
+      isOpen: true,
+      images: validImages,
+      currentIndex: safeIdx,
+      title
+    });
+  };
 
   const [activeTab, setActiveTab] = useState(() => {
     const saved = localStorage.getItem('v10_luxury_industry_tab');
@@ -419,7 +577,6 @@ const V8StockBerzaBase = () => {
     trackV8Action('tab_view', { event_category: 'Luxury_Store_Dark', event_label: activeTab });
   }, [activeTab]);
 
-  // Lead Magnet State
   const [sampleEmail, setSampleEmail] = useState('');
   const [sampleUnlocked, setSampleUnlocked] = useState(false);
   const [isSubmittingLead, setIsSubmittingLead] = useState(false);
@@ -428,16 +585,12 @@ const V8StockBerzaBase = () => {
 
   const [showTechSpecs, setShowTechSpecs] = useState(false);
 
-  // 🔒 Čuva isključivo pakete i licence za koje je Firebase vratio isPaid === true!
   const [kupljeniPaketiIds, setKupljeniPaketiIds] = useState([]);
   const [kupljeneLicencePoPaketu, setKupljeneLicencePoPaketu] = useState({});
   const [paidPayoneer, setPaidPayoneer] = useState([]);
   const [paidCrypto, setPaidCrypto] = useState([]);
   const [paidPaypal, setPaidPaypal] = useState([]);
 
-  // Admin Forma State:
-  // 1. Standard Campaign Pack -> 20 scena (Standard Commercial: $149.00 | Global Enterprise: $299.00)
-  // 2. Executive Agency Bundle -> 45 scena (Standard Commercial: $499.00 | Global Enterprise: $890.00)
   const [paketTier, setPaketTier] = useState('standard');
   const [adminSlotLimit, setAdminSlotLimit] = useState(10);
   const [noviVolNaslov, setNoviVolNaslov] = useState('VOL. 01');
@@ -501,12 +654,12 @@ const V8StockBerzaBase = () => {
     };
   }, []);
 
-  // ============================================================================
-  // 🔒 FIREBASE REAL-TIME PROVERA PLAĆENIH PAKETA (SAMO GDE JE isPaid === true)
-  // ============================================================================
   useEffect(() => {
     if (!currentUser) {
-      setPaidPayoneer([]); setPaidCrypto([]); setPaidPaypal([]); return;
+      setPaidPayoneer([]);
+      setPaidCrypto([]);
+      setPaidPaypal([]);
+      return;
     }
 
     const extractPaidItems = (snap) => {
@@ -530,7 +683,11 @@ const V8StockBerzaBase = () => {
     const qPaypal = query(collection(db, "v8_paypal_requests"), where("uid", "==", currentUser.uid), where("isPaid", "==", true));
     const unsubPaypal = onSnapshot(qPaypal, (snap) => setPaidPaypal(extractPaidItems(snap)));
 
-    return () => { unsubPayoneer(); unsubCrypto(); unsubPaypal(); };
+    return () => {
+      unsubPayoneer();
+      unsubCrypto();
+      unsubPaypal();
+    };
   }, [currentUser]);
 
   useEffect(() => {
@@ -538,8 +695,14 @@ const V8StockBerzaBase = () => {
     const ids = Array.from(new Set(merged.map(x => x.paketId)));
     const licMap = {};
     merged.forEach(x => {
-      if (x.tier === 'enterprise' || !licMap[x.paketId]) {
-        licMap[x.paketId] = x.tier;
+      if (!licMap[x.paketId]) {
+        licMap[x.paketId] = { standard: false, enterprise: false };
+      }
+      if (x.tier === 'enterprise') {
+        licMap[x.paketId].enterprise = true;
+        licMap[x.paketId].standard = true;
+      } else {
+        licMap[x.paketId].standard = true;
       }
     });
     setKupljeniPaketiIds(ids);
@@ -560,6 +723,56 @@ const V8StockBerzaBase = () => {
       setNoviOpisEn(buildUnifiedDescription(foundTab.formatCode, isAgency45));
     }
   }, [activeTab, editingPaketId, paketTier]);
+
+  const dohvatiSiguranZipLink = async (paket) => {
+    if (!paket) return null;
+    try {
+      const vaultSnap = await getDoc(doc(db, "v8_stock_vault_links", paket.id));
+      if (vaultSnap.exists() && vaultSnap.data().zipLink) {
+        return vaultSnap.data().zipLink;
+      }
+    } catch (err) {
+      console.error("Greška pri čitanju iz sefa:", err);
+    }
+    return paket.zipLink || null;
+  };
+
+  const otvoriSiguranDownload = async (paket) => {
+    const url = await dohvatiSiguranZipLink(paket);
+    if (url) {
+      window.open(url, '_blank');
+    } else {
+      v8Toast.error("Download link nije pronađen u sefu!");
+    }
+  };
+
+  const nezasticeniPaketi = paketi.filter(p => p.zipLink && String(p.zipLink).trim() !== '');
+
+  const migrirajJavneLinkoveUSef = async () => {
+    if (nezasticeniPaketi.length === 0) return;
+    setIsMigratingLinks(true);
+    try {
+      for (const p of nezasticeniPaketi) {
+        await setDoc(doc(db, "v8_stock_vault_links", p.id), {
+          zipLink: p.zipLink.trim(),
+          paketId: p.id,
+          nazivEn: p.nazivEn || '',
+          migratedAt: serverTimestamp()
+        }, { merge: true });
+
+        await updateDoc(doc(db, "v8_stock_paketi", p.id), {
+          zipLink: deleteField()
+        });
+      }
+      if (typeof v8Toast !== 'undefined') {
+        v8Toast.success(`🔒 Zaštićeno ${nezasticeniPaketi.length} paketa u tajni sef!`);
+      }
+    } catch (err) {
+      alert("Greška pri migraciji u sef: " + err.message);
+    } finally {
+      setIsMigratingLinks(false);
+    }
+  };
 
   const handleSelectTierPreset = (tier) => {
     setPaketTier(tier);
@@ -658,7 +871,8 @@ const V8StockBerzaBase = () => {
       if (typeof v8Toast !== 'undefined') v8Toast.success("🔓 150MP + WebP Master Sample Unlocked!");
 
       const fallbackFreePkg = paketi.find(p => p.isFree || parseFloat(p.cena) === 0);
-      const targetDownload = customSampleUrl || fallbackFreePkg?.zipLink || '/VISIONARY_V10_ZIP_VALIDATION.txt';
+      const fallbackVaultUrl = fallbackFreePkg ? await dohvatiSiguranZipLink(fallbackFreePkg) : null;
+      const targetDownload = customSampleUrl || fallbackVaultUrl || '/VISIONARY_V10_ZIP_VALIDATION.txt';
       window.open(targetDownload, '_blank');
     } catch (err) {
       console.error(err);
@@ -668,16 +882,20 @@ const V8StockBerzaBase = () => {
     }
   };
 
-  // Otvara Checkout BEZ prosleđivanja zipLink-a klijentu!
-  const otvoriCheckoutIliPaddle = async (user, paket, licenseTier = 'standard') => {
+  const otvoriCheckoutIliPaddle = async (user, paket, licenseTier = 'standard', customPriceOverride = null) => {
     if (!user || !paket) return;
     const { isEnt, licenseTitle } = resolveStockLicenseMeta(licenseTier);
     const displayTitle = formatPaketDisplayTitle(paket);
     const baseFull = paket.volume ? `${displayTitle} (${paket.volume})` : displayTitle;
-    const fullName = `${baseFull} — [${licenseTitle}]`;
-    const finalPrice = isEnt ? getEnterpriseCena(paket) : getStandardCena(paket);
+    const isUpgradeOrder = customPriceOverride !== null;
+    const fullName = isUpgradeOrder
+      ? `${baseFull} — [UPGRADE TO ${licenseTitle}]`
+      : `${baseFull} — [${licenseTitle}]`;
+    const finalPrice = customPriceOverride !== null
+      ? customPriceOverride
+      : (isEnt ? getEnterpriseCena(paket) : getStandardCena(paket));
 
-    if (paket.paddleLink && paket.paddleLink.trim() !== "") {
+    if (!isUpgradeOrder && paket.paddleLink && paket.paddleLink.trim() !== "") {
       window.location.href = paket.paddleLink;
       return;
     }
@@ -692,28 +910,25 @@ const V8StockBerzaBase = () => {
     });
   };
 
-  const prijavaIKupovina = async (paket, licenseTier = 'standard') => {
+  const prijavaIKupovina = async (paket, licenseTier = 'standard', customPriceOverride = null) => {
     const displayTitle = formatPaketDisplayTitle(paket);
 
-    // Besplatan paket ($0.00)
     if (paket.isFree || paket.cena === "0.00" || parseFloat(paket.cena) === 0) {
       trackV8Action('free_asset_download', { asset_name: displayTitle });
       if (typeof v8Toast !== 'undefined') v8Toast.success("🚀 ACCESS GRANTED: Downloading Free 150MP Sample...");
-      window.open(paket.zipLink, '_blank');
-      return;
-    }
-
-    // Paket za koji je Firebase VEĆ potvrdio isPaid === true
-    if (kupljeniPaketiIds.includes(paket.id)) {
-      trackV8Action('owned_asset_download', { asset_name: displayTitle });
-      window.open(paket.zipLink, '_blank');
+      await otvoriSiguranDownload(paket);
       return;
     }
 
     const { isEnt, licenseTitle } = resolveStockLicenseMeta(licenseTier);
     const baseFull = paket.volume ? `${displayTitle} (${paket.volume})` : displayTitle;
-    const fullName = `${baseFull} — [${licenseTitle}]`;
-    const finalPrice = isEnt ? getEnterpriseCena(paket) : getStandardCena(paket);
+    const isUpgradeOrder = customPriceOverride !== null;
+    const fullName = isUpgradeOrder
+      ? `${baseFull} — [UPGRADE TO ${licenseTitle}]`
+      : `${baseFull} — [${licenseTitle}]`;
+    const finalPrice = customPriceOverride !== null
+      ? customPriceOverride
+      : (isEnt ? getEnterpriseCena(paket) : getStandardCena(paket));
     const userNow = currentUser || auth.currentUser;
 
     trackV8Action('checkout_initiated', {
@@ -725,10 +940,17 @@ const V8StockBerzaBase = () => {
     });
 
     if (userNow) {
-      await otvoriCheckoutIliPaddle(userNow, paket, licenseTier);
+      await otvoriCheckoutIliPaddle(userNow, paket, licenseTier, customPriceOverride);
       return;
     }
-    setLoginRequiredData({ isOpen: true, paket, licenseTier, name: fullName, price: finalPrice });
+    setLoginRequiredData({
+      isOpen: true,
+      paket,
+      licenseTier,
+      name: fullName,
+      price: finalPrice,
+      customPriceOverride
+    });
   };
 
   const handleUploadPreview = async (e) => {
@@ -793,7 +1015,6 @@ const V8StockBerzaBase = () => {
       tip: noviTip,
       opisEn: noviOpisEn,
       previewUrl,
-      zipLink,
       isFree,
       previewSlotCount: adminSlotLimit,
       primeri: primeriUrls.slice(0, adminSlotLimit),
@@ -801,20 +1022,35 @@ const V8StockBerzaBase = () => {
     };
 
     try {
+      let targetId = editingPaketId;
       if (editingPaketId) {
-        await updateDoc(doc(db, "v8_stock_paketi", editingPaketId), paketData);
-        v8Toast.success("Campaign Package Updated!");
+        await updateDoc(doc(db, "v8_stock_paketi", editingPaketId), {
+          ...paketData,
+          zipLink: deleteField()
+        });
       } else {
-        await addDoc(collection(db, "v8_stock_paketi"), { ...paketData, createdAt: serverTimestamp() });
-        v8Toast.success("New Campaign Package Published!");
+        const createdRef = await addDoc(collection(db, "v8_stock_paketi"), {
+          ...paketData,
+          createdAt: serverTimestamp()
+        });
+        targetId = createdRef.id;
       }
+
+      await setDoc(doc(db, "v8_stock_vault_links", targetId), {
+        zipLink: zipLink.trim(),
+        paketId: targetId,
+        nazivEn: paketData.nazivEn,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+
+      v8Toast.success(editingPaketId ? "Campaign Package & Vault Updated!" : "New Campaign Package Published & Vault Locked!");
       stoziEdit();
     } catch (error) {
       v8Toast.error(error.message);
     }
   };
 
-  const startEditPaket = (paket) => {
+  const startEditPaket = async (paket) => {
     const detectedSlots = getPaketPreviewSlotCount(paket);
     setEditingPaketId(paket.id);
     setAdminSlotLimit(detectedSlots);
@@ -828,10 +1064,13 @@ const V8StockBerzaBase = () => {
     setNovaEnterpriseCena(paket.cenaEnterprise || computeDefaultEnterprisePrice(paket.cena || '149.00'));
     setNoviOpisEn(paket.opisEn || buildUnifiedDescription(paket.format || 'V10 LUXURY INTERIORS (20x 150MP + 4K + WEBP)', detectedSlots === 20));
     setPreviewUrl(paket.previewUrl || '');
-    setZipLink(paket.zipLink || '');
     setIsFree(paket.isFree || false);
     setPrimeriUrls(paket.primeri || []);
+    setZipLink(paket.zipLink || '');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    const vaultUrl = await dohvatiSiguranZipLink(paket);
+    if (vaultUrl) setZipLink(vaultUrl);
   };
 
   const stoziEdit = () => {
@@ -855,6 +1094,7 @@ const V8StockBerzaBase = () => {
   const obrisiPaket = async (id) => {
     if (window.confirm("Remove this package permanently?")) {
       await deleteDoc(doc(db, "v8_stock_paketi", id));
+      await deleteDoc(doc(db, "v8_stock_vault_links", id)).catch(() => {});
     }
   };
 
@@ -886,9 +1126,7 @@ const V8StockBerzaBase = () => {
 
       <div className="relative z-10 pt-28 px-4 sm:px-6 max-w-[1600px] mx-auto">
 
-        {/* =================================================================== */}
-        {/* 1. HERO SEKCIJA SA SVIM V10 I OBSIDIAN DUGMIĆIMA                    */}
-        {/* =================================================================== */}
+        {/* 1. HERO SEKCIJA */}
         <div className="rounded-[2.25rem] bg-[#121722] border border-[#C5A059]/30 shadow-[0_25px_70px_rgba(0,0,0,0.65)] p-8 md:p-14 mb-8 text-center relative overflow-hidden">
           <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#C5A059] to-transparent" />
 
@@ -952,7 +1190,7 @@ const V8StockBerzaBase = () => {
                 {activeTabPreviewThumbs.map((thumbUrl, idx) => (
                   <div
                     key={idx}
-                    onClick={() => setFullScreenImageUrl(thumbUrl)}
+                    onClick={() => openGalleryLightbox(activeTabPreviewThumbs, idx, `${currentTabInfo.shortLabel} — PREVIEW`)}
                     className="aspect-square rounded-xl overflow-hidden border border-[#C5A059]/40 hover:border-[#F3E5AB] bg-[#0B0E14] cursor-zoom-in group relative"
                   >
                     <img
@@ -971,9 +1209,7 @@ const V8StockBerzaBase = () => {
           )}
         </div>
 
-        {/* =================================================================== */}
-        {/* 2. B2B LEAD MAGNET BAR                                              */}
-        {/* =================================================================== */}
+        {/* 2. B2B LEAD MAGNET BAR */}
         <div className="mb-14 rounded-3xl bg-gradient-to-r from-[#111927] via-[#162235] to-[#111927] border border-[#C5A059]/40 p-6 sm:p-9 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
             <div className="max-w-2xl text-center lg:text-left">
@@ -1016,9 +1252,10 @@ const V8StockBerzaBase = () => {
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={async () => {
                     const fallbackFreePkg = paketi.find(p => p.isFree || parseFloat(p.cena) === 0);
-                    window.open(customSampleUrl || fallbackFreePkg?.zipLink || '/VISIONARY_V10_ZIP_VALIDATION.txt', '_blank');
+                    const fallbackVaultUrl = fallbackFreePkg ? await dohvatiSiguranZipLink(fallbackFreePkg) : null;
+                    window.open(customSampleUrl || fallbackVaultUrl || '/VISIONARY_V10_ZIP_VALIDATION.txt', '_blank');
                   }}
                   className="mt-1.5 text-[11px] underline text-[#F3E5AB] font-bold cursor-pointer"
                 >
@@ -1051,11 +1288,26 @@ const V8StockBerzaBase = () => {
           )}
         </div>
 
-        {/* =================================================================== */}
-        {/* 3. ADMIN FORMA SA OBE CENE LICENCI (STANDARD COMMERCIAL + ENTERPRISE) */}
-        {/* =================================================================== */}
+        {/* 3. ADMIN FORMA + 1-KLIK ZAŠTITA LINKOVA */}
         {isAdmin && (
           <form onSubmit={dodajPaket} className="bg-[#121722] border-2 border-[#C5A059]/40 rounded-[2rem] p-6 md:p-8 mb-16 shadow-[0_20px_60px_rgba(0,0,0,0.65)] max-w-5xl mx-auto">
+
+            {nezasticeniPaketi.length > 0 && (
+              <div className="mb-6 p-4 rounded-2xl bg-amber-950/40 border border-[#C5A059] flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="text-xs text-[#F3E5AB] font-bold">
+                  🔒 Detektovano {nezasticeniPaketi.length} paketa sa javnim Google Drive linkom. Klikni desno da ih odmah preseliš u zaključani sef (v8_stock_vault_links)!
+                </div>
+                <button
+                  type="button"
+                  disabled={isMigratingLinks}
+                  onClick={migrirajJavneLinkoveUSef}
+                  className="px-5 py-3 rounded-xl bg-gradient-to-r from-[#C5A059] to-[#E2C383] text-[#0B0E14] font-black text-[11px] uppercase tracking-wider cursor-pointer shrink-0 shadow-lg"
+                >
+                  {isMigratingLinks ? 'Zaključavam...' : 'Zaključaj postojeće linkove u Sef'}
+                </button>
+              </div>
+            )}
+
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4 mb-6">
               <h2 className="text-lg md:text-xl font-black text-[#F7F4EE] uppercase tracking-widest flex items-center gap-2">
                 <Zap className="w-5 h-5 text-[#C5A059]" /> {editingPaketId ? 'EDIT B2B CAMPAIGN PACKAGE' : 'PUBLISH UNIFIED V10 PACKAGE (DUAL LICENSE TIERS)'}
@@ -1270,7 +1522,7 @@ const V8StockBerzaBase = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
                 <div className="flex flex-col gap-2">
                   <label className="flex items-center gap-2 text-slate-300 font-extrabold text-[11px] tracking-widest uppercase">
-                    <LinkIcon size={14} className="text-[#C5A059]" /> GOOGLE DRIVE ZIP LINK (150MP JPG + 4K JPG + WEBP)
+                    <LinkIcon size={14} className="text-[#C5A059]" /> GOOGLE DRIVE ZIP LINK (SAVED IN PRIVATE VAULT)
                   </label>
                   <input
                     type="url"
@@ -1422,9 +1674,7 @@ const V8StockBerzaBase = () => {
           </form>
         )}
 
-        {/* =================================================================== */}
-        {/* 4. PRODUCT CARDS (OTKLJUČAVAJU SE ISKLJUČIVO KADA FIREBASE ZABELEŽI isPaid === true) */}
-        {/* =================================================================== */}
+        {/* 4. PRODUCT CARDS SA PAMETNOM DOPLATOM ZA ENTERPRISE */}
         {filtriraniPaketi.length === 0 ? (
           <div className="text-center py-20 bg-[#121722] border border-white/10 rounded-3xl mb-16 shadow-xl">
             <Aperture className="w-11 h-11 text-[#C5A059] mx-auto mb-3" />
@@ -1448,20 +1698,31 @@ const V8StockBerzaBase = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-20">
             {filtriraniPaketi.map((paket) => {
               const isFreePkg = paket.isFree || parseFloat(paket.cena) === 0;
-              const isPaidInFirebase = kupljeniPaketiIds?.includes(paket.id);
-              const isOwned = isPaidInFirebase || isFreePkg;
+              const ownedTiers = kupljeneLicencePoPaketu[paket.id] || { standard: false, enterprise: false };
+              const hasStandardPaid = Boolean(ownedTiers.standard);
+              const hasEnterprisePaid = Boolean(ownedTiers.enterprise);
 
               const detectedId = detectIndustry(paket);
               const matchedTab = INDUSTRY_TABS.find(t => t.id === detectedId) || INDUSTRY_TABS[10];
               const cardSlotCount = getPaketPreviewSlotCount(paket);
               const isObsidianHero = detectedId.startsWith('obsidian_');
 
-              // Ako je kupac već platio u Firebase-u, dajemo mu PDF licencu koju je zaista platio!
-              const activeLic = isPaidInFirebase ? (kupljeneLicencePoPaketu[paket.id] || getActiveCardLicense(paket.id)) : getActiveCardLicense(paket.id);
+              const activeLic = getActiveCardLicense(paket.id);
               const { isEnt: isCardEnt, licensePdf: activeLicensePdf } = resolveStockLicenseMeta(activeLic);
               const stdPrice = getStandardCena(paket);
               const entPrice = getEnterpriseCena(paket);
-              const displayedPrice = isFreePkg ? '0.00' : (isCardEnt ? entPrice : stdPrice);
+
+              const isCurrentTierOwned = isFreePkg || (isCardEnt ? hasEnterprisePaid : (hasStandardPaid || hasEnterprisePaid));
+              const isUpgradeEligible = !isFreePkg && isCardEnt && hasStandardPaid && !hasEnterprisePaid;
+              const upgradeDiff = Math.max(0, parseFloat(entPrice) - parseFloat(stdPrice)).toFixed(2);
+
+              const displayedPrice = isFreePkg
+                ? '0.00'
+                : isUpgradeEligible
+                ? upgradeDiff
+                : (isCardEnt ? entPrice : stdPrice);
+
+              const canSeeSelectedPdf = !isFreePkg && (isAdmin || (isCardEnt ? hasEnterprisePaid : (hasStandardPaid || hasEnterprisePaid)));
 
               return (
                 <div
@@ -1478,7 +1739,7 @@ const V8StockBerzaBase = () => {
                         </span>
                       )}
                       <span className="bg-[#0B0E14]/90 backdrop-blur-md border border-white/15 text-[#F7F4EE] text-[10px] font-extrabold uppercase tracking-widest px-3 py-1.5 rounded-full shadow-sm">
-                        {paket.volume || '20× 150MP + 20× 4K + 20× WEBP'}
+                        {paket.volume || '20x 150MP + 20x 4K + 20x WEBP'}
                       </span>
                       <span className="bg-[#182030]/90 backdrop-blur-md border border-[#C5A059]/50 text-[#F3E5AB] text-[10px] font-extrabold uppercase tracking-wider px-3 py-1.5 rounded-full shadow-sm">
                         {paket.kategorijaEn || matchedTab.shortLabel}
@@ -1492,7 +1753,11 @@ const V8StockBerzaBase = () => {
                     </div>
 
                     <div
-                      onClick={() => setFullScreenImageUrl(paket.previewUrl)}
+                      onClick={() => {
+                        const validPrimeri = (paket.primeri || []).slice(0, cardSlotCount).filter(Boolean);
+                        const fullCardGallery = [paket.previewUrl, ...validPrimeri.filter(u => u !== paket.previewUrl)].filter(Boolean);
+                        openGalleryLightbox(fullCardGallery, 0, formatPaketDisplayTitle(paket));
+                      }}
                       className="w-full aspect-[16/9] rounded-2xl overflow-hidden cursor-zoom-in relative group border border-white/10 bg-[#080A0F]"
                     >
                       <img
@@ -1514,7 +1779,15 @@ const V8StockBerzaBase = () => {
                         return thumb ? (
                           <div
                             key={idx}
-                            onClick={() => setFullScreenImageUrl(thumb)}
+                            onClick={() => {
+                              const validPrimeri = (paket.primeri || []).slice(0, cardSlotCount).filter(Boolean);
+                              const clickedPos = validPrimeri.indexOf(thumb);
+                              openGalleryLightbox(
+                                validPrimeri,
+                                clickedPos >= 0 ? clickedPos : 0,
+                                `${formatPaketDisplayTitle(paket)} — THUMBNAILS`
+                              );
+                            }}
                             className="aspect-square rounded-xl overflow-hidden cursor-zoom-in border border-white/15 hover:border-[#C5A059] transition bg-[#080A0F] relative group"
                           >
                             <img
@@ -1638,6 +1911,8 @@ const V8StockBerzaBase = () => {
                         <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-0.5">
                           {isFreePkg
                             ? 'Free Complimentary Sample'
+                            : isUpgradeEligible
+                            ? `Enterprise Upgrade Credit Applied (-$${stdPrice})`
                             : isCardEnt
                             ? 'Global Enterprise • Unlimited Multi-Client, TV & OOH'
                             : 'Standard Commercial • Single-Project Rights'}
@@ -1651,20 +1926,25 @@ const V8StockBerzaBase = () => {
                         <button
                           type="button"
                           onClick={() => {
-                            if (isAdmin || isOwned) {
-                              window.open(paket.zipLink, '_blank');
+                            if (isAdmin || isCurrentTierOwned) {
+                              trackV8Action('owned_asset_download', { asset_name: formatPaketDisplayTitle(paket) });
+                              otvoriSiguranDownload(paket);
+                            } else if (isUpgradeEligible) {
+                              prijavaIKupovina(paket, 'enterprise', upgradeDiff);
                             } else {
-                              prijavaIKupovina(paket, activeLic);
+                              prijavaIKupovina(paket, activeLic, null);
                             }
                           }}
                           className={`flex-1 sm:flex-initial px-7 py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg ${
-                            !isAdmin && isOwned
+                            !isAdmin && isCurrentTierOwned
                               ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
                               : 'bg-gradient-to-r from-[#C5A059] via-[#E2C383] to-[#C5A059] hover:brightness-110 text-[#0B0E14]'
                           }`}
                         >
-                          {(isAdmin || isOwned) ? (
+                          {(isAdmin || isCurrentTierOwned) ? (
                             <><DownloadCloud size={16} /> Download ZIP</>
+                          ) : isUpgradeEligible ? (
+                            <><Crown size={15} /> Upgrade to Enterprise (+${upgradeDiff})</>
                           ) : isCardEnt ? (
                             <><Crown size={15} /> Buy Enterprise License</>
                           ) : (
@@ -1672,8 +1952,7 @@ const V8StockBerzaBase = () => {
                           )}
                         </button>
 
-                        {/* 🔒 DUGME ZA PREUZIMANJE PDF LICENCE VIDI SAMO ADMIN ILI KUPAC ČIJA JE UPLATA POTVRĐENA U FIREBASE-U! */}
-                        {!isFreePkg && (isAdmin || isPaidInFirebase) && (
+                        {canSeeSelectedPdf && (
                           <a
                             href={activeLicensePdf}
                             download
@@ -1712,9 +1991,7 @@ const V8StockBerzaBase = () => {
           </div>
         )}
 
-        {/* =================================================================== */}
-        {/* 5. SKLOPLJEN TEHNIČKI SERTIFIKAT NA DNU                             */}
-        {/* =================================================================== */}
+        {/* 5. SKLOPLJEN TEHNIČKI SERTIFIKAT NA DNU */}
         <div className="max-w-5xl mx-auto border border-[#C5A059]/30 bg-[#121722] rounded-3xl overflow-hidden shadow-xl">
           <button
             type="button"
@@ -1765,15 +2042,25 @@ const V8StockBerzaBase = () => {
 
       <LoginRequiredModal
         isOpen={loginRequiredData.isOpen}
-        onClose={() => setLoginRequiredData({ isOpen: false, paket: null, licenseTier: 'standard', name: '', price: 0 })}
+        onClose={() => setLoginRequiredData({ isOpen: false, paket: null, licenseTier: 'standard', name: '', price: 0, customPriceOverride: null })}
         packageName={loginRequiredData.name}
         price={loginRequiredData.price}
         onLoginSuccess={async (user) => {
-          if (loginRequiredData.paket) await otvoriCheckoutIliPaddle(user, loginRequiredData.paket, loginRequiredData.licenseTier);
-          setLoginRequiredData({ isOpen: false, paket: null, licenseTier: 'standard', name: '', price: 0 });
+          if (loginRequiredData.paket) {
+            await otvoriCheckoutIliPaddle(user, loginRequiredData.paket, loginRequiredData.licenseTier, loginRequiredData.customPriceOverride);
+          }
+          setLoginRequiredData({ isOpen: false, paket: null, licenseTier: 'standard', name: '', price: 0, customPriceOverride: null });
         }}
       />
-      <FullScreenLightbox imageUrl={fullScreenImageUrl} onClose={() => setFullScreenImageUrl(null)} />
+      {lightboxState.isOpen && (
+        <FullScreenLightbox
+          images={lightboxState.images}
+          currentIndex={lightboxState.currentIndex}
+          title={lightboxState.title}
+          onSelectIndex={(newIdx) => setLightboxState((prev) => ({ ...prev, currentIndex: newIdx }))}
+          onClose={() => setLightboxState({ isOpen: false, images: [], currentIndex: 0, title: '' })}
+        />
+      )}
       <AnimatePresence>
         {checkoutData.isOpen && (
           <V8SecureCheckout
