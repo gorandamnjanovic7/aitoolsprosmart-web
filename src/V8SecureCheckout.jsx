@@ -1,4 +1,5 @@
-// POČETAK FAJLA: src/V8SecureCheckout.jsx (STRICT FIREBASE PAYMENT VERIFICATION GATE)
+// ============================================================================
+// POČETAK FAJLA: src/V8SecureCheckout.jsx (STRICT FIREBASE PAYMENT VERIFICATION GATE + PRIVATE VAULT)
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { db, auth } from './firebase';
@@ -19,7 +20,6 @@ const getBackendUrl = () => "https://aitoolsprosmart-becend-production.up.railwa
 const N8N_WHATSAPP_WEBHOOK = "https://aitools-n8n.app.n8n.cloud/webhook/v10-sale-alert";
 const TIER_ICONS = [Rocket, Briefcase, Crown, Package];
 
-// Proverava da li je u Firebase dokumentu zaista potvrđeno da su pare legle
 const isFirebasePaymentConfirmed = (data) => {
   if (!data) return false;
   const statusUpper = String(data.status || '').toUpperCase();
@@ -39,7 +39,7 @@ const V8SecureCheckout = ({
   paketId = null,
   productName,
   price,
-  zipLink = "", // Opcioni fallback za druge stranice; NIKADA se ne prikazuje klijentu dok Firebase ne potvrdi uplatu!
+  zipLink = "",
   licenseTier = null,
   availableTiers = [],
   projectImage = "/v8-secure-blue.webp",
@@ -62,10 +62,9 @@ const V8SecureCheckout = ({
   const [success, setSuccess] = useState(false);
   const [showPayPalModal, setShowPayPalModal] = useState(false);
 
-  // 🔒 STROGA ZAŠTITA: Fajl i licenca su NULL i FALSE sve dok Firebase ne vrati isPaid === true!
   const [firebaseVerifiedPaid, setFirebaseVerifiedPaid] = useState(false);
   const [verifiedDownloadUrl, setVerifiedDownloadUrl] = useState(null);
-  const [pendingVerificationRef, setPendingVerificationRef] = useState(null); // { collectionName, docId }
+  const [pendingVerificationRef, setPendingVerificationRef] = useState(null);
 
   const activeTierObj = hasMultipleTiers ? availableTiers.find(t => t.id === selectedTier) : null;
   const activePrice = hasMultipleTiers ? activeTierObj?.price : price;
@@ -73,20 +72,30 @@ const V8SecureCheckout = ({
   const activeIsMonthly = hasMultipleTiers ? activeTierObj?.isMonthly : false;
   const activePlanId = hasMultipleTiers ? activeTierObj?.planId : null;
 
-  // ============================================================================
-  // 📜 3 LINIJE KODA ZA AUTOMATSKO ODREĐIVANJE ODGOVARAJUĆE STOCK PHOTOS LICENCE
-  // ============================================================================
-  const isEnterpriseLicense = licenseTier ? licenseTier === 'enterprise' : (/ENTERPRISE/i.test(String(activeName || '')) || (!/STANDARD COMMERCIAL/i.test(String(activeName || '')) && parseFloat(activePrice) >= 299));
-  const resolvedLicenseName = isEnterpriseLicense ? 'Global Enterprise License (Unlimited Clients, TV & OOH)' : 'Standard Commercial License (Single-Project Rights)';
-  const resolvedLicensePdf = isEnterpriseLicense ? '/PREMIUM ENTERPRISE LICENSE.pdf' : '/V8_COMMERCIAL_LICENSE.pdf';
+  const isEnterpriseLicense = licenseTier
+    ? licenseTier === 'enterprise'
+    : (/ENTERPRISE/i.test(String(activeName || '')) || (!/STANDARD COMMERCIAL/i.test(String(activeName || '')) && parseFloat(activePrice) >= 299));
+  const resolvedLicenseName = isEnterpriseLicense
+    ? 'Global Enterprise License (Unlimited Clients, TV & OOH)'
+    : 'Standard Commercial License (Single-Project Rights)';
+  const resolvedLicensePdf = isEnterpriseLicense
+    ? '/PREMIUM ENTERPRISE LICENSE.pdf'
+    : '/V8_COMMERCIAL_LICENSE.pdf';
 
   const initialOptions = { "client-id": import.meta.env.VITE_PAYPAL_CLIENT_ID, currency: "USD", vault: true };
 
-  // Sigurno dohvatanje ZIP linka iz baze TEK NAKON ŠTO JE FIREBASE POTVRDIO UPLATU
   const fetchProtectedZipAfterPaid = async (docData) => {
     if (docData?.zipLink) return docData.zipLink;
     if (docData?.downloadUrl) return docData.downloadUrl;
     if (paketId) {
+      try {
+        const vaultSnap = await getDoc(doc(db, "v8_stock_vault_links", paketId));
+        if (vaultSnap.exists() && vaultSnap.data().zipLink) {
+          return vaultSnap.data().zipLink;
+        }
+      } catch (err) {
+        console.error("Greška pri čitanju iz sefa:", err);
+      }
       try {
         const pkgSnap = await getDoc(doc(db, "v8_stock_paketi", paketId));
         if (pkgSnap.exists() && pkgSnap.data().zipLink) {
@@ -99,9 +108,6 @@ const V8SecureCheckout = ({
     return zipLink || null;
   };
 
-  // ============================================================================
-  // 🔔 FUNKCIJA ZA AUTOMATSKI WHATSAPP ALARM NA TVOJ TELEFON
-  // ============================================================================
   const sendWhatsAppSaleAlert = async (methodLabel, customProductName = null, customPrice = null) => {
     try {
       const fullBuyerName = `${firstName} ${lastName}`.trim() || 'B2B Client';
@@ -164,9 +170,6 @@ const V8SecureCheckout = ({
     }
   }, [isOpen, defaultTierId, hasMultipleTiers]);
 
-  // ============================================================================
-  // 🔒 GLAVNI FIREBASE ČUVAR: SLUŠA DOKUMENT U BAZI I NE DAJE FAJL DOK PARE NE LEGNU!
-  // ============================================================================
   useEffect(() => {
     if (!pendingVerificationRef?.collectionName || !pendingVerificationRef?.docId) return;
 
@@ -175,7 +178,6 @@ const V8SecureCheckout = ({
       if (!docSnap.exists()) return;
       const data = docSnap.data();
 
-      // Tek kada u Firebase dokumentu stoji da je plaćeno (isPaid: true ili status: PLAĆENO / PAID / ACTIVE)
       if (isFirebasePaymentConfirmed(data)) {
         const safeUrl = await fetchProtectedZipAfterPaid(data);
         if (safeUrl) {
@@ -217,7 +219,7 @@ const V8SecureCheckout = ({
           method: "payoneer",
           handledBy: "info@aitoolsprosmart.com",
           status: "pending",
-          isPaid: false, // 🔒 ZAKLJUČANO DOK TI U FIREBASE NE POTVRDIŠ DA SU PARE LEGLE!
+          isPaid: false,
           requestDate: serverTimestamp(),
           vreme: serverTimestamp(),
           selectedProjects: selectedProjects
@@ -242,7 +244,7 @@ const V8SecureCheckout = ({
           isMonthly: activeIsMonthly,
           method: "crypto",
           status: "initiating_gateway",
-          isPaid: false, // 🔒 ZAKLJUČANO DOK BACKEND WEBHOOK NE ZAPIŠE U FIREBASE DA JE PLAĆENO!
+          isPaid: false,
           requestDate: serverTimestamp(),
           selectedProjects: selectedProjects
         });
@@ -405,7 +407,6 @@ const V8SecureCheckout = ({
 
                   {success ? (
                     <div className="flex flex-col items-center justify-center py-10 flex-grow">
-                      {/* 🔒 JEDINO AKO JE FIREBASE VRATIO isPaid === true PRIKAZUJEMO DUGMAD ZA PREUZIMANJE! */}
                       {firebaseVerifiedPaid && verifiedDownloadUrl ? (
                         <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex flex-col items-center w-full">
                           <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center border border-emerald-200 mb-6 shadow-sm">
@@ -529,7 +530,9 @@ const V8SecureCheckout = ({
               exit={{ opacity: 0, scale: 0.95 }}
               className="relative flex flex-col md:flex-row w-full max-w-4xl bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-slate-200"
             >
-              <button onClick={() => setShowPayPalModal(false)} className="absolute top-4 right-4 z-[100] w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-200 transition-colors"><X size={16} /></button>
+              <button onClick={() => setShowPayPalModal(false)} className="absolute top-4 right-4 z-[100] w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-200 transition-colors">
+                <X size={16} />
+              </button>
 
               <div className="hidden md:flex md:w-[45%] relative bg-slate-900 border-r border-slate-200 overflow-hidden">
                 <img src={projectImage} alt="Payment Screen" className="w-full h-full object-cover opacity-60 mix-blend-luminosity" />
@@ -554,10 +557,11 @@ const V8SecureCheckout = ({
                   {activeIsMonthly ? (
                     <PayPalButtons
                       style={{ layout: "vertical", color: "blue", shape: "rect", label: "subscribe" }}
-                      createSubscription={(data, actions) => { return actions.subscription.create({ plan_id: activePlanId }); }}
+                      createSubscription={(data, actions) => {
+                        return actions.subscription.create({ plan_id: activePlanId });
+                      }}
                       onApprove={async (data) => {
                         try {
-                          // Upisujemo u Firebase i čekamo da onSnapshot potvrdi zapis pre otključavanja!
                           await setDoc(doc(db, "v8_paypal_subscriptions", data.subscriptionID), {
                             uid: user?.uid || null,
                             paketId: paketId || null,
@@ -597,7 +601,6 @@ const V8SecureCheckout = ({
                           const details = await actions.order.capture();
                           const captureCompleted = details?.status === 'COMPLETED';
 
-                          // 1. Prvo kreiramo ZAKLJUČAN dokument u Firebase (isPaid: false) dok backend ne verifikuje uplatu!
                           const paypalDocRef = doc(db, "v8_paypal_requests", details.id);
                           await setDoc(paypalDocRef, {
                             uid: user?.uid || null,
@@ -613,17 +616,15 @@ const V8SecureCheckout = ({
                             licensePdf: resolvedLicensePdf,
                             price: activePrice,
                             status: "verifying_backend",
-                            isPaid: false, // 🔒 NE DAJE FAJL DOK SE NE POTVRDI!
+                            isPaid: false,
                             createdAt: serverTimestamp(),
                             selectedProjects: selectedProjects
                           }, { merge: true });
 
-                          // Uključujemo Firebase listener i prebacujemo modal na "VERIFYING FIREBASE LEDGER..."
                           setPendingVerificationRef({ collectionName: "v8_paypal_requests", docId: details.id });
                           setShowPayPalModal(false);
                           setSuccess(true);
 
-                          // 2. Šaljemo na Railway backend verifikaciju
                           const backendUrl = getBackendUrl();
                           const response = await fetch(`${backendUrl}/api/paypal-verify`, {
                             method: 'POST',
@@ -645,7 +646,6 @@ const V8SecureCheckout = ({
                           });
                           const resData = await response.json();
 
-                          // 3. TEK KADA SU I PAYPAL CAPTURE I BACKEND POTVRDILI DA SU PARE LEGLE -> UPISUJEMO isPaid: true U FIREBASE!
                           if (captureCompleted && resData.success) {
                             await setDoc(paypalDocRef, {
                               isPaid: true,
@@ -654,7 +654,6 @@ const V8SecureCheckout = ({
                               ...(resData.downloadUrl ? { downloadUrl: resData.downloadUrl } : {})
                             }, { merge: true });
 
-                            // Istog trenutka gornji Firebase onSnapshot detektuje isPaid === true i tek tada otključava ZIP i PDF licencu!
                             await sendWhatsAppSaleAlert('PayPal / Card (FIREBASE VERIFIED & PAID)', activeName, activePrice);
                           } else {
                             alert("Payment verification pending. Files remain locked until confirmed in Firebase.");

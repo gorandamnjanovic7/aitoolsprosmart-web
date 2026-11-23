@@ -24,7 +24,192 @@ const resolvePlacementDirective = (placement) => {
   return 'subject centered cleanly in the frame with balanced composition';
 };
 
+const NO_FULL_CAR_DIRECTIVE =
+  'strictly framing only this specific detail or partial section with no full car ever shown in the frame';
+
 const CATEGORIES = [
+  {
+    id: 'luxury-car-parts-brakes-seats-lights',
+    label: 'Luksuzni auto-delovi i makro enterijer (Bez celog vozila)',
+    subjects: wrapSubjects([
+      {
+        text: 'an ultra-sharp macro photograph of a cross-drilled carbon-ceramic brake disc with bright racing yellow brake calipers and pads mounted inside a forged alloy wheel with visible low-profile tire sidewall and sculpted fender arch on the vehicle, tightly cropped with no full car visible',
+        placement: 'right'
+      },
+      {
+        text: 'a close-up studio detail of a grooved performance brake rotor with electric sapphire blue brake calipers and pads behind dark twin-spoke wheel geometry, visible tire rubber and lower bodywork on the vehicle, tightly cropped with no full car visible',
+        placement: 'left'
+      },
+      {
+        text: 'a dramatic close-up of a ventilated carbon-ceramic brake disc with glossy crimson red multi-piston brake calipers and pads mounted inside a dark forged wheel with tire sidewall and wheel arch on the vehicle, tightly cropped with no full car visible',
+        placement: 'center'
+      },
+      {
+        text: 'a tight macro shot of a heat-seasoned slotted brake disc with acid yellow brake calipers and pads, fine brake dust micro-texture, forged spokes, tire shoulder, and fender edge on the vehicle, tightly cropped with no full car visible',
+        placement: 'left'
+      },
+      {
+        text: 'a crisp macro framing of a large cross-drilled brake rotor with deep cobalt blue brake calipers and pads installed on the wheel hub with visible tire profile and sculpted bodywork on the vehicle, tightly cropped with no full car visible',
+        placement: 'right'
+      },
+      {
+        text: 'a high-contrast close-up of a perforated carbon-ceramic brake disc with vibrant racing red brake calipers and pads mounted inside a dark performance wheel with tire rubber and fender arch on the vehicle, tightly cropped with no full car visible',
+        placement: 'center'
+      },
+      {
+        text: 'a close-up detail of a cross-drilled disc rotor with golden amber-yellow brake calipers and pads behind dark forged spokes, visible tire sidewall, and sculpted quarter panel on the vehicle, tightly cropped with no full car visible',
+        placement: 'right'
+      },
+      {
+        text: 'an intimate macro view of a grooved carbon-ceramic brake disc with royal blue brake calipers and pads mounted inside an alloy wheel with visible tire tread shoulder and bodywork on the vehicle, tightly cropped with no full car visible',
+        placement: 'left'
+      },
+      {
+        text: 'a razor-sharp close-up of a vented brake rotor with deep ruby red brake calipers and pads behind forged wheel spokes, visible tire sidewall, and fender arch on the vehicle, tightly cropped with no full car visible',
+        placement: 'center'
+      },
+      {
+        text: 'a tight macro shot of a cross-drilled performance brake disc with bright yellow brake calipers and pads mounted on the wheel with tire rubber and lower sill bodywork on the vehicle, tightly cropped with no full car visible',
+        placement: 'left'
+      },
+      {
+        text: 'a detailed close-up of a slotted brake rotor with metallic blue brake calipers and pads inside a forged wheel with visible tire sidewall and fender line on the vehicle, tightly cropped with no full car visible',
+        placement: 'right'
+      },
+      {
+        text: 'a dramatic macro framing of a carbon-ceramic brake disc with intense crimson red brake calipers and pads mounted inside a dark wheel with tire sidewall and bodywork on the vehicle, tightly cropped with no full car visible',
+        placement: 'center'
+      },
+      {
+        text: 'a tight interior macro shot of an illuminated digital instrument cluster and curved LED display glowing inside a dark luxury vehicle cabin inspired by Porsche and BMW flagship cockpits with zero visible branding or logos and no legible text or UI clutter, tightly cropped with no full car visible',
+        placement: 'left'
+      },
+      {
+        text: 'a close-up interior detail of a sculpted automatic gear selector paired with a long tactile control rail of precision buttons and switches alongside the shifter inside a luxury vehicle cabin inspired by Ferrari and Aston Martin interiors with zero visible branding or logos, tightly cropped with no full car visible',
+        placement: 'right'
+      },
+      {
+        text: 'a dramatic macro shot of a glowing backlit instrument panel and deep-set LED display gauges inside a dark performance cabin inspired by Lamborghini and McLaren cockpits with zero visible branding or logos and clean abstract light indicators, tightly cropped with no full car visible',
+        placement: 'center'
+      },
+      {
+        text: 'a tight interior close-up of an elongated center console control rail lined with crisp backlit buttons, knurled dials, and toggle switches right beside an automatic gear shifter inside a luxury grand tourer cabin inspired by Rolls-Royce and Bentley interiors with zero visible branding or logos, tightly cropped with no full car visible',
+        placement: 'left'
+      },
+      {
+        text: 'a close-up of a faceted glass and brushed-metal automatic gear shifter beside a long row of precision control buttons and switches on the center console inside a luxury vehicle cabin inspired by Bugatti and Porsche interiors with zero visible branding or logos, tightly cropped with no full car visible',
+        placement: 'right'
+      },
+      {
+        text: 'a focused interior shot of a glowing high-contrast LED display and illuminated instrument binnacle inside a dark luxury cabin with crisp ambient light reflections and zero visible branding or logos, tightly cropped with no full car visible',
+        placement: 'center'
+      },
+      {
+        text: 'a detailed close-up of a long control rail of metallic and backlit buttons running alongside an automatic transmission selector inside a luxury vehicle interior with dark leather and carbon trim and zero visible branding or logos, tightly cropped with no full car visible',
+        placement: 'right'
+      },
+      {
+        text: 'an intimate macro shot of an illuminated digital gauge cluster and sleek LED display panel inside a dark luxury vehicle interior with soft light diffusion and zero visible branding or logos, tightly cropped with no full car visible',
+        placement: 'left'
+      },
+      {
+        text: 'a tight studio crop of the rear half of a dark luxury hypercar inspired by Bugatti and Porsche flagship engineering with zero visible branding or logos, showcasing an illuminated full-width red LED taillight bar, sculpted rear diffuser fins, and carbon aero vents, tightly cropped with no full car visible',
+        placement: 'right'
+      },
+      {
+        text: 'a dramatic studio framing of the rear half of a performance coupe inspired by Ferrari and Aston Martin halo design with zero visible branding or logos, highlighting precision segmented red LED taillights, dark honeycomb rear vents, and sculpted rear quarter bodywork, tightly cropped with no full car visible',
+        placement: 'left'
+      },
+      {
+        text: 'a precision close-up of the rear half of a dark exotic sports car inspired by Lamborghini and McLaren flagship lighting architecture with zero visible branding or logos, featuring razor-sharp glowing red LED light blades, sculpted rear deck louvers, and deep carbon diffuser geometry, tightly cropped with no full car visible',
+        placement: 'center'
+      },
+      {
+        text: 'a detailed studio study of the rear half of a luxury grand tourer inspired by Rolls-Royce and Bentley flagship craftsmanship with zero visible branding or logos, showcasing jewel-like illuminated rear light clusters, clean rear bumper contours, and subtle metallic paint depth, tightly cropped with no full car visible',
+        placement: 'right'
+      },
+      {
+        text: 'a tight close-up of the front half of a dark luxury supercar inspired by Ferrari and Aston Martin flagship headlights with mandatory glowing front headlights turned on and crisp LED light signatures and zero visible branding or logos, tightly cropped with no full car visible',
+        placement: 'left'
+      },
+      {
+        text: 'a studio framing of the front half of a performance coupe inspired by Porsche and Bugatti flagship lighting with mandatory bright illuminated front headlights turned on, sharp daytime running light blades, and sculpted front intakes and zero visible branding or logos, tightly cropped with no full car visible',
+        placement: 'right'
+      },
+      {
+        text: 'a focused studio shot of the front half of an exotic hypercar inspired by Lamborghini and McLaren flagship LED optics with mandatory glowing front headlights turned on, intense white-and-amber light accents, and sculpted front bodywork and zero visible branding or logos, tightly cropped with no full car visible',
+        placement: 'center'
+      },
+      {
+        text: 'a refined studio view of the front half of an ultra-luxury coupe inspired by Rolls-Royce and Bentley flagship front lighting with mandatory glowing front headlights turned on, multi-element optical projectors, and crisp front fender lines and zero visible branding or logos, tightly cropped with no full car visible',
+        placement: 'left'
+      },
+      {
+        text: 'a macro close-up of the rear half of a supercar inspired by Porsche and Ferrari flagship rear lighting with glowing red LED light strips, dark carbon rear diffuser, and sculpted rear fender contours, tightly cropped with no full car visible',
+        placement: 'right'
+      },
+      {
+        text: 'a tight studio crop of the front half of a dark hypercar inspired by Bugatti and Aston Martin flagship front lights with mandatory glowing front headlights turned on, razor-sharp LED beam elements, and sculpted hood and bumper lines, tightly cropped with no full car visible',
+        placement: 'left'
+      },
+      {
+        text: 'a close-up of the rear half of a flagship sports car inspired by Lamborghini and Rolls-Royce lighting details with vivid red LED tail lamps, sculpted rear air vents, and clean lower diffuser geometry, tightly cropped with no full car visible',
+        placement: 'center'
+      },
+      {
+        text: 'a detailed close-up of the front half of a luxury coupe inspired by McLaren and Bentley flagship headlights with mandatory glowing front headlights turned on, crisp optical projectors, and sculpted front aero vents, tightly cropped with no full car visible',
+        placement: 'right'
+      },
+      {
+        text: 'an extreme close-up of a cross-drilled carbon-ceramic brake disc and glossy crimson-painted multi-piston brake caliper mounted inside a dark forged wheel with visible low-profile tire sidewall and fender arch on the vehicle, tightly cropped with no full car visible',
+        placement: 'right'
+      },
+      {
+        text: 'a tight macro shot of precision contrast stitching along a woven safety seat belt mounted on the B-pillar beside a leather seat bolster inside the vehicle cabin, tightly cropped with no full car visible',
+        placement: 'left'
+      },
+      {
+        text: 'a close-up study of a sculpted luxury bucket seat in supple cognac aniline leather with quilted side bolsters and fine double stitching installed inside a dark luxury vehicle cabin, tightly cropped with no full car visible',
+        placement: 'center'
+      },
+      {
+        text: 'a dedicated macro close-up of the left rear taillight cluster alone integrated into the sculpted rear fender and bumper of the vehicle showing glowing red LED light blades and dark carbon trim, tightly cropped with no full car visible',
+        placement: 'left'
+      },
+      {
+        text: 'a dedicated macro close-up of the right rear taillight cluster alone integrated into the sculpted rear quarter panel and bumper of the vehicle showing crisp red LED illumination, tightly cropped with no full car visible',
+        placement: 'right'
+      },
+      {
+        text: 'a close-up of a vented brake rotor and bright acid-yellow caliper installed behind dark wheel spokes with visible tire tread shoulder and wheel arch on the vehicle, tightly cropped with no full car visible',
+        placement: 'left'
+      },
+      {
+        text: 'an intimate macro close-up of taut diagonal stitching across a dark seat belt strap and brushed hardware edge, strictly showing only the strap stitching with no full car visible',
+        placement: 'right'
+      },
+      {
+        text: 'a close-up of an ultra-luxury lounge seat with perforated dark leather, sculpted headrest contour, and contrast piping installed inside the rear cabin of the vehicle, tightly cropped with no full car visible',
+        placement: 'center'
+      },
+      {
+        text: 'a tight macro close-up of the left rear lamp assembly alone flush-mounted in the vehicle bodywork with glowing ruby LED light elements and sleek paintwork, tightly cropped with no full car visible',
+        placement: 'left'
+      },
+      {
+        text: 'a tight macro close-up of the right rear lamp assembly alone flush-mounted in the vehicle bodywork with sharp glowing red LED contours and dark aero diffuser trim, tightly cropped with no full car visible',
+        placement: 'right'
+      },
+      {
+        text: 'a close-up of a cobalt-blue painted brake caliper and grooved disc rotor mounted inside the alloy wheel with visible tire rubber and lower bodywork on the car, tightly cropped with no full car visible',
+        placement: 'center'
+      },
+      {
+        text: 'a detailed macro shot of hand-finished diamond stitching on an installed luxury car seat bolster beside the door trim inside the vehicle cabin, tightly cropped with no full car visible',
+        placement: 'center'
+      }
+    ])
+  },
   {
     id: 'luxury-watches',
     label: 'Luksuzni satovi',
@@ -126,62 +311,8 @@ const CATEGORIES = [
     ])
   },
   {
-    id: 'luxury-car-parts-brakes-seats-lights',
-    label: 'Luksuzni auto-delovi i makro enterijer (Bez celog vozila)',
-    subjects: wrapSubjects([
-      {
-        text: 'an extreme close-up of a cross-drilled carbon-ceramic brake disc paired with a glossy crimson-painted multi-piston brake caliper behind dark forged spokes, strictly showing only the brake assembly with no full car visible',
-        placement: 'right'
-      },
-      {
-        text: 'a tight macro shot of precision contrast stitching along a woven safety seat belt and fine leather bolster, strictly isolating the stitching and belt texture with no full car visible',
-        placement: 'left'
-      },
-      {
-        text: 'a close-up study of a sculpted luxury bucket seat in supple cognac aniline leather with quilted side bolsters and fine double stitching, strictly framing the seat detail with no full car visible',
-        placement: 'center'
-      },
-      {
-        text: 'a dedicated macro close-up of the left rear taillight cluster alone showing glowing red LED light blades and dark carbon trim, strictly showing only the left rear light detail with no full car visible',
-        placement: 'left'
-      },
-      {
-        text: 'a dedicated macro close-up of the right rear taillight cluster alone showing crisp red LED illumination and sculpted dark housing, strictly showing only the right rear light detail with no full car visible',
-        placement: 'right'
-      },
-      {
-        text: 'a close-up of a vented brake rotor and bright acid-yellow caliper with metallic heat tint and fine dust detail, strictly framing the brake part with no full car visible',
-        placement: 'left'
-      },
-      {
-        text: 'an intimate macro close-up of taut diagonal stitching across a dark seat belt strap and brushed hardware edge, strictly showing only the strap stitching with no full car visible',
-        placement: 'right'
-      },
-      {
-        text: 'a close-up of an ultra-luxury lounge seat with perforated dark leather, sculpted headrest contour, and fine contrast piping, strictly showing only the seat craftsmanship with no full car visible',
-        placement: 'center'
-      },
-      {
-        text: 'a tight macro close-up of the left rear lamp assembly alone with glowing ruby LED light elements and wet surface droplets, strictly showing only the left rear lamp with no full car visible',
-        placement: 'left'
-      },
-      {
-        text: 'a tight macro close-up of the right rear lamp assembly alone with sharp glowing red LED contours and dark aero housing, strictly showing only the right rear lamp with no full car visible',
-        placement: 'right'
-      },
-      {
-        text: 'a close-up of a cobalt-blue painted brake caliper and grooved disc rotor in sharp macro detail, strictly showing only the brake hardware with no full car visible',
-        placement: 'center'
-      },
-      {
-        text: 'a detailed macro shot of hand-finished diamond stitching on a luxury seat bolster with fine thread grain, strictly isolating the upholstery detail with no full car visible',
-        placement: 'center'
-      }
-    ])
-  },
-  {
     id: 'smoke-and-gold-leaf-mask',
-    label: 'The Smoke and Gold Leaf Mask',
+    label: 'Maska od dima i zlatnog listića',
     subjects: wrapSubjects([
       {
         text: 'a human silhouette wearing a mask sculpted from swirling solid black and indigo smoke trails accented with delicate fractured pieces of 24k gold leaf suspended within the vapor against a seamless dark charcoal grey backdrop with dramatic rim lighting and high-speed sync flash clarity',
@@ -227,7 +358,7 @@ const CATEGORIES = [
   },
   {
     id: 'bioluminescent-porcelain-portrait',
-    label: 'The Bioluminescent Porcelain Portrait',
+    label: 'Bioluminiscentni portret od porcelana',
     subjects: wrapSubjects([
       {
         text: 'a close-up portrait of a human face where natural skin with visible pores and fine vellus hair transitions seamlessly into cracked antique white porcelain with glowing blue bioluminescent veins pulsing beneath the surface and along the fractures while dark reflective eyes hold sharp focus in moody low-key lighting',
@@ -273,7 +404,7 @@ const CATEGORIES = [
   },
   {
     id: 'human-scale-surrealism',
-    label: 'Human-Scale Surrealism',
+    label: 'Nadrealizam ljudske skale',
     subjects: wrapSubjects([
       {
         text: 'a close-up portrait of a calm face where fine natural skin pores and peach fuzz transition seamlessly into delicate translucent optical glass filaments along the cheekbone with subtle light refraction',
@@ -319,7 +450,7 @@ const CATEGORIES = [
   },
   {
     id: 'submerged-venetian-palazzo',
-    label: 'The Submerged Venetian Palazzo',
+    label: 'Potopljena venecijanska palata',
     subjects: wrapSubjects([
       {
         text: 'a cross-section view of a sunken Venetian Gothic palazzo resting on the seabed with its lower half submerged in crystal clear deep blue Mediterranean water showing shimmering caustic light patterns across ornate stone carvings and a decaying fresco while its upper half rises into open air with gilded crumbling architecture and sunbeams penetrating from above',
@@ -365,7 +496,7 @@ const CATEGORIES = [
   },
   {
     id: 'infinite-library-of-aerogel',
-    label: 'The Infinite Library of Aerogel',
+    label: 'Beskonačna biblioteka od aerogela',
     subjects: wrapSubjects([
       {
         text: 'a wide-angle cinematic shot inside an infinite brutalist-style library where all shelving units, floors, and stairs are constructed from monolithic translucent silica aerogel receding into a hazy atmospheric vanishing point with dust motes dancing in soft cool volumetric sunlight',
@@ -411,7 +542,7 @@ const CATEGORIES = [
   },
   {
     id: 'ferrofluid-sculpture',
-    label: 'The Ferrofluid Sculpture',
+    label: 'Skulptura od ferofluida',
     subjects: wrapSubjects([
       {
         text: 'a blob of black ferrofluid reacting to a powerful Neodymium magnet beneath it, pulling the fluid into sharp, spiky, fractal magnetic field formations on a perfectly reflective wet obsidian surface against a pitch-black background',
@@ -457,7 +588,7 @@ const CATEGORIES = [
   },
   {
     id: 'frozen-strawberry-micro-scan',
-    label: 'The Frozen Strawberry Micro-Scan',
+    label: 'Mikro-sken zamrznute jagode',
     subjects: wrapSubjects([
       {
         text: 'a single perfectly ripe strawberry undergoing cryopreservation with an intricate lattice of microscopic ice crystals and hoarfrost across its surface while internal cold cathode illumination reveals its translucent red cellular structure and a single frozen achene in razor focus',
@@ -503,7 +634,7 @@ const CATEGORIES = [
   },
   {
     id: 'natgeo-bbc-wildlife',
-    label: 'National Geographic & BBC Wildlife',
+    label: 'National Geographic i BBC živi svet',
     subjects: wrapSubjects([
       {
         text: 'a polar bear prowling low toward the camera across slushy ice and shallow freezing meltwater with snow-dusted evergreens blurred in the background',
@@ -573,7 +704,7 @@ const CATEGORIES = [
   },
   {
     id: 'marine-underwater-life',
-    label: 'Podvodni i riječni živi svijet (Marine & Underwater Life)',
+    label: 'Podvodni i rečni živi svet',
     subjects: wrapSubjects([
       {
         text: 'a massive humpback whale gliding smoothly through deep pelagic ocean water with sunbeams filtering down from above',
@@ -707,7 +838,7 @@ const CATEGORIES = [
   },
   {
     id: 'underwater-cafes-sunken-worlds',
-    label: 'Podvodni kafei i potopljeni svjetovi',
+    label: 'Podvodni kafei i potopljeni svetovi',
     subjects: wrapSubjects([
       {
         text: 'a scuba diver in a sleek black-and-gold wetsuit swimming past a vintage bistro cafe terrace with warm glowing globe lamps and a massive sunken wooden galleon in golden underwater light',
@@ -833,7 +964,7 @@ const CATEGORIES = [
   },
   {
     id: 'nature-seasons-rivers',
-    label: 'Priroda: Godišnja doba, planine i rijeke',
+    label: 'Priroda: Godišnja doba, planine i reke',
     subjects: wrapSubjects([
       'a wild mountain river winding through a lush spring valley filled with blooming wildflowers and fresh emerald birch trees beneath snow-capped peaks',
       'a crystal-clear turquoise alpine river carving through sun-drenched summer granite gorges with dense pine forests along the banks',
@@ -849,7 +980,7 @@ const CATEGORIES = [
   },
   {
     id: 'surreal-fantasy-worlds',
-    label: 'Nadrealni svjetovi i fantazija',
+    label: 'Nadrealni svetovi i fantazija',
     subjects: wrapSubjects([
       'a grand ancient stone citadel rising above a thick sea of golden-lit clouds with cascading waterfalls pouring off its outer walls',
       'a sculpted fire-breathing dragon poised on a carved stone pedestal inside a dim vaulted hall with warm shafts of light through tall windows',
@@ -977,7 +1108,7 @@ const CATEGORIES = [
   },
   {
     id: 'forest-cabins',
-    label: 'Luksuzan enterijer cabin (kuće u šumi)',
+    label: 'Luksuzan enterijer koliba u šumi',
     subjects: wrapSubjects([
       'an A-frame luxury forest cabin living room with soaring charred-cedar beams, a suspended matte-black fireplace, and panoramic glass framing misty pines',
       'a cozy ultra-luxury timber-and-stone woodland sanctuary with low shearling armchairs, raw river-stone hearth, and tall moss-covered forest views',
@@ -1057,16 +1188,14 @@ const JEWELRY_WATCH_AMBER_BOX_ENVIRONMENTS = [
 ];
 
 const LUXURY_CAR_PARTS_STUDIO_ENVIRONMENTS = [
-  'inside a luxury dark studio set on a mirror-polished black obsidian cyclorama with clean studio reflections',
-  'inside an exclusive commercial studio resting on honed Nero Marquina black marble with subtle studio light falloff',
-  'inside a high-end automotive design studio on a seamless matte charcoal backdrop with crisp geometric light lines',
-  'inside a private studio set on brushed dark anodized aluminum and smoked glass with refined studio reflections',
-  'inside a luxury studio resting on deep midnight-black velvet and dark leather studio trim with controlled specular highlights',
-  'inside a minimalist luxury studio on a dark carbon-weave studio plinth with clean studio shadow separation',
-  'inside a precision automotive studio set on a reflective dark glass studio surface with subtle studio rim highlights',
-  'inside a bespoke commercial studio on dark brushed titanium and matte obsidian panels with controlled studio contrast',
-  'inside an ultra-clean luxury studio on a dark slate studio slab with crisp directional studio light and deep blacks',
-  'inside a private automotive atelier studio on a dark suede-lined studio platform with clean commercial studio framing'
+  'all properly mounted in place on the luxury vehicle inside a dark commercial studio with a mirror-polished black obsidian floor and clean studio reflections',
+  'installed intact on the luxury vehicle inside a private automotive design studio against a seamless matte charcoal cyclorama with crisp studio light lines',
+  'fitted cleanly in its factory position on the luxury vehicle inside an exclusive dark studio with honed Nero Marquina marble reflections and controlled rim light',
+  'mounted in situ on the luxury vehicle inside a bespoke dark atelier studio with soft overhead softbox reflections and deep obsidian shadow contrast',
+  'attached intact to the luxury vehicle inside a high-end commercial studio featuring brushed dark anodized walls and subtle studio floor sheen',
+  'installed natively on the luxury vehicle inside an ultra-clean dark automotive studio with precision strip-box highlights and zero loose parts',
+  'mounted in place on the luxury vehicle inside a moody private showroom studio with dark architectural panels and controlled specular reflections',
+  'fitted cleanly on the luxury vehicle inside a luxury dark photography studio with seamless charcoal backdrop and crisp directional lighting'
 ];
 
 const ENVIRONMENTS = [
@@ -1143,7 +1272,7 @@ const BATCH_LIMIT = 10;
 const MAX_PROMPTS = 5000;
 
 export default function V10PromptGenerator() {
-  const [selectedCategoryId, setSelectedCategoryId] = useState('luxury-watches');
+  const [selectedCategoryId, setSelectedCategoryId] = useState('luxury-car-parts-brakes-seats-lights');
   const [activePool, setActivePool] = useState([]);
   const [batchOffset, setBatchOffset] = useState(0);
   const [isGenerated, setIsGenerated] = useState(false);
@@ -1155,7 +1284,7 @@ export default function V10PromptGenerator() {
     [selectedCategoryId]
   );
 
-  // Build deduplicated unique combinations up to MAX_PROMPTS per category
+  // Izgradnja deduplikovanih unikatnih kombinacija do MAX_PROMPTS po kategoriji
   const buildCategoryPrompts = (categoryObj) => {
     const list = [];
     const seenPrompts = new Set();
@@ -1188,7 +1317,8 @@ export default function V10PromptGenerator() {
 
       const subjObj = categoryObj.subjects[s];
       const placementDirective = resolvePlacementDirective(subjObj.placement);
-      const unifiedPrompt = `Editorial ultra-realistic commercial photograph of ${subjObj.text}, ${placementDirective}, ${envPool[e]}, ${LIGHTING_RIGS[l]}, ${OPTICS_PROFILES[o]}, ${metaPool[m]}, ${V10_GUARDRAILS}.`;
+      const framingClause = isCarPartsCategory ? `${NO_FULL_CAR_DIRECTIVE}, ` : '';
+      const unifiedPrompt = `Editorial ultra-realistic commercial photograph of ${subjObj.text}, ${placementDirective}, ${framingClause}${envPool[e]}, ${LIGHTING_RIGS[l]}, ${OPTICS_PROFILES[o]}, ${metaPool[m]}, ${V10_GUARDRAILS}.`;
       if (!seenPrompts.has(unifiedPrompt)) {
         seenPrompts.add(unifiedPrompt);
         list.push({
@@ -1209,7 +1339,7 @@ export default function V10PromptGenerator() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `V10_ANTIGRAVITY_${categoryObj.id}_${pool.length}_Prompts.txt`;
+    link.download = `V10_ANTIGRAVITI_${categoryObj.id}_${pool.length}_Promptova.txt`;
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -1258,7 +1388,7 @@ export default function V10PromptGenerator() {
       setIsGenerated(true);
     }
     triggerDownloadForPool(pool, selectedCategoryObj);
-    setAntigravityStatus(`Antigravity skinuto ✓ (${pool.length} promptova)`);
+    setAntigravityStatus(`Antigraviti skinuto ✓ (${pool.length} promptova)`);
     setTimeout(() => setAntigravityStatus(''), 3000);
   };
 
@@ -1270,13 +1400,13 @@ export default function V10PromptGenerator() {
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-stone-800/90 pb-7">
           <div className="space-y-2.5">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-400/25 text-amber-300 text-[11px] font-semibold tracking-widest uppercase">
-              PRIVATE VAULT • {HIDDEN_VAULT_ROUTE}
+              PRIVATNI TREZOR • {HIDDEN_VAULT_ROUTE}
             </div>
             <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-white">
               Visionary Factory <span className="text-amber-400 font-serif italic">V10</span> Studio
             </h1>
             <p className="text-sm text-stone-400 max-w-2xl">
-              Izaberi kategoriju, pritisni <span className="text-amber-300 font-medium">GENERATE</span> za prvih 10 unikatnih spojenih promptova (bez ponavljanja), <span className="text-amber-300 font-medium">NEXT</span> za sledećih 10, ili <span className="text-amber-300 font-medium">ANTIGRAVITY DOWNLOAD</span> da odmah skineš sve promptove izabrane kategorije.
+              Izaberi kategoriju, klikni <span className="text-amber-300 font-medium">GENERIŠI</span> za prvih 10 jedinstvenih spojenih promptova (bez ponavljanja), koristi <span className="text-amber-300 font-medium">SLEDEĆIH 10</span> za nastavak ili <span className="text-amber-300 font-medium">ANTIGRAVITI PREUZIMANJE</span> da odmah preuzmeš sve promptove izabrane kategorije.
             </p>
           </div>
 
@@ -1284,7 +1414,7 @@ export default function V10PromptGenerator() {
             onClick={handleAntigravityDownload}
             className="self-start md:self-auto inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400/20 via-amber-500/20 to-yellow-500/20 hover:from-amber-400/30 hover:to-yellow-500/30 border border-amber-400/40 text-xs font-bold tracking-wide text-amber-200 shadow-lg shadow-amber-500/10 transition cursor-pointer"
           >
-            {antigravityStatus || 'ANTIGRAVITY DOWNLOAD'}
+            {antigravityStatus || 'ANTIGRAVITI PREUZIMANJE'}
           </button>
         </header>
 
@@ -1321,7 +1451,7 @@ export default function V10PromptGenerator() {
                 onClick={handleGenerate}
                 className="flex-1 min-w-[120px] inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 hover:brightness-105 text-stone-950 font-bold text-sm tracking-wide shadow-lg shadow-amber-500/20 transition cursor-pointer"
               >
-                GENERATE
+                GENERIŠI
               </button>
 
               <button
@@ -1333,23 +1463,23 @@ export default function V10PromptGenerator() {
                     : 'bg-stone-900/50 border-stone-800 text-stone-600 cursor-not-allowed'
                 }`}
               >
-                NEXT →
+                SLEDEĆIH 10 →
               </button>
 
               <button
                 onClick={handleAntigravityDownload}
                 className="inline-flex items-center justify-center gap-1.5 px-4 py-3.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/50 text-amber-200 font-bold text-xs tracking-wide transition cursor-pointer"
               >
-                {antigravityStatus || 'ANTIGRAVITY DOWNLOAD'}
+                {antigravityStatus || 'ANTIGRAVITI PREUZIMANJE'}
               </button>
 
               {isGenerated && (
                 <button
                   onClick={handleReset}
-                  title="Resetuj"
+                  title="Resetuj prikaz"
                   className="px-3.5 py-3.5 rounded-xl bg-stone-900 hover:bg-stone-800 border border-stone-800 text-xs font-semibold text-stone-300 hover:text-white transition cursor-pointer"
                 >
-                  RESET
+                  RESETUJ
                 </button>
               )}
             </div>
@@ -1368,10 +1498,10 @@ export default function V10PromptGenerator() {
                     {batchOffset + 1}–{Math.min(batchOffset + BATCH_LIMIT, activePool.length)}
                   </span>{' '}
                   od <span className="text-stone-200 font-semibold">{activePool.length}</span>{' '}
-                  {hasNextBatch ? '• Čeka se komanda NEXT za sledećih 10' : '• Kraj serije'}
+                  {hasNextBatch ? '• Čeka se klik na SLEDEĆIH 10' : '• Kraj serije'}
                 </span>
               ) : (
-                <span>Čeka se klik na GENERATE ili ANTIGRAVITY DOWNLOAD</span>
+                <span>Čeka se klik na GENERIŠI ili ANTIGRAVITI PREUZIMANJE</span>
               )}
             </div>
           </div>
@@ -1414,7 +1544,7 @@ export default function V10PromptGenerator() {
                   onClick={handleNext}
                   className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-amber-300 font-bold text-sm tracking-wide transition cursor-pointer"
                 >
-                  NEXT (Sledećih 10 promptova) →
+                  SLEDEĆIH 10 PROMPTOVA →
                 </button>
               </div>
             )}

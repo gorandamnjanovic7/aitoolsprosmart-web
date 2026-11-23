@@ -1114,6 +1114,87 @@ const V8StockBerzaBase = () => {
     .flatMap(p => (p.primeri && p.primeri.length > 0 ? p.primeri : p.previewUrl ? [p.previewUrl] : []))
     .slice(0, topStripSlotCount);
 
+
+// === SEO & STRUCTURED DATA PRIPREMA ZA HELMET ===
+  const seoBaseOrigin = 'https://aitoolsprosmart.com';
+  const seoCanonicalUrl =
+    typeof window !== 'undefined'
+      ? `${seoBaseOrigin}${window.location.pathname}`
+      : `${seoBaseOrigin}/stock`;
+
+  const isAllTab = activeTab === 'all';
+  const cleanTabName = currentTabInfo.shortLabel
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+
+  const seoTitle = isAllTab
+    ? '150MP Commercial Stock Photography & 4K Unbranded Luxury Vaults | Visionary Factory V10'
+    : `${cleanTabName} — 150MP & 4K IP-Safe Commercial Stock Vaults | AI Tools Pro Smart`;
+
+  const seoDescription = isAllTab
+    ? 'License 100% IP-safe, unbranded 150MP Master Print JPG, 4K UHD & WebP commercial photography bundles for luxury brands, agencies, hotels, automotive & SaaS.'
+    : `Download IP-safe, unbranded ${cleanTabName} commercial photography bundles. Triple delivery in every ZIP: 150MP print JPG, 4K UHD & WebP with Standard or Global Enterprise licensing.`;
+
+  // Konverzija u 1200x630 JPG radi 100% kompatibilnosti na LinkedIn, WhatsApp, Slack i X mrezama
+  const rawHeroImg = filtriraniPaketi[0]?.previewUrl || paketi[0]?.previewUrl || '';
+  const seoOgImage =
+    rawHeroImg && rawHeroImg.includes('res.cloudinary.com') && rawHeroImg.includes('/upload/')
+      ? rawHeroImg.replace('/upload/', '/upload/f_jpg,q_auto:good,w_1200,h_630,c_fill/')
+      : `${seoBaseOrigin}/v8-secure-blue.webp`;
+
+  const seoJsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'CollectionPage',
+        '@id': `${seoCanonicalUrl}#collection`,
+        url: seoCanonicalUrl,
+        name: seoTitle,
+        description: seoDescription,
+        inLanguage: 'en',
+        isPartOf: {
+          '@type': 'WebSite',
+          name: 'Visionary Factory V10 — AI Tools Pro Smart',
+          url: seoBaseOrigin
+        },
+        mainEntity: {
+          '@type': 'Product',
+          name: 'V10 150MP + 4K + WebP Commercial Visual Vaults',
+          description: seoDescription,
+          image: seoOgImage,
+          brand: {
+            '@type': 'Brand',
+            name: 'Visionary Factory V10'
+          },
+          offers: {
+            '@type': 'AggregateOffer',
+            priceCurrency: 'USD',
+            lowPrice: '149.00',
+            highPrice: '890.00',
+            offerCount: Math.max(filtriraniPaketi.length, paketi.length, 1),
+            availability: 'https://schema.org/InStock',
+            url: seoCanonicalUrl
+          }
+        }
+      },
+      ...filtriraniPaketi.slice(0, 12).filter((p) => p.previewUrl).map((p) => ({
+        '@type': 'ImageObject',
+        name: formatPaketDisplayTitle(p),
+        description: p.opisEn || seoDescription,
+        contentUrl: toFastWebp(p.previewUrl, 1600),
+        thumbnailUrl: toFastWebp(p.previewUrl, 400),
+        license: `${seoBaseOrigin}/V8_COMMERCIAL_LICENSE.pdf`,
+        acquireLicensePage: seoCanonicalUrl,
+        creditText: 'Visionary Factory V10 — AI Tools Pro Smart',
+        creator: {
+          '@type': 'Organization',
+          name: 'Visionary Factory V10'
+        },
+        copyrightNotice: '© Visionary Factory V10 / AI Tools Pro Smart. All Rights Reserved.'
+      }))
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#090C12] via-[#0E131D] to-[#090C12] text-[#EAE6DF] font-sans relative pb-28">
       <Helmet>
