@@ -5,7 +5,7 @@ import { db, auth } from '../firebase';
 import { collection, addDoc, serverTimestamp, doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth'; 
 import { motion, AnimatePresence } from 'framer-motion'; 
-import { ShieldCheck, X, CheckCircle, Bitcoin, Zap, CreditCard, Link as LinkIcon, Download, Radar, Crown, Briefcase, Rocket, Package, ChevronDown, Box, Lock, Clock, Loader2, Building2, UserCircle, Folder, AlertTriangle, Check, Palette } from 'lucide-react';
+import { ShieldCheck, X, CheckCircle, Bitcoin, CreditCard, Link as LinkIcon, Download, Radar, Crown, Briefcase, Rocket, Package, ChevronDown, Box, Lock, Clock, Building2, UserCircle, Folder, Check } from 'lucide-react';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js"; 
 
 const countryList = [
@@ -37,7 +37,6 @@ const V10SecureCheckout = ({
   
   const [selectedTier, setSelectedTier] = useState(defaultTierId);
   const [paymentMethod, setPaymentMethod] = useState('card'); 
-  
   const [clientType, setClientType] = useState(isUIUX ? 'agency' : 'individual');
 
   const [firstName, setFirstName] = useState('');
@@ -56,14 +55,7 @@ const V10SecureCheckout = ({
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState(null);
   const [cryptoOrderId, setCryptoOrderId] = useState(null);
-  
-  // 🔥 NOVI STATE ZA BEZBEDNOST (SPREČAVA PREUZIMANJE PRE UPLATE) 🔥
   const [isCryptoPaid, setIsCryptoPaid] = useState(false);
-
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardExp, setCardExp] = useState('');
-  const [cardCvc, setCardCvc] = useState('');
-  const [isCardProcessing, setIsCardProcessing] = useState(false);
 
   const activeTierObj = hasMultipleTiers ? availableTiers.find(t => t.id === selectedTier) : null;
   const activePrice = hasMultipleTiers ? activeTierObj?.price : displayPrice;
@@ -81,14 +73,21 @@ const V10SecureCheckout = ({
     zipLink: p?.zipLink || p?.driveLink || "" 
   }));
 
-  const initialOptions = { "client-id": import.meta.env.VITE_PAYPAL_CLIENT_ID, currency: "USD", vault: true };
+  const initialOptions = {
+    "client-id": import.meta.env.VITE_PAYPAL_CLIENT_ID,
+    currency: "USD",
+    intent: activeIsMonthly ? "subscription" : "capture",
+    vault: Boolean(activeIsMonthly)
+  };
 
   const triggerGoogleAnalyticsPurchase = (transactionId, finalPrice) => {
     if (typeof window !== "undefined" && window.gtag) {
-        window.gtag("event", "purchase", {
-            transaction_id: transactionId, value: Number(finalPrice), currency: "USD",
-            items: [{ item_id: selectedTier, item_name: safeName, price: Number(finalPrice), quantity: 1 }]
-        });
+      window.gtag("event", "purchase", {
+        transaction_id: transactionId,
+        value: Number(finalPrice),
+        currency: "USD",
+        items: [{ item_id: selectedTier, item_name: safeName, price: Number(finalPrice), quantity: 1 }]
+      });
     }
   };
 
@@ -101,7 +100,7 @@ const V10SecureCheckout = ({
   useEffect(() => { 
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => { 
       setUser(currentUser); 
-      setEmail(currentUser?.email || userEmail || ''); 
+      setEmail((currentUser?.email || userEmail || '').toLowerCase()); 
     }); 
     return () => unsubscribe(); 
   }, [userEmail]);
@@ -112,17 +111,22 @@ const V10SecureCheckout = ({
       setDownloadUrl(null); setCryptoOrderId(null); setIsCryptoPaid(false);
       setCompanyName(''); setFirstName(''); setLastName(''); 
       setVatNumber(''); setAddress(''); setCity(''); setZipCode('');
-      setCardNumber(''); setCardExp(''); setCardCvc('');
       if (hasMultipleTiers) setSelectedTier(defaultTierId);
     }
   }, [isOpen, defaultTierId, hasMultipleTiers]);
 
   useEffect(() => {
     if (cryptoOrderId && paymentMethod === 'crypto') {
-      const unsub = onSnapshot(doc(db, "v8_crypto_requests", cryptoOrderId), (docSnap) => {
-        // RADAR OSLUŠKUJE BAZU - Otključava fajlove tek kad stigne potvrda!
+      const unsub = onSnapshot(doc(db, "v8_crypto_requests", cryptoOrderId), async (docSnap) => {
         if (docSnap.exists() && docSnap.data().status === 'PLAĆENO') {
           const finalUrl = docSnap.data().zipLink;
+          const normalizedEmail = (email || user?.email || '').toLowerCase();
+          if (normalizedEmail) {
+            await setDoc(doc(db, "checkout_requests", normalizedEmail), {
+              status: "paid",
+              paidAt: serverTimestamp()
+            }, { merge: true });
+          }
           setDownloadUrl(finalUrl); 
           setIsCryptoPaid(true); 
           triggerGoogleAnalyticsPurchase(cryptoOrderId, safePrice);
@@ -130,15 +134,16 @@ const V10SecureCheckout = ({
       });
       return () => unsub();
     }
-  }, [cryptoOrderId, paymentMethod, safePrice]);
+  }, [cryptoOrderId, paymentMethod, safePrice, email, user]);
 
   const getCheckoutPayload = () => {
+    const normalizedEmail = (email || user?.email || "guest@example.com").toLowerCase();
     return {
-      email: email || "guest@example.com",
+      email: normalizedEmail,
       clientType: clientType,
       firstName: clientType === 'individual' ? firstName : "",
       lastName: clientType === 'individual' ? lastName : "",
-      company: clientType === 'agency' ? companyName : "Individual",
+      company: clientType === 'agency' ? companyName : `${firstName} ${lastName}`.trim() || "Individual",
       country: country,
       address: clientType === 'agency' ? address : "",
       city: clientType === 'agency' ? city : "",
@@ -156,10 +161,9 @@ const V10SecureCheckout = ({
   const isFormValid = () => {
     if (!country || !user) return false;
     if (clientType === 'agency') {
-      return companyName && vatNumber && address && city && zipCode;
-    } else {
-      return firstName && lastName;
+      return Boolean(companyName && vatNumber && address && city && zipCode);
     }
+    return Boolean(firstName && lastName);
   };
 
   const handleSubmit = async (e) => {
@@ -170,29 +174,35 @@ const V10SecureCheckout = ({
       if (!companyName || !vatNumber || !address || !city || !zipCode) {
         return alert("For Agency transactions, Company Legal Name, VAT/Tax ID, and full address details are required.");
       }
-    } else {
-      if (!firstName || !lastName) return alert("Please enter your First and Last Name.");
+    } else if (!firstName || !lastName) {
+      return alert("Please enter your First and Last Name.");
     }
     
     setLoading(true);
     const finalProductName = hasMultipleTiers ? `${productName || packageName} - ${safeName}` : safeName;
     const payload = getCheckoutPayload();
+    const normalizedEmail = payload.email;
 
     try {
       if (paymentMethod === 'payoneer' || paymentMethod === 'b2b') {
-        const docRef = await addDoc(collection(db, "v8_payoneer_requests"), {
+        await addDoc(collection(db, "v8_payoneer_requests"), {
           ...payload,
           productName: finalProductName,
           method: "payoneer", 
-          handledBy: "info@aitoolsprosmart.com", 
+          handledBy: "aitoolsprosmart@gmail.com", 
           status: "pending", 
           requestDate: serverTimestamp()
         });
         
-        await setDoc(doc(db, "checkout_requests", docRef.id), payload);
+        // Upis direktno pod EMAIL ključem kako bi Client Vault i CommercialOps radili nad istim dokumentom
+        await setDoc(doc(db, "checkout_requests", normalizedEmail), {
+          ...payload,
+          paymentMethod: "payoneer",
+          status: "pending_payment"
+        }, { merge: true });
 
-        setSuccess(true); setLoading(false); 
-        triggerGoogleAnalyticsPurchase(docRef.id, safePrice); 
+        setSuccess(true);
+        setLoading(false);
 
       } else if (paymentMethod === 'crypto') {
         const docRef = await addDoc(collection(db, "v8_crypto_requests"), {
@@ -202,72 +212,106 @@ const V10SecureCheckout = ({
           status: "initiating_gateway", 
           requestDate: serverTimestamp()
         });
+
+        await setDoc(doc(db, "checkout_requests", normalizedEmail), {
+          ...payload,
+          paymentMethod: "crypto",
+          cryptoOrderId: docRef.id,
+          status: "pending_payment"
+        }, { merge: true });
+
         const response = await fetch(`${getBackendUrl()}/api/crypto-checkout`, { 
           method: 'POST', 
           headers: { 'Content-Type': 'application/json' }, 
-          body: JSON.stringify({ orderId: docRef.id, clientEmail: email, productName: finalProductName, price: safePrice, ...payload }) 
+          body: JSON.stringify({ orderId: docRef.id, clientEmail: normalizedEmail, productName: finalProductName, price: safePrice, ...payload }) 
         });
         const data = await response.json();
-        if (response.ok && data.paymentUrl) { window.open(data.paymentUrl, '_blank'); setCryptoOrderId(docRef.id); setSuccess(true); setLoading(false); } 
-        else { alert("Gateway connection failed."); setLoading(false); }
+        if (response.ok && data.paymentUrl) {
+          window.open(data.paymentUrl, '_blank');
+          setCryptoOrderId(docRef.id);
+          setSuccess(true);
+          setLoading(false);
+        } else {
+          alert("Gateway connection failed.");
+          setLoading(false);
+        }
       }
-    } catch (error) { console.error("Error:", error); alert("An error occurred."); setLoading(false); }
-  };
-
-  const handleTestCardPayment = async () => {
-    if (!cardNumber.includes("4242")) {
-      alert("Please enter the test card: 4242 4242 4242 4242");
-      return;
-    }
-    setIsCardProcessing(true);
-    try {
-      const checkoutId = `${user?.email || 'guest'}_${Date.now()}`;
-      
-      await setDoc(doc(db, "checkout_requests", checkoutId), {
-        ...getCheckoutPayload(),
-        status: "paid",
-        paymentMethod: "test_card"
-      });
-
-      setIsCardProcessing(false);
-      setShowPaymentModal(false); 
-      setSuccess(true); 
-      const url = zipLink || "https://link-do-arhiva.zip";
-      setDownloadUrl(url);
-
-    } catch (e) {
-      console.error(e);
-      alert("Error processing card: " + e.message);
-      setIsCardProcessing(false);
+    } catch (error) {
+      console.error("Error:", error);
+      alert("An error occurred.");
+      setLoading(false);
     }
   };
 
-  const paypalCreateSubscription = (data, actions) => { return actions.subscription.create({ plan_id: activePlanId }); };
-  const paypalOnApproveSubscription = async (data, actions) => { 
+  const paypalCreateSubscription = (data, actions) => {
+    return actions.subscription.create({ plan_id: activePlanId });
+  };
+
+  const paypalOnApproveSubscription = async (data) => { 
     try { 
-      await setDoc(doc(db, "v8_paypal_subscriptions", data.subscriptionID), { ...getCheckoutPayload(), subscriptionId: data.subscriptionID, status: "ACTIVE", createdAt: serverTimestamp() }); 
-      setShowPaymentModal(false); setSuccess(true); 
-      const url = zipLink || "https://link-do-arhiva.zip";
-      setDownloadUrl(url); triggerGoogleAnalyticsPurchase(data.subscriptionID, safePrice); 
-    } catch (error) { console.error("Error:", error); alert("Subscription successful, but verification delayed."); } 
+      const payload = getCheckoutPayload();
+      await setDoc(doc(db, "v8_paypal_subscriptions", data.subscriptionID), {
+        ...payload,
+        subscriptionId: data.subscriptionID,
+        status: "ACTIVE",
+        createdAt: serverTimestamp()
+      });
+      await setDoc(doc(db, "checkout_requests", payload.email), {
+        ...payload,
+        subscriptionId: data.subscriptionID,
+        paymentMethod: "paypal_subscription",
+        status: "paid",
+        paidAt: serverTimestamp()
+      }, { merge: true });
+
+      setShowPaymentModal(false);
+      setSuccess(true); 
+      if (zipLink) setDownloadUrl(zipLink);
+      triggerGoogleAnalyticsPurchase(data.subscriptionID, safePrice); 
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Subscription successful, but verification delayed.");
+    } 
   };
 
-  const paypalCreateOrder = (data, actions) => { return actions.order.create({ purchase_units: [{ description: safeName, amount: { value: safePrice.toString() } }] }); };
+  const paypalCreateOrder = (data, actions) => {
+    return actions.order.create({
+      purchase_units: [{ description: safeName, amount: { value: safePrice.toString() } }]
+    });
+  };
+
   const paypalOnApproveOrder = async (data, actions) => { 
     try { 
       const details = await actions.order.capture(); 
+      const payload = getCheckoutPayload();
       const backendUrl = getBackendUrl(); 
       const response = await fetch(`${backendUrl}/api/paypal-verify`, { 
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ orderId: details.id, ...getCheckoutPayload() }) 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ orderId: details.id, ...payload }) 
       }); 
       const resData = await response.json(); 
-      if(resData.success) { 
-        setShowPaymentModal(false); setSuccess(true); 
+      if (resData.success) { 
+        await setDoc(doc(db, "checkout_requests", payload.email), {
+          ...payload,
+          orderId: details.id,
+          paymentMethod: "paypal_card",
+          status: "paid",
+          paidAt: serverTimestamp()
+        }, { merge: true });
+
+        setShowPaymentModal(false);
+        setSuccess(true); 
         const url = resData.downloadUrl || zipLink;
-        setDownloadUrl(url); triggerGoogleAnalyticsPurchase(details.id, safePrice); 
-      } else { alert("Payment verification failed. Contact support."); } 
-    } catch (error) { console.error("Error:", error); alert("Payment received, but verification delayed."); } 
+        setDownloadUrl(url);
+        triggerGoogleAnalyticsPurchase(details.id, safePrice); 
+      } else {
+        alert("Payment verification failed. Contact support.");
+      } 
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Payment received, but verification delayed.");
+    } 
   };
 
   if (!isOpen) return null;
@@ -277,17 +321,15 @@ const V10SecureCheckout = ({
       <AnimatePresence>
         {isOpen && (
           <div className="fixed inset-0 z-[9999999] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 sm:p-6 font-sans">
-            
             <motion.div 
               initial={{ scale: 0.95, y: 20, opacity: 0 }} 
               animate={{ scale: 1, y: 0, opacity: 1 }} 
               exit={{ scale: 0.95, y: 20, opacity: 0 }}
               className="w-full max-w-6xl p-[3px] rounded-[2.6rem] bg-gradient-to-br from-blue-500 via-indigo-400 to-orange-500 shadow-[0_20px_80px_rgba(59,130,246,0.25)]"
             >
-              
               <div className="bg-white w-full rounded-[2.4rem] flex flex-col lg:flex-row relative overflow-hidden h-auto max-h-[90vh] overflow-y-auto custom-scrollbar">
                 
-                {/* 🔥 LEVA KOLONA: CLEAN FINTECH WHITE 🔥 */}
+                {/* LEVA KOLONA */}
                 <div className="w-full lg:w-2/3 p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-start relative z-10 bg-white">
                   
                   <div className="flex flex-col w-full min-w-0">
@@ -303,26 +345,28 @@ const V10SecureCheckout = ({
                         availableTiers.map((tier, idx) => {
                           const IconComponent = TIER_ICONS[idx % TIER_ICONS.length]; 
                           return (
-                          <button 
-                            key={tier.id}
-                            onClick={() => setSelectedTier(tier.id)}
-                            className={`text-left p-6 rounded-2xl border transition-all duration-300 relative overflow-hidden ${
-                              selectedTier === tier.id 
-                                ? 'bg-orange-50/80 border-orange-500 shadow-[0_10px_20px_rgba(234,88,12,0.1)]' 
-                                : 'bg-white border-slate-200 hover:border-slate-300'
-                            }`}
-                          >
-                            {selectedTier === tier.id && <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-orange-500"></div>}
-                            <div className="flex items-center gap-3 mb-2">
-                              <IconComponent className={`w-5 h-5 ${selectedTier === tier.id ? 'text-orange-500' : 'text-slate-400'}`} />
-                              <h3 className={`font-black uppercase tracking-widest text-sm ${selectedTier === tier.id ? 'text-slate-900' : 'text-slate-600'}`}>{tier.name}</h3>
-                            </div>
-                            <p className="text-slate-500 text-[10px] uppercase tracking-widest mb-3 ml-8 leading-relaxed">{tier.desc}</p>
-                            <div className="text-slate-900 font-black text-2xl ml-8 flex items-baseline gap-1">
-                              ${tier.price} {tier.isMonthly && <span className="text-xs text-slate-400 font-bold uppercase">/ mo</span>}
-                            </div>
-                          </button>
-                        )})
+                            <button 
+                              key={tier.id}
+                              type="button"
+                              onClick={() => setSelectedTier(tier.id)}
+                              className={`text-left p-6 rounded-2xl border transition-all duration-300 relative overflow-hidden ${
+                                selectedTier === tier.id 
+                                  ? 'bg-orange-50/80 border-orange-500 shadow-[0_10px_20px_rgba(234,88,12,0.1)]' 
+                                  : 'bg-white border-slate-200 hover:border-slate-300'
+                              }`}
+                            >
+                              {selectedTier === tier.id && <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-orange-500"></div>}
+                              <div className="flex items-center gap-3 mb-2">
+                                <IconComponent className={`w-5 h-5 ${selectedTier === tier.id ? 'text-orange-500' : 'text-slate-400'}`} />
+                                <h3 className={`font-black uppercase tracking-widest text-sm ${selectedTier === tier.id ? 'text-slate-900' : 'text-slate-600'}`}>{tier.name}</h3>
+                              </div>
+                              <p className="text-slate-500 text-[10px] uppercase tracking-widest mb-3 ml-8 leading-relaxed">{tier.desc}</p>
+                              <div className="text-slate-900 font-black text-2xl ml-8 flex items-baseline gap-1">
+                                ${tier.price} {tier.isMonthly && <span className="text-xs text-slate-400 font-bold uppercase">/ mo</span>}
+                              </div>
+                            </button>
+                          );
+                        })
                       ) : (
                         <div className="text-left p-6 rounded-2xl border-2 bg-blue-50/50 border-blue-300 relative overflow-hidden shadow-sm">
                           <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-500"></div>
@@ -368,14 +412,13 @@ const V10SecureCheckout = ({
                                   Due to strict international B2B banking regulations, Payoneer transaction verification strictly requires <span className="text-orange-700 font-black bg-orange-200/50 px-1 rounded border border-orange-300">6 to 12 hours</span> to clear.
                                 </p>
                                 <p className="text-slate-600 text-[10px] font-bold leading-relaxed mt-0.5">
-                                  Your encrypted master assets will be securely dispatched to your verified corporate email exactly upon node confirmation. We appreciate your professional patience.
+                                  Your encrypted master assets and official EULA will be unlocked in your Client Vault immediately upon node confirmation.
                                 </p>
                               </div>
                             </div>
                           </motion.div>
                         )}
                       </AnimatePresence>
-
                     </div>
                   </div>
 
@@ -389,17 +432,16 @@ const V10SecureCheckout = ({
                       </h2>
                     </div>
                     
-                    {/* B2B / Kripto / Card Toggles */}
                     <div className="flex gap-3 mb-6 bg-blue-50/40 p-2 rounded-2xl border-2 border-blue-100 w-full shadow-inner">
-                      <button onClick={() => setPaymentMethod('card')} className={`flex-1 py-3.5 flex flex-col items-center justify-center gap-2 rounded-xl transition-all ${paymentMethod === 'card' ? 'bg-white border-2 border-blue-400 text-blue-700 shadow-md' : 'text-blue-500 hover:text-blue-700 hover:bg-white/50 border-2 border-transparent'}`}>
+                      <button type="button" onClick={() => setPaymentMethod('card')} className={`flex-1 py-3.5 flex flex-col items-center justify-center gap-2 rounded-xl transition-all ${paymentMethod === 'card' ? 'bg-white border-2 border-blue-400 text-blue-700 shadow-md' : 'text-blue-500 hover:text-blue-700 hover:bg-white/50 border-2 border-transparent'}`}>
                         <CreditCard className="w-6 h-6" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Card</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest">Card / PayPal</span>
                       </button>
-                      <button onClick={() => setPaymentMethod('payoneer')} className={`flex-1 py-3.5 flex flex-col items-center justify-center gap-2 rounded-xl transition-all ${paymentMethod === 'payoneer' ? 'bg-white border-2 border-orange-400 text-orange-600 shadow-md' : 'text-blue-500 hover:text-orange-600 hover:bg-white/50 border-2 border-transparent'}`}>
+                      <button type="button" onClick={() => setPaymentMethod('payoneer')} className={`flex-1 py-3.5 flex flex-col items-center justify-center gap-2 rounded-xl transition-all ${paymentMethod === 'payoneer' ? 'bg-white border-2 border-orange-400 text-orange-600 shadow-md' : 'text-blue-500 hover:text-orange-600 hover:bg-white/50 border-2 border-transparent'}`}>
                         <LinkIcon className="w-6 h-6" />
                         <span className="text-[10px] font-black uppercase tracking-widest">B2B Link</span>
                       </button>
-                      <button onClick={() => setPaymentMethod('crypto')} className={`flex-1 py-3.5 flex flex-col items-center justify-center gap-2 rounded-xl transition-all ${paymentMethod === 'crypto' ? 'bg-white border-2 border-blue-400 text-blue-700 shadow-md' : 'text-blue-500 hover:text-blue-700 hover:bg-white/50 border-2 border-transparent'}`}>
+                      <button type="button" onClick={() => setPaymentMethod('crypto')} className={`flex-1 py-3.5 flex flex-col items-center justify-center gap-2 rounded-xl transition-all ${paymentMethod === 'crypto' ? 'bg-white border-2 border-blue-400 text-blue-700 shadow-md' : 'text-blue-500 hover:text-blue-700 hover:bg-white/50 border-2 border-transparent'}`}>
                         <Bitcoin className="w-6 h-6" />
                         <span className="text-[10px] font-black uppercase tracking-widest">Crypto</span>
                       </button>
@@ -407,27 +449,20 @@ const V10SecureCheckout = ({
 
                     {success ? (
                       <div className="flex flex-col items-center justify-center flex-grow w-full">
-                        
-                        {/* 🔥 BLINDIRANA LOGIKA ZA PRIKAZ DOWNLOAD LINKOVA 🔥 */}
                         {paymentMethod === 'payoneer' ? (
-                          
-                          // PAYONEER SUCCESS (NEMA LINKOVA DOK SE NE ODOBRI RUČNO)
                           <div className="flex flex-col items-center text-center p-8 bg-slate-50 rounded-3xl border-2 border-slate-200 shadow-sm w-full">
                             <Clock className="w-16 h-16 text-orange-500 mb-5" />
                             <h2 className="text-2xl font-black text-slate-900 uppercase tracking-widest mb-3">Request Secured</h2>
                             <p className="text-slate-600 text-[11px] uppercase font-bold tracking-widest leading-relaxed">
                               Identity Verified: {firstName || companyName}.<br/>
-                              B2B Invoice has been dispatched to your secure email.<br/>
-                              Assets will be delivered immediately upon payment clearance.
+                              B2B Invoice will be dispatched to your verified email.<br/>
+                              Assets unlock in your Client Vault immediately upon payment clearance.
                             </p>
                             <button onClick={() => { if (onSuccess) onSuccess(); else onClose(); }} className="mt-8 w-full px-4 py-5 min-h-[60px] bg-slate-900 text-white hover:bg-slate-800 rounded-xl font-black uppercase tracking-widest text-[12px] transition-all shadow-md">
                               CLOSE TERMINAL
                             </button>
                           </div>
-
                         ) : paymentMethod === 'crypto' && !isCryptoPaid ? (
-                          
-                          // CRYPTO PENDING (RADAR SE VRTI, NEMA LINKOVA)
                           <div className="flex flex-col items-center text-center p-8 bg-slate-50 rounded-3xl border-2 border-slate-200 shadow-sm w-full">
                             <Radar className="w-16 h-16 text-blue-600 animate-pulse mb-5" />
                             <h2 className="text-2xl font-black text-slate-900 uppercase tracking-widest mb-3">RADAR ACTIVE</h2>
@@ -436,15 +471,10 @@ const V10SecureCheckout = ({
                               DISCONNECT & CLOSE
                             </button>
                           </div>
-
                         ) : (downloadUrl || (cleanProjects && cleanProjects.length > 0)) ? (
-                          
-                          // CARD / PAYPAL / CONFIRMED CRYPTO SUCCESS (PRIKAZUJE LINKOVE!)
-                          <motion.div initial={{scale:0.9, opacity:0}} animate={{scale:1, opacity:1}} className="flex flex-col items-center w-full">
-                            
+                          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex flex-col items-center w-full">
                             <div className="w-full bg-white border-2 border-slate-200 rounded-3xl shadow-lg overflow-hidden relative mb-2">
                               <div className="absolute top-0 left-0 w-full h-1.5 bg-emerald-500"></div>
-                              
                               <div className="p-5 flex flex-col items-center bg-emerald-50 border-b border-slate-200">
                                 <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center border-2 border-emerald-300 mb-3 shadow-sm">
                                   <Check className="w-6 h-6 text-emerald-500" />
@@ -461,23 +491,31 @@ const V10SecureCheckout = ({
 
                                 {cleanProjects && cleanProjects.length > 0 ? (
                                   <div className="w-full flex flex-col gap-3 max-h-[260px] overflow-y-auto pr-2 custom-scrollbar">
-                                    {cleanProjects.map((p, idx) => (
-                                      <a 
-                                        key={idx} 
-                                        href={p.zipLink || p.driveLink || "#"} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer" 
-                                        className="w-full px-4 py-3.5 bg-white hover:bg-blue-50 border-2 border-slate-200 hover:border-blue-400 rounded-xl flex items-center justify-between group transition-all cursor-pointer shadow-sm"
-                                      >
-                                        <div className="flex items-center gap-3 overflow-hidden">
-                                          <Folder className="w-5 h-5 text-slate-400 group-hover:text-blue-600 transition-colors shrink-0" />
-                                          <span className="text-[12px] font-black text-slate-800 group-hover:text-blue-800 uppercase tracking-widest truncate">{p.title}</span>
+                                    {cleanProjects.map((p, idx) => {
+                                      const fileHref = p.zipLink || p.driveLink;
+                                      return fileHref ? (
+                                        <a 
+                                          key={idx} 
+                                          href={fileHref} 
+                                          target="_blank" 
+                                          rel="noopener noreferrer" 
+                                          className="w-full px-4 py-3.5 bg-white hover:bg-blue-50 border-2 border-slate-200 hover:border-blue-400 rounded-xl flex items-center justify-between group transition-all cursor-pointer shadow-sm"
+                                        >
+                                          <div className="flex items-center gap-3 overflow-hidden">
+                                            <Folder className="w-5 h-5 text-slate-400 group-hover:text-blue-600 transition-colors shrink-0" />
+                                            <span className="text-[12px] font-black text-slate-800 group-hover:text-blue-800 uppercase tracking-widest truncate">{p.title}</span>
+                                          </div>
+                                          <div className="w-8 h-8 rounded-full bg-slate-50 border-2 border-slate-200 flex items-center justify-center group-hover:bg-blue-600 group-hover:border-blue-600 transition-all shrink-0">
+                                            <Download className="w-4 h-4 text-slate-500 group-hover:text-white transition-colors" />
+                                          </div>
+                                        </a>
+                                      ) : (
+                                        <div key={idx} className="w-full px-4 py-3.5 bg-slate-100 border-2 border-slate-200 rounded-xl flex items-center justify-between">
+                                          <span className="text-[12px] font-black text-slate-700 uppercase tracking-widest truncate">{p.title}</span>
+                                          <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Available in Client Vault</span>
                                         </div>
-                                        <div className="w-8 h-8 rounded-full bg-slate-50 border-2 border-slate-200 flex items-center justify-center group-hover:bg-blue-600 group-hover:border-blue-600 transition-all shrink-0">
-                                          <Download className="w-4 h-4 text-slate-500 group-hover:text-white transition-colors" />
-                                        </div>
-                                      </a>
-                                    ))}
+                                      );
+                                    })}
                                   </div>
                                 ) : (
                                   <a 
@@ -499,23 +537,17 @@ const V10SecureCheckout = ({
                             </div>
 
                             <button 
-                              onClick={() => {
-                                if (onSuccess) onSuccess();
-                                else onClose();
-                              }}
+                              onClick={() => { if (onSuccess) onSuccess(); else onClose(); }}
                               className="mt-2 w-full px-4 py-5 min-h-[60px] bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-black uppercase tracking-widest text-[12px] transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 shadow-md"
                             >
                               CLOSE SECURE TERMINAL
                             </button>
-                            
                           </motion.div>
                         ) : (
-                          
-                          // OPŠTI FALLBACK SUCCESS (BEZ LINKOVA)
                           <div className="flex flex-col items-center text-center p-8 bg-slate-50 rounded-3xl border-2 border-slate-200 shadow-sm w-full">
                             <CheckCircle className="w-16 h-16 text-emerald-500 mb-5" />
                             <h2 className="text-2xl font-black text-slate-900 uppercase tracking-widest mb-3">Transaction Verified</h2>
-                            <p className="text-slate-600 text-[11px] uppercase font-bold tracking-widest leading-relaxed">Payment successful.<br/>Check your email for further instructions and invoice.</p>
+                            <p className="text-slate-600 text-[11px] uppercase font-bold tracking-widest leading-relaxed">Payment successful.<br/>Access your assets anytime via your Client Vault.</p>
                             <button onClick={() => { if (onSuccess) onSuccess(); else onClose(); }} className="mt-8 w-full px-4 py-5 min-h-[60px] bg-slate-900 text-white hover:bg-slate-800 rounded-xl font-black uppercase tracking-widest text-[12px] transition-all shadow-md">
                               CLOSE TERMINAL
                             </button>
@@ -524,8 +556,6 @@ const V10SecureCheckout = ({
                       </div>
                     ) : (
                       <form onSubmit={handleSubmit} className="flex flex-col flex-1 w-full">
-                        
-                        {/* Individual / Agency Toggles */}
                         <div className="flex gap-2 mb-6 bg-blue-50/50 p-1.5 rounded-xl border-2 border-blue-100 w-full shadow-inner">
                           <button 
                             type="button"
@@ -629,7 +659,6 @@ const V10SecureCheckout = ({
                           </div>
                         </div>
 
-                        {/* 🔥 GLAVNO DUGME - POVEĆANA VISINA 🔥 */}
                         <button 
                           type={paymentMethod === 'card' ? 'button' : 'submit'} 
                           onClick={() => { 
@@ -640,14 +669,14 @@ const V10SecureCheckout = ({
                           disabled={loading || !isFormValid()} 
                           className="mt-auto w-full disabled:bg-slate-100 disabled:text-slate-400 disabled:border-slate-200 disabled:shadow-none bg-gradient-to-r from-blue-600 to-orange-500 hover:from-blue-700 hover:to-orange-600 text-white font-black py-5 min-h-[60px] rounded-xl text-[13px] tracking-widest uppercase transition-all shadow-lg active:scale-95 cursor-pointer"
                         >
-                          {loading ? 'PROCESSING SECURE UPLINK...' : paymentMethod === 'card' ? 'AUTHORIZE SECURE PAYMENT' : 'REQUEST B2B SECURE LINK'}
+                          {loading ? 'PROCESSING SECURE UPLINK...' : paymentMethod === 'card' ? 'PROCEED TO CARD / PAYPAL GATEWAY' : 'REQUEST B2B SECURE LINK'}
                         </button>
                       </form>
                     )}
                   </div>
                 </div>
 
-                {/* 🔥 DESNA KOLONA: V10 VAULT VISUAL - ČISTA PLAVA BOJA 🔥 */}
+                {/* DESNA KOLONA */}
                 <div className="relative hidden lg:block w-1/3 bg-slate-900 overflow-hidden shrink-0">
                   <button onClick={() => { if(success && onSuccess) onSuccess(); else onClose(); }} className="absolute top-6 right-6 z-30 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 border border-white/20 text-white hover:bg-white hover:text-slate-900 transition-all backdrop-blur-md cursor-pointer shadow-lg">
                     <X className="w-5 h-5" />
@@ -655,9 +684,7 @@ const V10SecureCheckout = ({
                   
                   <div className="absolute inset-0 z-0">
                     <img src={projectImage} alt="Order Preview" className="w-full h-full object-cover opacity-90 transition-all duration-1000" />
-                    
                     <div className="absolute inset-0 bg-gradient-to-t from-blue-950/80 via-transparent to-transparent"></div>
-                    
                     <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-white to-transparent"></div>
                   </div>
 
@@ -678,7 +705,7 @@ const V10SecureCheckout = ({
         )}
       </AnimatePresence>
 
-      {/* 🔥 PAYMENT MODAL (CARD & PAYPAL) 🔥 */}
+      {/* PRAVI PAYPAL + DEBIT/CREDIT CARD GATEWAY MODAL */}
       <AnimatePresence>
         {showPaymentModal && (
           <div className="fixed inset-0 z-[10000000] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
@@ -703,28 +730,15 @@ const V10SecureCheckout = ({
                   </div>
                 </div>
 
-                <div className="w-full md:w-[55%] p-8 md:p-10 flex flex-col justify-center bg-white min-h-[450px]">
+                <div className="w-full md:w-[55%] p-8 md:p-10 flex flex-col justify-center bg-white min-h-[450px] max-h-[85vh] overflow-y-auto">
                   <div className="mb-8 border-b-2 border-slate-100 pb-6">
                     <h3 className="text-slate-900 font-black text-xl uppercase tracking-widest mb-1">{safeName}</h3>
                     <p className="text-blue-600 text-sm font-black tracking-widest">${safePrice}{activeIsMonthly ? '/mo' : ''}</p>
+                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-2">Pay securely via Visa, Mastercard, Amex or PayPal</p>
                   </div>
 
                   <div className="relative z-10 w-full">
-                    {paymentMethod === 'card' ? (
-                      <div className="flex flex-col gap-6">
-                        <div className="p-6 bg-blue-50/30 border-2 border-blue-200 rounded-3xl flex flex-col gap-4 shadow-sm">
-                          <input type="text" placeholder="Card Number (Test: 4242)" value={cardNumber} onChange={e => setCardNumber(e.target.value)} className="w-full bg-white border-2 border-blue-200 rounded-xl px-4 py-3.5 text-blue-950 text-[13px] font-black uppercase tracking-widest placeholder:text-blue-900/40 focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/20 transition-all shadow-sm" />
-                          <div className="grid grid-cols-2 gap-4">
-                            <input type="text" placeholder="MM/YY" value={cardExp} onChange={e => setCardExp(e.target.value)} className="w-full bg-white border-2 border-blue-200 rounded-xl px-4 py-3.5 text-blue-950 text-[13px] font-black uppercase tracking-widest placeholder:text-blue-900/40 focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/20 transition-all shadow-sm" />
-                            <input type="text" placeholder="CVC" value={cardCvc} onChange={e => setCardCvc(e.target.value)} className="w-full bg-white border-2 border-blue-200 rounded-xl px-4 py-3.5 text-blue-950 text-[13px] font-black uppercase tracking-widest placeholder:text-blue-900/40 focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/20 transition-all shadow-sm" />
-                          </div>
-                        </div>
-                        {/* 🔥 DUGME U CARD MODALU - POVEĆANA VISINA 🔥 */}
-                        <button onClick={handleTestCardPayment} disabled={isCardProcessing} className="w-full bg-gradient-to-r from-blue-600 to-orange-500 hover:from-blue-700 hover:to-orange-600 text-white font-black uppercase tracking-widest py-5 min-h-[60px] rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-95 text-[13px] cursor-pointer">
-                          {isCardProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : <>AUTHORIZE ${safePrice}</>}
-                        </button>
-                      </div>
-                    ) : activeIsMonthly ? (
+                    {activeIsMonthly && activePlanId ? (
                       <PayPalButtons style={{ layout: "vertical", color: "blue", shape: "rect", label: "subscribe" }} createSubscription={paypalCreateSubscription} onApprove={paypalOnApproveSubscription} />
                     ) : (
                       <PayPalButtons style={{ layout: "vertical", color: "blue", shape: "rect", label: "pay" }} createOrder={paypalCreateOrder} onApprove={paypalOnApproveOrder} />
@@ -742,4 +756,3 @@ const V10SecureCheckout = ({
 };
 
 export default V10SecureCheckout;
-// KRAJ FAJLA: V10SecureCheckout.jsx

@@ -1,6 +1,7 @@
 // START OF FILE: AIAgentsShowcase.jsx
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { 
   Bot, Briefcase, Cpu, Maximize, Zap, ScanLine, Sparkles, Award, 
   Terminal, Aperture, Clapperboard, Code, ShieldCheck, MonitorPlay, 
@@ -36,7 +37,7 @@ const b2bEcosystemSystems = [
   { path: '/aviation-charter-kit', name: 'PRIVATE AVIATION KIT', desc: '6 Turnkey React Kits ($349 / $1,490)', icon: Plane, color: 'text-amber-400', bg: 'bg-amber-500/20', hover: 'group-hover:bg-amber-500/40', border: 'border-amber-500/40' },
   { path: '/superyacht-charter-kit', name: 'SUPERYACHT CHARTER KIT', desc: '5 Turnkey React Kits ($349 / $1,490)', icon: Anchor, color: 'text-cyan-400', bg: 'bg-cyan-500/20', hover: 'group-hover:bg-cyan-500/40', border: 'border-cyan-500/40' },
   { path: '/watch-page-1', name: 'LUXURY WATCHES KIT', desc: 'Haute Horlogerie Kits ($349 / $1,490)', icon: Watch, color: 'text-yellow-400', bg: 'bg-yellow-500/20', hover: 'group-hover:bg-yellow-500/40', border: 'border-yellow-500/40' },
-  { path: '/standard-mocup', name: '150MP SaaS MOCKUPS', desc: 'Glass Plaque, Wall & Billboard', icon: MonitorPlay, color: 'text-orange-400', bg: 'bg-orange-500/20', hover: 'group-hover:bg-orange-500/40', border: 'border-orange-500/40' },
+  { path: '/standard-mockup', name: '150MP SaaS MOCKUPS', desc: 'Glass Plaque, Wall & Billboard', icon: MonitorPlay, color: 'text-orange-400', bg: 'bg-orange-500/20', hover: 'group-hover:bg-orange-500/40', border: 'border-orange-500/40' },
   { path: '/ui-ux/vault', name: 'UI/UX DESIGN VAULT', desc: 'Enterprise Web Systems', icon: LayoutGrid, color: 'text-emerald-400', bg: 'bg-emerald-500/20', hover: 'group-hover:bg-emerald-500/40', border: 'border-emerald-500/40' },
   { path: '/pdf-translator', name: 'V10 PDF TRANSLATOR', desc: '100% Layout DTP Neural Engine', icon: FileText, color: 'text-teal-400', bg: 'bg-teal-500/20', hover: 'group-hover:bg-teal-500/40', border: 'border-teal-500/40' },
   { path: '/stock', name: '150MP COMMERCIAL STOCK', desc: 'Ultra-Print & 4K UHD Visuals', icon: ImageIcon, color: 'text-sky-400', bg: 'bg-sky-500/20', hover: 'group-hover:bg-sky-500/40', border: 'border-sky-500/40' },
@@ -308,10 +309,10 @@ export default function AIAgentsShowcase() {
   const N8N_AURELIA_PULSE_WEBHOOK = 'https://n8n-production-720dcf20.up.railway.app/webhook/aurelia-pulse';
   const N8N_B2B_CONCIERGE_WEBHOOK = 'https://n8n-production-720dcf20.up.railway.app/webhook/v10-concierge-webhook';
   const N8N_LEAD_HUNTER_INTAKE_WEBHOOK = 'https://n8n-production-720dcf20.up.railway.app/webhook/v10-b2b-intake';
-  const N8N_FLOATING_CHAT_WEBHOOK = 'http://localhost:5678/webhook/237acb8c-83c6-4f97-a800-1426e24e7993/chat';
-  const N8N_MOCKUP_WEBHOOK = 'http://localhost:5678/webhook/mockup-engine';
-  const N8N_SEO_WEBHOOK = 'http://localhost:5678/webhook/seo-auditor';
-  const N8N_CAMPAIGN_WEBHOOK = 'http://localhost:5678/webhook/campaign-engine';
+  const N8N_FLOATING_CHAT_WEBHOOK = 'http://Railway Cloud/webhook/237acb8c-83c6-4f97-a800-1426e24e7993/chat';
+  const N8N_MOCKUP_WEBHOOK = 'http://Railway Cloud/webhook/mockup-engine';
+  const N8N_SEO_WEBHOOK = 'http://Railway Cloud/webhook/seo-auditor';
+  const N8N_CAMPAIGN_WEBHOOK = 'http://Railway Cloud/webhook/campaign-engine';
 
   // =========================================================
   // 1. LIVE MOCKUP STUDIO STATE (WHITE-LABEL + VIP DEMO)
@@ -400,7 +401,7 @@ export default function AIAgentsShowcase() {
   const [isB2bSubmitting, setIsB2bSubmitting] = useState(false);
   const [b2bAgentReply, setB2bAgentReply] = useState('');
   const [b2bWhatsappLink, setB2bWhatsappLink] = useState('https://wa.me/381648201496');
-  const [b2bStatus, setB2bStatus] = useState('Connected to localhost:5678 (Groq openai/gpt-oss-120b)');
+  const [b2bStatus, setB2bStatus] = useState('Connected to Railway Cloud (Groq openai/gpt-oss-120b)');
 
   // =========================================================
   // 7. V10 AUTONOMOUS B2B LEAD HUNTER & 20:00H CLOSER STUDIO
@@ -690,9 +691,9 @@ export default function AIAgentsShowcase() {
       if (data?.whatsapp_direct_link) {
         setB2bWhatsappLink(data.whatsapp_direct_link);
       }
-      setB2bStatus('✓ Live Response Received (< 2.1s via localhost:5678)');
+      setB2bStatus('✓ Live Response Received (< 2.1s via Railway Cloud)');
     } catch (err) {
-      setB2bAgentReply('Ensure your n8n workflow "V10 B2B Webhook - NEW (Groq)" is Published on http://localhost:5678. Direct VIP escalation is available via WhatsApp below.');
+      setB2bAgentReply('Ensure your n8n workflow "V10 B2B Webhook - NEW (Groq)" is Published on http://Railway Cloud. Direct VIP escalation is available via WhatsApp below.');
       setB2bStatus('Offline Fallback Mode');
     } finally {
       setIsB2bSubmitting(false);
@@ -802,7 +803,7 @@ Empfohlener Fokus für Ihr Profil: ${selectedHunterInd.offer}.
 
 Unser gesamtes sofort verfügbares B2B-Ökosystem (100 % IP-Übertragung, keine monatlichen SaaS-Gebühren):
 - White-Label AI Agents & Turnkey Luxury Web Kits ($349 / $1,490 Buyout): https://aitoolsprosmart.com/ai-agents
-- 150MP Master Mockups (Wall, Billboard & Executive Glass Plaques): https://aitoolsprosmart.com/standard-mocup
+- 150MP Master Mockups (Wall, Billboard & Executive Glass Plaques): https://aitoolsprosmart.com/standard-mockup
 - UI/UX Design & V10 Vault (inkl. Master .PSD-Dateien): https://aitoolsprosmart.com/ui-ux/vault
 - Massive Neural PDF Translator (bis zu 1.000 Seiten, 100 % identisches Layout): https://aitoolsprosmart.com/pdf-translator
 - 150MP Ultra-Print & 4K UHD Commercial Stock (kostenloses Testpaket): https://aitoolsprosmart.com/stock
@@ -820,7 +821,7 @@ Top recommended fit for your operations: ${selectedHunterInd.offer}.
 
 Explore our complete live B2B commercial ecosystem (one-time buyout, zero monthly SaaS fees):
 - Custom White-Label AI Agents & Turnkey Luxury Web Kits ($349 / $1,490 Buyout): https://aitoolsprosmart.com/ai-agents
-- 150MP Master Mockups (Architectural Wall, Billboard & Glass Plaques): https://aitoolsprosmart.com/standard-mocup
+- 150MP Master Mockups (Architectural Wall, Billboard & Glass Plaques): https://aitoolsprosmart.com/standard-mockup
 - UI/UX Design & V10 Vault (with open Master .PSD source files): https://aitoolsprosmart.com/ui-ux/vault
 - Massive Neural PDF Translator (up to 1,000 pages, 100% intact layout — 5 pages free): https://aitoolsprosmart.com/pdf-translator
 - 150MP Ultra-Print & 4K UHD Commercial Stock (free 150MP sample): https://aitoolsprosmart.com/stock
@@ -895,7 +896,25 @@ Founder | AI Tools Pro Smart (Visionary Factory V10)`;
   };
 
   return (
-    <div className="min-h-screen bg-[#02040a] text-white py-24 pb-36 px-4 sm:px-6 font-sans relative z-10">
+    <div className="min-h-screen bg-[#121722] text-white py-24 pb-36 px-4 sm:px-6 font-sans relative z-10">
+      <Helmet>
+        <title>White-Label AI Agents &amp; Turnkey n8n Systems | AI Tools Pro Smart</title>
+        <meta
+          name="description"
+          content="Acquire 29+ turnkey White-Label AI Agents (React/HTML + Python + self-hosted n8n workflows) with 100% source code ownership and zero monthly SaaS fees."
+        />
+        <meta name="thumbnail" content="https://aitoolsprosmart.com/og-cover-v10.jpg" />
+        <meta property="og:title" content="V10 White-Label AI Systems | 100% Source Code Buyout" />
+        <meta
+          property="og:description"
+          content="Production-ready B2B AI architectures, Aurelia Pulse 24/7 Booking Bar, and 170-City Autonomous Lead Hunter with zero recurring fees."
+        />
+        <meta property="og:image" content="https://aitoolsprosmart.com/og-cover-v10.jpg" />
+        <meta property="og:url" content="https://aitoolsprosmart.com/ai-agents" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://aitoolsprosmart.com/og-cover-v10.jpg" />
+        <link rel="canonical" href="https://aitoolsprosmart.com/ai-agents" />
+      </Helmet>
 
       {/* ========================================================= */}
       {/* 8. NEW: AURELIA PULSE — 24/7 AI CONCIERGE & BOOKING MODAL */}
@@ -1435,7 +1454,7 @@ Founder | AI Tools Pro Smart (Visionary Factory V10)`;
                         <div className="font-bold text-white uppercase text-[10px] tracking-wider mb-1">
                           Included Ecosystem Routes Verified in Every Outbound Email:
                         </div>
-                        <div>• <code className="text-cyan-300">/standard-mocup</code> (150MP Wall, Billboard & Glass Plaque Mockups)</div>
+                        <div>• <code className="text-cyan-300">/standard-mockup</code> (150MP Wall, Billboard & Glass Plaque Mockups)</div>
                         <div>• <code className="text-cyan-300">/ui-ux/vault</code> (Luxury Retail, Culinary UI & Master .PSD Suites)</div>
                         <div>• <code className="text-cyan-300">/pdf-translator</code> (1,000-Page Neural DTP Layout Translator)</div>
                         <div>• <code className="text-cyan-300">/stock</code> &amp; <code className="text-cyan-300">/ai-agents</code> (150MP Stock &amp; White-Label AI Buyouts)</div>
@@ -1477,7 +1496,7 @@ Founder | AI Tools Pro Smart (Visionary Factory V10)`;
                       V10 B2B Webhook - NEW (Groq) • Live Enterprise Scoper
                     </h2>
                     <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded-full">
-                      ● PUBLISHED ON LOCALHOST:5678
+                      ● LIVE RAILWAY CLOUD + GROQ
                     </span>
                   </div>
                   <p className="text-xs text-slate-400">
@@ -1602,7 +1621,7 @@ Founder | AI Tools Pro Smart (Visionary Factory V10)`;
                   disabled={isB2bSubmitting}
                   className="w-full py-3.5 bg-gradient-to-r from-[#d4af37] to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-black uppercase tracking-widest rounded-xl text-xs shadow-lg shadow-amber-500/20 transition-all cursor-pointer"
                 >
-                  {isB2bSubmitting ? 'Processing via Groq (localhost:5678)...' : '⚡ Send Live POST to V10 B2B Webhook'}
+                  {isB2bSubmitting ? 'Processing via Groq (Railway Cloud)...' : '⚡ Send Live POST to V10 B2B Webhook'}
                 </button>
               </form>
 
@@ -1664,7 +1683,7 @@ Founder | AI Tools Pro Smart (Visionary Factory V10)`;
                         Both V10 n8n Workflows Are Published & Ready
                       </h3>
                       <p className="text-xs text-slate-400 leading-relaxed">
-                        Click <strong>Send Live POST to V10 B2B Webhook</strong> on the left to test real-time B2B quote generation from your local n8n instance (<code className="text-amber-300">localhost:5678</code>), or use the floating chat widget in the bottom-right corner of the screen.
+                        Click <strong>Send Live POST to V10 B2B Webhook</strong> on the left to test real-time B2B quote generation from your local n8n instance (<code className="text-amber-300">Railway Cloud</code>), or use the floating chat widget in the bottom-right corner of the screen.
                       </p>
                     </div>
                   )}

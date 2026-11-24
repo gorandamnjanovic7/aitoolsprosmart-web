@@ -9,7 +9,7 @@
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
-      <image:loc>https://aitoolsprosmart.com/og-cover.jpg</image:loc>
+      <image:loc>https://aitoolsprosmart.com/og-cover-v10.jpg</image:loc>
       <image:title>Visionary Factory V10 — 150MP Commercial Stock, Mockups &amp; White-Label AI</image:title>
     </image:image>
   </url>
@@ -20,24 +20,10 @@
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
-      <image:loc>https://aitoolsprosmart.com/og-cover.jpg</image:loc>
+      <image:loc>https://aitoolsprosmart.com/og-cover-v10.jpg</image:loc>
       <image:title>150MP Commercial Stock Photography &amp; 4K IP-Safe Luxury Vaults</image:title>
       <image:license>https://aitoolsprosmart.com/V8_COMMERCIAL_LICENSE.pdf</image:license>
     </image:image>
-  </url>
-
-  <url>
-    <loc>https://aitoolsprosmart.com/standard-mocup</loc>
-    <lastmod>2026-11-24</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.95</priority>
-  </url>
-
-  <url>
-    <loc>https://aitoolsprosmart.com/ui-ux/vault</loc>
-    <lastmod>2026-11-24</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.95</priority>
   </url>
 
   <url>
@@ -45,6 +31,32 @@
     <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://aitoolsprosmart.com/og-cover-v10.jpg</image:loc>
+      <image:title>V10 White-Label AI Agents &amp; Turnkey n8n Systems</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://aitoolsprosmart.com/ui-ux/vault</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://aitoolsprosmart.com/og-cover-v10.jpg</image:loc>
+      <image:title>V10 Master UI/UX Design Vault &amp; 150MP Commercial Assets</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://aitoolsprosmart.com/standard-mockup</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://aitoolsprosmart.com/og-cover-v10.jpg</image:loc>
+      <image:title>150MP Commercial Wall, Billboard &amp; Executive Glass Plaque Mockups</image:title>
+    </image:image>
   </url>
 
   <url>

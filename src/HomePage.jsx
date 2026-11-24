@@ -31,14 +31,30 @@ export default function HomePage({ apps = [] }) {
   }, [location]);
   // KRAJ FUNKCIJE: useEffect callback
 
-  // Započinjemo renderovanje - V8 DARK MODE Krovni omotač
   return (
     <div className="min-h-screen bg-[#050505] text-white">
-      <Helmet><title>AI TOOLS PRO SMART | GLOBAL</title></Helmet>
+      <Helmet>
+        <title>AI Tools Pro Smart | White-Label AI Agents, 150MP Stock &amp; Mockup Vaults</title>
+        <meta
+          name="description"
+          content="Acquire turnkey White-Label AI Systems (React + n8n workflows), 150MP IP-safe commercial stock photography, Ultra-Print SaaS mockups, and enterprise UI/UX design vaults."
+        />
+        <meta name="thumbnail" content="https://aitoolsprosmart.com/og-cover-v10.jpg" />
+        <meta property="og:title" content="AI Tools Pro Smart | 150MP Commercial Stock, Mockups &amp; White-Label AI" />
+        <meta
+          property="og:description"
+          content="100% IP-safe 150MP Master Print &amp; 4K commercial visual vaults, architectural mockups, B2B Landing Page Kits, and turnkey White-Label AI systems."
+        />
+        <meta property="og:image" content="https://aitoolsprosmart.com/og-cover-v10.jpg" />
+        <meta property="og:url" content="https://aitoolsprosmart.com/" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://aitoolsprosmart.com/og-cover-v10.jpg" />
+        <link rel="canonical" href="https://aitoolsprosmart.com/" />
+      </Helmet>
       
       <HeroBanner />
       
-      {/* 🚀 OVDE SMO UBACILI NAŠ NOVI BANER ZA AI AGENTE */}
+      {/* NOVI BANER ZA AI AGENTE */}
       <AiAgentsHeroBanner />
       
       <TechSlant />

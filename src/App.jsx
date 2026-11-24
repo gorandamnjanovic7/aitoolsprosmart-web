@@ -625,105 +625,112 @@ function AppContent({ appsData, refreshData }) {
         {!isPublicMenuRoute && <V8UnlockModal />}
         <div className={`flex-1 text-left ${isPublicMenuRoute ? '' : 'pt-20'}`}>
           <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
-          <Routes location={location} key={location.pathname}>
-              <Route path="/" element={<V8PageWrapper><HomePage apps={appsData} openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
-              <Route path="/goran" element={<V10PromptGenerator />} />
-              <Route path="/v8-standard-16mp" element={<V8PageWrapper><V8Standard16MPWorkspace openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
-              <Route path="/master-33mp" element={<V8PageWrapper><V8MasterEngine33MP openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
-              <Route path="/master-45mp" element={<V8PageWrapper><V8MasterEngine45MP openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
-              <Route path="/master-60mp" element={<V8PageWrapper><V8MasterEngine60MP openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
-              <Route path="/extractor" element={<V8PageWrapper><V8JsonDeExtractorPage openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
-              <Route path="/v8-debranding-extractor" element={<V8PageWrapper><V8JsonDeBrendingExtractorPage openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
-              <Route path="/grid-system" element={<V8PageWrapper><V8GridSystem openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
-              <Route path="/prompt-factory" element={<V8PageWrapper><V8NeuralForge openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
-              <Route path="/neural-forge" element={<V8PageWrapper><V8NeuralForge openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
-              <Route path="/raw-reality" element={<V8PageWrapper><V8RawRealityEngine /></V8PageWrapper>} />
-              <Route path="/saas-protocol" element={<V8PageWrapper><SaaSProtocolPage openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
-              <Route path="/standard-mocup" element={<V8PageWrapper><StandardMocup /></V8PageWrapper>} />
-              <Route path="/seedance" element={<V8PageWrapper><CinematikPromptEngine initialEngine="SEEDANCE 2.0" openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
-              <Route path="/kling" element={<V8PageWrapper><CinematikPromptEngine initialEngine="KLING 3.0" openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
-              <Route path="/enxance" element={<V8PageWrapper><V8Enhancer10x openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
-              <Route path="/promo" element={<V8PageWrapper><V8Promo10xPage openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
-              <Route path="/app/:id" element={<V8PageWrapper><SingleProductPage apps={appsData} openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
-              <Route path="/trezor" element={<V8PageWrapper><TrezorPage apps={appsData} /></V8PageWrapper>} />
-              <Route path="/admin" element={<V8PageWrapper><V8DatabaseAdmin apps={appsData} refreshData={refreshData} /></V8PageWrapper>} />
-              <Route path="/dashboard" element={<V8PageWrapper><V8AdminDashboard /></V8PageWrapper>} />
-              <Route path="/admin-payoneer" element={<V8PageWrapper><V8PayoneerDashboard /></V8PageWrapper>} />
-              
-              {/* 🔥 5 JETS KITS 🔥 */}
-              <Route path="/aviation-charter-kit" element={<V8PageWrapper><PrivateAviationKit /></V8PageWrapper>} />
-              <Route path="/aviation-atelier-kit" element={<V8PageWrapper><AeroPriveAtelier /></V8PageWrapper>} />
-              <Route path="/aviation-cloudline-kit" element={<V8PageWrapper><CloudlinePrestige /></V8PageWrapper>} />
-              <Route path="/aviation-midnight-kit" element={<MidnightAltitude />} />
-              <Route path="/aviation-runway-kit" element={<V8PageWrapper><RunwayReserve /></V8PageWrapper>} />
-              <Route path="/aviation-skyglass-aviation" element={<V8PageWrapper><SkyglassAviation /></V8PageWrapper>} />
-              <Route path="/aviation-skyglass-kit" element={<SkyglassAviation />} />
-              <Route path="/aviation-page-5" element={<V8PageWrapper><SkyglassAviation /></V8PageWrapper>} />
+  <Routes location={location} key={location.pathname}>
+    <Route path="/" element={<V8PageWrapper><HomePage apps={appsData} openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+    <Route path="/goran" element={<V10PromptGenerator />} />
+    <Route path="/v8-standard-16mp" element={<V8PageWrapper><V8Standard16MPWorkspace openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+    <Route path="/master-33mp" element={<V8PageWrapper><V8MasterEngine33MP openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+    <Route path="/master-45mp" element={<V8PageWrapper><V8MasterEngine45MP openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+    <Route path="/master-60mp" element={<V8PageWrapper><V8MasterEngine60MP openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+    <Route path="/extractor" element={<V8PageWrapper><V8JsonDeExtractorPage openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+    <Route path="/v8-debranding-extractor" element={<V8PageWrapper><V8JsonDeBrendingExtractorPage openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+    <Route path="/grid-system" element={<V8PageWrapper><V8GridSystem openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+    <Route path="/prompt-factory" element={<V8PageWrapper><V8NeuralForge openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+    <Route path="/neural-forge" element={<V8PageWrapper><V8NeuralForge openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+    <Route path="/raw-reality" element={<V8PageWrapper><V8RawRealityEngine /></V8PageWrapper>} />
+    <Route path="/saas-protocol" element={<V8PageWrapper><SaaSProtocolPage openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+    
+    {/* OBE PUTANJE ZA MOCKUPE (stara navigacija + novi Google SEO linkovi) */}
+    <Route path="/standard-mocup" element={<V8PageWrapper><StandardMocup /></V8PageWrapper>} />
+    <Route path="/standard-mockup" element={<V8PageWrapper><StandardMocup /></V8PageWrapper>} />
+    
+    <Route path="/seedance" element={<V8PageWrapper><CinematikPromptEngine initialEngine="SEEDANCE 2.0" openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+    <Route path="/kling" element={<V8PageWrapper><CinematikPromptEngine initialEngine="KLING 3.0" openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+    <Route path="/enxance" element={<V8PageWrapper><V8Enhancer10x openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+    <Route path="/promo" element={<V8PageWrapper><V8Promo10xPage openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+    <Route path="/app/:id" element={<V8PageWrapper><SingleProductPage apps={appsData} openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
+    <Route path="/trezor" element={<V8PageWrapper><TrezorPage apps={appsData} /></V8PageWrapper>} />
+    <Route path="/admin" element={<V8PageWrapper><V8DatabaseAdmin apps={appsData} refreshData={refreshData} /></V8PageWrapper>} />
+    <Route path="/dashboard" element={<V8PageWrapper><V8AdminDashboard /></V8PageWrapper>} />
+    <Route path="/admin-payoneer" element={<V8PageWrapper><V8PayoneerDashboard /></V8PageWrapper>} />
+    
+    {/* 🔥 5 JETS KITS 🔥 */}
+    <Route path="/aviation-charter-kit" element={<V8PageWrapper><PrivateAviationKit /></V8PageWrapper>} />
+    <Route path="/aviation-atelier-kit" element={<V8PageWrapper><AeroPriveAtelier /></V8PageWrapper>} />
+    <Route path="/aviation-cloudline-kit" element={<V8PageWrapper><CloudlinePrestige /></V8PageWrapper>} />
+    <Route path="/aviation-midnight-kit" element={<MidnightAltitude />} />
+    <Route path="/aviation-runway-kit" element={<V8PageWrapper><RunwayReserve /></V8PageWrapper>} />
+    <Route path="/aviation-skyglass-aviation" element={<V8PageWrapper><SkyglassAviation /></V8PageWrapper>} />
+    <Route path="/aviation-skyglass-kit" element={<SkyglassAviation />} />
+    <Route path="/aviation-page-5" element={<V8PageWrapper><SkyglassAviation /></V8PageWrapper>} />
 
-              {/* 🔥 SUPERYACHT KITS (1 TO 5) 🔥 */}
-              <Route path="/superyacht-charter-kit" element={<V8PageWrapper><AquaYachtCharterKit /></V8PageWrapper>} />
-              <Route path="/yacht-charter-kit" element={<V8PageWrapper><AquaYachtCharterKit /></V8PageWrapper>} />
-              <Route path="/yacht-page-1" element={<V8PageWrapper><AquaYachtCharterKit /></V8PageWrapper>} />
-              <Route path="/yacht-page-2" element={<V8PageWrapper><AegeanYachtEscape /></V8PageWrapper>} />
-              <Route path="/aegean-yacht-kit" element={<V8PageWrapper><AegeanYachtEscape /></V8PageWrapper>} />
-              <Route path="/yacht-page-3" element={<V8PageWrapper><NautilusNightCharter /></V8PageWrapper>} />
-              <Route path="/nautilus-yacht-kit" element={<V8PageWrapper><NautilusNightCharter /></V8PageWrapper>} />
-              <Route path="/yacht-page-4" element={<V8PageWrapper><SapphireVoyageYachts /></V8PageWrapper>} />
-              <Route path="/sapphire-yacht-kit" element={<V8PageWrapper><SapphireVoyageYachts /></V8PageWrapper>} />
-              <Route path="/yacht-page-5" element={<TideglassYachtSociety />} />
-              <Route path="/tideglass-yacht-kit" element={<V8PageWrapper><TideglassYachtSociety /></V8PageWrapper>} />
-              
-              {/* 🔥 WATCH KITS (1 TO 5) 🔥 */}
-              <Route path="/abyss-chronograph" element={<AbyssChronograph />} />
-              <Route path="/watch-kit" element={<AbyssChronograph />} />
-              <Route path="/watch-page-1" element={<AbyssChronograph />} />
+    {/* 🔥 SUPERYACHT KITS (1 TO 5) 🔥 */}
+    <Route path="/superyacht-charter-kit" element={<V8PageWrapper><AquaYachtCharterKit /></V8PageWrapper>} />
+    <Route path="/yacht-charter-kit" element={<V8PageWrapper><AquaYachtCharterKit /></V8PageWrapper>} />
+    <Route path="/yacht-page-1" element={<V8PageWrapper><AquaYachtCharterKit /></V8PageWrapper>} />
+    <Route path="/yacht-page-2" element={<V8PageWrapper><AegeanYachtEscape /></V8PageWrapper>} />
+    <Route path="/aegean-yacht-kit" element={<V8PageWrapper><AegeanYachtEscape /></V8PageWrapper>} />
+    <Route path="/yacht-page-3" element={<V8PageWrapper><NautilusNightCharter /></V8PageWrapper>} />
+    <Route path="/nautilus-yacht-kit" element={<V8PageWrapper><NautilusNightCharter /></V8PageWrapper>} />
+    <Route path="/yacht-page-4" element={<V8PageWrapper><SapphireVoyageYachts /></V8PageWrapper>} />
+    <Route path="/sapphire-yacht-kit" element={<V8PageWrapper><SapphireVoyageYachts /></V8PageWrapper>} />
+    <Route path="/yacht-page-5" element={<TideglassYachtSociety />} />
+    <Route path="/tideglass-yacht-kit" element={<V8PageWrapper><TideglassYachtSociety /></V8PageWrapper>} />
+    
+    {/* 🔥 WATCH KITS (1 TO 5) 🔥 */}
+    <Route path="/abyss-chronograph" element={<AbyssChronograph />} />
+    <Route path="/watch-kit" element={<AbyssChronograph />} />
+    <Route path="/watch-page-1" element={<AbyssChronograph />} />
 
-              <Route path="/atelier-horology" element={<AtelierHorology />} />
-              <Route path="/watch-page-2" element={<AtelierHorology />} />
+    <Route path="/atelier-horology" element={<AtelierHorology />} />
+    <Route path="/watch-page-2" element={<AtelierHorology />} />
 
-              <Route path="/meridian-watch-house" element={<MeridianWatchHouse />} />
-              <Route path="/watch-page-3" element={<MeridianWatchHouse />} />
+    <Route path="/meridian-watch-house" element={<MeridianWatchHouse />} />
+    <Route path="/watch-page-3" element={<MeridianWatchHouse />} />
 
-              <Route path="/lumen-watch-collective" element={<LumenWatchCollective />} />
-              <Route path="/watch-page-4" element={<LumenWatchCollective />} />
+    <Route path="/lumen-watch-collective" element={<LumenWatchCollective />} />
+    <Route path="/watch-page-4" element={<LumenWatchCollective />} />
 
-              <Route path="/monarch-timepieces" element={<MonarchTimepieces />} />
-              <Route path="/watch-page-5" element={<MonarchTimepieces />} />
-              
-              {/* 🔥 RESTORANI KITS (1 TO 5) 🔥 */}
-            <Route path="/ignis-gold-restaurant" element={<IgnisGoldRestaurant />} />
-            <Route path="/ignis-gold" element={<IgnisGoldRestaurant />} />
-            <Route path="/villa-solis" element={<VillaSolisAmalfi />} />
-            <Route path="/kurokawa-kaiseki" element={<KurokawaKaiseki />} />
-            <Route path="/maison-lumiere" element={<MaisonLumiereParis />} />
-            <Route path="/sol-y-obsidiana" element={<SolYObsidianaNikkei />} />
+    <Route path="/monarch-timepieces" element={<MonarchTimepieces />} />
+    <Route path="/watch-page-5" element={<MonarchTimepieces />} />
+    
+    {/* 🔥 RESTORANI KITS (1 TO 5) 🔥 */}
+    <Route path="/ignis-gold-restaurant" element={<IgnisGoldRestaurant />} />
+    <Route path="/ignis-gold" element={<IgnisGoldRestaurant />} />
+    <Route path="/villa-solis" element={<VillaSolisAmalfi />} />
+    <Route path="/kurokawa-kaiseki" element={<KurokawaKaiseki />} />
+    <Route path="/maison-lumiere" element={<MaisonLumiereParis />} />
+    <Route path="/sol-y-obsidiana" element={<SolYObsidianaNikkei />} />
 
-              {/* 🔥 DIAMOND KITS (1 TO 5) 🔥 */}
-              <Route path="/diamonds-kit" element={<VerdantOrangerieJewels />} />
-              <Route path="/diamond-page-1" element={<VerdantOrangerieJewels />} />
+    {/* 🔥 DIAMOND KITS (1 TO 5) 🔥 */}
+    <Route path="/diamonds-kit" element={<VerdantOrangerieJewels />} />
+    <Route path="/diamond-page-1" element={<VerdantOrangerieJewels />} />
 
-              <Route path="/solenne-high-jewelry" element={<SolenneHighJewelry />} />
-              <Route path="/diamond-page-2" element={<SolenneHighJewelry />} />
+    <Route path="/solenne-high-jewelry" element={<SolenneHighJewelry />} />
+    <Route path="/diamond-page-2" element={<SolenneHighJewelry />} />
 
-              <Route path="/stock" element={<V8PageWrapper><V8StockBerza /></V8PageWrapper>} />
-              <Route path="/stock-2" element={<V8PageWrapper><V8Stock2 /></V8PageWrapper>} /> 
-              <Route path="/showroom" element={<V8PageWrapper><V8Showroom /></V8PageWrapper>} />
-              <Route path="/terms" element={<V8PageWrapper><V8Terms /></V8PageWrapper>} />
-              <Route path="/privacy" element={<V8PageWrapper><V8Privacy /></V8PageWrapper>} />
-              <Route path="/refund" element={<V8PageWrapper><V8Refund /></V8PageWrapper>} />
-              <Route path="/media" element={<V8PageWrapper><V8MediaViewer /></V8PageWrapper>} />
-              <Route path="/portfolio" element={<V8PageWrapper><Portfolio /></V8PageWrapper>} />
-              <Route path="/premium-menu" element={<V8PageWrapper><V8PremiumTestMenu /></V8PageWrapper>} />
-              <Route path="/m/:menuId" element={<PublicMenuTestQRMenu />} />
-              <Route path="/ai-agents" element={<V8PageWrapper><AIAgentsShowcase /></V8PageWrapper>} />
-              <Route path="/ui-ux" element={<V8PageWrapper><UiUxHub /></V8PageWrapper>} />
-              <Route path="/pdf-translator" element={<V8PageWrapper><V10PdfTranslator /></V8PageWrapper>} />
-              <Route path="/ui-ux/vault" element={<V8PageWrapper><VaultGrid /></V8PageWrapper>} />
-              <Route path="/ui-ux/commercial" element={<V8PageWrapper><CommercialOps /></V8PageWrapper>} /> 
-              <Route path="/ui-ux/project/:projectId" element={<V8PageWrapper><V10SplitScreen /></V8PageWrapper>} />
-              <Route path="/my-vault" element={<V8PageWrapper><V10MyVault /></V8PageWrapper>} />
-          </Routes>
-          </AnimatePresence>
+    <Route path="/stock" element={<V8PageWrapper><V8StockBerza /></V8PageWrapper>} />
+    <Route path="/stock-2" element={<V8PageWrapper><V8Stock2 /></V8PageWrapper>} /> 
+    <Route path="/showroom" element={<V8PageWrapper><V8Showroom /></V8PageWrapper>} />
+    <Route path="/terms" element={<V8PageWrapper><V8Terms /></V8PageWrapper>} />
+    <Route path="/privacy" element={<V8PageWrapper><V8Privacy /></V8PageWrapper>} />
+    <Route path="/refund" element={<V8PageWrapper><V8Refund /></V8PageWrapper>} />
+    <Route path="/media" element={<V8PageWrapper><V8MediaViewer /></V8PageWrapper>} />
+    <Route path="/portfolio" element={<V8PageWrapper><Portfolio /></V8PageWrapper>} />
+    <Route path="/premium-menu" element={<V8PageWrapper><V8PremiumTestMenu /></V8PageWrapper>} />
+    <Route path="/m/:menuId" element={<PublicMenuTestQRMenu />} />
+    <Route path="/ai-agents" element={<V8PageWrapper><AIAgentsShowcase /></V8PageWrapper>} />
+    <Route path="/ui-ux" element={<V8PageWrapper><UiUxHub /></V8PageWrapper>} />
+    <Route path="/pdf-translator" element={<V8PageWrapper><V10PdfTranslator /></V8PageWrapper>} />
+    <Route path="/ui-ux/vault" element={<V8PageWrapper><VaultGrid /></V8PageWrapper>} />
+    <Route path="/ui-ux/commercial" element={<V8PageWrapper><CommercialOps /></V8PageWrapper>} /> 
+    <Route path="/ui-ux/project/:projectId" element={<V8PageWrapper><V10SplitScreen /></V8PageWrapper>} />
+    
+    {/* OBE PUTANJE ZA CLIENT VAULT */}
+    <Route path="/my-vault" element={<V8PageWrapper><V10MyVault /></V8PageWrapper>} />
+    <Route path="/ui-ux/my-vault" element={<V8PageWrapper><V10MyVault /></V8PageWrapper>} />
+  </Routes>
+</AnimatePresence>
         </div>
         {!isPublicMenuRoute && <SmartScrollButton />}
         {!isPublicMenuRoute && <V8ContactWidget />}

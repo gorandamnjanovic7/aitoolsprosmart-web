@@ -7,11 +7,11 @@ import { Helmet } from 'react-helmet';
 import { 
   ShieldCheck, Plus, X, Save, 
   Image as ImageIcon, UploadCloud, Loader2, Trash2,
-  ShoppingCart, Lock, Clock, CheckCircle2, AlertTriangle, Link as LinkIcon, Copy, ChevronDown, ArrowLeft
+  ShoppingCart, Lock, Clock, CheckCircle2, AlertTriangle, Copy, ChevronDown, ArrowLeft
 } from 'lucide-react';
 import { auth, db } from '../firebase'; 
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { collection, getDocs, setDoc, doc, deleteDoc, serverTimestamp, query, orderBy, onSnapshot } from 'firebase/firestore'; 
+import { collection, getDocs, setDoc, doc, deleteDoc, serverTimestamp, query, orderBy, onSnapshot, deleteField } from 'firebase/firestore'; 
 
 import V10SecureCheckout from './V10SecureCheckout'; 
 import V10PricingDetails from './V10PricingDetails'; 
@@ -19,10 +19,16 @@ import V10PricingDetails from './V10PricingDetails';
 const CLOUDINARY_CLOUD_NAME = "drllxycnh"; 
 const CLOUDINARY_UPLOAD_PRESET = "uploads"; 
 
+const ADMIN_EMAILS = [
+  "damnjanovicgoran7@gmail.com",
+  "aitoolsprosmart@gmail.com",
+  "info@aitoolsprosmart.com"
+];
+
 const PRICING_PACKAGES = [
   { id: 'B2B RETAINER', priceNum: 200, price: '$200', type: '/ MONTH', desc: '3 custom projects of your choice every month.' },
-  { id: 'CINEMATIC PITCH', priceNum: 1500, price: '$1.500', type: 'ONE-TIME', desc: '10 production-ready projects for massive pitches.' },
-  { id: 'V10 MASTER VAULT', priceNum: 7000, price: '$7.000', type: 'ONE-TIME', desc: '40 custom projects of your choice (ultimate agency archive).' }
+  { id: 'CINEMATIC PITCH', priceNum: 1500, price: '$1,500', type: 'ONE-TIME', desc: '10 production-ready projects for massive pitches.' },
+  { id: 'V10 MASTER VAULT', priceNum: 7000, price: '$7,000', type: 'ONE-TIME', desc: '40 custom projects of your choice (ultimate agency archive).' }
 ];
 
 const VaultGrid = () => {
@@ -33,6 +39,7 @@ const VaultGrid = () => {
   const [projects, setProjects] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthLoaded, setIsAuthLoaded] = useState(false);
+  const [isMigratingLinks, setIsMigratingLinks] = useState(false);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLimitModalOpen, setIsLimitModalOpen] = useState(false); 
@@ -56,9 +63,7 @@ const VaultGrid = () => {
         if (savedProject && savedProject !== 'undefined' && savedProject !== 'null') {
           return JSON.parse(savedProject);
         }
-      } catch (e) {
-        console.error("Greška pri čitanju pending projekta:", e);
-      }
+      } catch (e) { console.error(e); }
     }
     return null;
   });
@@ -83,9 +88,7 @@ const VaultGrid = () => {
           const parsed = JSON.parse(savedCart);
           return Array.isArray(parsed) ? parsed : [];
         }
-      } catch (e) {
-        console.error("Greška pri čitanju korpe:", e);
-      }
+      } catch (e) { console.error(e); }
     }
     return [];
   });
@@ -97,6 +100,7 @@ const VaultGrid = () => {
   }, [cart]);
 
   const [activePackage, setActivePackage] = useState(null);
+  const [packagePrice, setPackagePrice] = useState(0);
   const [packageLimit, setPackageLimit] = useState(0);
   const [isMonthly, setIsMonthly] = useState(false);
   const [daysLeft, setDaysLeft] = useState(0);
@@ -109,7 +113,6 @@ const VaultGrid = () => {
 
   const tabs = [{ id: 'all', label: 'Vault Folders' }];
 
-  // 🔥 DODATO: badge: 'EXCLUSIVE' ZA STORYTELLING KARTICU 🔥
   const vaultCategories = [
     { id: 'food_ui', title: 'V10 Michelin UI', subtitle: 'Premium Culinary Assets', coverImage: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&w=800&q=80' },
     { id: 'women_bags', title: 'Luxury Women Bags', subtitle: 'High-End Product UI', coverImage: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=800&q=80' },
@@ -121,6 +124,8 @@ const VaultGrid = () => {
   const limitReached = packageLimit > 0 && cart.length >= packageLimit;
   const canCheckout = limitReached || (isVIPTest && cart.length > 0);
 
+  const exposedProjects = projects.filter(p => Boolean(p.driveLink || p.psdLink || p.zipLink || (p.phases || []).some(ph => ph.psdLink)));
+
   const showAlert = (title, message) => setCustomAlert({ isOpen: true, title, message, onConfirm: null, isDestructive: false });
   const showConfirm = (title, message, onConfirm, isDestructive = false) => setCustomAlert({ isOpen: true, title, message, onConfirm, isDestructive });
   const closeAlert = () => setCustomAlert({ ...customAlert, isOpen: false });
@@ -131,7 +136,7 @@ const VaultGrid = () => {
       if (user) {
         const email = user.email.toLowerCase();
         setUserEmail(email); 
-        if (email === "damnjanovicgoran7@gmail.com" || email === "aitoolsprosmart@gmail.com" || email === "info@aitoolsprosmart.com") {
+        if (ADMIN_EMAILS.includes(email)) {
           setIsAdmin(true); 
           setActivePackage("ADMIN"); 
           setIsAuthLoaded(true);
@@ -140,6 +145,7 @@ const VaultGrid = () => {
           unsubDoc = onSnapshot(doc(db, "checkout_requests", email), (pkgSnap) => {
             if (pkgSnap.exists()) {
               const data = pkgSnap.data();
+              setPackagePrice(data.price || 0);
               setupPackageLimits(data.selectedPackage, data.timestamp);
             } else {
               setActivePackage(null); 
@@ -176,9 +182,46 @@ const VaultGrid = () => {
     }
   };
 
+  const migrateExposedLinksToVault = async () => {
+    if (exposedProjects.length === 0) return;
+    setIsMigratingLinks(true);
+    try {
+      for (const p of exposedProjects) {
+        const phasePsds = (p.phases || [])
+          .filter(ph => ph.psdLink)
+          .map(ph => ({ title: ph.title || "Scene PSD", psdLink: ph.psdLink }));
+
+        await setDoc(doc(db, "v10_project_vault_links", p.id), {
+          projectId: p.id,
+          title: p.title || p.id,
+          driveLink: p.driveLink || p.zipLink || "",
+          psdLink: p.psdLink || "",
+          ...(phasePsds.length > 0 ? { phasePsds } : {}),
+          migratedAt: serverTimestamp()
+        }, { merge: true });
+
+        const cleanedPhases = (p.phases || []).map(({ psdLink, ...rest }) => rest);
+
+        await setDoc(doc(db, "v10_projects", p.id), {
+          driveLink: deleteField(),
+          psdLink: deleteField(),
+          zipLink: deleteField(),
+          phases: cleanedPhases
+        }, { merge: true });
+      }
+      await fetchProjects();
+      showAlert("Vault Secured", `Uspešno zaključano ${exposedProjects.length} projekata u privatni sef (v10_project_vault_links)!`);
+    } catch (err) {
+      console.error("Migration error:", err);
+      showAlert("Migration Error", err.message);
+    } finally {
+      setIsMigratingLinks(false);
+    }
+  };
+
   const handleCancelPackage = (e) => {
     if (e) { e.preventDefault(); e.stopPropagation(); }
-    showConfirm("Cancel Plan", "Da li ste sigurni da želite da otkažete paket? Izgubićete pristup projektima.", async () => {
+    showConfirm("Cancel Plan", "Da li ste sigurni da želite da promenite ili otkažete izabrani paket?", async () => {
       try { 
         await deleteDoc(doc(db, "checkout_requests", userEmail)); 
         setCart([]); 
@@ -191,13 +234,21 @@ const VaultGrid = () => {
     }, true);
   };
 
+  const sanitizeForCart = (project) => ({
+    id: project.id,
+    title: project.title,
+    engine: project.engine || "V10 ULTRA-PRINT",
+    img: project.img || "",
+    category: project.category || "all"
+  });
+
   const performAddToCart = (project) => {
     if (!isVIPTest && limitReached) {
       setIsLimitModalOpen(true);
       return;
     }
     if (!cart.find(item => item.id === project.id)) {
-      const newCart = [...cart, project];
+      const newCart = [...cart, sanitizeForCart(project)];
       setCart(newCart);
       if (!isVIPTest && packageLimit > 0 && newCart.length === packageLimit) {
         setTimeout(() => { setIsLimitModalOpen(true); }, 300);
@@ -226,7 +277,7 @@ const VaultGrid = () => {
     try {
       const snap = await getDocs(query(collection(db, "v10_projects"), orderBy("createdAt", "desc")));
       if (!snap.empty) {
-        let fetched = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        let fetched = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         const targetOrder = ["esmerald-project", "obsidian-emerald", "tom-foord-oud-wood", "creed-adventus"];
         fetched.sort((a, b) => {
           const iA = targetOrder.indexOf(a.id); const iB = targetOrder.indexOf(b.id);
@@ -240,10 +291,11 @@ const VaultGrid = () => {
   const handleAddToCart = async (e, project) => {
     e.preventDefault(); 
     e.stopPropagation();
+    const cleanProj = sanitizeForCart(project);
     
     if (!userEmail) {
-      sessionStorage.setItem('v10_pending_project', JSON.stringify(project));
-      setPendingProject(project);
+      sessionStorage.setItem('v10_pending_project', JSON.stringify(cleanProj));
+      setPendingProject(cleanProj);
       const provider = new GoogleAuthProvider();
       try {
         await signInWithPopup(auth, provider);
@@ -256,13 +308,13 @@ const VaultGrid = () => {
     }
     
     if (!isAdmin && !activePackage) {
-      sessionStorage.setItem('v10_pending_project', JSON.stringify(project));
-      setPendingProject(project);
+      sessionStorage.setItem('v10_pending_project', JSON.stringify(cleanProj));
+      setPendingProject(cleanProj);
       setIsPricingModalOpen(true);
       return;
     }
     
-    performAddToCart(project);
+    performAddToCart(cleanProj);
   };
 
   const handleRemoveFromCart = (projectId) => {
@@ -277,15 +329,11 @@ const VaultGrid = () => {
     const formData = new FormData(); 
     formData.append('file', file); 
     formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-    
     try {
       const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, { method: 'POST', body: formData });
       const data = await res.json();
-      if (data.secure_url) {
-        setNewProject({ ...newProject, img: data.secure_url });
-      } else {
-        showAlert("Upload Error", data.error?.message || "Došlo je do greške pri otpremanju slike.");
-      }
+      if (data.secure_url) setNewProject({ ...newProject, img: data.secure_url });
+      else showAlert("Upload Error", data.error?.message || "Upload failed.");
     } catch (error) {
       showAlert("Upload Error", error.message);
     } finally { 
@@ -296,11 +344,9 @@ const VaultGrid = () => {
 
   const handleCreateProject = async (e) => {
     if (e) { e.preventDefault(); e.stopPropagation(); }
-    
     if (!newProject.title || !newProject.title.trim()) {
-      return showAlert("Greška pri unosu", "Moraš uneti naslov projekta (Project Title) da bi sačuvao!");
+      return showAlert("Input Required", "Unesi naslov projekta (Project Title) da bi sačuvao!");
     }
-    
     if (isSaving || isUploadingThumbnail) return;
     setIsSaving(true);
     
@@ -316,7 +362,7 @@ const VaultGrid = () => {
         ratio: newProject.ratio || 'aspect-[21/9]', 
         category: safeCategory, 
         createdAt: new Date(), 
-        description: "New project initialized.", 
+        description: "Premium V10 Master Asset.", 
         phases: [] 
       };
       
@@ -330,7 +376,6 @@ const VaultGrid = () => {
 
       const dbData = { ...newProjData, createdAt: serverTimestamp() };
       await setDoc(doc(db, "v10_projects", projectId), dbData);
-
     } catch (error) {
       console.error("Greška pri kreiranju:", error);
       showAlert("Sistemska greška", error.message);
@@ -342,8 +387,12 @@ const VaultGrid = () => {
   const handleDeleteProject = (projectId, e) => {
     e.preventDefault(); e.stopPropagation();
     showConfirm("Delete Project", "Irreversible structural action. Proceed?", async () => {
-      try { await deleteDoc(doc(db, "v10_projects", projectId)); setProjects(prev => prev.filter(p => p.id !== projectId)); closeAlert(); } 
-      catch (error) { closeAlert(); }
+      try {
+        await deleteDoc(doc(db, "v10_projects", projectId));
+        await deleteDoc(doc(db, "v10_project_vault_links", projectId));
+        setProjects(prev => prev.filter(p => p.id !== projectId));
+        closeAlert();
+      } catch (error) { closeAlert(); }
     }, true);
   };
 
@@ -358,11 +407,7 @@ const VaultGrid = () => {
   const handleOpenModal = () => {
     const currentCategory = activeFilter === 'all' ? '' : activeFilter;
     setNewProject({ 
-      title: '', 
-      img: '', 
-      ratio: 'aspect-[3/1]', 
-      category: currentCategory, 
-      engine: 'V10 ULTRA-PRINT' 
+      title: '', img: '', ratio: 'aspect-[3/1]', category: currentCategory, engine: 'V10 ULTRA-PRINT' 
     });
     setIsModalOpen(true);
   };
@@ -372,18 +417,7 @@ const VaultGrid = () => {
     return () => { document.body.style.overflow = 'unset'; };
   }, [isModalOpen, isLimitModalOpen, isPricingModalOpen, customAlert.isOpen]);
 
-  const filteredProjects = projects?.filter((project) => project.category === activeFilter) || [];
-
-  const displayProjects = [...filteredProjects];
-  if (activeFilter === 'perfumes' && !displayProjects.some(p => p.id === 'v10-futuristic-habitats-bundle')) {
-    displayProjects.unshift({
-      id: 'v10-futuristic-habitats-bundle',
-      title: 'V10 Futuristic Habitats Bundle',
-      engine: 'PREMIUM ARCHITECTURE',
-      img: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80',
-      category: 'perfumes'
-    });
-  }
+  const displayProjects = projects?.filter((project) => project.category === activeFilter) || [];
 
   if (showCheckout) {
     return (
@@ -391,37 +425,71 @@ const VaultGrid = () => {
         isOpen={true}
         onClose={() => setShowCheckout(false)} 
         packageName={activePackage} 
+        price={packagePrice}
         selectedProjects={cart} 
         userEmail={userEmail} 
+        isUIUX={true}
         onSuccess={() => {
           setCart([]);
           localStorage.removeItem('v10_vault_cart');
           setShowCheckout(false);
-          showAlert("Payment Verified", "Your transaction was successful. Files will be deployed directly.");
+          showAlert("Request Logged", "Your transaction status is updated. Open your Client Vault to access unlocked files and EULA.");
         }}
       />
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#020202] pt-24 pb-12 px-4 sm:px-8 relative selection:bg-[#ff6a00] selection:text-black font-sans">
+    <div className="min-h-screen bg-[#121722] pt-24 pb-12 px-4 sm:px-8 relative selection:bg-amber-400 selection:text-[#121722] font-sans">
       <Helmet>
         <title>V10 Master Vault | Premium B2B UI/UX Assets</title>
         <meta name="description" content="Exclusive B2B repository for 150MP UI/UX designs, Master PSDs, and cinematic commercial pitches." />
-        <meta name="theme-color" content="#ff6a00" />
+        <meta name="theme-color" content="#121722" />
       </Helmet>
 
-      <div className="fixed inset-0 pointer-events-none z-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,106,0,0.08)_0%,_transparent_50%),_radial-gradient(circle_at_bottom_right,_rgba(255,106,0,0.08)_0%,_transparent_50%)]"></div>
+      <div className="fixed inset-0 pointer-events-none z-0 bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.09)_0%,_transparent_50%),_radial-gradient(circle_at_bottom_right,_rgba(255,106,0,0.08)_0%,_transparent_50%)]"></div>
       
       <div className="max-w-[1800px] mx-auto relative z-10">
+
+        {/* ADMIN SEF TRAKA */}
+        {isAdmin && exposedProjects.length > 0 && (
+          <div className="mb-8 p-5 rounded-2xl bg-amber-500/10 border border-amber-400/40 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+            <div className="flex items-center gap-3">
+              <Lock className="w-6 h-6 text-amber-400 shrink-0" />
+              <div>
+                <p className="text-amber-300 text-xs font-black uppercase tracking-widest">
+                  Otkriveno {exposedProjects.length} UI/UX projekata sa javnim Drive/PSD linkovima
+                </p>
+                <p className="text-slate-300 text-[11px]">
+                  Klikni desno da ih jednim potezom preseliš u zaključani sef (v10_project_vault_links).
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={migrateExposedLinksToVault}
+              disabled={isMigratingLinks}
+              className="px-6 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-[#121722] font-black text-xs uppercase tracking-widest transition-all cursor-pointer shrink-0 flex items-center gap-2"
+            >
+              {isMigratingLinks ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+              Zaključaj UI/UX linkove u Sef
+            </button>
+          </div>
+        )}
         
         <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-white/10 pb-6 mb-12">
           <div>
-            <h1 className="text-3xl font-black text-white uppercase tracking-widest mb-2">V10 <span className="text-[#ff6a00]">Vault</span></h1>
-            <p className="text-zinc-500 text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-[#ff6a00]" /> Experimental R&D Sector</p>
+            <h1 className="text-3xl font-black text-white uppercase tracking-widest mb-2">V10 <span className="text-amber-400">Vault</span></h1>
+            <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-amber-400" /> Experimental R&D Sector</p>
           </div>
-          <div className="mt-4 md:mt-0 text-zinc-600 text-xs font-black uppercase tracking-widest">
-            {isAdmin ? 'ADMIN ACCESS GRANTED' : (activeFilter === 'all' ? 'SELECT CATEGORY' : `Showing: ${displayProjects.length} Projects`)}
+          <div className="mt-4 md:mt-0 flex items-center gap-4">
+            {userEmail && !isAdmin && (
+              <Link to="/ui-ux/my-vault" className="px-5 py-2.5 rounded-xl bg-amber-400/10 border border-amber-400/40 text-amber-400 hover:bg-amber-400 hover:text-[#121722] font-black text-[10px] uppercase tracking-widest transition-all">
+                Open Client Vault
+              </Link>
+            )}
+            <span className="text-slate-400 text-xs font-black uppercase tracking-widest">
+              {isAdmin ? 'ADMIN ACCESS GRANTED' : (activeFilter === 'all' ? 'SELECT CATEGORY' : `Showing: ${displayProjects.length} Projects`)}
+            </span>
           </div>
         </div>
 
@@ -429,14 +497,14 @@ const VaultGrid = () => {
           
           {userEmail && !isAdmin && activePackage && (
             <div className="w-full xl:w-[320px] flex-shrink-0 sticky top-24 z-20 pointer-events-auto">
-              <h2 className="text-[#ff6a00] font-black uppercase tracking-widest text-xs mb-6 flex items-center gap-2"><ShieldCheck className="w-4 h-4" /> Your Access Tier</h2>
+              <h2 className="text-amber-400 font-black uppercase tracking-widest text-xs mb-6 flex items-center gap-2"><ShieldCheck className="w-4 h-4" /> Your Access Tier</h2>
               <div className="flex flex-col gap-4">
                 {PRICING_PACKAGES.filter(pkg => pkg.id === activePackage).map(pkg => (
-                  <div key={pkg.id} className="p-6 rounded-3xl border transition-all duration-500 relative z-30 border-[#ff6a00] bg-[#ff6a00]/10 shadow-[0_0_40px_rgba(255,106,0,0.2)] backdrop-blur-md">
+                  <div key={pkg.id} className="p-6 rounded-3xl border transition-all duration-500 relative z-30 border-blue-400/50 bg-gradient-to-b from-[#1a2233] to-[#0d121b] shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-md">
                     <h3 className="text-white font-black uppercase tracking-widest text-sm mb-1">{pkg.id}</h3>
-                    <div className="text-zinc-400 font-bold mb-3">{pkg.price} <span className="text-xs">{pkg.type}</span></div>
-                    <p className="text-zinc-500 text-[10px] uppercase font-bold tracking-widest mb-6 leading-relaxed">{pkg.desc}</p>
-                    <button onClick={handleCancelPackage} className="w-full py-3 bg-red-600/10 hover:bg-red-600/20 text-red-500 border border-red-500/30 rounded-xl font-black uppercase tracking-widest text-[10px] transition-colors cursor-pointer relative z-50 pointer-events-auto">Cancel Plan</button>
+                    <div className="text-amber-400 font-bold mb-3">{pkg.price} <span className="text-xs text-slate-400">{pkg.type}</span></div>
+                    <p className="text-slate-400 text-[10px] uppercase font-bold tracking-widest mb-6 leading-relaxed">{pkg.desc}</p>
+                    <button onClick={handleCancelPackage} className="w-full py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-xl font-black uppercase tracking-widest text-[10px] transition-colors cursor-pointer relative z-50 pointer-events-auto">Change / Cancel Tier</button>
                   </div>
                 ))}
               </div>
@@ -444,10 +512,10 @@ const VaultGrid = () => {
           )}
 
           <div className="flex-1 w-full relative">
-            <div className="flex flex-wrap gap-2 justify-center w-full max-w-fit mx-auto mb-12 p-2 bg-[#0a0a0a]/80 backdrop-blur-lg border border-white/10 rounded-full shadow-2xl relative z-20">
+            <div className="flex flex-wrap gap-2 justify-center w-full max-w-fit mx-auto mb-12 p-2 bg-[#171e2c]/90 backdrop-blur-lg border border-blue-500/30 rounded-full shadow-2xl relative z-20">
               {tabs.map((tab) => (
-                <button key={tab.id} onClick={() => setActiveFilter(tab.id)} className={`relative px-8 py-3 rounded-full font-black text-sm uppercase tracking-widest transition-colors duration-300 outline-none z-10 cursor-pointer ${activeFilter === tab.id ? 'text-black' : 'text-zinc-500 hover:text-white'}`}>
-                  {activeFilter === tab.id && <motion.div layoutId="v8ActiveFilterPill" className="absolute inset-0 bg-[#ff6a00] rounded-full shadow-[0_0_20px_rgba(255,106,0,0.4)] -z-10" transition={{ type: "spring", stiffness: 400, damping: 30 }} />}
+                <button key={tab.id} onClick={() => setActiveFilter(tab.id)} className={`relative px-8 py-3 rounded-full font-black text-sm uppercase tracking-widest transition-colors duration-300 outline-none z-10 cursor-pointer ${activeFilter === tab.id ? 'text-[#121722]' : 'text-slate-400 hover:text-white'}`}>
+                  {activeFilter === tab.id && <motion.div layoutId="v8ActiveFilterPill" className="absolute inset-0 bg-amber-400 rounded-full shadow-[0_0_20px_rgba(245,158,11,0.4)] -z-10" transition={{ type: "spring", stiffness: 400, damping: 30 }} />}
                   <span className="relative z-20">{tab.label}</span>
                 </button>
               ))}
@@ -461,22 +529,21 @@ const VaultGrid = () => {
                       layout
                       key={cat.id}
                       onClick={() => setActiveFilter(cat.id)} 
-                      className="group relative w-full rounded-3xl cursor-pointer shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-gradient-to-br from-[#111] via-[#1a1a1a] to-[#0a0a0a] p-[2px] border border-white/5 hover:border-[#ff6a00]/50 overflow-hidden"
+                      /* VELIKI SPOLJAŠNJI BORDER KARTICE — PLAVI GRADIJENT */
+                      className="group relative w-full rounded-3xl cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.55)] hover:shadow-[0_20px_60px_rgba(59,130,246,0.3)] transition-all duration-500 hover:-translate-y-2 bg-gradient-to-br from-blue-500/80 via-cyan-400/60 to-indigo-600/80 hover:from-blue-400 hover:via-cyan-300 hover:to-blue-600 p-[2px] overflow-hidden"
                     >
-                      <div className="relative w-full h-full bg-[#050505] rounded-[22px] flex flex-col overflow-hidden">
-                        
-                        {/* 🔥 OVO JE NOVI V10 BEDŽ 🔥 */}
+                      <div className="relative w-full h-full bg-gradient-to-b from-[#171e2c] to-[#0d121b] rounded-[22px] flex flex-col overflow-hidden">
                         {cat.badge && (
-                          <div className="absolute top-6 right-6 z-40 flex items-center gap-1.5 px-3 py-1 bg-black/80 backdrop-blur-md border border-[#ff6a00]/50 rounded-full shadow-[0_0_20px_rgba(255,106,0,0.4)] pointer-events-none">
+                          <div className="absolute top-6 right-6 z-40 flex items-center gap-1.5 px-3 py-1 bg-[#121722]/90 backdrop-blur-md border border-[#ff6a00]/60 rounded-full shadow-[0_0_20px_rgba(255,106,0,0.35)] pointer-events-none">
                             <span className="w-1.5 h-1.5 rounded-full bg-[#ff6a00] animate-pulse"></span>
                             <span className="text-[#ff6a00] font-black text-[9px] uppercase tracking-[0.2em]">{cat.badge}</span>
                           </div>
                         )}
-
                         <div className="flex flex-row items-center p-8 gap-10 h-[280px]">
-                          <div className="h-full w-[50%] bg-black relative flex-shrink-0 flex items-center justify-center rounded-2xl overflow-hidden shadow-inner">
-                            <img src={cat.coverImage} alt={cat.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 ease-out opacity-80 group-hover:opacity-100" draggable="false" />
-                            <div className="absolute inset-0 border-[3px] border-[#ff6a00]/30 shadow-[inset_0_0_20px_rgba(255,106,0,0.3)] pointer-events-none transition-all duration-500 group-hover:border-[#ff6a00]/80 group-hover:shadow-[inset_0_0_40px_rgba(255,106,0,0.6)]"></div>
+                          {/* UNUTRAŠNJI OKVIR OKO SAME SLIKE — NARANDŽASTO (#ff6a00) */}
+                          <div className="h-full w-[50%] bg-[#0d121b] relative flex-shrink-0 flex items-center justify-center rounded-2xl overflow-hidden shadow-inner">
+                            <img src={cat.coverImage} alt={cat.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 ease-out opacity-90 group-hover:opacity-100" draggable="false" />
+                            <div className="absolute inset-0 border-[2.5px] border-[#ff6a00]/75 shadow-[inset_0_0_22px_rgba(255,106,0,0.35)] pointer-events-none transition-all duration-500 group-hover:border-[#ff6a00] group-hover:shadow-[inset_0_0_45px_rgba(255,106,0,0.65)] rounded-2xl"></div>
                           </div>
                           <div className="w-[50%] flex flex-col justify-center transform group-hover:translate-x-2 transition-transform duration-500 z-30 pointer-events-auto select-text cursor-text">
                             <span className="text-[#ff6a00] text-[10px] font-black uppercase tracking-[0.4em] mb-3 block drop-shadow-md">{cat.subtitle}</span>
@@ -498,17 +565,18 @@ const VaultGrid = () => {
                         animate={{ opacity: 1, scale: 1, y: 0 }} 
                         exit={{ opacity: 0, scale: 0.9, y: -20 }} 
                         transition={{ duration: 0.4, ease: "easeOut" }} 
-                        className="group relative h-[300px] w-full rounded-2xl overflow-hidden border border-white/10 hover:border-[#ff6a00]/70 transition-all duration-500 shadow-2xl flex flex-col"
+                        /* POJEDINAČNA SLIKA PROJEKTA — NARANDŽASTI OKVIR */
+                        className="group relative h-[300px] w-full rounded-2xl overflow-hidden border-2 border-[#ff6a00]/55 hover:border-[#ff6a00] bg-[#171e2c] transition-all duration-500 shadow-[0_15px_40px_rgba(0,0,0,0.45)] hover:shadow-[0_15px_45px_rgba(255,106,0,0.25)] flex flex-col"
                       >
                         <Link to={`/ui-ux/project/${project.id}`} className="absolute inset-0 z-10 cursor-pointer"></Link>
                         
                         {project.img ? ( 
                           <img src={project.img} alt={project.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-90 group-hover:opacity-100" draggable="false" /> 
                         ) : ( 
-                          <div className="absolute inset-0 bg-zinc-900 flex items-center justify-center"><ImageIcon className="w-10 h-10 text-orange-500/40" /></div> 
+                          <div className="absolute inset-0 bg-[#171e2c] flex items-center justify-center"><ImageIcon className="w-10 h-10 text-[#ff6a00]/50" /></div> 
                         )}
                         
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/50 to-transparent z-10 pointer-events-none"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0d121b] via-[#121722]/45 to-transparent z-10 pointer-events-none"></div>
                         
                         <div className="absolute bottom-0 left-0 w-full p-6 z-20 pointer-events-none flex flex-col items-start">
                           <span className="text-[#ff6a00] text-[9px] font-black uppercase tracking-widest block mb-1 drop-shadow-md pointer-events-auto cursor-text select-text">
@@ -520,14 +588,14 @@ const VaultGrid = () => {
                         </div>
                         
                         {isAdmin && (
-                          <button onClick={(e) => handleCopyProjectTitle(e, project.title, project.id)} className="absolute top-4 left-4 bg-black/80 hover:bg-orange-500 text-orange-500 hover:text-black p-2.5 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 z-30 shadow-lg border border-white/10 cursor-pointer" title="Copy Title">
-                            {copiedId === project.id ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                          <button onClick={(e) => handleCopyProjectTitle(e, project.title, project.id)} className="absolute top-4 left-4 bg-[#121722]/90 hover:bg-[#ff6a00] text-[#ff6a00] hover:text-[#121722] p-2.5 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 z-30 shadow-lg border border-white/10 cursor-pointer" title="Copy Title">
+                            {copiedId === project.id ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
                           </button>
                         )}
 
                         {(!isAdmin && !project.id?.toLowerCase().includes('bundle') && !project.title?.toLowerCase().includes('bundle')) && (
-                          <button onClick={(e) => handleAddToCart(e, project)} disabled={!isVIPTest && limitReached && cart.find(i => i.id === project.id)} className="absolute bottom-5 right-5 z-30 bg-black/80 backdrop-blur-md hover:bg-[#ff6a00] text-[#ff6a00] hover:text-black border border-white/20 hover:border-[#ff6a00] p-3 rounded-2xl transition-all duration-300 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed group/btn cursor-pointer">
-                            {cart.find(i => i.id === project.id) ? ( <CheckCircle2 className="w-5 h-5 text-emerald-500" /> ) : ( <Plus className="w-5 h-5" /> )}
+                          <button onClick={(e) => handleAddToCart(e, project)} disabled={!isVIPTest && limitReached && Boolean(cart.find(i => i.id === project.id))} className="absolute bottom-5 right-5 z-30 bg-[#121722]/90 backdrop-blur-md hover:bg-[#ff6a00] text-[#ff6a00] hover:text-[#121722] border border-[#ff6a00]/40 hover:border-[#ff6a00] p-3 rounded-2xl transition-all duration-300 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed group/btn cursor-pointer">
+                            {cart.find(i => i.id === project.id) ? ( <CheckCircle2 className="w-5 h-5 text-emerald-400" /> ) : ( <Plus className="w-5 h-5" /> )}
                           </button>
                         )}
                         
@@ -540,8 +608,8 @@ const VaultGrid = () => {
                     ))}
                     {isAdmin && (
                       <motion.div layout initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} transition={{ duration: 0.4 }} className="h-[300px] w-full">
-                        <button type="button" onClick={(e) => { e.preventDefault(); handleOpenModal(); }} className="group relative w-full h-full rounded-2xl overflow-hidden bg-[#050505] border-2 border-dashed border-[#ff6a00]/30 hover:border-[#ff6a00] transition-all duration-300 flex flex-col items-center justify-center cursor-pointer shadow-[0_0_0_rgba(255,106,0,0)] hover:shadow-[0_0_40px_rgba(255,106,0,0.15)] pointer-events-auto z-40">
-                          <div className="w-16 h-16 rounded-full bg-[#ff6a00]/10 group-hover:bg-[#ff6a00] flex items-center justify-center transition-colors duration-300 mb-4"><Plus className="w-8 h-8 text-[#ff6a00] group-hover:text-black transition-colors" /></div>
+                        <button type="button" onClick={(e) => { e.preventDefault(); handleOpenModal(); }} className="group relative w-full h-full rounded-2xl overflow-hidden bg-[#171e2c]/60 border-2 border-dashed border-[#ff6a00]/45 hover:border-[#ff6a00] transition-all duration-300 flex flex-col items-center justify-center cursor-pointer hover:shadow-[0_0_40px_rgba(255,106,0,0.18)] pointer-events-auto z-40">
+                          <div className="w-16 h-16 rounded-full bg-[#ff6a00]/10 group-hover:bg-[#ff6a00] flex items-center justify-center transition-colors duration-300 mb-4"><Plus className="w-8 h-8 text-[#ff6a00] group-hover:text-[#121722] transition-colors" /></div>
                           <span className="text-[#ff6a00] font-black uppercase tracking-widest text-sm group-hover:scale-105 transition-transform">Initialize Project</span>
                         </button>
                       </motion.div>
@@ -553,90 +621,85 @@ const VaultGrid = () => {
           </div>
         </div>
 
-        {/* MALA KORPA ZA KORISNIKA U DNU EKRANA */}
+        {/* PLUTAJUĆA KORPA U DNU EKRANA */}
         {!isAdmin && userEmail && activeFilter !== 'all' && (
-          <div className="fixed bottom-8 right-8 z-[80] w-80 bg-[#0a0a0a]/90 border border-[#ff6a00]/40 rounded-3xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.8)] backdrop-blur-xl pointer-events-auto">
-            <div className="flex justify-between items-center mb-5 pb-4 border-b border-white/10">
-              <div className="flex items-center gap-3">
-                <ShoppingCart className="w-5 h-5 text-[#ff6a00]" />
-                <span className="text-white font-black uppercase tracking-widest text-sm">Vault Cart</span>
-              </div>
-              <span className="text-xs font-black px-3 py-1.5 rounded-full bg-zinc-900 text-[#ff6a00] border border-[#ff6a00]/30 shadow-[0_0_15px_rgba(255,106,0,0.2)]">
-                {cart.length} / {isVIPTest ? "∞" : (activePackage ? packageLimit : 0)}
-              </span>
-            </div>
-            
-            {cart.length > 0 && (
-              <div className="flex flex-col gap-3 mb-6 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
-                {cart.map((item) => (
-                  <div key={item.id} className="flex justify-between items-center bg-white/5 border border-white/10 hover:border-[#ff6a00]/50 rounded-xl p-3 transition-colors group/item">
-                    <span className="text-white text-[10px] font-bold uppercase tracking-widest truncate pr-2">{item.title}</span>
-                    <button onClick={() => handleRemoveFromCart(item.id)} className="text-zinc-600 hover:text-red-500 transition-colors cursor-pointer pointer-events-auto">
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {isMonthly && limitReached && !isVIPTest && daysLeft > 0 && (
-              <div className="mb-5 flex items-center gap-2 text-xs font-bold text-amber-500 bg-amber-500/10 p-3 rounded-xl border border-amber-500/30">
-                <Clock className="w-4 h-4" /><span>Reset in {daysLeft} days</span>
-              </div>
-            )}
-            
-            {canCheckout ? (
-              <div className="flex flex-col gap-4">
-                <div className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest leading-relaxed">
-                  {isVIPTest && !limitReached ? (
-                    <span className="text-emerald-400 block mb-2">VIP Access: Unlimited Cart</span>
-                  ) : (
-                    <span className="block mb-2">Tier limit reached.</span>
-                  )}
-                  Proceed to checkout to generate download links.
+          <div className="fixed bottom-8 right-8 z-[80] w-80 p-[2px] rounded-3xl bg-gradient-to-br from-blue-500/70 via-cyan-400/50 to-indigo-600/70 shadow-[0_20px_60px_rgba(0,0,0,0.75)] pointer-events-auto">
+            <div className="w-full h-full bg-[#171e2c]/95 rounded-[22px] p-6 backdrop-blur-xl">
+              <div className="flex justify-between items-center mb-5 pb-4 border-b border-white/10">
+                <div className="flex items-center gap-3">
+                  <ShoppingCart className="w-5 h-5 text-[#ff6a00]" />
+                  <span className="text-white font-black uppercase tracking-widest text-sm">Vault Cart</span>
                 </div>
-                <button onClick={() => setShowCheckout(true)} className="w-full bg-gradient-to-r from-[#ff6a00] to-[#e65c00] text-black font-black uppercase tracking-widest py-4 rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95 shadow-[0_0_20px_rgba(255,106,0,0.4)] cursor-pointer pointer-events-auto">
-                  <Lock className="w-4 h-4" /> Security Checkout
-                </button>
+                <span className="text-xs font-black px-3 py-1.5 rounded-full bg-[#121722] text-[#ff6a00] border border-[#ff6a00]/40 shadow-[0_0_15px_rgba(255,106,0,0.2)]">
+                  {cart.length} / {isVIPTest ? "∞" : (activePackage ? packageLimit : 0)}
+                </span>
               </div>
-            ) : (
-              <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest italic border-t border-white/5 pt-5 mt-2 text-center">
-                {cart.length === 0 ? "Select items to begin." : "Add more items to fulfill tier."}
-              </div>
-            )}
+              
+              {cart.length > 0 && (
+                <div className="flex flex-col gap-3 mb-6 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
+                  {cart.map((item) => (
+                    <div key={item.id} className="flex justify-between items-center bg-[#121722] border border-white/10 hover:border-[#ff6a00]/50 rounded-xl p-3 transition-colors group/item">
+                      <span className="text-white text-[10px] font-bold uppercase tracking-widest truncate pr-2">{item.title}</span>
+                      <button onClick={() => handleRemoveFromCart(item.id)} className="text-slate-400 hover:text-red-400 transition-colors cursor-pointer pointer-events-auto">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {isMonthly && limitReached && !isVIPTest && daysLeft > 0 && (
+                <div className="mb-5 flex items-center gap-2 text-xs font-bold text-amber-400 bg-amber-400/10 p-3 rounded-xl border border-amber-400/30">
+                  <Clock className="w-4 h-4" /><span>Reset in {daysLeft} days</span>
+                </div>
+              )}
+              
+              {canCheckout ? (
+                <div className="flex flex-col gap-4">
+                  <div className="text-[10px] text-slate-300 font-bold uppercase tracking-widest leading-relaxed">
+                    {isVIPTest && !limitReached ? (
+                      <span className="text-emerald-400 block mb-2">VIP Access: Unlimited Cart</span>
+                    ) : (
+                      <span className="block mb-2">Tier limit reached.</span>
+                    )}
+                    Proceed to checkout to unlock master files.
+                  </div>
+                  <button onClick={() => setShowCheckout(true)} className="w-full bg-gradient-to-r from-[#ff6a00] to-amber-500 text-[#121722] font-black uppercase tracking-widest py-4 rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95 shadow-[0_0_20px_rgba(255,106,0,0.35)] cursor-pointer pointer-events-auto">
+                    <Lock className="w-4 h-4" /> Security Checkout
+                  </button>
+                </div>
+              ) : (
+                <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest italic border-t border-white/10 pt-5 mt-2 text-center">
+                  {cart.length === 0 ? "Select items to begin." : "Add more items to fulfill tier."}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
 
-      {/* FULL-SCREEN MODAL SA PAKETIMA KOJI ISKAČE NAKON LOGOVANJA (AKO KORISNIK NEMA PAKET) */}
+      {/* PRICING MODAL */}
       {typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
           {isPricingModalOpen && (
-            <motion.div 
-              key="pricing-modal-overlay" 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }} 
-              className="fixed inset-0 w-screen h-screen z-[9999999] bg-[#020202] overflow-y-auto"
-            >
+            <motion.div key="pricing-modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 w-screen h-screen z-[9999999] bg-[#121722] overflow-y-auto">
               <button 
                 onClick={() => { 
                   setIsPricingModalOpen(false); 
                   setPendingProject(null); 
                   sessionStorage.removeItem('v10_pending_project'); 
                 }} 
-                className="absolute top-8 left-4 md:left-8 z-[100000] flex w-max items-center gap-2 text-zinc-500 hover:text-orange-500 transition-colors bg-black/80 p-2 pr-4 rounded-full backdrop-blur-md border border-white/10 hover:border-orange-500/50 shadow-lg cursor-pointer group"
+                className="absolute top-8 left-4 md:left-8 z-[100000] flex w-max items-center gap-2 text-slate-300 hover:text-amber-400 transition-colors bg-[#171e2c] p-2 pr-4 rounded-full backdrop-blur-md border border-white/10 hover:border-amber-400/50 shadow-lg cursor-pointer group"
               >
-                <div className="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center group-hover:bg-orange-500/20 transition-colors"><ArrowLeft className="w-4 h-4 text-white" /></div>
+                <div className="w-8 h-8 rounded-full bg-[#121722] flex items-center justify-center"><ArrowLeft className="w-4 h-4 text-white" /></div>
                 <span className="text-[10px] md:text-xs font-black uppercase tracking-widest">Back to Vault</span>
               </button>
               
               <div className="pt-24 pb-24 min-h-screen flex items-center justify-center">
                 <V10PricingDetails 
-                  onPackageLoaded={(pkg) => {
-                    if (pkg) setIsPricingModalOpen(false);
-                  }}
+                  onPackageLoaded={(pkg) => { if (pkg) setIsPricingModalOpen(false); }}
                   onPackageSelect={(pkgName, price) => {
+                    setPackagePrice(price || 0);
                     setupPackageLimits(pkgName, new Date());
                     setIsPricingModalOpen(false);
                   }}
@@ -652,35 +715,21 @@ const VaultGrid = () => {
       {typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
           {isLimitModalOpen && (
-            <motion.div 
-              key="limit-modal-overlay" 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }} 
-              className="fixed inset-0 w-screen h-screen z-[9999999] flex items-center justify-center p-4 bg-black/70 pointer-events-auto"
-            >
-              <motion.div 
-                initial={{ scale: 0.8, opacity: 0, y: 30 }} 
-                animate={{ scale: 1, opacity: 1, y: 0 }} 
-                exit={{ scale: 0.9, opacity: 0, y: 20 }} 
-                transition={{ type: "spring", damping: 20, stiffness: 300 }}
-                className="relative w-full max-w-2xl p-12 md:p-16 rounded-[2.5rem] flex flex-col items-center text-center bg-gradient-to-br from-slate-700 via-slate-800 to-slate-950 border border-slate-600 border-t-slate-400/80 border-l-slate-400/80 shadow-[0_50px_100px_rgba(0,0,0,0.9),_inset_0_2px_15px_rgba(255,255,255,0.1)] overflow-hidden"
-              >
-                <button onClick={() => setIsLimitModalOpen(false)} className="absolute top-6 right-6 z-50 w-12 h-12 flex items-center justify-center rounded-full bg-gradient-to-b from-red-500 to-red-700 border border-red-400 text-white shadow-[0_8px_15px_rgba(220,38,38,0.5),_inset_0_2px_4px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 cursor-pointer transition-transform">
-                  <X className="w-6 h-6 drop-shadow-md" />
+            <motion.div key="limit-modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 w-screen h-screen z-[9999999] flex items-center justify-center p-4 bg-[#0d121b]/80 backdrop-blur-md pointer-events-auto">
+              <motion.div initial={{ scale: 0.8, opacity: 0, y: 30 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="relative w-full max-w-2xl p-12 md:p-16 rounded-[2.5rem] flex flex-col items-center text-center bg-gradient-to-br from-[#1a2233] via-[#171e2c] to-[#0d121b] border border-blue-500/40 shadow-2xl overflow-hidden">
+                <button onClick={() => setIsLimitModalOpen(false)} className="absolute top-6 right-6 z-50 w-12 h-12 flex items-center justify-center rounded-full bg-gradient-to-b from-red-500 to-red-700 border border-red-400 text-white cursor-pointer">
+                  <X className="w-6 h-6" />
                 </button>
                 <div className="relative w-32 h-32 mb-10 mt-4 flex items-center justify-center">
-                  <div className="absolute inset-0 bg-cyan-500 rounded-full blur-[40px] opacity-40 animate-pulse"></div>
-                  <motion.div animate={{ rotate: 360 }} transition={{ duration: 10, repeat: Infinity, ease: "linear" }} className="absolute inset-[-15px] rounded-full border-[2px] border-cyan-500/20 border-t-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.5)]"></motion.div>
-                  <motion.div animate={{ rotate: -360 }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }} className="absolute inset-[-30px] rounded-full border-[2px] border-dashed border-blue-500/30 border-b-cyan-400"></motion.div>
-                  <motion.div animate={{ y: [-8, 8, -8] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} className="relative z-10 w-24 h-24 bg-gradient-to-b from-slate-700 to-black rounded-[2rem] border border-slate-50 flex items-center justify-center shadow-[inset_0_2px_8px_rgba(255,255,255,0.3),_0_20px_30px_rgba(0,0,0,0.8)] transform -rotate-3">
-                    <Lock className="w-12 h-12 text-emerald-400 drop-shadow-[0_0_15px_rgba(16,185,129,0.9)]" />
-                  </motion.div>
+                  <div className="absolute inset-0 bg-[#ff6a00] rounded-full blur-[40px] opacity-30 animate-pulse"></div>
+                  <div className="relative z-10 w-24 h-24 bg-[#121722] rounded-[2rem] border border-[#ff6a00]/50 flex items-center justify-center shadow-2xl">
+                    <Lock className="w-12 h-12 text-[#ff6a00]" />
+                  </div>
                 </div>
-                <h2 className="text-4xl font-black uppercase tracking-[0.2em] mb-6 text-white drop-shadow-md z-10">Vault Locked</h2>
-                <p className="text-slate-300 text-sm font-bold leading-relaxed uppercase tracking-widest max-w-md mb-12 z-10">Capacity reached. All <span className="text-cyan-400 font-black">{packageLimit}</span> master assets for your <span className="text-emerald-400 font-black">{activePackage}</span> tier are secured.</p>
-                <button onClick={() => { setIsLimitModalOpen(false); setShowCheckout(true); }} className="relative w-full max-w-md px-8 py-6 rounded-2xl bg-gradient-to-b from-cyan-400 to-blue-600 text-white font-black uppercase tracking-[0.15em] text-base transition-all shadow-[0_15px_30px_rgba(0,0,0,0.6),_inset_0_2px_6px_rgba(255,255,255,0.6)] border-b-[6px] border-blue-900 hover:translate-y-[2px] hover:border-b-[4px] active:translate-y-[6px] active:border-b-0 flex items-center justify-center gap-3 cursor-pointer z-10">
-                  <ShieldCheck className="w-6 h-6 drop-shadow-sm" /> <span className="drop-shadow-sm">Deploy Assets</span>
+                <h2 className="text-4xl font-black uppercase tracking-[0.2em] mb-6 text-white z-10">Vault Capacity Full</h2>
+                <p className="text-slate-300 text-sm font-bold leading-relaxed uppercase tracking-widest max-w-md mb-12 z-10">All <span className="text-[#ff6a00] font-black">{packageLimit}</span> master assets for your <span className="text-emerald-400 font-black">{activePackage}</span> tier are selected.</p>
+                <button onClick={() => { setIsLimitModalOpen(false); setShowCheckout(true); }} className="relative w-full max-w-md px-8 py-6 rounded-2xl bg-gradient-to-r from-[#ff6a00] to-amber-500 text-[#121722] font-black uppercase tracking-[0.15em] text-base flex items-center justify-center gap-3 cursor-pointer z-10 shadow-xl">
+                  <ShieldCheck className="w-6 h-6" /> <span>Proceed to Checkout</span>
                 </button>
               </motion.div>
             </motion.div>
@@ -689,27 +738,26 @@ const VaultGrid = () => {
         document.body
       )}
 
-      {/* CUSTOM ALERT MODAL - Sada ima z-index: 100000000 da UVEK bude na samom vrhu */}
+      {/* CUSTOM ALERT MODAL */}
       {typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
           {customAlert.isOpen && (
-            <motion.div key="custom-alert-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 w-screen h-screen z-[100000000] flex items-center justify-center p-4 bg-black/80 pointer-events-auto">
-              <motion.div initial={{ scale: 0.95, opacity: 0, y: 15 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 15 }} className="relative w-full max-w-md pointer-events-auto relative z-50">
-                <div className="relative bg-gradient-to-br from-slate-700 via-slate-800 to-slate-950 border border-slate-600 border-t-slate-400/80 border-l-slate-400/80 rounded-[2.5rem] p-10 shadow-[0_40px_80px_rgba(0,0,0,0.9),_inset_0_2px_10px_rgba(255,255,255,0.2)] flex flex-col items-center text-center overflow-hidden">
-                  <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 blur-[60px] opacity-30 pointer-events-none ${customAlert.isDestructive ? 'bg-red-500' : 'bg-cyan-500'}`}></div>
-                  <div className={`w-20 h-20 rounded-full mb-8 flex items-center justify-center border relative z-10 shadow-[inset_0_2px_5px_rgba(255,255,255,0.15),_0_10px_20px_rgba(0,0,0,0.8)] ${customAlert.isDestructive ? 'bg-gradient-to-b from-slate-800 to-black border-slate-600 text-red-500' : 'bg-gradient-to-b from-slate-800 to-black border-slate-600 text-cyan-400'}`}>
-                    {customAlert.isDestructive ? <AlertTriangle className="w-10 h-10 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]" /> : <ShieldCheck className="w-10 h-10 drop-shadow-[0_0_10px_rgba(34,211,238,0.8)]" />}
+            <motion.div key="custom-alert-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 w-screen h-screen z-[100000000] flex items-center justify-center p-4 bg-[#0d121b]/80 backdrop-blur-md pointer-events-auto">
+              <motion.div initial={{ scale: 0.95, opacity: 0, y: 15 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 15 }} className="relative w-full max-w-md pointer-events-auto z-50">
+                <div className="relative bg-gradient-to-br from-[#1a2233] via-[#171e2c] to-[#0d121b] border border-blue-500/35 rounded-[2.5rem] p-10 shadow-2xl flex flex-col items-center text-center overflow-hidden">
+                  <div className={`w-20 h-20 rounded-full mb-8 flex items-center justify-center border relative z-10 ${customAlert.isDestructive ? 'bg-[#121722] border-red-500/40 text-red-500' : 'bg-[#121722] border-[#ff6a00]/40 text-[#ff6a00]'}`}>
+                    {customAlert.isDestructive ? <AlertTriangle className="w-10 h-10" /> : <ShieldCheck className="w-10 h-10" />}
                   </div>
-                  <h2 className="text-2xl font-black text-white uppercase tracking-[0.2em] mb-4 relative z-10 drop-shadow-md">{customAlert.title}</h2>
+                  <h2 className="text-2xl font-black text-white uppercase tracking-[0.2em] mb-4 relative z-10">{customAlert.title}</h2>
                   <p className="text-slate-300 text-sm font-medium leading-relaxed mb-10 max-w-sm relative z-10">{customAlert.message}</p>
-                  <div className="flex w-full gap-4 relative z-10 pointer-events-auto">
+                  <div className="flex w-full gap-4 relative z-10">
                     {customAlert.onConfirm ? (
                       <>
-                        <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); closeAlert(); }} className="flex-1 py-4 rounded-xl border border-slate-500 bg-gradient-to-b from-slate-700 to-slate-800 hover:from-slate-600 hover:to-slate-700 text-white font-black uppercase tracking-widest text-[10px] transition-all shadow-lg cursor-pointer pointer-events-auto relative z-50">Cancel</button>
-                        <button onClick={async (e) => { e.preventDefault(); e.stopPropagation(); await customAlert.onConfirm(); }} className={`flex-1 py-4 rounded-xl font-black uppercase tracking-widest text-[10px] text-white transition-all shadow-[0_10px_20px_rgba(0,0,0,0.5),_inset_0_2px_2px_rgba(255,255,255,0.4)] border-b-[4px] hover:translate-y-[2px] hover:border-b-[2px] active:translate-y-[4px] active:border-b-0 cursor-pointer pointer-events-auto relative z-50 ${customAlert.isDestructive ? 'bg-gradient-to-b from-red-500 to-red-700 border-red-900' : 'bg-gradient-to-b from-cyan-500 to-blue-700 border-blue-900'}`}>Confirm</button>
+                        <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); closeAlert(); }} className="flex-1 py-4 rounded-xl border border-white/15 bg-[#121722] text-white font-black uppercase tracking-widest text-[10px] cursor-pointer">Cancel</button>
+                        <button onClick={async (e) => { e.preventDefault(); e.stopPropagation(); await customAlert.onConfirm(); }} className={`flex-1 py-4 rounded-xl font-black uppercase tracking-widest text-[10px] cursor-pointer ${customAlert.isDestructive ? 'bg-red-600 text-white' : 'bg-[#ff6a00] text-[#121722]'}`}>Confirm</button>
                       </>
                     ) : (
-                      <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); closeAlert(); }} className="w-full py-4 rounded-xl font-black uppercase tracking-widest text-[10px] text-white bg-gradient-to-b from-cyan-400 to-blue-600 border-b-[4px] border-blue-900 shadow-[0_10px_20px_rgba(0,0,0,0.5),_inset_0_2px_2px_rgba(255,255,255,0.4)] hover:translate-y-[2px] hover:border-b-[2px] active:translate-y-[4px] active:border-b-0 transition-all cursor-pointer pointer-events-auto relative z-50">Acknowledge</button>
+                      <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); closeAlert(); }} className="w-full py-4 rounded-xl font-black uppercase tracking-widest text-[10px] text-[#121722] bg-[#ff6a00] cursor-pointer">Acknowledge</button>
                     )}
                   </div>
                 </div>
@@ -720,29 +768,25 @@ const VaultGrid = () => {
         document.body
       )}
 
-      {/* MODAL ZA INICIJALIZACIJU PROJEKTA (ADMIN) - Prikazuje se ISPOD Alert modala */}
+      {/* ADMIN INIT PROJECT MODAL */}
       {typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
           {isModalOpen && isAdmin && (
-            <motion.div key="init-modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 w-screen h-screen z-[9999999] flex items-center justify-center p-4 bg-black/70 pointer-events-auto">
-              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#020617] border border-slate-600 border-t-slate-400/80 border-l-slate-400/80 p-10 rounded-[2.5rem] w-full max-w-xl shadow-[0_40px_80px_rgba(0,0,0,0.9),_inset_0_2px_10px_rgba(255,255,255,0.15)] max-h-[95vh] overflow-y-auto custom-scrollbar relative z-50">
-                
-                <button onClick={() => setIsModalOpen(false)} className="absolute top-6 right-6 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-b from-red-500 to-red-700 border border-red-400 text-white shadow-[0_8px_15px_rgba(220,38,38,0.5),_inset_0_2px_4px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 cursor-pointer transition-transform pointer-events-auto">
-                  <X className="w-5 h-5 drop-shadow-md" />
+            <motion.div key="init-modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 w-screen h-screen z-[9999999] flex items-center justify-center p-4 bg-[#0d121b]/80 backdrop-blur-md pointer-events-auto">
+              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative bg-gradient-to-br from-[#1a2233] via-[#171e2c] to-[#0d121b] border border-blue-500/40 p-10 rounded-[2.5rem] w-full max-w-xl shadow-2xl max-h-[95vh] overflow-y-auto custom-scrollbar z-50">
+                <button onClick={() => setIsModalOpen(false)} className="absolute top-6 right-6 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-red-600 text-white cursor-pointer">
+                  <X className="w-5 h-5" />
                 </button>
-                
-                <h2 className="text-3xl font-black text-white uppercase tracking-widest mb-8 drop-shadow-md">Init New Project</h2>
-                
+                <h2 className="text-3xl font-black text-white uppercase tracking-widest mb-8">Init New Project</h2>
                 <div className="space-y-5">
                   <div>
-                    <label className="block text-cyan-400 text-[10px] font-black uppercase tracking-widest mb-2">Project Title</label>
-                    <input type="text" value={newProject.title} onChange={(e) => setNewProject({ ...newProject, title: e.target.value })} className="w-full bg-[#020617] border border-slate-700 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-cyan-400 transition-colors shadow-inner" placeholder="Упиши наслов овде..." />
+                    <label className="block text-[#ff6a00] text-[10px] font-black uppercase tracking-widest mb-2">Project Title</label>
+                    <input type="text" value={newProject.title} onChange={(e) => setNewProject({ ...newProject, title: e.target.value })} className="w-full bg-[#121722] border border-white/15 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-[#ff6a00]" placeholder="Enter project title..." />
                   </div>
-                  
                   <div>
-                    <label className="block text-cyan-400 text-[10px] font-black uppercase tracking-widest mb-2">Image Format (Ratio)</label>
+                    <label className="block text-[#ff6a00] text-[10px] font-black uppercase tracking-widest mb-2">Image Format (Ratio)</label>
                     <div className="relative">
-                      <select value={newProject.ratio} onChange={(e) => setNewProject({ ...newProject, ratio: e.target.value })} className="w-full bg-[#020617] border border-slate-700 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-cyan-400 transition-colors appearance-none cursor-pointer shadow-inner">
+                      <select value={newProject.ratio} onChange={(e) => setNewProject({ ...newProject, ratio: e.target.value })} className="w-full bg-[#121722] border border-white/15 rounded-2xl px-5 py-4 text-white appearance-none cursor-pointer">
                         <option value="aspect-[3/1]">3:1 (Panoramic / Storytelling)</option>
                         <option value="aspect-[21/9]">21:9 (Ultrawide / Hero)</option>
                         <option value="aspect-video">16:9 (Cinematic / Landscape)</option>
@@ -756,46 +800,33 @@ const VaultGrid = () => {
                       <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                     </div>
                   </div>
-
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-slate-500 text-[9px] font-black uppercase tracking-widest mb-2">Category (ID)</label>
-                      <input type="text" value={newProject.category} onChange={(e) => setNewProject({...newProject, category: e.target.value})} className="w-full bg-[#020617]/50 border border-slate-800 rounded-xl px-4 py-3 text-slate-400 text-xs font-black uppercase tracking-widest focus:outline-none focus:border-cyan-400 transition-colors" />
+                      <label className="block text-slate-400 text-[9px] font-black uppercase tracking-widest mb-2">Category (ID)</label>
+                      <input type="text" value={newProject.category} onChange={(e) => setNewProject({...newProject, category: e.target.value})} className="w-full bg-[#121722] border border-white/10 rounded-xl px-4 py-3 text-slate-300 text-xs font-black uppercase tracking-widest" />
                     </div>
                     <div>
-                      <label className="block text-slate-500 text-[9px] font-black uppercase tracking-widest mb-2">Engine</label>
-                      <input type="text" value={newProject.engine} onChange={(e) => setNewProject({...newProject, engine: e.target.value})} className="w-full bg-[#020617]/50 border border-slate-800 rounded-xl px-4 py-3 text-slate-400 text-xs font-black uppercase tracking-widest focus:outline-none focus:border-cyan-400 transition-colors" />
+                      <label className="block text-slate-400 text-[9px] font-black uppercase tracking-widest mb-2">Engine</label>
+                      <input type="text" value={newProject.engine} onChange={(e) => setNewProject({...newProject, engine: e.target.value})} className="w-full bg-[#121722] border border-white/10 rounded-xl px-4 py-3 text-slate-300 text-xs font-black uppercase tracking-widest" />
                     </div>
                   </div>
-                  
                   <div>
-                    <label className="block text-cyan-400 text-[10px] font-black uppercase tracking-widest mb-2">Cover Image</label>
+                    <label className="block text-[#ff6a00] text-[10px] font-black uppercase tracking-widest mb-2">Cover Image</label>
                     <div className="relative group cursor-pointer h-40">
                       <input type="file" accept="image/*" onChange={handleThumbnailUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                      <div className={`w-full h-40 rounded-2xl flex flex-col items-center justify-center transition-all ${newProject.img ? 'bg-gradient-to-br from-cyan-400 to-blue-600 p-[3px] shadow-[0_0_40px_rgba(6,182,212,0.4)]' : 'border-2 border-dashed border-slate-600 bg-[#020617] group-hover:border-cyan-400 shadow-inner'}`}>
+                      <div className={`w-full h-40 rounded-2xl flex flex-col items-center justify-center transition-all ${newProject.img ? 'bg-gradient-to-br from-[#ff6a00] to-amber-500 p-[3px]' : 'border-2 border-dashed border-[#ff6a00]/45 bg-[#121722]'}`}>
                         {isUploadingThumbnail ? (
-                          <div className={`w-full h-full flex items-center justify-center ${newProject.img ? 'bg-black rounded-xl' : ''}`}><Loader2 className="w-8 h-8 text-cyan-400 animate-spin" /></div>
+                          <Loader2 className="w-8 h-8 text-[#ff6a00] animate-spin" />
                         ) : newProject.img ? (
-                          <div className="w-full h-full bg-black rounded-xl p-[4px]"><img src={newProject.img} alt="Preview" className="w-full h-full object-cover rounded-lg brightness-110" /></div>
+                          <div className="w-full h-full bg-[#121722] rounded-xl p-[4px]"><img src={newProject.img} alt="Preview" className="w-full h-full object-cover rounded-lg" /></div>
                         ) : (
-                          <><UploadCloud className="w-8 h-8 text-slate-500 group-hover:text-cyan-400 transition-colors mb-3" /><span className="text-slate-500 text-xs font-bold uppercase tracking-widest">Click to upload cover</span></>
+                          <><UploadCloud className="w-8 h-8 text-slate-400 mb-3" /><span className="text-slate-400 text-xs font-bold uppercase tracking-widest">Click to upload cover</span></>
                         )}
                       </div>
                     </div>
                   </div>
-
-                  <button 
-                    onClick={handleCreateProject} 
-                    disabled={isSaving || isUploadingThumbnail} 
-                    className="relative w-full px-8 py-5 rounded-2xl bg-gradient-to-b from-cyan-400 to-blue-600 text-white font-black uppercase tracking-widest mt-8 transition-all shadow-[0_15px_30px_rgba(0,0,0,0.6),_inset_0_2px_4px_rgba(255,255,255,0.5)] border-b-[5px] border-blue-900 hover:translate-y-[2px] hover:border-b-[3px] active:translate-y-[5px] active:border-b-0 flex items-center justify-center gap-3 cursor-pointer z-10 disabled:opacity-50 disabled:cursor-not-allowed pointer-events-auto"
-                  >
-                    {isSaving ? (
-                      <><Loader2 className="w-5 h-5 animate-spin drop-shadow-sm" /> <span className="drop-shadow-sm">SAVING...</span></>
-                    ) : isUploadingThumbnail ? (
-                      <><Loader2 className="w-5 h-5 animate-spin drop-shadow-sm" /> <span className="drop-shadow-sm">UPLOADING IMAGE...</span></>
-                    ) : (
-                      <><Save className="w-5 h-5 drop-shadow-sm" /> <span className="drop-shadow-sm">SAVE PROJECT</span></>
-                    )}
+                  <button onClick={handleCreateProject} disabled={isSaving || isUploadingThumbnail} className="relative w-full px-8 py-5 rounded-2xl bg-gradient-to-r from-[#ff6a00] to-amber-500 text-[#121722] font-black uppercase tracking-widest mt-8 flex items-center justify-center gap-3 cursor-pointer disabled:opacity-50">
+                    {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-5 h-5" /> <span>SAVE PROJECT</span></>}
                   </button>
                 </div>
               </motion.div>
@@ -810,4 +841,3 @@ const VaultGrid = () => {
 };
 
 export default VaultGrid;
-// KRAJ FAJLA: src/ux/VaultGrid.jsx
