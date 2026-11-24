@@ -1114,8 +1114,7 @@ const V8StockBerzaBase = () => {
     .flatMap(p => (p.primeri && p.primeri.length > 0 ? p.primeri : p.previewUrl ? [p.previewUrl] : []))
     .slice(0, topStripSlotCount);
 
-
-// === SEO & STRUCTURED DATA PRIPREMA ZA HELMET ===
+  // === SEO & STRUCTURED DATA PRIPREMA ZA HELMET ===
   const seoBaseOrigin = 'https://aitoolsprosmart.com';
   const seoCanonicalUrl =
     typeof window !== 'undefined'
@@ -1198,11 +1197,49 @@ const V8StockBerzaBase = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#090C12] via-[#0E131D] to-[#090C12] text-[#EAE6DF] font-sans relative pb-28">
       <Helmet>
-        <title>Luxury Commercial 150MP + 4K + WebP Campaign Archive | AI Tools Pro Smart</title>
+        {/* Osnovni Google Search tagovi */}
+        <html lang="en" />
+        <title>{seoTitle}</title>
+        <meta name="description" content={seoDescription} />
         <meta
-          name="description"
-          content="100% IP-safe commercial 150MP print, 4K UHD & WebP visual packages with Standard Commercial & Global Enterprise licensing options."
+          name="keywords"
+          content="150MP commercial stock photography, IP-safe unbranded luxury assets, 4K UHD hero backgrounds, luxury interior stock photos, Michelin food photography pack, exotic automotive carbon details, dark mode SaaS hero backgrounds, B2B agency visual bundles, Visionary Factory V10"
         />
+        <meta name="author" content="Visionary Factory V10 — AI Tools Pro Smart" />
+        <meta
+          name="robots"
+          content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+        />
+        <meta
+          name="googlebot"
+          content="index, follow, max-image-preview:large, max-snippet:-1"
+        />
+        <link rel="canonical" href={seoCanonicalUrl} />
+
+        {/* Open Graph (LinkedIn, WhatsApp, Facebook, Discord, Slack) */}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Visionary Factory V10 | AI Tools Pro Smart" />
+        <meta property="og:title" content={seoTitle} />
+        <meta property="og:description" content={seoDescription} />
+        <meta property="og:url" content={seoCanonicalUrl} />
+        <meta property="og:image" content={seoOgImage} />
+        <meta property="og:image:secure_url" content={seoOgImage} />
+        <meta property="og:image:type" content="image/jpeg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content={seoTitle} />
+        <meta property="og:locale" content="en_US" />
+
+        {/* X / Twitter Large Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={seoTitle} />
+        <meta name="twitter:description" content={seoDescription} />
+        <meta name="twitter:image" content={seoOgImage} />
+
+        {/* Google Rich Snippets + Google Images "Licensable" Badge */}
+        <script type="application/ld+json">
+          {JSON.stringify(seoJsonLd)}
+        </script>
       </Helmet>
 
       <div className="relative z-10 pt-28 px-4 sm:px-6 max-w-[1600px] mx-auto">
