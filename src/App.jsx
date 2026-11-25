@@ -112,6 +112,7 @@ import SolYObsidianaNikkei from './pages/kits/restaurants/SolYObsidianaNikkei';
 
 //moja ruta goran
 import V10PromptGenerator from './hide/V10PromptGenerator';
+import GoranExif, { HIDDEN_EXIF_VAULT_ROUTE } from './hide/GoranExif';
 
 if (typeof window !== 'undefined') {
   if ('scrollRestoration' in window.history) { window.history.scrollRestoration = 'manual'; }
@@ -628,6 +629,7 @@ function AppContent({ appsData, refreshData }) {
   <Routes location={location} key={location.pathname}>
     <Route path="/" element={<V8PageWrapper><HomePage apps={appsData} openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
     <Route path="/goran" element={<V10PromptGenerator />} />
+    <Route path={HIDDEN_EXIF_VAULT_ROUTE} element={<GoranExif />} />
     <Route path="/v8-standard-16mp" element={<V8PageWrapper><V8Standard16MPWorkspace openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
     <Route path="/master-33mp" element={<V8PageWrapper><V8MasterEngine33MP openCheckout={handleOpenCheckout} /></V8PageWrapper>} />
     <Route path="/master-45mp" element={<V8PageWrapper><V8MasterEngine45MP openCheckout={handleOpenCheckout} /></V8PageWrapper>} />

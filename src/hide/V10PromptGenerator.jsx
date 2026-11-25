@@ -1671,6 +1671,12 @@ export default function V10PromptGenerator() {
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-400/35 text-cyan-300 text-[11px] font-bold tracking-wider uppercase shadow-[0_0_20px_rgba(34,211,238,0.15)]">
                   FULL-FRAME SAFE • OPTICS-FIRST
                 </span>
+                <a
+                  href="/goran-exif"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-gradient-to-r from-amber-400/20 to-cyan-400/20 hover:from-amber-400 hover:to-yellow-400 hover:text-slate-950 border border-amber-400/60 text-amber-300 text-[11px] font-extrabold tracking-wider uppercase shadow-[0_0_22px_rgba(251,191,36,0.22)] transition-all duration-200 cursor-pointer"
+                >
+                  ⚡ OTVORI EXIF VAULT (/GORAN-EXIF) →
+                </a>
               </div>
 
               <h1 className="text-3xl sm:text-4xl md:text-[44px] font-black tracking-tight text-white uppercase leading-tight drop-shadow-[0_4px_24px_rgba(251,191,36,0.16)]">
